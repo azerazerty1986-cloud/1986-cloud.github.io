@@ -1,4 +1,4 @@
-/* ========== النقطة 1: المتغيرات العامة وإعدادات الأساس ========== */
+/* ===== المتغيرات العامة ===== */
 :root {
     --bg-primary: #0a1a15;
     --bg-secondary: #1a2f28;
@@ -59,7 +59,7 @@ body {
     padding: 0 15px;
 }
 
-/* ========== النقطة 2: شريط تقدم التمرير ========== */
+/* ===== شريط تقدم التمرير ===== */
 .scroll-progress {
     position: fixed;
     top: 0;
@@ -83,7 +83,7 @@ body {
     filter: blur(5px);
 }
 
-/* ========== النقطة 3: جسيمات متحركة ========== */
+/* ===== جسيمات متحركة ===== */
 .particles {
     position: fixed;
     top: 0;
@@ -105,13 +105,23 @@ body {
 }
 
 @keyframes float-particle {
-    0% { transform: translateY(100vh) translateX(0); opacity: 0; }
-    10% { opacity: 0.5; }
-    90% { opacity: 0.5; }
-    100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+    0% {
+        transform: translateY(100vh) translateX(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.5;
+    }
+    90% {
+        opacity: 0.5;
+    }
+    100% {
+        transform: translateY(-100vh) translateX(100px);
+        opacity: 0;
+    }
 }
 
-/* ========== النقطة 4: شاشة التحميل ========== */
+/* ===== شاشة التحميل ===== */
 .loader {
     position: fixed;
     top: 0;
@@ -139,7 +149,7 @@ body {
     to { transform: rotate(360deg); }
 }
 
-/* ========== النقطة 5: Toast Notifications المتطورة ========== */
+/* ===== Toast Notifications المتطورة ===== */
 .toast-container {
     position: fixed;
     top: 20px;
@@ -240,7 +250,7 @@ body {
     to { transform: translateX(400px); opacity: 0; }
 }
 
-/* ========== النقطة 6: سلة التسوق الجانبية ========== */
+/* ===== سلة التسوق الجانبية ===== */
 .cart-sidebar {
     position: fixed;
     top: 0;
@@ -393,7 +403,7 @@ body {
     box-shadow: 0 0 30px var(--green);
 }
 
-/* ========== النقطة 7: أيقونة السلة الثابتة ========== */
+/* ===== أيقونة السلة الثابتة ===== */
 .fixed-cart {
     position: fixed;
     bottom: 100px;
@@ -439,7 +449,7 @@ body {
     border: 2px solid var(--bg-primary);
 }
 
-/* ========== النقطة 8: أزرار الصعود والهبوط ========== */
+/* ===== أزرار الصعود والهبوط ===== */
 .navigation-buttons {
     position: fixed;
     bottom: 100px;
@@ -482,7 +492,7 @@ body {
     animation: float 2s ease-in-out infinite reverse;
 }
 
-/* ========== النقطة 9: زر العودة للأعلى السريع ========== */
+/* ===== زر العودة للأعلى السريع ===== */
 .quick-top-btn {
     position: fixed;
     bottom: 30px;
@@ -513,7 +523,7 @@ body {
     display: flex;
 }
 
-/* ========== النقطة 10: الشريط العلوي ========== */
+/* ===== الشريط العلوي ===== */
 .top-bar {
     background: var(--bg-secondary);
     backdrop-filter: blur(10px);
@@ -545,14 +555,15 @@ body {
 }
 
 .theme-toggle {
+    background: var(--glass);
+    border: 1px solid var(--gold);
+    border-radius: 50px;
+    padding: 5px 15px;
+    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 8px;
-    cursor: pointer;
-    padding: 5px 15px;
-    border-radius: 30px;
-    background: var(--glass);
-    border: 1px solid var(--gold);
+    color: var(--text-primary);
     transition: var(--transition);
 }
 
@@ -561,11 +572,7 @@ body {
     color: var(--bg-primary);
 }
 
-.theme-toggle i {
-    font-size: 16px;
-}
-
-/* ========== النقطة 11: شريط المميزات الحركية ========== */
+/* ===== شريط المميزات الحركية المتحرك ===== */
 .marquee-bar {
     background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-dark));
     padding: 10px 0;
@@ -627,7 +634,7 @@ body {
 .glow-item { animation: textGlow 2s infinite; }
 .shadow-pulse-item { animation: shadowPulse 2s infinite; }
 
-/* ========== النقطة 12: الهيدر الرئيسي ========== */
+/* ===== الهيدر الرئيسي ===== */
 .main-header {
     background: var(--bg-card);
     backdrop-filter: blur(20px);
@@ -687,7 +694,7 @@ body {
     font-weight: 600;
 }
 
-/* ========== النقطة 13: البحث ========== */
+/* ===== البحث ===== */
 .search-wrapper {
     flex: 0 1 400px;
     position: relative;
@@ -741,7 +748,16 @@ body {
     box-shadow: 0 0 20px var(--gold);
 }
 
-/* ========== النقطة 14: أزرار الإجراءات ========== */
+.search-indicator {
+    position: absolute;
+    bottom: -25px;
+    right: 0;
+    font-size: 12px;
+    color: var(--gold);
+    animation: pulse 1.5s infinite;
+}
+
+/* ===== أزرار الإجراءات ===== */
 .header-actions {
     display: flex;
     align-items: center;
@@ -787,7 +803,7 @@ body {
     justify-content: center;
 }
 
-/* ========== النقطة 15: القائمة الرئيسية ========== */
+/* ===== القائمة الرئيسية ===== */
 .nav-menu {
     background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
     backdrop-filter: blur(10px);
@@ -860,7 +876,7 @@ body {
     font-size: 16px;
 }
 
-/* ========== النقطة 16: نص متحرك ========== */
+/* ===== نص متحرك (Typing Animation) ===== */
 .typing-container {
     text-align: center;
     margin: 20px 0;
@@ -879,7 +895,7 @@ body {
     51%, 100% { opacity: 0; }
 }
 
-/* ========== النقطة 17: لوحة التاجر ========== */
+/* ===== لوحة التاجر ===== */
 .merchant-panel {
     background: linear-gradient(135deg, var(--purple), var(--purple-dark));
     border-radius: 30px;
@@ -919,7 +935,7 @@ body {
     color: var(--gold);
 }
 
-/* ========== النقطة 18: المنتجات - شبكة 3 أعمدة ========== */
+/* ===== المنتجات - شبكة 3 أعمدة ===== */
 .products-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -928,13 +944,21 @@ body {
 }
 
 @media (max-width: 1200px) {
-    .products-grid { grid-template-columns: repeat(3, 1fr); }
+    .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
+
 @media (max-width: 992px) {
-    .products-grid { grid-template-columns: repeat(2, 1fr); }
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
+
 @media (max-width: 576px) {
-    .products-grid { grid-template-columns: 1fr; }
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .product-card {
@@ -957,75 +981,38 @@ body {
     box-shadow: var(--shadow-gold);
 }
 
-/* ========== النقطة 19: شارة الوقت ========== */
-.product-time-badge {
+.product-badge {
     position: absolute;
-    top: 15px;
-    right: 15px;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(5px);
-    color: var(--gold);
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    z-index: 3;
-    border: 1px solid var(--gold);
-    display: flex;
-    align-items: center;
-    gap: 5px;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: var(--bg-primary);
+    padding: 5px 15px;
+    border-radius: 25px;
+    font-size: 12px;
+    font-weight: 700;
+    z-index: 2;
+    box-shadow: 0 0 15px var(--gold);
 }
 
-.product-time-badge i {
-    font-size: 10px;
-    color: var(--gold-light);
-}
-
-/* ========== النقطة 20: شارة التاجر ========== */
 .merchant-badge {
     position: absolute;
-    top: 15px;
-    left: 15px;
+    top: 20px;
+    left: 20px;
     background: linear-gradient(135deg, var(--purple), var(--purple-dark));
     color: white;
     padding: 5px 12px;
     border-radius: 25px;
     font-size: 12px;
     font-weight: 700;
-    z-index: 3;
+    z-index: 2;
     display: flex;
     align-items: center;
     gap: 5px;
     box-shadow: 0 0 15px var(--purple);
-    max-width: 150px;
 }
 
-.merchant-name {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100px;
-}
-
-.product-merchant-info {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-    padding: 3px 8px;
-    background: var(--glass);
-    border-radius: 15px;
-    width: fit-content;
-}
-
-.product-merchant-info i {
-    color: var(--gold);
-    font-size: 10px;
-}
-
-/* ========== النقطة 21: معرض الصور ========== */
+/* ===== معرض الصور للمنتج ===== */
 .product-gallery {
     position: relative;
     width: 100%;
@@ -1111,54 +1098,6 @@ body {
     -webkit-box-orient: vertical;
 }
 
-/* ========== النقطة 22: تقييم النجوم ========== */
-.product-rating {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
-.stars-container {
-    display: flex;
-    gap: 2px;
-    direction: ltr;
-}
-
-.star {
-    color: #ddd;
-    font-size: 14px;
-    transition: var(--transition);
-}
-
-.star.filled {
-    color: var(--gold);
-    text-shadow: 0 0 5px var(--gold);
-}
-
-.star.half {
-    position: relative;
-    color: #ddd;
-}
-
-.star.half::before {
-    content: '★';
-    position: absolute;
-    left: 0;
-    width: 50%;
-    overflow: hidden;
-    color: var(--gold);
-}
-
-.rating-value {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--gold);
-    background: rgba(212, 175, 55, 0.1);
-    padding: 2px 8px;
-    border-radius: 15px;
-}
-
 .product-price {
     font-size: 24px;
     font-weight: 800;
@@ -1185,9 +1124,23 @@ body {
     font-weight: 600;
 }
 
-.in-stock { background: rgba(74, 222, 128, 0.2); color: #4ade80; border: 1px solid #4ade80; }
-.low-stock { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid #fbbf24; }
-.out-of-stock { background: rgba(248, 113, 113, 0.2); color: #f87171; border: 1px solid #f87171; }
+.in-stock {
+    background: rgba(74, 222, 128, 0.2);
+    color: #4ade80;
+    border: 1px solid #4ade80;
+}
+
+.low-stock {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+    border: 1px solid #fbbf24;
+}
+
+.out-of-stock {
+    background: rgba(248, 113, 113, 0.2);
+    color: #f87171;
+    border: 1px solid #f87171;
+}
 
 .product-actions {
     display: flex;
@@ -1240,7 +1193,99 @@ body {
     transform: scale(1.05);
 }
 
-/* ========== النقطة 23: خيارات الفرز ========== */
+/* ===== شارة الوقت ===== */
+.product-time-badge {
+    position: absolute;
+    top: 60px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    color: var(--gold);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    z-index: 3;
+    border: 1px solid var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    animation: fadeIn 0.5s;
+}
+
+.product-time-badge i {
+    font-size: 10px;
+    color: var(--gold-light);
+}
+
+/* ===== معلومات التاجر ===== */
+.product-merchant-info {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    padding: 3px 8px;
+    background: var(--glass);
+    border-radius: 15px;
+    width: fit-content;
+}
+
+.product-merchant-info i {
+    color: var(--gold);
+    font-size: 10px;
+}
+
+/* ===== تقييم النجوم ===== */
+.product-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.stars-container {
+    display: flex;
+    gap: 2px;
+    direction: ltr;
+}
+
+.star {
+    color: #ddd;
+    font-size: 14px;
+    transition: var(--transition);
+}
+
+.star.filled {
+    color: var(--gold);
+    text-shadow: 0 0 5px var(--gold);
+}
+
+.star.half {
+    position: relative;
+    color: #ddd;
+}
+
+.star.half::before {
+    content: '★';
+    position: absolute;
+    left: 0;
+    width: 50%;
+    overflow: hidden;
+    color: var(--gold);
+}
+
+.rating-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gold);
+    background: rgba(212, 175, 55, 0.1);
+    padding: 2px 8px;
+    border-radius: 15px;
+}
+
+/* ===== خيارات الفرز ===== */
 .sort-options {
     display: flex;
     justify-content: flex-end;
@@ -1270,47 +1315,7 @@ body {
     color: var(--text-primary);
 }
 
-/* ========== النقطة 24: تأثيرات حركية أساسية ========== */
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-15px); }
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.05); opacity: 0.9; }
-}
-
-@keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-@keyframes textGlow {
-    0%, 100% { text-shadow: 0 0 10px var(--gold); }
-    50% { text-shadow: 0 0 20px var(--gold), 0 0 30px var(--gold-dark); }
-}
-
-@keyframes shadowPulse {
-    0%, 100% { box-shadow: 0 0 20px var(--gold); }
-    50% { box-shadow: 0 0 40px var(--gold); }
-}
-
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.fade-in-up {
-    animation: fadeInUp 0.5s ease forwards;
-}
-
-/* ========== لوحة التحكم والنماذج الإضافية ========== */
+/* ===== لوحة التحكم ===== */
 .dashboard-section {
     margin: 40px 0;
 }
@@ -1385,6 +1390,7 @@ body {
     margin: 30px 0;
 }
 
+/* ===== نموذج إضافة منتج ===== */
 .product-form {
     display: grid;
     gap: 20px;
@@ -1414,6 +1420,11 @@ body {
 .form-control:focus {
     border-color: var(--gold);
     outline: none;
+}
+
+.form-control:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
 .image-upload-area {
@@ -1450,6 +1461,7 @@ body {
     border: 2px solid var(--gold);
 }
 
+/* ===== النوافذ المنبثقة ===== */
 .modal {
     display: none;
     position: fixed;
@@ -1480,6 +1492,7 @@ body {
     max-width: 1000px;
 }
 
+/* ===== الفوتر ===== */
 .footer {
     background: var(--bg-secondary);
     padding: 60px 0 30px;
@@ -1518,6 +1531,7 @@ body {
     border-top: 1px solid var(--gold-dark);
 }
 
+/* ===== جداول ===== */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -1534,6 +1548,68 @@ th {
 td {
     padding: 12px 10px;
     border-bottom: 1px solid var(--glass-border);
+}
+
+/* ===== تأثيرات حركية ===== */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.9; }
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes textGlow {
+    0%, 100% { text-shadow: 0 0 10px var(--gold); }
+    50% { text-shadow: 0 0 20px var(--gold), 0 0 30px var(--gold-dark); }
+}
+
+@keyframes shadowPulse {
+    0%, 100% { box-shadow: 0 0 20px var(--gold); }
+    50% { box-shadow: 0 0 40px var(--gold); }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+/* ===== تأثيرات إضافية ===== */
+.glow-text {
+    text-shadow: 0 0 10px var(--gold);
 }
 
 .btn-gold {
@@ -1572,22 +1648,93 @@ td {
     display: block;
 }
 
-/* ========== تحسينات للشاشات الصغيرة ========== */
-@media (max-width: 768px) {
-    .product-time-badge { font-size: 10px; padding: 3px 8px; }
-    .merchant-badge { font-size: 10px; padding: 3px 8px; max-width: 120px; }
-    .merchant-name { max-width: 80px; }
-    .sort-select { width: 100%; text-align: center; }
-    .fixed-cart { bottom: 80px; right: 15px; width: 50px; height: 50px; }
-    .fixed-cart i { font-size: 20px; }
-    .navigation-buttons { bottom: 80px; left: 15px; }
-    .nav-btn { width: 40px; height: 40px; font-size: 16px; }
-    .quick-top-btn { bottom: 20px; right: 15px; width: 40px; height: 40px; font-size: 16px; }
-    .typing-container { font-size: 18px; }
-    .marquee-item { padding: 0 15px; font-size: 12px; }
-    .marquee-progress { width: 40px; }
+.merchant-only {
+    display: block;
 }
 
-.glow-text {
-    text-shadow: 0 0 10px var(--gold);
+/* ===== تأثيرات الماوس ===== */
+.mouse-effect {
+    position: fixed;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s;
+    mix-blend-mode: difference;
+}
+
+.mouse-effect-dot {
+    position: fixed;
+    width: 4px;
+    height: 4px;
+    background: var(--gold);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transition: 0.1s;
+}
+
+.mouse-effect.hover {
+    transform: scale(2);
+    background: rgba(212, 175, 55, 0.1);
+}
+
+/* ===== تحسينات للشاشات الصغيرة ===== */
+@media (max-width: 768px) {
+    .fixed-cart {
+        bottom: 80px;
+        right: 15px;
+        width: 50px;
+        height: 50px;
+    }
+    
+    .fixed-cart i {
+        font-size: 20px;
+    }
+    
+    .navigation-buttons {
+        bottom: 80px;
+        left: 15px;
+    }
+    
+    .nav-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+    
+    .quick-top-btn {
+        bottom: 20px;
+        right: 15px;
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+    
+    .typing-container {
+        font-size: 18px;
+    }
+    
+    .marquee-item {
+        padding: 0 15px;
+        font-size: 12px;
+    }
+    
+    .marquee-progress {
+        width: 40px;
+    }
+    
+    .product-time-badge {
+        font-size: 10px;
+        padding: 3px 8px;
+        top: 50px;
+        right: 10px;
+    }
+    
+    .sort-select {
+        width: 100%;
+        text-align: center;
+    }
 }
