@@ -17,7 +17,6 @@ const storage = firebase.storage();
 const auth = firebase.auth();
 
 // ========== 2. النظام الأساسي ==========
-// المتغيرات العامة
 let products = [];
 let currentUser = null;
 let cart = [];
@@ -25,8 +24,32 @@ let isDarkMode = true;
 let currentFilter = 'all';
 let searchTerm = '';
 let sortBy = 'newest';
+let users = [];
 
-// ========== 3. نظام إدارة الطلبات (كامل) ==========
+// ========== 3. تحميل المستخدمين من localStorage ==========
+function loadUsers() {
+    const saved = localStorage.getItem('nardoo_users');
+    if (saved) {
+        users = JSON.parse(saved);
+    } else {
+        // مستخدم افتراضي للمدير
+        users = [
+            { 
+                id: 1, 
+                name: 'azer', 
+                email: 'azer@admin.com', 
+                password: '123456', 
+                role: 'admin',
+                createdAt: new Date().toISOString()
+            }
+        ];
+        localStorage.setItem('nardoo_users', JSON.stringify(users));
+    }
+}
+
+loadUsers();
+
+// ========== 4. نظام إدارة الطلبات ==========
 class OrderManagementSystem {
     constructor() {
         this.orders = this.loadOrders();
@@ -56,7 +79,7 @@ class OrderManagementSystem {
             items: orderData.items || [],
             subtotal: 0,
             tax: 0,
-            shipping: orderData.shipping || 0,
+            shipping: orderData.shipping || 800,
             discount: orderData.discount || 0,
             total: 0,
             paymentMethod: orderData.paymentMethod || 'الواتساب',
@@ -82,10 +105,6 @@ class OrderManagementSystem {
 
     getOrder(orderId) {
         return this.orders.find(o => o.id === orderId);
-    }
-
-    getCustomerOrders(customerId) {
-        return this.orders.filter(o => o.customerId === customerId);
     }
 
     updateOrderStatus(orderId, newStatus, message = '') {
@@ -133,27 +152,13 @@ class OrderManagementSystem {
         });
 
         stats.averageOrderValue = stats.totalOrders > 0 ? stats.totalRevenue / stats.totalOrders : 0;
-        stats.recentOrders = this.orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 10);
+        stats.recentOrders = [...this.orders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 10);
 
         return stats;
     }
-
-    searchOrders(filters = {}) {
-        return this.orders.filter(order => {
-            if (filters.status && order.status !== filters.status) return false;
-            if (filters.customerId && order.customerId !== filters.customerId) return false;
-            if (filters.search) {
-                const term = filters.search.toLowerCase();
-                return order.id.toLowerCase().includes(term) ||
-                       order.customerName.toLowerCase().includes(term) ||
-                       order.customerPhone.includes(term);
-            }
-            return true;
-        });
-    }
 }
 
-// ========== 4. نظام الواتساب (كامل) ==========
+// ========== 5. نظام الواتساب ==========
 class WhatsAppIntegration {
     constructor() {
         this.storePhone = '213562243648';
@@ -195,7 +200,7 @@ class WhatsAppIntegration {
         });
 
         const subtotal = items.reduce((s, i) => s + (i.price * i.quantity), 0);
-        const shipping = this.calculateShipping(customerAddress);
+        const shipping = 800;
         const total = subtotal + shipping;
 
         message += '\n💰 *المجموع:*\n';
@@ -208,21 +213,6 @@ class WhatsAppIntegration {
         if (orderId) message += `🔔 *معرّف الطلب:* #${orderId}\n`;
 
         return message;
-    }
-
-    calculateShipping(address) {
-        if (!address) return 800;
-        const rates = {
-            'الجزائر': 500,
-            'وهران': 700,
-            'قسنطينة': 800,
-            'الجنوب': 1200
-        };
-
-        for (const [region, cost] of Object.entries(rates)) {
-            if (address.includes(region)) return cost;
-        }
-        return 800;
     }
 
     sendOrder(orderData, recipientPhone = null) {
@@ -241,34 +231,13 @@ class WhatsAppIntegration {
 
         return order.id;
     }
-
-    getOrderHistory() {
-        return this.orderHistory;
-    }
-
-    getSalesStatistics() {
-        const stats = {
-            totalOrders: this.orderHistory.length,
-            totalRevenue: 0,
-            averageOrderValue: 0
-        };
-
-        this.orderHistory.forEach(order => {
-            const total = order.items.reduce((s, i) => s + (i.price * i.quantity), 0);
-            stats.totalRevenue += total;
-        });
-
-        stats.averageOrderValue = stats.totalOrders > 0 ? stats.totalRevenue / stats.totalOrders : 0;
-        return stats;
-    }
 }
 
-// ========== 5. نظام التحليلات (كامل) ==========
+// ========== 6. نظام التحليلات ==========
 class AnalyticsSystem {
     constructor() {
         this.events = this.loadEvents();
         this.pageViews = this.loadPageViews();
-        this.userSessions = this.loadUserSessions();
     }
 
     loadEvents() {
@@ -281,21 +250,12 @@ class AnalyticsSystem {
         return saved ? JSON.parse(saved) : [];
     }
 
-    loadUserSessions() {
-        const saved = localStorage.getItem('nardoo_user_sessions');
-        return saved ? JSON.parse(saved) : [];
-    }
-
     saveEvents() {
         localStorage.setItem('nardoo_analytics_events', JSON.stringify(this.events));
     }
 
     savePageViews() {
         localStorage.setItem('nardoo_page_views', JSON.stringify(this.pageViews));
-    }
-
-    saveUserSessions() {
-        localStorage.setItem('nardoo_user_sessions', JSON.stringify(this.userSessions));
     }
 
     trackEvent(eventType, eventData = {}) {
@@ -346,49 +306,50 @@ class AnalyticsSystem {
     }
 }
 
-// ========== 6. إنشاء الكائنات ==========
+// ========== 7. إنشاء الكائنات ==========
 const orderManager = new OrderManagementSystem();
 const whatsappManager = new WhatsAppIntegration();
 const analyticsManager = new AnalyticsSystem();
 
-// ========== 7. إعداد حساب المدير ==========
-function setupAdminAccount() {
-    try {
-        let users = JSON.parse(localStorage.getItem('nardoo_users') || '[]');
-        const adminExists = users.some(u => u.name === 'azer' || u.email === 'azer@admin.com');
-        
-        if (!adminExists) {
-            const adminUser = {
-                id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
-                name: 'azer',
-                email: 'azer@admin.com',
-                password: '123@',
-                role: 'admin',
-                createdAt: new Date().toISOString()
-            };
-            
-            users.push(adminUser);
-            localStorage.setItem('nardoo_users', JSON.stringify(users));
-            console.log('✅ تم إنشاء حساب المدير: azer / 123456');
-        }
-    } catch(e) {
-        console.log('خطأ في إعداد المدير:', e);
-    }
-}
-
-setupAdminAccount();
-
 // ========== 8. دوال المساعدة ==========
-function showNotification(message, type = 'info') {
-    const container = document.getElementById('notificationContainer');
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.innerHTML = `
-        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
-        <span>${message}</span>
+function showAdvancedNotification(message, type = 'info', title = '') {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const titles = {
+        success: 'نجاح',
+        error: 'خطأ',
+        warning: 'تنبيه',
+        info: 'معلومات'
+    };
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i class="fas ${type === 'success' ? 'fa-check' : type === 'error' ? 'fa-times' : type === 'warning' ? 'fa-exclamation' : 'fa-info'}"></i>
+        </div>
+        <div class="toast-content">
+            <div class="toast-title">${title || titles[type]}</div>
+            <div class="toast-message">${message}</div>
+        </div>
+        <div class="toast-close" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </div>
     `;
-    container.appendChild(notification);
-    setTimeout(() => notification.remove(), 3000);
+    
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.remove();
+        }
+    }, 3000);
 }
 
 function toggleTheme() {
@@ -401,7 +362,7 @@ function toggleTheme() {
     localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
 }
 
-// ========== 9. دوال التاريخ والوقت ==========
+// ========== 9. دوال التاريخ ==========
 function getSimpleTimeAgo(dateString) {
     if (!dateString) return '';
     
@@ -478,7 +439,7 @@ function changeSort(value) {
     displayProducts();
 }
 
-// ========== 12. إدارة المنتجات (كاملة مع Firebase) ==========
+// ========== 12. إدارة المنتجات مع Firebase ==========
 async function loadProducts() {
     try {
         const querySnapshot = await db.collection("products").get();
@@ -496,19 +457,23 @@ async function loadProducts() {
         const saved = localStorage.getItem('nardoo_products');
         if (saved) {
             products = JSON.parse(saved);
-            console.log('تم تحميل المنتجات من localStorage كاحتياطي');
-            displayProducts();
-        } else {
-            products = [];
             displayProducts();
         }
-        showAdvancedNotification('خطأ في الاتصال بقاعدة البيانات', 'warning');
     }
 }
 
 function saveProducts() {
     localStorage.setItem('nardoo_products', JSON.stringify(products));
-    console.log('تم حفظ نسخة احتياطية في localStorage');
+}
+
+function getCategoryName(category) {
+    const names = {
+        'promo': 'برموسيو',
+        'spices': 'توابل',
+        'cosmetic': 'كوسمتيك',
+        'other': 'منتوجات أخرى'
+    };
+    return names[category] || 'أخرى';
 }
 
 function displayProducts() {
@@ -537,16 +502,7 @@ function displayProducts() {
             <div style="grid-column: 1/-1; text-align: center; padding: 80px 20px;">
                 <i class="fas fa-box-open" style="font-size: 80px; color: var(--gold); margin-bottom: 20px;"></i>
                 <h3 style="color: var(--gold); font-size: 28px; margin-bottom: 15px;">لا توجد منتجات</h3>
-                <p style="color: var(--text-secondary); font-size: 18px; margin-bottom: 30px;">لم تقم بإضافة أي منتجات بعد</p>
-                ${currentUser ? `
-                    <button class="btn-gold" onclick="showAddProductModal()" style="font-size: 18px; padding: 15px 40px;">
-                        <i class="fas fa-plus"></i> إضافة منتج جديد
-                    </button>
-                ` : `
-                    <button class="btn-gold" onclick="openLoginModal()" style="font-size: 18px; padding: 15px 40px;">
-                        <i class="fas fa-sign-in-alt"></i> تسجيل الدخول للإضافة
-                    </button>
-                `}
+                <p style="color: var(--text-secondary); font-size: 18px; margin-bottom: 30px;">لم يتم العثور على منتجات</p>
             </div>
         `;
         return;
@@ -562,7 +518,7 @@ function displayProducts() {
 
         const slides = images.map((img, idx) => `
             <div class="swiper-slide">
-                <img src="${img}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300/2c5e4f/ffffff?text=صورة+غير+متوفرة'; this.onerror=null;">
+                <img src="${img}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300/2c5e4f/ffffff?text=صورة+غير+متوفرة';">
             </div>
         `).join('');
 
@@ -624,10 +580,10 @@ function displayProducts() {
                     <div class="product-stock ${stockClass}">${stockText}</div>
                     
                     <div class="product-actions">
-                        <button class="add-to-cart" onclick="addToCart(${product.id})" ${product.stock <= 0 ? 'disabled' : ''}>
+                        <button class="add-to-cart" onclick="addToCart('${product.id}')" ${product.stock <= 0 ? 'disabled' : ''}>
                             <i class="fas fa-shopping-cart"></i> أضف للسلة
                         </button>
-                        <button class="wishlist-btn" onclick="viewProductDetails(${product.id})">
+                        <button class="wishlist-btn" onclick="viewProductDetails('${product.id}')">
                             <i class="fas fa-eye"></i>
                         </button>
                     </div>
@@ -636,11 +592,16 @@ function displayProducts() {
         `;
     }).join('');
 
+    // تهيئة Swiper
     setTimeout(() => {
         filtered.forEach(product => {
-            if (document.querySelector(`.product-swiper-${product.id}`)) {
+            const swiperEl = document.querySelector(`.product-swiper-${product.id}`);
+            if (swiperEl && !swiperEl.swiper) {
                 new Swiper(`.product-swiper-${product.id}`, {
-                    pagination: { el: '.swiper-pagination', clickable: true },
+                    pagination: { 
+                        el: '.swiper-pagination', 
+                        clickable: true 
+                    },
                     navigation: {
                         nextEl: '.swiper-button-next',
                         prevEl: '.swiper-button-prev',
@@ -654,70 +615,25 @@ function displayProducts() {
             }
         });
     }, 200);
-
-    analyticsManager.trackPageView('products');
-}
-
-function getCategoryName(category) {
-    const names = {
-        'promo': 'برموسيو',
-        'spices': 'توابل',
-        'cosmetic': 'كوسمتيك',
-        'other': 'منتوجات أخرى'
-    };
-    return names[category] || 'أخرى';
 }
 
 function filterProducts(category) {
     currentFilter = category;
     
-    document.querySelectorAll('.nav-link, .category-btn').forEach(el => {
+    document.querySelectorAll('.nav-link').forEach(el => {
         el.classList.remove('active');
     });
     
-    document.querySelectorAll(`[onclick*="'${category}'"]`).forEach(el => {
-        el.classList.add('active');
-    });
-    
+    event.currentTarget.classList.add('active');
     displayProducts();
 }
 
 function searchProducts() {
     searchTerm = document.getElementById('searchInput').value;
     displayProducts();
-    analyticsManager.trackEvent('search', { searchTerm });
-    
-    const searchBox = document.querySelector('.search-box');
-    searchBox.style.animation = 'pulse 0.5s';
-    setTimeout(() => {
-        searchBox.style.animation = '';
-    }, 500);
-    
-    showSearchIndicator(searchTerm);
 }
 
-function showSearchIndicator(term) {
-    if (!term) return;
-    
-    const searchWrapper = document.querySelector('.search-wrapper');
-    let indicator = document.querySelector('.search-indicator');
-    
-    if (!indicator) {
-        indicator = document.createElement('div');
-        indicator.className = 'search-indicator';
-        searchWrapper.appendChild(indicator);
-    }
-    
-    indicator.innerHTML = `🔍 جاري البحث عن: "${term}"`;
-    
-    setTimeout(() => {
-        if (indicator) {
-            indicator.remove();
-        }
-    }, 3000);
-}
-
-// ========== 13. إدارة السلة (كاملة) ==========
+// ========== 13. إدارة السلة ==========
 function loadCart() {
     const saved = localStorage.getItem('nardoo_cart');
     cart = saved ? JSON.parse(saved) : [];
@@ -731,7 +647,7 @@ function saveCart() {
 function updateCartCounter() {
     const count = cart.reduce((sum, item) => sum + item.quantity, 0);
     document.getElementById('cartCounter').textContent = count;
-    updateFixedCartCounter();
+    document.getElementById('fixedCartCounter').textContent = count;
 }
 
 function addToCart(productId) {
@@ -764,12 +680,6 @@ function addToCart(productId) {
     updateCartDisplay();
     showAdvancedNotification('تمت الإضافة إلى السلة', 'success', 'تم بنجاح');
     analyticsManager.trackEvent('addToCart', { productId });
-    
-    const fixedCart = document.getElementById('fixedCart');
-    fixedCart.style.animation = 'shake 0.5s';
-    setTimeout(() => {
-        fixedCart.style.animation = 'pulse 2s infinite';
-    }, 500);
 }
 
 function toggleCart() {
@@ -800,10 +710,10 @@ function updateCartDisplay() {
                     <div class="cart-item-title">${item.name}</div>
                     <div class="cart-item-price">${item.price.toLocaleString()} دج</div>
                     <div class="cart-item-quantity">
-                        <button class="quantity-btn" onclick="updateCartItem(${item.productId}, ${item.quantity - 1})">-</button>
+                        <button class="quantity-btn" onclick="updateCartItem('${item.productId}', ${item.quantity - 1})">-</button>
                         <span>${item.quantity}</span>
-                        <button class="quantity-btn" onclick="updateCartItem(${item.productId}, ${item.quantity + 1})">+</button>
-                        <button class="quantity-btn" onclick="removeFromCart(${item.productId})" style="background: #f87171; color: white;">
+                        <button class="quantity-btn" onclick="updateCartItem('${item.productId}', ${item.quantity + 1})">+</button>
+                        <button class="quantity-btn" onclick="removeFromCart('${item.productId}')" style="background: #f87171; color: white;">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -871,79 +781,34 @@ function checkoutCart() {
     saveCart();
     updateCartCounter();
     toggleCart();
-
-    showAdvancedNotification('تم إرسال الطلب عبر واتساب بنجاح', 'success', 'طلب جديد');
-    analyticsManager.trackEvent('checkout', { orderId: order.id });
+    showAdvancedNotification('تم إرسال الطلب عبر واتساب', 'success', 'طلب جديد');
 }
 
 // ========== 14. دوال التمرير ==========
 function scrollToTop() {
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function scrollToBottom() {
-    window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: 'smooth'
-    });
-}
-
-function scrollToElement(elementId) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        element.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
-    }
+    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
 }
 
 function toggleQuickTopButton() {
-    const quickTopBtn = document.getElementById('quickTopBtn');
-    if (!quickTopBtn) return;
-    
-    if (window.scrollY > 300) {
-        quickTopBtn.classList.add('show');
-    } else {
-        quickTopBtn.classList.remove('show');
+    const btn = document.getElementById('quickTopBtn');
+    if (btn) {
+        if (window.scrollY > 300) {
+            btn.classList.add('show');
+        } else {
+            btn.classList.remove('show');
+        }
     }
-}
-
-function updateFixedCartCounter() {
-    const fixedCounter = document.getElementById('fixedCartCounter');
-    if (fixedCounter) {
-        const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-        fixedCounter.textContent = count;
-    }
-}
-
-function addScrollAnimations() {
-    const elements = document.querySelectorAll('.product-card, .feature-card, .marquee-item');
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('fade-in-up');
-            }
-        });
-    }, { threshold: 0.1 });
-    
-    elements.forEach(element => {
-        observer.observe(element);
-    });
 }
 
 // ========== 15. عداد تنازلي ==========
 function updateCountdown() {
-    const hoursElement = document.getElementById('hours');
-    const minutesElement = document.getElementById('minutes');
-    const secondsElement = document.getElementById('seconds');
-    const marqueeHours = document.getElementById('marqueeHours');
-    const marqueeMinutes = document.getElementById('marqueeMinutes');
-    const marqueeSeconds = document.getElementById('marqueeSeconds');
+    const hoursElement = document.getElementById('marqueeHours');
+    const minutesElement = document.getElementById('marqueeMinutes');
+    const secondsElement = document.getElementById('marqueeSeconds');
     
     if (!hoursElement || !minutesElement || !secondsElement) return;
     
@@ -951,7 +816,7 @@ function updateCountdown() {
     let minutes = 30;
     let seconds = 45;
     
-    const interval = setInterval(() => {
+    setInterval(() => {
         seconds--;
         
         if (seconds < 0) {
@@ -970,34 +835,13 @@ function updateCountdown() {
             }
         }
         
-        const displayValue = (num) => num.toString().padStart(2, '0');
-        
-        hoursElement.textContent = displayValue(hours);
-        minutesElement.textContent = displayValue(minutes);
-        secondsElement.textContent = displayValue(seconds);
-        
-        if (marqueeHours) marqueeHours.textContent = displayValue(hours);
-        if (marqueeMinutes) marqueeMinutes.textContent = displayValue(minutes);
-        if (marqueeSeconds) marqueeSeconds.textContent = displayValue(seconds);
-        
+        hoursElement.textContent = hours.toString().padStart(2, '0');
+        minutesElement.textContent = minutes.toString().padStart(2, '0');
+        secondsElement.textContent = seconds.toString().padStart(2, '0');
     }, 1000);
-    
-    return interval;
 }
 
-// ========== 16. أشرطة التقدم ==========
-function updateProgressBars() {
-    const progressFills = document.querySelectorAll('.progress-fill, .marquee-progress-fill');
-    
-    setInterval(() => {
-        progressFills.forEach(fill => {
-            const randomWidth = Math.floor(Math.random() * 50) + 50;
-            fill.style.width = randomWidth + '%';
-        });
-    }, 5000);
-}
-
-// ========== 17. عرض تفاصيل المنتج ==========
+// ========== 16. عرض تفاصيل المنتج ==========
 function viewProductDetails(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
@@ -1018,16 +862,6 @@ function viewProductDetails(productId) {
             <div>
                 <div style="display: grid; gap: 10px;">
                     ${images}
-                </div>
-                <div style="margin-top: 15px; display: flex; gap: 15px; justify-content: center;">
-                    <span class="product-time-badge" style="position: relative; top: 0; right: 0;">
-                        <i class="far fa-clock"></i> ${timeAgo}
-                    </span>
-                    ${product.merchantId ? `
-                        <span class="merchant-badge" style="position: relative; top: 0; left: 0;">
-                            <i class="fas fa-store"></i> ${merchant?.name || 'تاجر'}
-                        </span>
-                    ` : ''}
                 </div>
             </div>
             <div>
@@ -1053,7 +887,7 @@ function viewProductDetails(productId) {
                     </span>
                 </div>
                 <div style="display: flex; gap: 15px;">
-                    <button class="btn-gold" style="flex: 2;" onclick="addToCart(${product.id}); closeModal('productDetailModal')">
+                    <button class="btn-gold" style="flex: 2;" onclick="addToCart('${product.id}'); closeModal('productDetailModal')">
                         <i class="fas fa-shopping-cart"></i> أضف للسلة
                     </button>
                     <button class="btn-outline-gold" style="flex: 1;" onclick="closeModal('productDetailModal')">
@@ -1067,25 +901,13 @@ function viewProductDetails(productId) {
     modal.style.display = 'flex';
 }
 
-// ========== 18. إدارة المستخدمين (كاملة) ==========
-function loadUsers() {
-    const saved = localStorage.getItem('nardoo_users');
-    if (saved) {
-        return JSON.parse(saved);
-    }
-    return [
-        { id: 1, name: 'azer', email: 'azer@admin.com', password: '123456', role: 'admin' }
-    ];
-}
-
-let users = loadUsers();
-
-function saveUsers() {
-    localStorage.setItem('nardoo_users', JSON.stringify(users));
-}
-
+// ========== 17. إدارة المستخدمين ==========
 function openLoginModal() {
     document.getElementById('loginModal').style.display = 'flex';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
 }
 
 function switchAuthTab(tab) {
@@ -1123,12 +945,46 @@ function handleLogin() {
         closeModal('loginModal');
         
         updateUIBasedOnRole();
-        
         showAdvancedNotification(`مرحباً ${user.name}`, 'success', 'تسجيل دخول ناجح');
-        analyticsManager.trackEvent('login', { userId: user.id, role: user.role });
     } else {
         showAdvancedNotification('بيانات الدخول غير صحيحة', 'error', 'خطأ');
     }
+}
+
+function handleRegister() {
+    const name = document.getElementById('regName').value;
+    const email = document.getElementById('regEmail').value;
+    const password = document.getElementById('regPassword').value;
+    const isMerchant = document.getElementById('isMerchant').checked;
+
+    if (!name || !email || !password) {
+        showAdvancedNotification('الرجاء ملء جميع الحقول', 'error', 'خطأ');
+        return;
+    }
+
+    if (users.find(u => u.email === email)) {
+        showAdvancedNotification('البريد الإلكتروني مستخدم بالفعل', 'error', 'خطأ');
+        return;
+    }
+
+    const newUser = {
+        id: users.length + 1,
+        name,
+        email,
+        password,
+        role: isMerchant ? 'merchant_pending' : 'customer',
+        createdAt: new Date().toISOString()
+    };
+
+    if (isMerchant) {
+        newUser.merchantLevel = document.getElementById('merchantLevel').value;
+        newUser.merchantDesc = document.getElementById('merchantDesc').value;
+    }
+
+    users.push(newUser);
+    localStorage.setItem('nardoo_users', JSON.stringify(users));
+    showAdvancedNotification('تم التسجيل بنجاح', 'success', 'مرحباً بك');
+    switchAuthTab('login');
 }
 
 function updateUIBasedOnRole() {
@@ -1145,26 +1001,14 @@ function updateUIBasedOnRole() {
 
     if (currentUser.role === 'admin') {
         document.getElementById('dashboardBtn').style.display = 'flex';
-        document.getElementById('userBtn').innerHTML = '<i class="fas fa-crown"></i>';
-        
         document.querySelectorAll('.admin-only').forEach(el => {
             el.style.display = 'block';
         });
-        
-        showAdvancedNotification('مرحباً بك يا مدير - لديك صلاحيات كاملة', 'success', 'مدير');
     } 
     else if (currentUser.role === 'merchant_approved') {
         document.getElementById('dashboardBtn').style.display = 'none';
-        document.getElementById('userBtn').innerHTML = '<i class="fas fa-store"></i>';
-        
         addMerchantMenuButton();
         showMerchantPanel();
-        
-        showAdvancedNotification('مرحباً أيها التاجر - يمكنك إدارة منتجاتك فقط', 'info', 'تاجر');
-    } 
-    else {
-        document.getElementById('dashboardBtn').style.display = 'none';
-        document.getElementById('userBtn').innerHTML = '<i class="fas fa-user"></i>';
     }
 }
 
@@ -1184,7 +1028,7 @@ function viewMyProducts() {
     if (!currentUser || currentUser.role !== 'merchant_approved') return;
     currentFilter = 'my_products';
     
-    document.querySelectorAll('.nav-link, .category-btn').forEach(el => {
+    document.querySelectorAll('.nav-link').forEach(el => {
         el.classList.remove('active');
     });
     
@@ -1233,46 +1077,193 @@ function showMerchantPanel() {
     `;
 }
 
-function handleRegister() {
-    const name = document.getElementById('regName').value;
-    const email = document.getElementById('regEmail').value;
-    const password = document.getElementById('regPassword').value;
-    const isMerchant = document.getElementById('isMerchant').checked;
+// ========== 18. إدارة المنتجات للمدير والتجار ==========
+function showAddProductModal() {
+    if (!currentUser) {
+        showAdvancedNotification('يجب تسجيل الدخول أولاً', 'warning', 'تنبيه');
+        openLoginModal();
+        return;
+    }
 
-    if (!name || !email || !password) {
+    if (currentUser.role === 'merchant_approved') {
+        document.getElementById('modalTitle').textContent = 'إضافة منتج جديد (خاص بك)';
+        
+        const merchantSelect = document.getElementById('productMerchant');
+        merchantSelect.innerHTML = `<option value="${currentUser.id}">${currentUser.name}</option>`;
+        merchantSelect.disabled = true;
+    } 
+    else if (currentUser.role === 'admin') {
+        document.getElementById('modalTitle').textContent = 'إضافة منتج جديد';
+        
+        const merchantSelect = document.getElementById('productMerchant');
+        merchantSelect.innerHTML = '<option value="">منتج عام</option>';
+        users.filter(u => u.role === 'merchant_approved').forEach(m => {
+            merchantSelect.innerHTML += `<option value="${m.id}">${m.name}</option>`;
+        });
+        merchantSelect.disabled = false;
+    } 
+    else {
+        showAdvancedNotification('فقط المدير والتجار يمكنهم إضافة منتجات', 'error', 'خطأ');
+        return;
+    }
+    
+    document.getElementById('productName').value = '';
+    document.getElementById('productCategory').value = '';
+    document.getElementById('productPrice').value = '';
+    document.getElementById('productStock').value = '';
+    document.getElementById('editingProductId').value = '';
+    document.getElementById('imagePreview').innerHTML = '';
+    document.getElementById('productImagesData').value = '';
+
+    document.getElementById('productModal').style.display = 'flex';
+}
+
+function handleImageUpload(event) {
+    const files = event.target.files;
+    const preview = document.getElementById('imagePreview');
+    const imagesData = [];
+
+    preview.innerHTML = '';
+
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            preview.innerHTML += `<img src="${e.target.result}" class="preview-image">`;
+            imagesData.push(e.target.result);
+            document.getElementById('productImagesData').value = JSON.stringify(imagesData);
+        };
+
+        reader.readAsDataURL(file);
+    }
+}
+
+async function saveProduct() {
+    if (!currentUser) {
+        showAdvancedNotification('يجب تسجيل الدخول أولاً', 'error', 'خطأ');
+        return;
+    }
+
+    const name = document.getElementById('productName').value;
+    const category = document.getElementById('productCategory').value;
+    const price = parseInt(document.getElementById('productPrice').value);
+    const stock = parseInt(document.getElementById('productStock').value);
+    const editingId = document.getElementById('editingProductId').value;
+    const imagesData = document.getElementById('productImagesData').value;
+
+    if (!name || !category || !price || !stock) {
         showAdvancedNotification('الرجاء ملء جميع الحقول', 'error', 'خطأ');
         return;
     }
 
-    if (users.find(u => u.email === email)) {
-        showAdvancedNotification('البريد الإلكتروني مستخدم بالفعل', 'error', 'خطأ');
+    let merchantId = null;
+    if (currentUser.role === 'merchant_approved') {
+        merchantId = currentUser.id;
+    } else if (currentUser.role === 'admin') {
+        merchantId = document.getElementById('productMerchant').value || null;
+    }
+
+    let images = [];
+    try {
+        images = imagesData ? JSON.parse(imagesData) : [];
+    } catch(e) {
+        images = [];
+    }
+
+    if (images.length === 0) {
+        images = ["https://via.placeholder.com/300/2c5e4f/ffffff?text=نكهة+وجمال"];
+    }
+
+    const productData = {
+        name: name,
+        category: category,
+        price: price,
+        stock: stock,
+        rating: 4.5,
+        images: images,
+        merchantId: merchantId,
+        soldCount: 0,
+        createdAt: new Date().toISOString(),
+        createdByName: currentUser.name,
+        createdById: currentUser.id
+    };
+
+    if (editingId) {
+        const index = products.findIndex(p => p.id === editingId);
+        if (index !== -1) {
+            products[index] = { ...productData, id: editingId };
+            showAdvancedNotification('تم تعديل المنتج بنجاح', 'success', 'نجاح');
+        }
+    } else {
+        const newProduct = {
+            id: Date.now().toString(),
+            ...productData
+        };
+        products.push(newProduct);
+        showAdvancedNotification('تم إضافة المنتج بنجاح', 'success', 'نجاح');
+    }
+
+    saveProducts();
+    displayProducts();
+    closeModal('productModal');
+    
+    if (currentUser.role === 'merchant_approved') {
+        showMerchantPanel();
+    }
+}
+
+function editProduct(id) {
+    const product = products.find(p => p.id === id);
+    if (!product) return;
+
+    document.getElementById('modalTitle').textContent = 'تعديل المنتج';
+    document.getElementById('productName').value = product.name;
+    document.getElementById('productCategory').value = product.category;
+    document.getElementById('productPrice').value = product.price;
+    document.getElementById('productStock').value = product.stock;
+    document.getElementById('editingProductId').value = id;
+
+    const preview = document.getElementById('imagePreview');
+    preview.innerHTML = '';
+    if (product.images) {
+        product.images.forEach(img => {
+            preview.innerHTML += `<img src="${img}" class="preview-image">`;
+        });
+    }
+
+    document.getElementById('productModal').style.display = 'flex';
+}
+
+function deleteProduct(id) {
+    if (!currentUser) {
+        showAdvancedNotification('يجب تسجيل الدخول أولاً', 'error', 'خطأ');
         return;
     }
 
-    const newUser = {
-        id: users.length + 1,
-        name,
-        email,
-        password,
-        role: isMerchant ? 'merchant_pending' : 'customer',
-        createdAt: new Date().toISOString()
-    };
-
-    if (isMerchant) {
-        newUser.merchantLevel = document.getElementById('merchantLevel').value;
-        newUser.merchantDesc = document.getElementById('merchantDesc').value;
+    const product = products.find(p => p.id === id);
+    
+    if (currentUser.role === 'merchant_approved' && product.merchantId !== currentUser.id) {
+        showAdvancedNotification('لا يمكنك حذف منتجات الآخرين', 'error', 'خطأ');
+        return;
     }
-
-    users.push(newUser);
-    saveUsers();
-    showAdvancedNotification('تم التسجيل بنجاح' + (isMerchant ? '، طلبك قيد المراجعة' : ''), 'success', 'مرحباً بك');
-    switchAuthTab('login');
+    
+    if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
+        products = products.filter(p => p.id !== id);
+        saveProducts();
+        displayProducts();
+        showAdvancedNotification('تم حذف المنتج', 'info', 'تم');
+        
+        if (currentUser.role === 'merchant_approved') {
+            showMerchantPanel();
+        }
+    }
 }
 
-// ========== 19. لوحة التحكم (كاملة) ==========
+// ========== 19. لوحة التحكم ==========
 function openDashboard() {
     if (!currentUser || currentUser.role !== 'admin') {
-        showAdvancedNotification('غير مصرح لك بالدخول - هذه الصفحة للمدير فقط', 'error', 'خطأ');
+        showAdvancedNotification('غير مصرح لك بالدخول', 'error', 'خطأ');
         return;
     }
 
@@ -1310,10 +1301,7 @@ function switchDashboardTab(tab) {
 }
 
 function showDashboardOverview(container) {
-    if (!currentUser || currentUser.role !== 'admin') return;
-    
     const orderStats = orderManager.getOrderStatistics();
-    const whatsappStats = whatsappManager.getSalesStatistics();
     const analytics = analyticsManager.generateComprehensiveReport();
 
     container.innerHTML = `
@@ -1342,10 +1330,6 @@ function showDashboardOverview(container) {
             </div>
         </div>
 
-        <div class="chart-container">
-            <canvas id="ordersChart"></canvas>
-        </div>
-
         <h4 style="margin: 30px 0 20px; color: var(--gold);">الطلبات الأخيرة</h4>
         <div style="overflow-x: auto;">
             <table>
@@ -1366,7 +1350,7 @@ function showDashboardOverview(container) {
                             <td style="color: var(--gold); font-weight: 700;">${order.total.toLocaleString()} دج</td>
                             <td>
                                 <span style="background: ${order.status === 'delivered' ? '#4ade80' : order.status === 'cancelled' ? '#f87171' : '#fbbf24'}; 
-                                             color: ${order.status === 'delivered' ? '#000' : '#fff'}; 
+                                             color: #000; 
                                              padding: 5px 10px; border-radius: 20px; font-size: 12px;">
                                     ${orderManager.getStatusMessage(order.status)}
                                 </span>
@@ -1378,58 +1362,14 @@ function showDashboardOverview(container) {
             </table>
         </div>
     `;
-
-    setTimeout(() => {
-        const ctx = document.getElementById('ordersChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
-                datasets: [{
-                    label: 'الطلبات',
-                    data: [12, 19, 15, 25, 22, 30],
-                    borderColor: '#d4af37',
-                    backgroundColor: 'rgba(212, 175, 55, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        labels: { color: getComputedStyle(document.body).getPropertyValue('--text-primary') }
-                    }
-                },
-                scales: {
-                    y: {
-                        grid: { color: 'rgba(212, 175, 55, 0.1)' },
-                        ticks: { color: getComputedStyle(document.body).getPropertyValue('--text-secondary') }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: getComputedStyle(document.body).getPropertyValue('--text-secondary') }
-                    }
-                }
-            }
-        });
-    }, 100);
 }
 
 function showDashboardOrders(container) {
-    if (!currentUser || currentUser.role !== 'admin') return;
-    
     const orders = orderManager.orders;
 
     container.innerHTML = `
         <h3 style="margin-bottom: 30px; color: var(--gold);">إدارة الطلبات</h3>
         
-        <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-            <input type="text" class="form-control" id="orderSearch" placeholder="بحث برقم الطلب أو اسم العميل..." style="width: 300px;">
-            <button class="btn-gold" onclick="searchOrders()">بحث</button>
-        </div>
-
         <div style="overflow-x: auto;">
             <table>
                 <thead>
@@ -1439,7 +1379,6 @@ function showDashboardOrders(container) {
                         <th>المجموع</th>
                         <th>الحالة</th>
                         <th>طريقة الدفع</th>
-                        <th>الإجراءات</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1458,11 +1397,6 @@ function showDashboardOrders(container) {
                                 </select>
                             </td>
                             <td>${order.paymentMethod}</td>
-                            <td>
-                                <button class="btn-outline-gold" onclick="viewOrderDetails('${order.id}')" style="padding: 5px 10px;">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -1478,10 +1412,7 @@ function updateOrderStatus(orderId, status) {
 }
 
 function showDashboardAnalytics(container) {
-    if (!currentUser || currentUser.role !== 'admin') return;
-    
     const analytics = analyticsManager.generateComprehensiveReport();
-    const eventsByType = Object.entries(analytics.eventsByType).map(([type, count]) => ({ type, count }));
 
     container.innerHTML = `
         <h3 style="margin-bottom: 30px; color: var(--gold);">التحليلات والإحصائيات</h3>
@@ -1502,56 +1433,11 @@ function showDashboardAnalytics(container) {
                 <div class="stat-value">${analytics.visits.totalEvents}</div>
                 <div class="stat-label">إجمالي الأحداث</div>
             </div>
-            <div class="stat-card">
-                <i class="fas fa-percent"></i>
-                <div class="stat-value">${analytics.conversionRate}%</div>
-                <div class="stat-label">معدل التحويل</div>
-            </div>
-        </div>
-
-        <div class="chart-container">
-            <canvas id="eventsChart"></canvas>
         </div>
     `;
-
-    setTimeout(() => {
-        const ctx = document.getElementById('eventsChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: eventsByType.map(e => e.type),
-                datasets: [{
-                    label: 'عدد الأحداث',
-                    data: eventsByType.map(e => e.count),
-                    backgroundColor: '#d4af37',
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(212, 175, 55, 0.1)' },
-                        ticks: { color: getComputedStyle(document.body).getPropertyValue('--text-secondary') }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: getComputedStyle(document.body).getPropertyValue('--text-secondary') }
-                    }
-                }
-            }
-        });
-    }, 100);
 }
 
 function showDashboardProducts(container) {
-    if (!currentUser || currentUser.role !== 'admin') return;
-
     container.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
             <h3 style="color: var(--gold);">إدارة المنتجات</h3>
@@ -1568,38 +1454,33 @@ function showDashboardProducts(container) {
                         <th>القسم</th>
                         <th>السعر</th>
                         <th>الكمية</th>
-                        <th>التاجر</th>
                         <th>التقييم</th>
                         <th>الإجراءات</th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${products.map(product => {
-                        const merchant = users.find(u => u.id === product.merchantId);
-                        return `
-                            <tr>
-                                <td>${product.name}</td>
-                                <td>${getCategoryName(product.category)}</td>
-                                <td style="color: var(--gold); font-weight: 700;">${product.price.toLocaleString()} دج</td>
-                                <td>
-                                    <span class="${product.stock <= 0 ? 'out-of-stock' : product.stock < 5 ? 'low-stock' : 'in-stock'}" 
-                                          style="padding: 3px 10px; border-radius: 20px; font-size: 12px;">
-                                        ${product.stock}
-                                    </span>
-                                </td>
-                                <td>${merchant ? merchant.name : 'منتج عام'}</td>
-                                <td>${product.rating} ⭐</td>
-                                <td>
-                                    <button class="btn-outline-gold" onclick="editProduct(${product.id})" style="padding: 5px 10px; margin-left: 5px;">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn-outline-gold" onclick="deleteProduct(${product.id})" style="padding: 5px 10px; background: #f87171; color: white;">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('')}
+                    ${products.map(product => `
+                        <tr>
+                            <td>${product.name}</td>
+                            <td>${getCategoryName(product.category)}</td>
+                            <td style="color: var(--gold); font-weight: 700;">${product.price.toLocaleString()} دج</td>
+                            <td>
+                                <span class="${product.stock <= 0 ? 'out-of-stock' : product.stock < 5 ? 'low-stock' : 'in-stock'}" 
+                                      style="padding: 3px 10px; border-radius: 20px; font-size: 12px;">
+                                    ${product.stock}
+                                </span>
+                            </td>
+                            <td>${product.rating || 4.5} ⭐</td>
+                            <td>
+                                <button class="btn-outline-gold" onclick="editProduct('${product.id}')" style="padding: 5px 10px; margin-left: 5px;">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-outline-gold" onclick="deleteProduct('${product.id}')" style="padding: 5px 10px; background: #f87171; color: white;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('')}
                 </tbody>
             </table>
         </div>
@@ -1607,8 +1488,6 @@ function showDashboardProducts(container) {
 }
 
 function showDashboardMerchants(container) {
-    if (!currentUser || currentUser.role !== 'admin') return;
-    
     const pendingMerchants = users.filter(u => u.role === 'merchant_pending');
     const approvedMerchants = users.filter(u => u.role === 'merchant_approved');
 
@@ -1622,7 +1501,6 @@ function showDashboardMerchants(container) {
                     <div>
                         <h5 style="color: var(--gold);">${merchant.name}</h5>
                         <p><i class="fas fa-envelope" style="color: var(--gold);"></i> ${merchant.email}</p>
-                        <p><i class="fas fa-store" style="color: var(--gold);"></i> المستوى: ${merchant.merchantLevel} | ${merchant.merchantDesc}</p>
                     </div>
                     <div>
                         <button class="btn-gold" onclick="approveMerchant(${merchant.id})" style="margin-left: 10px;">
@@ -1643,7 +1521,6 @@ function showDashboardMerchants(container) {
                     <div>
                         <h5 style="color: var(--gold);">${merchant.name} <i class="fas fa-check-circle" style="color: #4ade80;"></i></h5>
                         <p><i class="fas fa-envelope" style="color: var(--gold);"></i> ${merchant.email}</p>
-                        <p><i class="fas fa-store" style="color: var(--gold);"></i> المستوى: ${merchant.merchantLevel}</p>
                     </div>
                 </div>
             </div>
@@ -1657,7 +1534,7 @@ function approveMerchant(userId) {
     const user = users.find(u => u.id === userId);
     if (user) {
         user.role = 'merchant_approved';
-        saveUsers();
+        localStorage.setItem('nardoo_users', JSON.stringify(users));
         showAdvancedNotification('تمت الموافقة على التاجر', 'success', 'نجاح');
         openDashboard();
         switchDashboardTab('merchants');
@@ -1670,335 +1547,14 @@ function rejectMerchant(userId) {
     const user = users.find(u => u.id === userId);
     if (user) {
         user.role = 'customer';
-        saveUsers();
+        localStorage.setItem('nardoo_users', JSON.stringify(users));
         showAdvancedNotification('تم رفض طلب التاجر', 'info', 'تم');
         openDashboard();
         switchDashboardTab('merchants');
     }
 }
 
-// ========== 20. إدارة المنتجات (إضافة، تعديل، حذف) مع Firebase ==========
-async function saveProductToFirebase(product) {
-    try {
-        const docRef = await db.collection("products").add(product);
-        console.log('تم حفظ المنتج في Firebase:', docRef.id);
-        return docRef.id;
-    } catch (error) {
-        console.error('خطأ في حفظ المنتج في Firebase:', error);
-        return null;
-    }
-}
-
-async function updateProductInFirebase(productId, productData) {
-    try {
-        await db.collection("products").doc(productId).update(productData);
-        console.log('تم تحديث المنتج في Firebase:', productId);
-        return true;
-    } catch (error) {
-        console.error('خطأ في تحديث المنتج:', error);
-        return false;
-    }
-}
-
-async function deleteProductFromFirebase(productId) {
-    try {
-        await db.collection("products").doc(productId).delete();
-        console.log('تم حذف المنتج من Firebase:', productId);
-        return true;
-    } catch (error) {
-        console.error('خطأ في حذف المنتج:', error);
-        return false;
-    }
-}
-
-function showAddProductModal() {
-    console.log('فتح نافذة إضافة منتج');
-    console.log('المستخدم الحالي:', currentUser);
-    
-    if (!currentUser) {
-        showAdvancedNotification('يجب تسجيل الدخول أولاً', 'warning', 'تنبيه');
-        openLoginModal();
-        return;
-    }
-
-    if (currentUser.role === 'merchant_approved') {
-        document.getElementById('modalTitle').textContent = 'إضافة منتج جديد (خاص بك)';
-        
-        const merchantSelect = document.getElementById('productMerchant');
-        merchantSelect.innerHTML = `<option value="${currentUser.id}">${currentUser.name}</option>`;
-        merchantSelect.disabled = true;
-        
-        showAdvancedNotification('يمكنك إضافة منتج خاص بك فقط', 'info', 'تاجر');
-    } 
-    else if (currentUser.role === 'admin') {
-        document.getElementById('modalTitle').textContent = 'إضافة منتج جديد';
-        
-        const merchantSelect = document.getElementById('productMerchant');
-        merchantSelect.innerHTML = '<option value="">منتج عام</option>';
-        users.filter(u => u.role === 'merchant_approved').forEach(m => {
-            merchantSelect.innerHTML += `<option value="${m.id}">${m.name} (مستوى ${m.merchantLevel})</option>`;
-        });
-        merchantSelect.disabled = false;
-    } 
-    else {
-        showAdvancedNotification('فقط المدير والتجار يمكنهم إضافة منتجات', 'error', 'خطأ');
-        return;
-    }
-    
-    document.getElementById('productName').value = '';
-    document.getElementById('productCategory').value = '';
-    document.getElementById('productPrice').value = '';
-    document.getElementById('productStock').value = '';
-    document.getElementById('editingProductId').value = '';
-    document.getElementById('imagePreview').innerHTML = '';
-    document.getElementById('productImagesData').value = '';
-
-    document.getElementById('productModal').style.display = 'flex';
-    console.log('تم فتح النافذة بنجاح');
-}
-
-function handleImageUpload(event) {
-    console.log('رفع الصور:', event.target.files);
-    const files = event.target.files;
-    const preview = document.getElementById('imagePreview');
-    const imagesData = [];
-
-    preview.innerHTML = '';
-
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-            preview.innerHTML += `<img src="${e.target.result}" class="preview-image">`;
-            imagesData.push(e.target.result);
-            document.getElementById('productImagesData').value = JSON.stringify(imagesData);
-            console.log('تمت إضافة صورة:', i+1);
-        };
-
-        reader.readAsDataURL(file);
-    }
-}
-
-async function saveProduct() {
-    console.log('بدء حفظ المنتج');
-    
-    if (!currentUser) {
-        showAdvancedNotification('يجب تسجيل الدخول أولاً', 'error', 'خطأ');
-        return;
-    }
-
-    const name = document.getElementById('productName').value;
-    const category = document.getElementById('productCategory').value;
-    const price = parseInt(document.getElementById('productPrice').value);
-    const stock = parseInt(document.getElementById('productStock').value);
-    const editingId = document.getElementById('editingProductId').value;
-    const imagesData = document.getElementById('productImagesData').value;
-
-    console.log('بيانات المنتج:', { name, category, price, stock, editingId });
-
-    if (!name || !category || !price || !stock) {
-        showAdvancedNotification('الرجاء ملء جميع الحقول', 'error', 'خطأ');
-        return;
-    }
-
-    if (price <= 0 || stock < 0) {
-        showAdvancedNotification('السعر والكمية يجب أن تكون أرقام صحيحة', 'error', 'خطأ');
-        return;
-    }
-
-    let merchantId = null;
-    if (currentUser.role === 'merchant_approved') {
-        merchantId = currentUser.id;
-    } else if (currentUser.role === 'admin') {
-        merchantId = document.getElementById('productMerchant').value || null;
-    }
-
-    let images = [];
-    try {
-        images = imagesData ? JSON.parse(imagesData) : [];
-    } catch(e) {
-        console.log('خطأ في قراءة الصور:', e);
-        images = [];
-    }
-
-    if (images.length === 0) {
-        images = ["https://via.placeholder.com/300/2c5e4f/ffffff?text=نكهة+وجمال"];
-    }
-
-    const productData = {
-        name: name,
-        category: category,
-        price: price,
-        stock: stock,
-        rating: 4.5,
-        images: images,
-        merchantId: merchantId,
-        soldCount: 0,
-        createdAt: new Date().toISOString(),
-        createdByName: currentUser.name,
-        createdById: currentUser.id
-    };
-
-    if (editingId) {
-        const product = products.find(p => p.id === editingId);
-        if (product) {
-            if (currentUser.role === 'merchant_approved' && product.merchantId !== currentUser.id) {
-                showAdvancedNotification('لا يمكنك تعديل منتجات الآخرين', 'error', 'خطأ');
-                return;
-            }
-            
-            const success = await updateProductInFirebase(editingId, productData);
-            if (success) {
-                const index = products.findIndex(p => p.id === editingId);
-                if (index !== -1) {
-                    products[index] = { ...productData, id: editingId };
-                }
-                showAdvancedNotification('تم تعديل المنتج بنجاح', 'success', 'نجاح');
-            }
-        }
-    } else {
-        const firebaseId = await saveProductToFirebase(productData);
-        if (firebaseId) {
-            products.push({
-                id: firebaseId,
-                ...productData
-            });
-            showAdvancedNotification('تم إضافة المنتج بنجاح', 'success', 'نجاح');
-        } else {
-            showAdvancedNotification('فشل حفظ المنتج في Firebase', 'error', 'خطأ');
-        }
-    }
-
-    saveProducts();
-    displayProducts();
-    closeModal('productModal');
-    
-    if (currentUser.role === 'merchant_approved') {
-        showMerchantPanel();
-    }
-    
-    analyticsManager.trackEvent('productAdded', { name, merchantId });
-}
-
-async function editProduct(id) {
-    if (!currentUser) {
-        showAdvancedNotification('يجب تسجيل الدخول أولاً', 'error', 'خطأ');
-        return;
-    }
-
-    const product = products.find(p => p.id === id);
-    if (!product) return;
-
-    if (currentUser.role === 'merchant_approved' && product.merchantId !== currentUser.id) {
-        showAdvancedNotification('لا يمكنك تعديل منتجات الآخرين', 'error', 'خطأ');
-        return;
-    }
-
-    document.getElementById('modalTitle').textContent = 'تعديل المنتج';
-    document.getElementById('productName').value = product.name;
-    document.getElementById('productCategory').value = product.category;
-    document.getElementById('productPrice').value = product.price;
-    document.getElementById('productStock').value = product.stock;
-    document.getElementById('editingProductId').value = id;
-
-    const merchantSelect = document.getElementById('productMerchant');
-    if (currentUser.role === 'merchant_approved') {
-        merchantSelect.innerHTML = `<option value="${currentUser.id}">${currentUser.name}</option>`;
-        merchantSelect.disabled = true;
-    } else if (currentUser.role === 'admin') {
-        merchantSelect.innerHTML = '<option value="">منتج عام</option>';
-        users.filter(u => u.role === 'merchant_approved').forEach(m => {
-            merchantSelect.innerHTML += `<option value="${m.id}" ${product.merchantId === m.id ? 'selected' : ''}>${m.name}</option>`;
-        });
-        merchantSelect.disabled = false;
-    }
-
-    const preview = document.getElementById('imagePreview');
-    preview.innerHTML = '';
-    if (product.images) {
-        product.images.forEach(img => {
-            preview.innerHTML += `<img src="${img}" class="preview-image">`;
-        });
-    }
-
-    document.getElementById('productModal').style.display = 'flex';
-}
-
-async function deleteProduct(id) {
-    if (!currentUser) {
-        showAdvancedNotification('يجب تسجيل الدخول أولاً', 'error', 'خطأ');
-        return;
-    }
-
-    const product = products.find(p => p.id === id);
-    
-    if (currentUser.role === 'merchant_approved' && product.merchantId !== currentUser.id) {
-        showAdvancedNotification('لا يمكنك حذف منتجات الآخرين', 'error', 'خطأ');
-        return;
-    }
-    
-    if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
-        const success = await deleteProductFromFirebase(id);
-        if (success) {
-            products = products.filter(p => p.id !== id);
-            saveProducts();
-            displayProducts();
-            showAdvancedNotification('تم حذف المنتج', 'info', 'تم');
-            
-            if (currentUser.role === 'merchant_approved') {
-                showMerchantPanel();
-            }
-            
-            analyticsManager.trackEvent('productDeleted', { productId: id });
-        } else {
-            showAdvancedNotification('فشل حذف المنتج من Firebase', 'error', 'خطأ');
-        }
-    }
-}
-
-// ========== 21. نظام الإشعارات المتقدم ==========
-function showAdvancedNotification(message, type = 'info', title = '') {
-    let container = document.querySelector('.toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.className = 'toast-container';
-        document.body.appendChild(container);
-    }
-    
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    
-    const titles = {
-        success: 'نجاح',
-        error: 'خطأ',
-        warning: 'تنبيه',
-        info: 'معلومات'
-    };
-    
-    toast.innerHTML = `
-        <div class="toast-icon ${type}">
-            <i class="fas ${type === 'success' ? 'fa-check' : type === 'error' ? 'fa-times' : type === 'warning' ? 'fa-exclamation' : 'fa-info'}"></i>
-        </div>
-        <div class="toast-content">
-            <div class="toast-title">${title || titles[type]}</div>
-            <div class="toast-message">${message}</div>
-        </div>
-        <div class="toast-close" onclick="this.parentElement.remove()">
-            <i class="fas fa-times"></i>
-        </div>
-    `;
-    
-    container.appendChild(toast);
-    
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.remove();
-        }
-    }, 3000);
-}
-
-// ========== 22. تأثيرات الكتابة ==========
+// ========== 20. تأثيرات متقدمة ==========
 class TypingAnimation {
     constructor(element, texts, speed = 100, delay = 2000) {
         this.element = element;
@@ -2023,7 +1579,7 @@ class TypingAnimation {
             this.text = current.substring(0, this.text.length + 1);
         }
 
-        this.element.innerHTML = this.text;
+        this.element.innerHTML = this.text + '<span class="typing-cursor">|</span>';
 
         let typeSpeed = this.speed;
 
@@ -2044,46 +1600,9 @@ class TypingAnimation {
     }
 }
 
-// ========== 23. نظام المقارنة ==========
-class ProductComparator {
-    constructor() {
-        this.compareList = JSON.parse(localStorage.getItem('compare_list')) || [];
-    }
-
-    addToCompare(product) {
-        if (this.compareList.length >= 4) {
-            showAdvancedNotification('لا يمكن مقارنة أكثر من 4 منتجات', 'warning', 'تنبيه');
-            return false;
-        }
-        
-        if (!this.compareList.find(p => p.id === product.id)) {
-            this.compareList.push(product);
-            localStorage.setItem('compare_list', JSON.stringify(this.compareList));
-            showAdvancedNotification('تمت الإضافة للمقارنة', 'success', 'نجاح');
-            return true;
-        }
-        return false;
-    }
-
-    removeFromCompare(productId) {
-        this.compareList = this.compareList.filter(p => p.id !== productId);
-        localStorage.setItem('compare_list', JSON.stringify(this.compareList));
-    }
-
-    getCompareList() {
-        return this.compareList;
-    }
-
-    clearCompare() {
-        this.compareList = [];
-        localStorage.setItem('compare_list', JSON.stringify(this.compareList));
-    }
-}
-
-const comparator = new ProductComparator();
-
-// ========== 24. تأثيرات الماوس ==========
 function initMouseEffects() {
+    if (window.innerWidth <= 768) return;
+    
     const cursor = document.createElement('div');
     cursor.className = 'mouse-effect';
     
@@ -2104,7 +1623,6 @@ function initMouseEffects() {
     });
 }
 
-// ========== 25. شريط تقدم التمرير ==========
 function initScrollProgress() {
     const progressBar = document.createElement('div');
     progressBar.className = 'scroll-progress';
@@ -2118,13 +1636,12 @@ function initScrollProgress() {
     });
 }
 
-// ========== 26. جسيمات متحركة ==========
 function initParticles() {
     const particlesContainer = document.createElement('div');
     particlesContainer.className = 'particles';
     document.body.appendChild(particlesContainer);
     
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 30; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
         particle.style.left = Math.random() * 100 + '%';
@@ -2134,12 +1651,21 @@ function initParticles() {
     }
 }
 
-// ========== 27. دوال إضافية ==========
-function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
+function addScrollAnimations() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('fade-in-up');
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    document.querySelectorAll('.product-card').forEach(el => {
+        observer.observe(el);
+    });
 }
 
-// ========== 28. التهيئة (onload) ==========
+// ========== 21. التهيئة ==========
 window.onload = function() {
     loadProducts();
     loadCart();
@@ -2169,11 +1695,11 @@ window.onload = function() {
 
     analyticsManager.trackPageView('home');
     
-    updateFixedCartCounter();
     window.addEventListener('scroll', toggleQuickTopButton);
     addScrollAnimations();
     updateCountdown();
-    updateProgressBars();
+    
+    // تأثيرات متقدمة
     initMouseEffects();
     initScrollProgress();
     initParticles();
