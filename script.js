@@ -1,4 +1,4 @@
-// ========== 1. إعداد Firebase ==========
+// ========== النقطة 1: إعداد Firebase ==========
 const firebaseConfig = {
     apiKey: "AIzaSyCIaPIxbyrHk4QKQn4ku_SsO1DN_uODMPI",
     authDomain: "nardoo-store.firebaseapp.com",
@@ -16,7 +16,7 @@ const db = firebase.firestore();
 const storage = firebase.storage();
 const auth = firebase.auth();
 
-// ========== 2. النظام الأساسي ==========
+// ========== النقطة 2: النظام الأساسي والمتغيرات العامة ==========
 let products = [];
 let currentUser = null;
 let cart = [];
@@ -26,7 +26,7 @@ let searchTerm = '';
 let sortBy = 'newest';
 let users = [];
 
-// ========== 3. تحميل المستخدمين من localStorage ==========
+// ========== النقطة 3: تحميل المستخدمين من localStorage ==========
 function loadUsers() {
     const saved = localStorage.getItem('nardoo_users');
     if (saved) {
@@ -49,7 +49,7 @@ function loadUsers() {
 
 loadUsers();
 
-// ========== 4. نظام إدارة الطلبات ==========
+// ========== النقطة 4: نظام إدارة الطلبات ==========
 class OrderManagementSystem {
     constructor() {
         this.orders = this.loadOrders();
@@ -158,7 +158,7 @@ class OrderManagementSystem {
     }
 }
 
-// ========== 5. نظام الواتساب ==========
+// ========== النقطة 5: نظام الواتساب ==========
 class WhatsAppIntegration {
     constructor() {
         this.storePhone = '213562243648';
@@ -233,7 +233,7 @@ class WhatsAppIntegration {
     }
 }
 
-// ========== 6. نظام التحليلات ==========
+// ========== النقطة 6: نظام التحليلات ==========
 class AnalyticsSystem {
     constructor() {
         this.events = this.loadEvents();
@@ -306,12 +306,12 @@ class AnalyticsSystem {
     }
 }
 
-// ========== 7. إنشاء الكائنات ==========
+// ========== النقطة 7: إنشاء الكائنات ==========
 const orderManager = new OrderManagementSystem();
 const whatsappManager = new WhatsAppIntegration();
 const analyticsManager = new AnalyticsSystem();
 
-// ========== 8. دوال المساعدة ==========
+// ========== النقطة 8: دوال المساعدة والإشعارات ==========
 function showAdvancedNotification(message, type = 'info', title = '') {
     let container = document.querySelector('.toast-container');
     if (!container) {
@@ -362,7 +362,7 @@ function toggleTheme() {
     localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
 }
 
-// ========== 9. دوال التاريخ ==========
+// ========== النقطة 9: دوال التاريخ والوقت ==========
 function getSimpleTimeAgo(dateString) {
     if (!dateString) return '';
     
@@ -395,7 +395,7 @@ function getSimpleTimeAgo(dateString) {
     return `منذ ${years} ${years === 1 ? 'سنة' : 'سنوات'}`;
 }
 
-// ========== 10. دوال تقييم النجوم ==========
+// ========== النقطة 10: دوال تقييم النجوم ==========
 function generateStars(rating) {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
@@ -418,7 +418,7 @@ function generateStars(rating) {
     return starsHTML;
 }
 
-// ========== 11. دوال الفرز ==========
+// ========== النقطة 11: دوال الفرز ==========
 function sortProducts(productsArray) {
     switch(sortBy) {
         case 'newest':
@@ -439,7 +439,7 @@ function changeSort(value) {
     displayProducts();
 }
 
-// ========== 12. إدارة المنتجات مع Firebase ==========
+// ========== النقطة 12: إدارة المنتجات مع Firebase ==========
 async function loadProducts() {
     try {
         const querySnapshot = await db.collection("products").get();
@@ -598,10 +598,7 @@ function displayProducts() {
             const swiperEl = document.querySelector(`.product-swiper-${product.id}`);
             if (swiperEl && !swiperEl.swiper) {
                 new Swiper(`.product-swiper-${product.id}`, {
-                    pagination: { 
-                        el: '.swiper-pagination', 
-                        clickable: true 
-                    },
+                    pagination: { el: '.swiper-pagination', clickable: true },
                     navigation: {
                         nextEl: '.swiper-button-next',
                         prevEl: '.swiper-button-prev',
@@ -633,7 +630,7 @@ function searchProducts() {
     displayProducts();
 }
 
-// ========== 13. إدارة السلة ==========
+// ========== النقطة 13: إدارة السلة ==========
 function loadCart() {
     const saved = localStorage.getItem('nardoo_cart');
     cart = saved ? JSON.parse(saved) : [];
@@ -784,7 +781,7 @@ function checkoutCart() {
     showAdvancedNotification('تم إرسال الطلب عبر واتساب', 'success', 'طلب جديد');
 }
 
-// ========== 14. دوال التمرير ==========
+// ========== النقطة 14: دوال التمرير ==========
 function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -796,15 +793,11 @@ function scrollToBottom() {
 function toggleQuickTopButton() {
     const btn = document.getElementById('quickTopBtn');
     if (btn) {
-        if (window.scrollY > 300) {
-            btn.classList.add('show');
-        } else {
-            btn.classList.remove('show');
-        }
+        btn.classList.toggle('show', window.scrollY > 300);
     }
 }
 
-// ========== 15. عداد تنازلي ==========
+// ========== النقطة 15: عداد تنازلي ==========
 function updateCountdown() {
     const hoursElement = document.getElementById('marqueeHours');
     const minutesElement = document.getElementById('marqueeMinutes');
@@ -841,7 +834,7 @@ function updateCountdown() {
     }, 1000);
 }
 
-// ========== 16. عرض تفاصيل المنتج ==========
+// ========== النقطة 16: عرض تفاصيل المنتج ==========
 function viewProductDetails(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
@@ -854,26 +847,19 @@ function viewProductDetails(productId) {
     `).join('') || '<div style="height: 300px; background: var(--nardoo); display: flex; align-items: center; justify-content: center; border-radius: 20px;"><i class="fas fa-image" style="font-size: 80px; color: var(--gold);"></i></div>';
 
     const merchant = users.find(u => u.id === product.merchantId);
-    const timeAgo = getSimpleTimeAgo(product.createdAt);
 
     content.innerHTML = `
         <h2 style="text-align: center; margin-bottom: 20px; color: var(--gold);">${product.name}</h2>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-            <div>
-                <div style="display: grid; gap: 10px;">
-                    ${images}
-                </div>
-            </div>
+            <div><div style="display: grid; gap: 10px;">${images}</div></div>
             <div>
                 <div style="margin-bottom: 20px;">
                     <span style="background: var(--gold); padding: 5px 15px; border-radius: 20px; color: var(--bg-primary); font-weight: 700;">${getCategoryName(product.category)}</span>
                 </div>
-                <p style="margin-bottom: 20px; color: var(--text-secondary);">${product.description || 'منتج عالي الجودة من نكهة وجمال'}</p>
+                <p style="margin-bottom: 20px; color: var(--text-secondary;">${product.description || 'منتج عالي الجودة من نكهة وجمال'}</p>
                 
                 <div class="product-rating" style="margin-bottom: 20px;">
-                    <div class="stars-container">
-                        ${generateStars(product.rating || 4.5)}
-                    </div>
+                    <div class="stars-container">${generateStars(product.rating || 4.5)}</div>
                     <span class="rating-value">${(product.rating || 4.5).toFixed(1)}</span>
                 </div>
                 
@@ -890,9 +876,7 @@ function viewProductDetails(productId) {
                     <button class="btn-gold" style="flex: 2;" onclick="addToCart('${product.id}'); closeModal('productDetailModal')">
                         <i class="fas fa-shopping-cart"></i> أضف للسلة
                     </button>
-                    <button class="btn-outline-gold" style="flex: 1;" onclick="closeModal('productDetailModal')">
-                        إغلاق
-                    </button>
+                    <button class="btn-outline-gold" style="flex: 1;" onclick="closeModal('productDetailModal')">إغلاق</button>
                 </div>
             </div>
         </div>
@@ -901,7 +885,7 @@ function viewProductDetails(productId) {
     modal.style.display = 'flex';
 }
 
-// ========== 17. إدارة المستخدمين ==========
+// ========== النقطة 17: إدارة المستخدمين ==========
 function openLoginModal() {
     document.getElementById('loginModal').style.display = 'flex';
 }
@@ -987,6 +971,7 @@ function handleRegister() {
     switchAuthTab('login');
 }
 
+// ========== النقطة 18: تحديث واجهة المستخدم حسب الدور ==========
 function updateUIBasedOnRole() {
     if (!currentUser) return;
 
@@ -1047,37 +1032,21 @@ function showMerchantPanel() {
     
     panelContainer.innerHTML = `
         <div class="merchant-panel">
-            <h3>
-                <i class="fas fa-store"></i>
-                لوحة التاجر - ${currentUser.name}
-            </h3>
+            <h3><i class="fas fa-store"></i> لوحة التاجر - ${currentUser.name}</h3>
             <div class="stats">
-                <div class="stat-item">
-                    <div class="number">${merchantProducts.length}</div>
-                    <div>إجمالي المنتجات</div>
-                </div>
-                <div class="stat-item">
-                    <div class="number">${merchantProducts.filter(p => p.stock > 0).length}</div>
-                    <div>المنتجات المتاحة</div>
-                </div>
-                <div class="stat-item">
-                    <div class="number">${totalSales.toLocaleString()} دج</div>
-                    <div>إجمالي المبيعات</div>
-                </div>
+                <div class="stat-item"><div class="number">${merchantProducts.length}</div><div>إجمالي المنتجات</div></div>
+                <div class="stat-item"><div class="number">${merchantProducts.filter(p => p.stock > 0).length}</div><div>المنتجات المتاحة</div></div>
+                <div class="stat-item"><div class="number">${totalSales.toLocaleString()} دج</div><div>إجمالي المبيعات</div></div>
             </div>
             <div style="display: flex; gap: 15px; margin-top: 20px; justify-content: center;">
-                <button class="btn-gold" onclick="showAddProductModal()">
-                    <i class="fas fa-plus"></i> إضافة منتج جديد
-                </button>
-                <button class="btn-outline-gold" onclick="viewMyProducts()">
-                    <i class="fas fa-box"></i> عرض منتجاتي
-                </button>
+                <button class="btn-gold" onclick="showAddProductModal()"><i class="fas fa-plus"></i> إضافة منتج جديد</button>
+                <button class="btn-outline-gold" onclick="viewMyProducts()"><i class="fas fa-box"></i> عرض منتجاتي</button>
             </div>
         </div>
     `;
 }
 
-// ========== 18. إدارة المنتجات للمدير والتجار ==========
+// ========== النقطة 19: إدارة المنتجات للمدير والتجار ==========
 function showAddProductModal() {
     if (!currentUser) {
         showAdvancedNotification('يجب تسجيل الدخول أولاً', 'warning', 'تنبيه');
@@ -1087,14 +1056,12 @@ function showAddProductModal() {
 
     if (currentUser.role === 'merchant_approved') {
         document.getElementById('modalTitle').textContent = 'إضافة منتج جديد (خاص بك)';
-        
         const merchantSelect = document.getElementById('productMerchant');
         merchantSelect.innerHTML = `<option value="${currentUser.id}">${currentUser.name}</option>`;
         merchantSelect.disabled = true;
     } 
     else if (currentUser.role === 'admin') {
         document.getElementById('modalTitle').textContent = 'إضافة منتج جديد';
-        
         const merchantSelect = document.getElementById('productMerchant');
         merchantSelect.innerHTML = '<option value="">منتج عام</option>';
         users.filter(u => u.role === 'merchant_approved').forEach(m => {
@@ -1260,7 +1227,7 @@ function deleteProduct(id) {
     }
 }
 
-// ========== 19. لوحة التحكم ==========
+// ========== النقطة 20: لوحة التحكم ==========
 function openDashboard() {
     if (!currentUser || currentUser.role !== 'admin') {
         showAdvancedNotification('غير مصرح لك بالدخول', 'error', 'خطأ');
@@ -1282,21 +1249,11 @@ function switchDashboardTab(tab) {
     const content = document.getElementById('dashboardContent');
     
     switch(tab) {
-        case 'overview':
-            showDashboardOverview(content);
-            break;
-        case 'orders':
-            showDashboardOrders(content);
-            break;
-        case 'analytics':
-            showDashboardAnalytics(content);
-            break;
-        case 'products':
-            showDashboardProducts(content);
-            break;
-        case 'merchants':
-            showDashboardMerchants(content);
-            break;
+        case 'overview': showDashboardOverview(content); break;
+        case 'orders': showDashboardOrders(content); break;
+        case 'analytics': showDashboardAnalytics(content); break;
+        case 'products': showDashboardProducts(content); break;
+        case 'merchants': showDashboardMerchants(content); break;
     }
 }
 
@@ -1306,55 +1263,23 @@ function showDashboardOverview(container) {
 
     container.innerHTML = `
         <h3 style="margin-bottom: 30px; color: var(--gold);">نظرة عامة على المتجر</h3>
-        
         <div class="stats-grid">
-            <div class="stat-card">
-                <i class="fas fa-shopping-cart"></i>
-                <div class="stat-value">${orderStats.totalOrders}</div>
-                <div class="stat-label">إجمالي الطلبات</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-coins"></i>
-                <div class="stat-value">${orderStats.totalRevenue.toLocaleString()}</div>
-                <div class="stat-label">الإيرادات (دج)</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-chart-line"></i>
-                <div class="stat-value">${orderStats.averageOrderValue.toFixed(0)}</div>
-                <div class="stat-label">متوسط قيمة الطلب</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-percent"></i>
-                <div class="stat-value">${analytics.conversionRate}%</div>
-                <div class="stat-label">معدل التحويل</div>
-            </div>
+            <div class="stat-card"><i class="fas fa-shopping-cart"></i><div class="stat-value">${orderStats.totalOrders}</div><div class="stat-label">إجمالي الطلبات</div></div>
+            <div class="stat-card"><i class="fas fa-coins"></i><div class="stat-value">${orderStats.totalRevenue.toLocaleString()}</div><div class="stat-label">الإيرادات (دج)</div></div>
+            <div class="stat-card"><i class="fas fa-chart-line"></i><div class="stat-value">${orderStats.averageOrderValue.toFixed(0)}</div><div class="stat-label">متوسط قيمة الطلب</div></div>
+            <div class="stat-card"><i class="fas fa-percent"></i><div class="stat-value">${analytics.conversionRate}%</div><div class="stat-label">معدل التحويل</div></div>
         </div>
-
         <h4 style="margin: 30px 0 20px; color: var(--gold);">الطلبات الأخيرة</h4>
         <div style="overflow-x: auto;">
             <table>
-                <thead>
-                    <tr>
-                        <th>رقم الطلب</th>
-                        <th>العميل</th>
-                        <th>المجموع</th>
-                        <th>الحالة</th>
-                        <th>التاريخ</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>رقم الطلب</th><th>العميل</th><th>المجموع</th><th>الحالة</th><th>التاريخ</th></tr></thead>
                 <tbody>
                     ${orderStats.recentOrders.map(order => `
                         <tr>
                             <td>${order.id}</td>
                             <td>${order.customerName}</td>
                             <td style="color: var(--gold); font-weight: 700;">${order.total.toLocaleString()} دج</td>
-                            <td>
-                                <span style="background: ${order.status === 'delivered' ? '#4ade80' : order.status === 'cancelled' ? '#f87171' : '#fbbf24'}; 
-                                             color: #000; 
-                                             padding: 5px 10px; border-radius: 20px; font-size: 12px;">
-                                    ${orderManager.getStatusMessage(order.status)}
-                                </span>
-                            </td>
+                            <td><span style="background: ${order.status === 'delivered' ? '#4ade80' : order.status === 'cancelled' ? '#f87171' : '#fbbf24'}; color: #000; padding: 5px 10px; border-radius: 20px; font-size: 12px;">${orderManager.getStatusMessage(order.status)}</span></td>
                             <td>${new Date(order.createdAt).toLocaleDateString('ar-DZ')}</td>
                         </tr>
                     `).join('')}
@@ -1366,36 +1291,18 @@ function showDashboardOverview(container) {
 
 function showDashboardOrders(container) {
     const orders = orderManager.orders;
-
     container.innerHTML = `
         <h3 style="margin-bottom: 30px; color: var(--gold);">إدارة الطلبات</h3>
-        
         <div style="overflow-x: auto;">
             <table>
-                <thead>
-                    <tr>
-                        <th>رقم الطلب</th>
-                        <th>العميل</th>
-                        <th>المجموع</th>
-                        <th>الحالة</th>
-                        <th>طريقة الدفع</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>رقم الطلب</th><th>العميل</th><th>المجموع</th><th>الحالة</th><th>طريقة الدفع</th></tr></thead>
                 <tbody>
                     ${orders.map(order => `
                         <tr>
                             <td>${order.id}</td>
                             <td>${order.customerName}</td>
                             <td style="color: var(--gold); font-weight: 700;">${order.total.toLocaleString()} دج</td>
-                            <td>
-                                <select class="form-control" onchange="updateOrderStatus('${order.id}', this.value)" style="width: 140px;">
-                                    ${orderManager.orderStatuses.map(status => `
-                                        <option value="${status}" ${order.status === status ? 'selected' : ''}>
-                                            ${orderManager.getStatusMessage(status)}
-                                        </option>
-                                    `).join('')}
-                                </select>
-                            </td>
+                            <td><select class="form-control" onchange="updateOrderStatus('${order.id}', this.value)" style="width: 140px;">${orderManager.orderStatuses.map(status => `<option value="${status}" ${order.status === status ? 'selected' : ''}>${orderManager.getStatusMessage(status)}</option>`).join('')}</select></td>
                             <td>${order.paymentMethod}</td>
                         </tr>
                     `).join('')}
@@ -1413,26 +1320,12 @@ function updateOrderStatus(orderId, status) {
 
 function showDashboardAnalytics(container) {
     const analytics = analyticsManager.generateComprehensiveReport();
-
     container.innerHTML = `
         <h3 style="margin-bottom: 30px; color: var(--gold);">التحليلات والإحصائيات</h3>
-        
         <div class="stats-grid">
-            <div class="stat-card">
-                <i class="fas fa-eye"></i>
-                <div class="stat-value">${analytics.visits.totalPageViews}</div>
-                <div class="stat-label">مشاهدات الصفحات</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-chart-bar"></i>
-                <div class="stat-value">${analytics.visits.uniquePages}</div>
-                <div class="stat-label">صفحات فريدة</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-bolt"></i>
-                <div class="stat-value">${analytics.visits.totalEvents}</div>
-                <div class="stat-label">إجمالي الأحداث</div>
-            </div>
+            <div class="stat-card"><i class="fas fa-eye"></i><div class="stat-value">${analytics.visits.totalPageViews}</div><div class="stat-label">مشاهدات الصفحات</div></div>
+            <div class="stat-card"><i class="fas fa-chart-bar"></i><div class="stat-value">${analytics.visits.uniquePages}</div><div class="stat-label">صفحات فريدة</div></div>
+            <div class="stat-card"><i class="fas fa-bolt"></i><div class="stat-value">${analytics.visits.totalEvents}</div><div class="stat-label">إجمالي الأحداث</div></div>
         </div>
     `;
 }
@@ -1441,43 +1334,22 @@ function showDashboardProducts(container) {
     container.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
             <h3 style="color: var(--gold);">إدارة المنتجات</h3>
-            <button class="btn-gold" onclick="showAddProductModal()">
-                <i class="fas fa-plus"></i> إضافة منتج
-            </button>
+            <button class="btn-gold" onclick="showAddProductModal()"><i class="fas fa-plus"></i> إضافة منتج</button>
         </div>
-
         <div style="overflow-x: auto;">
             <table>
-                <thead>
-                    <tr>
-                        <th>المنتج</th>
-                        <th>القسم</th>
-                        <th>السعر</th>
-                        <th>الكمية</th>
-                        <th>التقييم</th>
-                        <th>الإجراءات</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>المنتج</th><th>القسم</th><th>السعر</th><th>الكمية</th><th>التقييم</th><th>الإجراءات</th></tr></thead>
                 <tbody>
                     ${products.map(product => `
                         <tr>
                             <td>${product.name}</td>
                             <td>${getCategoryName(product.category)}</td>
                             <td style="color: var(--gold); font-weight: 700;">${product.price.toLocaleString()} دج</td>
-                            <td>
-                                <span class="${product.stock <= 0 ? 'out-of-stock' : product.stock < 5 ? 'low-stock' : 'in-stock'}" 
-                                      style="padding: 3px 10px; border-radius: 20px; font-size: 12px;">
-                                    ${product.stock}
-                                </span>
-                            </td>
+                            <td><span class="${product.stock <= 0 ? 'out-of-stock' : product.stock < 5 ? 'low-stock' : 'in-stock'}" style="padding: 3px 10px; border-radius: 20px; font-size: 12px;">${product.stock}</span></td>
                             <td>${product.rating || 4.5} ⭐</td>
                             <td>
-                                <button class="btn-outline-gold" onclick="editProduct('${product.id}')" style="padding: 5px 10px; margin-left: 5px;">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn-outline-gold" onclick="deleteProduct('${product.id}')" style="padding: 5px 10px; background: #f87171; color: white;">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                                <button class="btn-outline-gold" onclick="editProduct('${product.id}')" style="padding: 5px 10px; margin-left: 5px;"><i class="fas fa-edit"></i></button>
+                                <button class="btn-outline-gold" onclick="deleteProduct('${product.id}')" style="padding: 5px 10px; background: #f87171; color: white;"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>
                     `).join('')}
@@ -1493,36 +1365,19 @@ function showDashboardMerchants(container) {
 
     container.innerHTML = `
         <h3 style="margin-bottom: 30px; color: var(--gold);">إدارة التجار</h3>
-        
         <h4 style="margin: 20px 0; color: var(--gold);">طلبات الانضمام (${pendingMerchants.length})</h4>
         ${pendingMerchants.map(merchant => `
             <div style="background: var(--glass); border: 1px solid var(--gold); border-radius: 20px; padding: 20px; margin-bottom: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <h5 style="color: var(--gold);">${merchant.name}</h5>
-                        <p><i class="fas fa-envelope" style="color: var(--gold);"></i> ${merchant.email}</p>
-                    </div>
-                    <div>
-                        <button class="btn-gold" onclick="approveMerchant(${merchant.id})" style="margin-left: 10px;">
-                            <i class="fas fa-check"></i> موافقة
-                        </button>
-                        <button class="btn-outline-gold" onclick="rejectMerchant(${merchant.id})">
-                            <i class="fas fa-times"></i> رفض
-                        </button>
-                    </div>
+                    <div><h5 style="color: var(--gold);">${merchant.name}</h5><p><i class="fas fa-envelope" style="color: var(--gold);"></i> ${merchant.email}</p></div>
+                    <div><button class="btn-gold" onclick="approveMerchant(${merchant.id})" style="margin-left: 10px;"><i class="fas fa-check"></i> موافقة</button><button class="btn-outline-gold" onclick="rejectMerchant(${merchant.id})"><i class="fas fa-times"></i> رفض</button></div>
                 </div>
             </div>
         `).join('')}
-
         <h4 style="margin: 30px 0 20px; color: var(--gold);">التجار المعتمدون (${approvedMerchants.length})</h4>
         ${approvedMerchants.map(merchant => `
             <div style="background: var(--glass); border: 1px solid var(--gold); border-radius: 20px; padding: 20px; margin-bottom: 15px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <h5 style="color: var(--gold);">${merchant.name} <i class="fas fa-check-circle" style="color: #4ade80;"></i></h5>
-                        <p><i class="fas fa-envelope" style="color: var(--gold);"></i> ${merchant.email}</p>
-                    </div>
-                </div>
+                <div><h5 style="color: var(--gold);">${merchant.name} <i class="fas fa-check-circle" style="color: #4ade80;"></i></h5><p><i class="fas fa-envelope" style="color: var(--gold);"></i> ${merchant.email}</p></div>
             </div>
         `).join('')}
     `;
@@ -1530,7 +1385,6 @@ function showDashboardMerchants(container) {
 
 function approveMerchant(userId) {
     if (!currentUser || currentUser.role !== 'admin') return;
-    
     const user = users.find(u => u.id === userId);
     if (user) {
         user.role = 'merchant_approved';
@@ -1543,7 +1397,6 @@ function approveMerchant(userId) {
 
 function rejectMerchant(userId) {
     if (!currentUser || currentUser.role !== 'admin') return;
-    
     const user = users.find(u => u.id === userId);
     if (user) {
         user.role = 'customer';
@@ -1554,7 +1407,7 @@ function rejectMerchant(userId) {
     }
 }
 
-// ========== 20. تأثيرات متقدمة ==========
+// ========== النقطة 21: تأثيرات متقدمة - كتابة متحركة ==========
 class TypingAnimation {
     constructor(element, texts, speed = 100, delay = 2000) {
         this.element = element;
@@ -1582,10 +1435,7 @@ class TypingAnimation {
         this.element.innerHTML = this.text + '<span class="typing-cursor">|</span>';
 
         let typeSpeed = this.speed;
-
-        if (this.isDeleting) {
-            typeSpeed /= 2;
-        }
+        if (this.isDeleting) typeSpeed /= 2;
 
         if (!this.isDeleting && this.text === current) {
             typeSpeed = this.delay;
@@ -1600,6 +1450,7 @@ class TypingAnimation {
     }
 }
 
+// ========== النقطة 22: تأثيرات الماوس ==========
 function initMouseEffects() {
     if (window.innerWidth <= 768) return;
     
@@ -1623,6 +1474,7 @@ function initMouseEffects() {
     });
 }
 
+// ========== النقطة 23: شريط تقدم التمرير ==========
 function initScrollProgress() {
     const progressBar = document.createElement('div');
     progressBar.className = 'scroll-progress';
@@ -1636,6 +1488,7 @@ function initScrollProgress() {
     });
 }
 
+// ========== النقطة 24: جسيمات متحركة وإعدادات التهيئة ==========
 function initParticles() {
     const particlesContainer = document.createElement('div');
     particlesContainer.className = 'particles';
@@ -1665,7 +1518,7 @@ function addScrollAnimations() {
     });
 }
 
-// ========== 21. التهيئة ==========
+// ========== التهيئة الرئيسية ==========
 window.onload = function() {
     loadProducts();
     loadCart();
@@ -1699,7 +1552,7 @@ window.onload = function() {
     addScrollAnimations();
     updateCountdown();
     
-    // تأثيرات متقدمة
+    // تفعيل التأثيرات المتقدمة
     initMouseEffects();
     initScrollProgress();
     initParticles();
