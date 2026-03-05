@@ -19,11 +19,13 @@
     <!-- Swiper للمعرض -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <!-- إضافة Firebase -->
+    
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
+    
     <!-- ربط ملف CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
@@ -34,7 +36,7 @@
     </div>
 
     <!-- نظام الإشعارات -->
-    <div class="notification-container" id="notificationContainer"></div>
+    <div class="toast-container" id="notificationContainer"></div>
 
     <!-- سلة التسوق الجانبية -->
     <div class="cart-sidebar" id="cartSidebar">
@@ -76,10 +78,9 @@
         </div>
     </div>
 
-    <!-- ===== شريط المميزات الحركية المتحرك ===== -->
+    <!-- شريط المميزات الحركية المتحرك -->
     <div class="marquee-bar">
         <div class="marquee-content">
-            <!-- العنصر 1 - float -->
             <div class="marquee-item float-item">
                 <i class="fas fa-truck"></i>
                 <span>شحن سريع</span>
@@ -87,8 +88,6 @@
                     <div class="marquee-progress-fill" style="width: 85%"></div>
                 </div>
             </div>
-            
-            <!-- العنصر 2 - bounce -->
             <div class="marquee-item bounce-item">
                 <i class="fas fa-shield-alt"></i>
                 <span>ضمان الجودة</span>
@@ -96,8 +95,6 @@
                     <div class="marquee-progress-fill" style="width: 95%"></div>
                 </div>
             </div>
-            
-            <!-- العنصر 3 - pulse -->
             <div class="marquee-item pulse-item">
                 <i class="fas fa-gem"></i>
                 <span>عروض حصرية</span>
@@ -105,8 +102,6 @@
                     <div class="marquee-progress-fill" style="width: 75%"></div>
                 </div>
             </div>
-            
-            <!-- العنصر 4 - rotate -->
             <div class="marquee-item rotate-item">
                 <i class="fas fa-clock"></i>
                 <span>عداد: <span id="marqueeHours">12</span>:<span id="marqueeMinutes">30</span>:<span id="marqueeSeconds">45</span></span>
@@ -114,8 +109,6 @@
                     <div class="marquee-progress-fill" style="width: 60%"></div>
                 </div>
             </div>
-            
-            <!-- العنصر 5 - glow -->
             <div class="marquee-item glow-item">
                 <i class="fas fa-star"></i>
                 <span>تقييم 4.8</span>
@@ -123,8 +116,6 @@
                     <div class="marquee-progress-fill" style="width: 96%"></div>
                 </div>
             </div>
-            
-            <!-- العنصر 6 - shadow pulse -->
             <div class="marquee-item shadow-pulse-item">
                 <i class="fas fa-fire"></i>
                 <span>تخفيضات</span>
@@ -132,8 +123,6 @@
                     <div class="marquee-progress-fill" style="width: 50%"></div>
                 </div>
             </div>
-            
-            <!-- تكرار للحركة المستمرة -->
             <div class="marquee-item float-item">
                 <i class="fas fa-truck"></i>
                 <span>شحن سريع</span>
@@ -141,7 +130,6 @@
                     <div class="marquee-progress-fill" style="width: 85%"></div>
                 </div>
             </div>
-            
             <div class="marquee-item bounce-item">
                 <i class="fas fa-shield-alt"></i>
                 <span>ضمان الجودة</span>
@@ -149,7 +137,6 @@
                     <div class="marquee-progress-fill" style="width: 95%"></div>
                 </div>
             </div>
-            
             <div class="marquee-item pulse-item">
                 <i class="fas fa-gem"></i>
                 <span>عروض حصرية</span>
@@ -223,6 +210,13 @@
         </nav>
     </div>
 
+    <!-- نص متحرك -->
+    <div class="container">
+        <div class="typing-container">
+            <span id="typing-text"></span>
+        </div>
+    </div>
+
     <!-- خيارات الفرز -->
     <div class="container">
         <div class="sort-options">
@@ -235,7 +229,7 @@
         </div>
     </div>
 
-    <!-- لوحة التاجر (تظهر للتاجر فقط) -->
+    <!-- لوحة التاجر -->
     <div class="container" id="merchantPanelContainer" style="display: none;"></div>
 
     <!-- المنتجات - شبكة 3 أعمدة -->
@@ -243,7 +237,7 @@
         <div class="products-grid" id="productsContainer"></div>
     </div>
 
-    <!-- لوحة التحكم (للمدير فقط) -->
+    <!-- لوحة التحكم -->
     <div class="container dashboard-section admin-only" id="dashboardSection" style="display: none;">
         <div class="dashboard-tabs">
             <button class="dashboard-tab active" onclick="switchDashboardTab('overview')">نظرة عامة</button>
@@ -252,10 +246,7 @@
             <button class="dashboard-tab" onclick="switchDashboardTab('products')">إدارة المنتجات</button>
             <button class="dashboard-tab" onclick="switchDashboardTab('merchants')">التجار</button>
         </div>
-
-        <div class="dashboard-content" id="dashboardContent">
-            <!-- المحتوى يتم تعبئته بواسطة JavaScript -->
-        </div>
+        <div class="dashboard-content" id="dashboardContent"></div>
     </div>
 
     <!-- الفوتر -->
@@ -313,8 +304,6 @@
         <i class="fas fa-chevron-up"></i>
     </button>
 
-    <!-- النوافذ المنبثقة -->
-    
     <!-- نافذة تسجيل الدخول -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
