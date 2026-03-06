@@ -1,7 +1,7 @@
 // ========== 1. إعدادات تلجرام ==========
 const TELEGRAM = {
     botToken: '8576673096:AAHCg7pM2MyzmVuCqWdK-ZbrDQy7zAR09x4',
-    ordersChannel: '1003822964890'
+    ordersChannel: '-1003822964890'
 };
 
 // ========== 2. إرسال الطلب إلى تلجرام ==========
