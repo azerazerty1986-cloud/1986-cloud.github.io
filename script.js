@@ -191,7 +191,7 @@ ${text}
     });
 }
 
-// ========== 7. إرسال رسالة خاصة لتاجر (📱) ==========
+// ========== 7. إرسال رسالة خاصة لتاجر ==========
 async function sendPrivateMessageToMerchant(merchantId, text) {
     try {
         await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
@@ -1288,7 +1288,7 @@ function showMerchantPanel() {
     `;
 }
 
-// ========== 25. الموافقة على تاجر (معدلة مع إشعار) ==========
+// ========== 25. الموافقة على تاجر (تعمل من القناة) ==========
 async function approveMerchant(userId) {
     console.log(`📨 أمر موافقة ورد للتاجر ${userId}`);
     
@@ -1302,21 +1302,20 @@ async function approveMerchant(userId) {
         
         const merchant = currentUsers[userIndex];
         
-        await sendNotificationToTelegram(`✅ تمت الموافقة على التاجر: ${merchant.name}`);
-        
-        // إرسال رسالة خاصة للتاجر إذا كان لديه معرف تلجرام
-        if (merchant.telegramId) {
-            await sendPrivateMessageToMerchant(
-                merchant.telegramId,
-                `🎉 *تهانينا!* تمت الموافقة على طلبك كتاجر في متجر نكهة وجمال.\n\n🔑 يمكنك الآن تسجيل الدخول وإضافة منتجاتك.\n\n🌐 رابط المتجر: https://1986-cloud-github-io.pages.dev`
-            );
-        }
+        // إرسال تأكيد في القناة
+        await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: TELEGRAM.channelId,
+                text: `✅ تمت الموافقة على التاجر: ${merchant.name} (ID: ${userId})`,
+                parse_mode: 'Markdown'
+            })
+        });
         
         console.log(`✅ تمت الموافقة على التاجر ${userId}`);
         
-        if (document.getElementById('dashboardSection')?.style.display === 'block') {
-            switchDashboardTab('merchants');
-        }
+        return true;
     } else {
         console.log(`❌ لم يتم العثور على تاجر بالمعرف ${userId}`);
         
@@ -1337,8 +1336,19 @@ async function approveMerchant(userId) {
         localStorage.setItem('nardoo_users', JSON.stringify(currentUsers));
         users = currentUsers;
         
-        await sendNotificationToTelegram(`✅ تم إنشاء تاجر جديد برقم ${userId}`);
+        await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: TELEGRAM.channelId,
+                text: `✅ تم إنشاء تاجر جديد برقم ${userId}`,
+                parse_mode: 'Markdown'
+            })
+        });
+        
         console.log(`✅ تم إنشاء تاجر جديد بالمعرف ${userId}`);
+        
+        return true;
     }
 }
 
@@ -1348,27 +1358,29 @@ async function rejectMerchant(userId) {
     let currentUsers = JSON.parse(localStorage.getItem('nardoo_users')) || [];
     const userIndex = currentUsers.findIndex(u => u.id == userId);
     
-    if (userIndex !== -1) {
+    if (userIndex !== -1 && currentUsers[userIndex].role === 'merchant_pending') {
         currentUsers[userIndex].role = 'customer';
         localStorage.setItem('nardoo_users', JSON.stringify(currentUsers));
         users = currentUsers;
         
         const merchant = currentUsers[userIndex];
         
-        await sendNotificationToTelegram(`❌ تم رفض طلب التاجر: ${merchant.name}`);
-        
-        if (merchant.telegramId) {
-            await sendPrivateMessageToMerchant(
-                merchant.telegramId,
-                `😔 *نأسف!* لم تتم الموافقة على طلبك كتاجر في متجر نكهة وجمال. يمكنك التواصل مع الإدارة للمزيد من المعلومات.`
-            );
-        }
+        await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: TELEGRAM.channelId,
+                text: `❌ تم رفض طلب التاجر: ${merchant.name} (ID: ${userId})`,
+                parse_mode: 'Markdown'
+            })
+        });
         
         console.log(`✅ تم رفض التاجر ${userId}`);
         
-        if (document.getElementById('dashboardSection')?.style.display === 'block') {
-            switchDashboardTab('merchants');
-        }
+        return true;
+    } else {
+        console.log(`❌ لم يتم العثور على طلب تاجر بالمعرف ${userId}`);
+        return false;
     }
 }
 
@@ -1681,47 +1693,39 @@ function initParticles() {
     }
 }
 
-// ========== 32. الاستماع لأوامر تلجرام (من القناة والمحادثة) ==========
+// ========== 32. الاستماع لأوامر تلجرام (من القناة فقط) ==========
 setInterval(async () => {
     try {
-        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates`);
+        const response = await fetch(
+            `https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates`
+        );
+        
         const data = await response.json();
         
         if (data.ok && data.result) {
             for (const update of data.result) {
-                // من المحادثة الخاصة
-                if (update.message?.text) {
-                    const text = update.message.text;
+                // الاستماع للرسائل من القناة فقط
+                if (update.channel_post?.text) {
+                    const text = update.channel_post.text;
                     
                     if (text.startsWith('/approve_')) {
-                        const userId = text.replace('/approve_', '');
+                        const userId = text.replace('/approve_', '').trim();
+                        console.log(`✅ أمر موافقة من القناة للمعرف: ${userId}`);
                         await approveMerchant(userId);
                     }
                     
                     if (text.startsWith('/reject_')) {
-                        const userId = text.replace('/reject_', '');
+                        const userId = text.replace('/reject_', '').trim();
+                        console.log(`❌ أمر رفض من القناة للمعرف: ${userId}`);
                         await rejectMerchant(userId);
                     }
-                }
-                
-                // من القناة
-                if (update.channel_post?.text?.startsWith('/approve_')) {
-                    const text = update.channel_post.text;
-                    const userId = text.replace('/approve_', '');
-                    await approveMerchant(userId);
-                }
-                
-                if (update.channel_post?.text?.startsWith('/reject_')) {
-                    const text = update.channel_post.text;
-                    const userId = text.replace('/reject_', '');
-                    await rejectMerchant(userId);
                 }
             }
         }
     } catch (error) {
-        console.error('خطأ في التحقق من أوامر تلجرام:', error);
+        console.error('❌ خطأ في الاستماع لأوامر تلجرام:', error);
     }
-}, 30000);
+}, 5000); // يتفقد كل 5 ثواني
 
 // ========== 33. التهيئة (onload) ==========
 window.onload = function() {
