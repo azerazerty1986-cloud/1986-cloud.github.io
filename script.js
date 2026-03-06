@@ -1,4 +1,50 @@
-// ========== 1. النظام الأساسي والمتغيرات العامة ==========
+// ========== 1. إعدادات تلجرام ==========
+const TELEGRAM = {
+    botToken: '8576673096:AAHCg7pM2MyzmVuCqWdK-ZbrDQy7zAR09x4',
+    ordersChannel: '5658665988'
+};
+
+// ========== 2. إرسال الطلب إلى تلجرام ==========
+async function sendOrderToTelegram(order) {
+    const message = `
+🛍️ *طلب جديد من نكهة وجمال*
+━━━━━━━━━━━━━━━━━━━━━━
+👤 *الزبون:* ${order.customerName}
+📦 *المنتجات:*
+${order.items.map((item, i) => 
+    `  ${i+1}. ${item.name} (${item.quantity}) - ${item.price} دج`
+).join('\n')}
+💰 *الإجمالي:* ${order.total} دج
+🕐 *الوقت:* ${new Date().toLocaleString('ar-DZ')}
+🔗 *رابط المتجر:* ${window.location.href}
+    `;
+
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: TELEGRAM.ordersChannel,
+                text: message,
+                parse_mode: 'Markdown'
+            })
+        });
+        
+        const result = await response.json();
+        if (result.ok) {
+            console.log('✅ تم إرسال الطلب إلى تلجرام');
+            return true;
+        } else {
+            console.error('❌ فشل الإرسال:', result);
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ خطأ في الاتصال:', error);
+        return false;
+    }
+}
+
+// ========== 3. النظام الأساسي والمتغيرات العامة ==========
 let products = [];
 let currentUser = null;
 let cart = [];
@@ -8,7 +54,7 @@ let searchTerm = '';
 let sortBy = 'newest';
 let users = [];
 
-// ========== 2. تحميل المستخدمين من localStorage ==========
+// ========== 4. تحميل المستخدمين من localStorage ==========
 function loadUsers() {
     const saved = localStorage.getItem('nardoo_users');
     if (saved) {
@@ -29,7 +75,7 @@ function loadUsers() {
 }
 loadUsers();
 
-// ========== 3. نظام إدارة الطلبات (كامل) ==========
+// ========== 5. نظام إدارة الطلبات ==========
 class OrderManagementSystem {
     constructor() {
         this.orders = this.loadOrders();
@@ -156,7 +202,7 @@ class OrderManagementSystem {
     }
 }
 
-// ========== 4. نظام الواتساب (كامل) ==========
+// ========== 6. نظام الواتساب ==========
 class WhatsAppIntegration {
     constructor() {
         this.storePhone = '213562243648';
@@ -266,7 +312,7 @@ class WhatsAppIntegration {
     }
 }
 
-// ========== 5. نظام التحليلات (كامل) ==========
+// ========== 7. نظام التحليلات ==========
 class AnalyticsSystem {
     constructor() {
         this.events = this.loadEvents();
@@ -349,38 +395,12 @@ class AnalyticsSystem {
     }
 }
 
-// ========== 6. إنشاء الكائنات ==========
+// ========== 8. إنشاء الكائنات ==========
 const orderManager = new OrderManagementSystem();
 const whatsappManager = new WhatsAppIntegration();
 const analyticsManager = new AnalyticsSystem();
 
-// ========== 7. إعداد حساب المدير (بدون Firebase) ==========
-function setupAdminAccount() {
-    try {
-        let users = JSON.parse(localStorage.getItem('nardoo_users') || '[]');
-        const adminExists = users.some(u => u.name === 'azer' || u.email === 'azer@admin.com');
-        
-        if (!adminExists) {
-            const adminUser = {
-                id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
-                name: 'azer',
-                email: 'azer@admin.com',
-                password: '123456',
-                role: 'admin',
-                createdAt: new Date().toISOString()
-            };
-            
-            users.push(adminUser);
-            localStorage.setItem('nardoo_users', JSON.stringify(users));
-            console.log('✅ تم إنشاء حساب المدير');
-        }
-    } catch(e) {
-        console.log('خطأ في إعداد المدير:', e);
-    }
-}
-setupAdminAccount();
-
-// ========== 8. دوال المساعدة والإشعارات المتقدمة ==========
+// ========== 9. دوال المساعدة والإشعارات ==========
 function showAdvancedNotification(message, type = 'info', title = '') {
     let container = document.querySelector('.toast-container');
     if (!container) {
@@ -431,7 +451,7 @@ function toggleTheme() {
     localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
 }
 
-// ========== 9. دوال التاريخ والوقت ==========
+// ========== 10. دوال التاريخ والوقت ==========
 function getSimpleTimeAgo(dateString) {
     if (!dateString) return '';
     
@@ -464,7 +484,7 @@ function getSimpleTimeAgo(dateString) {
     return `منذ ${years} ${years === 1 ? 'سنة' : 'سنوات'}`;
 }
 
-// ========== 10. دوال تقييم النجوم ==========
+// ========== 11. دوال تقييم النجوم ==========
 function generateStars(rating) {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
@@ -487,7 +507,7 @@ function generateStars(rating) {
     return starsHTML;
 }
 
-// ========== 11. دوال الفرز ==========
+// ========== 12. دوال الفرز ==========
 function sortProducts(productsArray) {
     switch(sortBy) {
         case 'newest':
@@ -508,14 +528,13 @@ function changeSort(value) {
     displayProducts();
 }
 
-// ========== 12. إدارة المنتجات (بدون Firebase - مع localStorage) ==========
+// ========== 13. إدارة المنتجات ==========
 function loadProducts() {
     const saved = localStorage.getItem('nardoo_products');
     if (saved) {
         products = JSON.parse(saved);
         console.log('تم تحميل المنتجات من localStorage:', products.length);
     } else {
-        // منتجات افتراضية للتجربة
         products = [
             { 
                 id: 1, 
@@ -796,7 +815,7 @@ function showSearchIndicator(term) {
     }, 3000);
 }
 
-// ========== 13. إدارة السلة (كاملة) ==========
+// ========== 14. إدارة السلة ==========
 function loadCart() {
     const saved = localStorage.getItem('nardoo_cart');
     cart = saved ? JSON.parse(saved) : [];
@@ -834,7 +853,9 @@ function addToCart(productId) {
             name: product.name,
             price: product.price,
             quantity: 1,
-            image: product.images?.[0] || ''
+            image: product.images?.[0] || '',
+            merchantId: product.merchantId,
+            merchantName: product.merchantId ? users.find(u => u.id === product.merchantId)?.name : null
         });
     }
 
@@ -922,52 +943,62 @@ function removeFromCart(productId) {
     showAdvancedNotification('تمت إزالة المنتج من السلة', 'info', 'تم');
 }
 
-function checkoutCart() {
+async function checkoutCart() {
     if (cart.length === 0) {
         showAdvancedNotification('السلة فارغة', 'warning');
         return;
     }
 
-    const orderData = {
-        items: cart,
+    const orderDetails = {
         customerName: currentUser?.name || 'عميل',
-        customerPhone: '',
-        customerAddress: '',
-        paymentMethod: 'الواتساب'
+        items: cart,
+        total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 800
     };
 
-    const order = orderManager.createOrder({
-        ...orderData,
-        customerId: currentUser?.id
+    // إرسال الطلب إلى تلجرام
+    const sent = await sendOrderToTelegram(orderDetails);
+    
+    if (sent) {
+        showAdvancedNotification('✅ تم إرسال الطلب إلى المدير', 'success');
+    } else {
+        showAdvancedNotification('⚠️ فشل إرسال الطلب', 'error');
+    }
+
+    // إرسال واتساب للتاجر
+    const merchants = {};
+    cart.forEach(item => {
+        if (item.merchantId && !merchants[item.merchantId]) {
+            const merchant = users.find(u => u.id === item.merchantId);
+            if (merchant && merchant.phone) {
+                merchants[item.merchantId] = {
+                    phone: merchant.phone,
+                    items: []
+                };
+            }
+        }
+        if (item.merchantId && merchants[item.merchantId]) {
+            merchants[item.merchantId].items.push(item);
+        }
     });
 
-    whatsappManager.sendOrder({
-        ...orderData,
-        orderId: order.id
+    Object.values(merchants).forEach(merchant => {
+        const message = `🛍️ لديك طلب جديد من ${orderDetails.customerName}`;
+        window.open(`https://wa.me/${merchant.phone}?text=${encodeURIComponent(message)}`, '_blank');
     });
 
     cart = [];
     saveCart();
     updateCartCounter();
     toggleCart();
-
-    showAdvancedNotification('تم إرسال الطلب عبر واتساب بنجاح', 'success', 'طلب جديد');
-    analyticsManager.trackEvent('checkout', { orderId: order.id });
 }
 
-// ========== 14. دوال التمرير ==========
+// ========== 15. دوال التمرير ==========
 function scrollToTop() {
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function scrollToBottom() {
-    window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: 'smooth'
-    });
+    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
 }
 
 function scrollToElement(elementId) {
@@ -1015,7 +1046,7 @@ function addScrollAnimations() {
     });
 }
 
-// ========== 15. عداد تنازلي ==========
+// ========== 16. عداد تنازلي ==========
 function updateCountdown() {
     const hoursElement = document.getElementById('marqueeHours');
     const minutesElement = document.getElementById('marqueeMinutes');
@@ -1057,7 +1088,7 @@ function updateCountdown() {
     return interval;
 }
 
-// ========== 16. أشرطة التقدم ==========
+// ========== 17. أشرطة التقدم ==========
 function updateProgressBars() {
     const progressFills = document.querySelectorAll('.progress-fill, .marquee-progress-fill');
     
@@ -1069,7 +1100,7 @@ function updateProgressBars() {
     }, 5000);
 }
 
-// ========== 17. عرض تفاصيل المنتج ==========
+// ========== 18. عرض تفاصيل المنتج ==========
 function viewProductDetails(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
@@ -1139,23 +1170,7 @@ function viewProductDetails(productId) {
     modal.style.display = 'flex';
 }
 
-// ========== 18. إدارة المستخدمين (كاملة) ==========
-function loadUsers() {
-    const saved = localStorage.getItem('nardoo_users');
-    if (saved) {
-        users = JSON.parse(saved);
-    } else {
-        users = [
-            { id: 1, name: 'azer', email: 'azer@admin.com', password: '123456', role: 'admin' }
-        ];
-    }
-}
-loadUsers();
-
-function saveUsers() {
-    localStorage.setItem('nardoo_users', JSON.stringify(users));
-}
-
+// ========== 19. إدارة المستخدمين ==========
 function openLoginModal() {
     document.getElementById('loginModal').style.display = 'flex';
 }
@@ -1340,12 +1355,12 @@ function handleRegister() {
     }
 
     users.push(newUser);
-    saveUsers();
+    localStorage.setItem('nardoo_users', JSON.stringify(users));
     showAdvancedNotification('تم التسجيل بنجاح' + (isMerchant ? '، طلبك قيد المراجعة' : ''), 'success', 'مرحباً بك');
     switchAuthTab('login');
 }
 
-// ========== 19. لوحة التحكم (كاملة) ==========
+// ========== 20. لوحة التحكم ==========
 function openDashboard() {
     if (!currentUser || currentUser.role !== 'admin') {
         showAdvancedNotification('غير مصرح لك بالدخول - هذه الصفحة للمدير فقط', 'error', 'خطأ');
@@ -1389,6 +1404,7 @@ function showDashboardOverview(container) {
     if (!currentUser || currentUser.role !== 'admin') return;
     
     const orderStats = orderManager.getOrderStatistics();
+    const whatsappStats = whatsappManager.getSalesStatistics();
     const analytics = analyticsManager.generateComprehensiveReport();
 
     container.innerHTML = `
@@ -1415,6 +1431,10 @@ function showDashboardOverview(container) {
                 <div class="stat-value">${analytics.conversionRate}%</div>
                 <div class="stat-label">معدل التحويل</div>
             </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="ordersChart"></canvas>
         </div>
 
         <h4 style="margin: 30px 0 20px; color: var(--gold);">الطلبات الأخيرة</h4>
@@ -1579,7 +1599,45 @@ function showDashboardAnalytics(container) {
                 <div class="stat-label">معدل التحويل</div>
             </div>
         </div>
+
+        <div class="chart-container">
+            <canvas id="eventsChart"></canvas>
+        </div>
     `;
+
+    setTimeout(() => {
+        const ctx = document.getElementById('eventsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: eventsByType.map(e => e.type),
+                datasets: [{
+                    label: 'عدد الأحداث',
+                    data: eventsByType.map(e => e.count),
+                    backgroundColor: '#d4af37',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(212, 175, 55, 0.1)' },
+                        ticks: { color: getComputedStyle(document.body).getPropertyValue('--text-secondary') }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: getComputedStyle(document.body).getPropertyValue('--text-secondary') }
+                    }
+                }
+            }
+        });
+    }, 100);
 }
 
 function showDashboardProducts(container) {
@@ -1690,7 +1748,7 @@ function approveMerchant(userId) {
     const user = users.find(u => u.id === userId);
     if (user) {
         user.role = 'merchant_approved';
-        saveUsers();
+        localStorage.setItem('nardoo_users', JSON.stringify(users));
         showAdvancedNotification('تمت الموافقة على التاجر', 'success', 'نجاح');
         openDashboard();
         switchDashboardTab('merchants');
@@ -1703,14 +1761,14 @@ function rejectMerchant(userId) {
     const user = users.find(u => u.id === userId);
     if (user) {
         user.role = 'customer';
-        saveUsers();
+        localStorage.setItem('nardoo_users', JSON.stringify(users));
         showAdvancedNotification('تم رفض طلب التاجر', 'info', 'تم');
         openDashboard();
         switchDashboardTab('merchants');
     }
 }
 
-// ========== 20. إضافة وتعديل وحذف المنتجات ==========
+// ========== 21. إضافة وتعديل وحذف المنتجات ==========
 function showAddProductModal() {
     console.log('فتح نافذة إضافة منتج');
     
@@ -1932,9 +1990,6 @@ function deleteProduct(id) {
         analyticsManager.trackEvent('productDeleted', { productId: id });
     }
 }
-
-// ========== 21. نظام الإشعارات المتقدمة (مكرر للتأكيد) ==========
-// (موجود في النقطة 8)
 
 // ========== 22. تأثيرات الكتابة ==========
 class TypingAnimation {
