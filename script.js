@@ -35,7 +35,13 @@ async function loadProductsFromTelegram() {
         );
         
         const data = await response.json();
-        const products = [];
+        let products = [];
+        
+        // جلب المنتجات المحفوظة أولاً
+        const savedProducts = localStorage.getItem('nardoo_products');
+        if (savedProducts) {
+            products = JSON.parse(savedProducts);
+        }
         
         if (data.ok && data.result) {
             console.log(`✅ تم العثور على ${data.result.length} تحديث`);
@@ -43,9 +49,13 @@ async function loadProductsFromTelegram() {
             const updates = [...data.result].reverse();
             
             for (const update of updates) {
+                // منع التكرار
+                if (isUpdateProcessed(update.update_id)) continue;
+                
                 if (update.channel_post) {
                     const post = update.channel_post;
                     
+                    // البحث عن رسائل المنتجات (التي تحتوي على 🟣)
                     if (post.text && post.text.includes('🟣')) {
                         console.log('📦 وجدنا منتج:', post.text);
                         
@@ -55,6 +65,7 @@ async function loadProductsFromTelegram() {
                         let category = 'other';
                         let stock = 0;
                         let merchant = 'المتجر';
+                        let description = '';
                         
                         lines.forEach(line => {
                             if (line.includes('المنتج:')) {
@@ -73,28 +84,41 @@ async function loadProductsFromTelegram() {
                                 if (match) stock = parseInt(match[0]);
                             } else if (line.includes('التاجر:')) {
                                 merchant = line.replace('التاجر:', '').replace(/[🟣*]/g, '').trim();
+                            } else if (line.includes('الوصف:')) {
+                                description = line.replace('الوصف:', '').replace(/[🟣*]/g, '').trim();
                             }
                         });
                         
-                        products.push({
-                            id: post.message_id,
-                            name: name,
-                            price: price,
-                            category: category,
-                            stock: stock,
-                            merchantName: merchant || 'المتجر',
-                            merchantId: users?.find(u => u.name === merchant)?.id || null,
-                            rating: 4.5,
-                            images: ["https://via.placeholder.com/300/2c5e4f/ffffff?text=نكهة+وجمال"],
-                            createdAt: new Date(post.date * 1000).toISOString()
-                        });
+                        // التحقق من عدم وجود المنتج مسبقاً
+                        const exists = products.some(p => p.telegramId === post.message_id);
                         
-                        console.log(`✅ منتج مضاف: ${name} - ${price} دج`);
+                        if (!exists) {
+                            products.push({
+                                id: products.length + 1,
+                                telegramId: post.message_id,
+                                name: name,
+                                price: price,
+                                category: category,
+                                stock: stock,
+                                merchantName: merchant || 'المتجر',
+                                merchantId: users?.find(u => u.name === merchant)?.id || null,
+                                description: description,
+                                rating: 4.5,
+                                images: ["https://via.placeholder.com/300/2c5e4f/ffffff?text=نكهة+وجمال"],
+                                createdAt: new Date(post.date * 1000).toISOString(),
+                                soldCount: 0,
+                                isActive: true
+                            });
+                            
+                            markUpdateAsProcessed(update.update_id);
+                            console.log(`✅ منتج مضاف: ${name} - ${price} دج`);
+                        }
                     }
                 }
             }
         }
         
+        // حفظ المنتجات في localStorage
         localStorage.setItem('nardoo_products', JSON.stringify(products));
         console.log(`✅ تم تحميل ${products.length} منتج من تلجرام`);
         
@@ -107,8 +131,9 @@ async function loadProductsFromTelegram() {
     }
 }
 
-// ========== 4. إضافة منتج جديد إلى تلجرام ==========
+// ========== 4. إضافة منتج جديد إلى تلجرام والمتجر معاً ==========
 async function addProductToTelegram(product) {
+    // رسالة المنتج للتلجرام
     const message = `
 🟣 *منتج جديد في المتجر*
 ━━━━━━━━━━━━━━━━━━━━━━
@@ -117,10 +142,12 @@ async function addProductToTelegram(product) {
 🏷️ *القسم:* ${product.category}
 📊 *الكمية:* ${product.stock}
 👤 *التاجر:* ${product.merchantName}
+📝 *الوصف:* ${product.description || 'لا يوجد'}
 🕐 *تاريخ الإضافة:* ${new Date().toLocaleString('ar-DZ')}
     `;
 
     try {
+        // 1. إرسال إلى قناة تلجرام
         const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -132,10 +159,40 @@ async function addProductToTelegram(product) {
         });
         
         const result = await response.json();
-        return result.ok;
+        
+        if (result.ok) {
+            // 2. إنشاء كائن المنتج الكامل
+            const newProduct = {
+                id: Date.now(),
+                telegramId: result.result.message_id,
+                name: product.name,
+                price: product.price,
+                category: product.category,
+                stock: product.stock,
+                merchantName: product.merchantName,
+                merchantId: product.merchantId,
+                description: product.description || '',
+                images: product.images || ["https://via.placeholder.com/300/2c5e4f/ffffff?text=نكهة+وجمال"],
+                rating: 4.5,
+                soldCount: 0,
+                createdAt: new Date().toISOString(),
+                isActive: true
+            };
+            
+            // 3. حفظ في localStorage
+            let currentProducts = JSON.parse(localStorage.getItem('nardoo_products')) || [];
+            currentProducts.push(newProduct);
+            localStorage.setItem('nardoo_products', JSON.stringify(currentProducts));
+            
+            // 4. تحديث المتغير العام
+            products = currentProducts;
+            
+            return { ok: true, product: newProduct, messageId: result.result.message_id };
+        }
+        return { ok: false };
     } catch (error) {
         console.error('❌ خطأ في إضافة المنتج:', error);
-        return false;
+        return { ok: false };
     }
 }
 
@@ -169,16 +226,18 @@ async function sendMerchantRequestToTelegram(merchant) {
     const message = `
 🔵 *طلب انضمام تاجر جديد*
 ━━━━━━━━━━━━━━━━━━━━━━
-🏪 *اسم المتجر:* ${merchant.storeName}
+🏪 *اسم المتجر:* ${merchant.storeName || merchant.name}
 👤 *التاجر:* ${merchant.name}
 📧 *البريد:* ${merchant.email}
 📞 *الهاتف:* ${merchant.phone || 'غير متوفر'}
 📊 *المستوى:* ${merchant.merchantLevel || '1'}
 📝 *الوصف:* ${merchant.merchantDesc || 'تاجر جديد'}
+🆔 *رقم الطلب:* ${merchant.id}
 
-⬇️ *للإجراء*
+⬇️ *للإجراء من المدير*
 ✅ للموافقة: /approve_${merchant.id}
 ❌ للرفض: /reject_${merchant.id}
+⚙️ للتخصيص: /customize_${merchant.id}
     `;
 
     await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
@@ -248,18 +307,19 @@ function loadUsers() {
     if (saved) {
         users = JSON.parse(saved);
     } else {
+        // مستخدم افتراضي (مدير)
         users = [
             { 
                 id: 1, 
-                name: 'azer', 
-                username: 'azer',
-                email: 'azer@admin.com', 
-                password: '123456', 
+                name: 'المدير', 
+                username: 'admin',
+                email: 'admin@nardoo.com', 
+                password: 'admin123', 
                 role: 'admin',
-                phone: '',
+                phone: '0562243648',
                 telegramId: TELEGRAM.adminId,
-                storeName: 'المتجر الرئيسي',
-                storeColor: '#9b59b6',
+                storeName: 'نكهة وجمال',
+                storeColor: '#d4af37',
                 createdAt: new Date().toISOString()
             }
         ];
@@ -458,7 +518,21 @@ class WhatsAppIntegration {
             'الجزائر': 500,
             'وهران': 700,
             'قسنطينة': 800,
-            'الجنوب': 1200
+            'عنابة': 800,
+            'البليدة': 600,
+            'باتنة': 900,
+            'سطيف': 850,
+            'الجلفة': 1000,
+            'الجنوب': 1200,
+            'تيزي وزو': 750,
+            'بجاية': 800,
+            'بسكرة': 900,
+            'تبسة': 950,
+            'تيارت': 900,
+            'الوادي': 1100,
+            'خنشلة': 950,
+            'سوق أهراس': 900,
+            'ميلة': 850
         };
 
         for (const [region, cost] of Object.entries(rates)) {
@@ -741,7 +815,7 @@ function displayProducts() {
     const container = document.getElementById('productsContainer');
     if (!container) return;
 
-    let filtered = products.filter(p => p.stock > 0);
+    let filtered = products.filter(p => p.stock > 0 && p.isActive !== false);
     
     if (currentFilter === 'my_products' && currentUser?.role === 'merchant_approved') {
         filtered = filtered.filter(p => p.merchantName === currentUser.name);
@@ -764,7 +838,7 @@ function displayProducts() {
                 <i class="fas fa-box-open" style="font-size: 80px; color: var(--gold); margin-bottom: 20px;"></i>
                 <h3 style="color: var(--gold); font-size: 28px; margin-bottom: 15px;">لا توجد منتجات</h3>
                 <p style="color: var(--text-secondary); font-size: 18px; margin-bottom: 30px;">أول منتج يضاف سيظهر هنا</p>
-                ${currentUser ? `
+                ${currentUser?.role === 'admin' || currentUser?.role === 'merchant_approved' ? `
                     <button class="btn-gold" onclick="showAddProductModal()" style="font-size: 18px; padding: 15px 40px;">
                         <i class="fas fa-plus"></i> إضافة منتج جديد
                     </button>
@@ -1026,12 +1100,16 @@ async function checkoutCart() {
 
     const order = {
         customerName: currentUser?.name || 'عميل',
+        customerPhone: currentUser?.phone || '',
         items: cart,
+        subtotal: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
         total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 800
     };
 
+    // إرسال إلى تلجرام
     await sendOrderToTelegram(order);
 
+    // إرسال للتجار عبر واتساب
     const merchants = {};
     cart.forEach(item => {
         const merchant = users.find(u => u.name === item.merchantName);
@@ -1048,11 +1126,25 @@ async function checkoutCart() {
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
     });
 
+    // إرسال للمتجر الرئيسي
+    whatsappManager.sendOrder(order);
+
+    // إنشاء طلب في النظام
+    orderManager.createOrder({
+        customerName: order.customerName,
+        customerPhone: order.customerPhone,
+        items: cart,
+        total: order.total
+    });
+
+    // تفريغ السلة
     cart = [];
     saveCart();
     updateCartCounter();
     toggleCart();
-    showAdvancedNotification('✅ تم إرسال الطلب', 'success');
+    
+    showAdvancedNotification('✅ تم إرسال الطلب بنجاح', 'success');
+    analyticsManager.trackEvent('purchase', { total: order.total });
 }
 
 // ========== 21. دوال التمرير ==========
@@ -1162,7 +1254,7 @@ function viewProductDetails(productId) {
                     <button class="btn-gold" onclick="addToCart(${product.id}); closeModal('productDetailModal')">أضف للسلة</button>
                     <button class="btn-outline-gold" onclick="closeModal('productDetailModal')">إغلاق</button>
                     ${currentUser?.role === 'admin' || (currentUser?.role === 'merchant_approved' && currentUser?.name === product.merchantName) ? `
-                        <button class="btn-outline-gold" onclick="editProduct(${product.id})">تعديل</button>
+                        <button class="btn-outline-gold" onclick="editProduct(${product.id}); closeModal('productDetailModal')">تعديل</button>
                     ` : ''}
                 </div>
             </div>
@@ -1255,26 +1347,35 @@ function handleRegister() {
         telegramId: null,
         storeName: isMerchant ? (document.getElementById('merchantDesc')?.value.split('\n')[0] || 'متجر ' + name) : '',
         merchantDesc: isMerchant ? document.getElementById('merchantDesc')?.value : '',
+        merchantLevel: isMerchant ? parseInt(document.getElementById('merchantLevel')?.value || '1') : null,
+        productsLimit: isMerchant ? getProductsLimit(parseInt(document.getElementById('merchantLevel')?.value || '1')) : 0,
         createdAt: new Date().toISOString()
     };
+
+    users.push(newUser);
+    localStorage.setItem('nardoo_users', JSON.stringify(users));
 
     if (isMerchant) {
         sendMerchantRequestToTelegram(newUser);
         showAdvancedNotification('📋 تم إرسال طلب التسجيل إلى المدير', 'info');
+        showAdvancedNotification('⏳ في انتظار الموافقة...', 'warning');
     } else {
-        users.push(newUser);
-        localStorage.setItem('nardoo_users', JSON.stringify(users));
         showAdvancedNotification('✅ تم التسجيل كعميل بنجاح', 'success');
         switchAuthTab('login');
     }
+    
+    closeModal('loginModal');
 }
 
+// ========== 28. تحديث الواجهة حسب الدور ==========
 function updateUIBasedOnRole() {
     if (!currentUser) return;
 
+    // إخفاء العناصر الخاصة
     document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
     document.getElementById('merchantPanelContainer').style.display = 'none';
     
+    // إزالة زر منتجاتي إذا كان موجوداً
     const myProductsBtn = document.getElementById('myProductsBtn');
     if (myProductsBtn) myProductsBtn.remove();
 
@@ -1322,6 +1423,7 @@ function showMerchantPanel() {
     
     const merchantProducts = products.filter(p => p.merchantName === currentUser.name);
     const totalSales = merchantProducts.reduce((sum, p) => sum + (p.price * (p.soldCount || 0)), 0);
+    const remainingProducts = (currentUser.productsLimit || 5) - merchantProducts.length;
     
     document.getElementById('merchantPanelContainer').style.display = 'block';
     document.getElementById('merchantPanelContainer').innerHTML = `
@@ -1331,16 +1433,21 @@ function showMerchantPanel() {
                 <div class="stat-item"><div class="number">${merchantProducts.length}</div><div>إجمالي المنتجات</div></div>
                 <div class="stat-item"><div class="number">${merchantProducts.filter(p => p.stock > 0).length}</div><div>المنتجات المتاحة</div></div>
                 <div class="stat-item"><div class="number">${totalSales.toLocaleString()} دج</div><div>إجمالي المبيعات</div></div>
+                <div class="stat-item"><div class="number" style="color: ${remainingProducts > 0 ? '#4ade80' : '#f87171'}">${remainingProducts}</div><div>المنتجات المتبقية</div></div>
             </div>
             <div style="display: flex; gap: 15px; margin-top: 20px; justify-content: center;">
-                <button class="btn-gold" onclick="showAddProductModal()"><i class="fas fa-plus"></i> إضافة منتج جديد</button>
+                ${remainingProducts > 0 ? `
+                    <button class="btn-gold" onclick="showAddProductModal()"><i class="fas fa-plus"></i> إضافة منتج جديد</button>
+                ` : `
+                    <button class="btn-gold" disabled style="opacity: 0.5;"><i class="fas fa-ban"></i> وصلت للحد الأقصى</button>
+                `}
                 <button class="btn-outline-gold" onclick="viewMyProducts()"><i class="fas fa-box"></i> عرض منتجاتي</button>
             </div>
         </div>
     `;
 }
 
-// ========== 28. إضافة التاجر يدوياً (للمدير فقط) ==========
+// ========== 29. إضافة التاجر يدوياً (للمدير فقط) ==========
 function showAddMerchantForm() {
     const formHtml = `
         <div class="modal" id="addMerchantModal" style="display: flex; z-index: 9999;">
@@ -1384,6 +1491,17 @@ function showAddMerchantForm() {
                     <input type="tel" class="form-control" id="merchantPhone" placeholder="مثال: 0555123456">
                 </div>
                 
+                <div class="form-group">
+                    <label>مستوى التاجر (حد المنتجات)</label>
+                    <select class="form-control" id="merchantLevelSelect">
+                        <option value="1">المستوى 1 (5 منتجات)</option>
+                        <option value="2">المستوى 2 (10 منتجات)</option>
+                        <option value="3">المستوى 3 (15 منتج)</option>
+                        <option value="4">المستوى 4 (25 منتج)</option>
+                        <option value="5">المستوى 5 (50 منتج)</option>
+                    </select>
+                </div>
+                
                 <div style="display: flex; gap: 15px; margin-top: 30px;">
                     <button class="btn-gold" style="flex: 2;" onclick="saveManualMerchant()">
                         <i class="fas fa-save"></i> إضافة التاجر
@@ -1404,7 +1522,7 @@ function showAddMerchantForm() {
     document.body.appendChild(modalDiv.firstChild);
 }
 
-// ========== 29. حفظ التاجر المضاف يدوياً ==========
+// ========== 30. حفظ التاجر المضاف يدوياً ==========
 function saveManualMerchant() {
     const name = document.getElementById('merchantFullName')?.value;
     const username = document.getElementById('merchantUsername')?.value;
@@ -1413,6 +1531,7 @@ function saveManualMerchant() {
     const storeName = document.getElementById('merchantStoreName')?.value;
     const color = document.getElementById('merchantColor')?.value || '#9b59b6';
     const phone = document.getElementById('merchantPhone')?.value || '';
+    const level = parseInt(document.getElementById('merchantLevelSelect')?.value || '1');
     
     if (!name || !username || !password || !email || !storeName) {
         showAdvancedNotification('❌ الرجاء ملء جميع الحقول الأساسية', 'error');
@@ -1439,7 +1558,13 @@ function saveManualMerchant() {
         role: 'merchant_approved',
         storeName: storeName,
         storeColor: color,
+        merchantLevel: level,
+        productsLimit: getProductsLimit(level),
         productsCount: 0,
+        canAddProducts: true,
+        canEditProducts: true,
+        canDeleteProducts: true,
+        canViewStats: true,
         telegramId: null,
         createdAt: new Date().toISOString()
     };
@@ -1457,7 +1582,7 @@ function saveManualMerchant() {
     }
 }
 
-// ========== 30. الموافقة على تاجر (للمدير عبر تلجرام) ==========
+// ========== 31. الموافقة على تاجر (للمدير عبر تلجرام) ==========
 async function approveMerchant(userId) {
     console.log(`📨 أمر موافقة ورد للتاجر ${userId}`);
     
@@ -1466,30 +1591,279 @@ async function approveMerchant(userId) {
     
     if (userIndex !== -1 && currentUsers[userIndex].role === 'merchant_pending') {
         const username = currentUsers[userIndex].email.split('@')[0] + '_' + Math.floor(Math.random()*1000);
-        const password = '123456';
+        const password = generateStrongPassword();
+        const level = currentUsers[userIndex].merchantLevel || 1;
         
         currentUsers[userIndex].role = 'merchant_approved';
         currentUsers[userIndex].username = username;
         currentUsers[userIndex].password = password;
         currentUsers[userIndex].storeColor = '#' + Math.floor(Math.random()*16777215).toString(16);
+        currentUsers[userIndex].merchantLevel = level;
+        currentUsers[userIndex].productsLimit = getProductsLimit(level);
+        currentUsers[userIndex].canAddProducts = true;
+        currentUsers[userIndex].canEditProducts = true;
+        currentUsers[userIndex].canDeleteProducts = true;
+        currentUsers[userIndex].canViewStats = true;
+        currentUsers[userIndex].approvedAt = new Date().toISOString();
         
         localStorage.setItem('nardoo_users', JSON.stringify(currentUsers));
         users = currentUsers;
         
         const merchant = currentUsers[userIndex];
         
-        await sendNotificationToTelegram(`✅ تمت الموافقة على التاجر: ${merchant.name}
-🔑 بيانات الدخول:
-👤 اسم المستخدم: ${username}
-🔐 كلمة المرور: ${password}`);
+        // إرسال رسالة ترحيب
+        await sendWelcomeMessageToMerchant(merchant, username, password);
         
         console.log(`✅ تمت الموافقة على التاجر ${userId}`);
+        
+        // تحديث لوحة التحكم إذا كانت مفتوحة
+        if (document.getElementById('dashboardSection')?.style.display === 'block') {
+            switchDashboardTab('merchants');
+        }
+        
         return true;
     }
     return false;
 }
 
-// ========== 31. إضافة المنتجات مع صلاحيات ==========
+// ========== 32. رفض التاجر ==========
+async function rejectMerchant(userId) {
+    console.log(`📨 أمر رفض ورد للتاجر ${userId}`);
+    
+    let currentUsers = JSON.parse(localStorage.getItem('nardoo_users')) || [];
+    const userIndex = currentUsers.findIndex(u => u.id == userId);
+    
+    if (userIndex !== -1 && currentUsers[userIndex].role === 'merchant_pending') {
+        const merchant = currentUsers[userIndex];
+        
+        // حذف الطلب أو تحويله لعميل
+        currentUsers.splice(userIndex, 1);
+        localStorage.setItem('nardoo_users', JSON.stringify(currentUsers));
+        users = currentUsers;
+        
+        await sendNotificationToTelegram(`❌ تم رفض طلب التاجر: ${merchant.name}`);
+        
+        console.log(`✅ تم رفض التاجر ${userId}`);
+        return true;
+    }
+    return false;
+}
+
+// ========== 33. إنشاء كلمة مرور قوية ==========
+function generateStrongPassword() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
+    let password = '';
+    for (let i = 0; i < 8; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+}
+
+// ========== 34. تحديد حد المنتجات حسب المستوى ==========
+function getProductsLimit(level) {
+    const limits = {
+        1: 5,
+        2: 10,
+        3: 15,
+        4: 25,
+        5: 50
+    };
+    return limits[level] || 5;
+}
+
+// ========== 35. إرسال رسالة ترحيب للتاجر ==========
+async function sendWelcomeMessageToMerchant(merchant, username, password) {
+    const message = `
+🎉 *مرحباً بك في نكهة وجمال - ناردو برو* 🎉
+
+تم قبول طلب انضمامك كتاجر في متجرنا!
+
+🔑 *بيانات الدخول الخاصة بك:*
+━━━━━━━━━━━━━━━━━━━━━━
+👤 *اسم المستخدم:* ${username}
+🔐 *كلمة المرور:* ${password}
+📊 *المستوى:* ${merchant.merchantLevel || 1}
+📦 *حد المنتجات:* ${merchant.productsLimit} منتج
+
+⭐ *صلاحياتك:*
+✅ إضافة منتجات جديدة
+✅ تعديل منتجاتك
+✅ حذف منتجاتك
+✅ عرض إحصائيات متجرك
+
+📱 *رابط المتجر:* ${window.location.origin}
+💬 *للدخول:* استخدم بيانات الدخول أعلاه
+
+نتمنى لك تجربة ممتعة وأرباح وفيرة! 🌟
+    `;
+    
+    // إرسال عبر تلجرام إذا كان لديه معرف
+    if (merchant.telegramId) {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: merchant.telegramId,
+                text: message,
+                parse_mode: 'Markdown'
+            })
+        });
+    }
+    
+    // أيضاً إرسال إلى القناة العامة
+    await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: TELEGRAM.channelId,
+            text: `🎉 تاجر جديد انضم إلينا: ${merchant.name} (${merchant.storeName})`,
+            parse_mode: 'Markdown'
+        })
+    });
+}
+
+// ========== 36. عرض طلبات التجار للمدير ==========
+function showMerchantRequests() {
+    const pendingMerchants = users.filter(u => u.role === 'merchant_pending');
+    
+    if (pendingMerchants.length === 0) {
+        showAdvancedNotification('لا يوجد طلبات جديدة', 'info');
+        return;
+    }
+
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    modal.id = 'merchantRequestsModal';
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 800px;">
+            <h2 style="color: var(--gold); text-align: center; margin-bottom: 30px;">
+                <i class="fas fa-user-clock"></i> طلبات انضمام التجار
+            </h2>
+            
+            <div style="max-height: 500px; overflow-y: auto;">
+                ${pendingMerchants.map(m => `
+                    <div style="background: var(--glass); border: 2px solid var(--gold); border-radius: 20px; padding: 20px; margin-bottom: 20px;">
+                        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 15px;">
+                            <div style="width: 60px; height: 60px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-store" style="font-size: 30px; color: var(--bg-primary);"></i>
+                            </div>
+                            <div>
+                                <h3 style="color: var(--gold); font-size: 20px;">${m.name}</h3>
+                                <p><i class="fas fa-envelope"></i> ${m.email}</p>
+                                <p><i class="fas fa-phone"></i> ${m.phone || 'غير متوفر'}</p>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(212, 175, 55, 0.1); padding: 15px; border-radius: 15px; margin-bottom: 15px;">
+                            <p><strong>🏪 اسم المتجر:</strong> ${m.storeName || 'غير محدد'}</p>
+                            <p><strong>📝 الوصف:</strong> ${m.merchantDesc || 'لا يوجد وصف'}</p>
+                            <p><strong>📊 المستوى المطلوب:</strong> ${m.merchantLevel || '1'}</p>
+                        </div>
+                        
+                        <div style="display: flex; gap: 15px;">
+                            <button class="btn-gold" onclick="approveMerchant(${m.id})" style="flex: 1;">
+                                <i class="fas fa-check"></i> قبول
+                            </button>
+                            <button class="btn-outline-gold" onclick="rejectMerchant(${m.id})" style="flex: 1;">
+                                <i class="fas fa-times"></i> رفض
+                            </button>
+                            <button class="btn-outline-gold" onclick="customizeMerchant(${m.id})" style="flex: 1;">
+                                <i class="fas fa-cog"></i> تخصيص
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div style="text-align: left; margin-top: 20px;">
+                <button class="btn-outline-gold" onclick="closeModal('merchantRequestsModal')">
+                    <i class="fas fa-times"></i> إغلاق
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// ========== 37. تخصيص إعدادات التاجر ==========
+function customizeMerchant(userId) {
+    const merchant = users.find(u => u.id == userId);
+    if (!merchant) return;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    modal.id = 'customizeMerchantModal';
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h2 style="color: var(--gold); text-align: center; margin-bottom: 30px;">
+                <i class="fas fa-sliders-h"></i> تخصيص إعدادات التاجر
+            </h2>
+            
+            <div class="form-group">
+                <label>لون المتجر</label>
+                <input type="color" class="form-control" id="merchantColor" value="${merchant.storeColor || '#9b59b6'}" style="height: 50px;">
+            </div>
+            
+            <div class="form-group">
+                <label>مستوى التاجر (حد المنتجات)</label>
+                <select class="form-control" id="merchantLevel">
+                    <option value="1" ${merchant.merchantLevel == 1 ? 'selected' : ''}>المستوى 1 (5 منتجات)</option>
+                    <option value="2" ${merchant.merchantLevel == 2 ? 'selected' : ''}>المستوى 2 (10 منتجات)</option>
+                    <option value="3" ${merchant.merchantLevel == 3 ? 'selected' : ''}>المستوى 3 (15 منتج)</option>
+                    <option value="4" ${merchant.merchantLevel == 4 ? 'selected' : ''}>المستوى 4 (25 منتج)</option>
+                    <option value="5" ${merchant.merchantLevel == 5 ? 'selected' : ''}>المستوى 5 (50 منتج)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>صلاحيات إضافية</label>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <label><input type="checkbox" id="canAddProducts" ${merchant.canAddProducts !== false ? 'checked' : ''}> يمكنه إضافة منتجات</label>
+                    <label><input type="checkbox" id="canEditProducts" ${merchant.canEditProducts !== false ? 'checked' : ''}> يمكنه تعديل منتجاته</label>
+                    <label><input type="checkbox" id="canDeleteProducts" ${merchant.canDeleteProducts !== false ? 'checked' : ''}> يمكنه حذف منتجاته</label>
+                    <label><input type="checkbox" id="canViewStats" ${merchant.canViewStats !== false ? 'checked' : ''}> يمكنه رؤية الإحصائيات</label>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 15px; margin-top: 30px;">
+                <button class="btn-gold" style="flex: 2;" onclick="saveMerchantCustomization(${merchant.id})">
+                    <i class="fas fa-save"></i> حفظ التغييرات
+                </button>
+                <button class="btn-outline-gold" style="flex: 1;" onclick="closeModal('customizeMerchantModal')">
+                    <i class="fas fa-times"></i> إلغاء
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// ========== 38. حفظ تخصيصات التاجر ==========
+function saveMerchantCustomization(userId) {
+    const merchantIndex = users.findIndex(u => u.id == userId);
+    if (merchantIndex === -1) return;
+    
+    users[merchantIndex].storeColor = document.getElementById('merchantColor').value;
+    users[merchantIndex].merchantLevel = parseInt(document.getElementById('merchantLevel').value);
+    users[merchantIndex].productsLimit = getProductsLimit(users[merchantIndex].merchantLevel);
+    users[merchantIndex].canAddProducts = document.getElementById('canAddProducts').checked;
+    users[merchantIndex].canEditProducts = document.getElementById('canEditProducts').checked;
+    users[merchantIndex].canDeleteProducts = document.getElementById('canDeleteProducts').checked;
+    users[merchantIndex].canViewStats = document.getElementById('canViewStats').checked;
+    
+    localStorage.setItem('nardoo_users', JSON.stringify(users));
+    
+    closeModal('customizeMerchantModal');
+    showAdvancedNotification('✅ تم تحديث إعدادات التاجر بنجاح', 'success');
+}
+
+// ========== 39. إضافة المنتجات مع صلاحيات ==========
 function showAddProductModal() {
     if (!currentUser) {
         showAdvancedNotification('يجب تسجيل الدخول أولاً', 'warning');
@@ -1498,11 +1872,23 @@ function showAddProductModal() {
     }
 
     if (currentUser.role === 'merchant_approved' || currentUser.role === 'admin') {
+        // التحقق من حد المنتجات للتاجر
+        if (currentUser.role === 'merchant_approved') {
+            const merchantProducts = products.filter(p => p.merchantName === currentUser.name).length;
+            const maxProducts = currentUser.productsLimit || 5;
+            
+            if (merchantProducts >= maxProducts && !currentUser.canAddProducts) {
+                showAdvancedNotification(`❌ وصلت للحد الأقصى (${maxProducts} منتج)`, 'error');
+                return;
+            }
+        }
+        
         document.getElementById('modalTitle').textContent = 'إضافة منتج جديد';
         document.getElementById('productName').value = '';
         document.getElementById('productCategory').value = '';
         document.getElementById('productPrice').value = '';
         document.getElementById('productStock').value = '';
+        document.getElementById('productDescription').value = '';
         document.getElementById('editingProductId').value = '';
         document.getElementById('imagePreview').innerHTML = '';
         document.getElementById('productImagesData').value = '';
@@ -1541,6 +1927,9 @@ async function saveProduct() {
     const category = document.getElementById('productCategory').value;
     const price = parseInt(document.getElementById('productPrice').value);
     const stock = parseInt(document.getElementById('productStock').value);
+    const description = document.getElementById('productDescription')?.value || '';
+    const imagesData = document.getElementById('productImagesData')?.value;
+    const images = imagesData ? JSON.parse(imagesData) : ["https://via.placeholder.com/300/2c5e4f/ffffff?text=نكهة+وجمال"];
     
     if (!name || !category || !price || !stock) {
         showAdvancedNotification('الرجاء ملء جميع الحقول', 'error');
@@ -1552,19 +1941,25 @@ async function saveProduct() {
         price: price,
         category: category,
         stock: stock,
+        description: description,
+        images: images,
         merchantName: currentUser.name,
         merchantId: currentUser.id
     };
 
-    const sent = await addProductToTelegram(product);
+    const result = await addProductToTelegram(product);
     
-    if (sent) {
+    if (result.ok) {
         showAdvancedNotification(`✅ تم إضافة المنتج ${name} بنجاح`, 'success');
         closeModal('productModal');
         
-        setTimeout(async () => {
-            await loadProducts();
-        }, 2000);
+        // تحديث المنتجات
+        await loadProducts();
+        
+        // تحديث لوحة التاجر
+        if (currentUser.role === 'merchant_approved') {
+            showMerchantPanel();
+        }
     } else {
         showAdvancedNotification('❌ فشل إضافة المنتج', 'error');
     }
@@ -1584,8 +1979,18 @@ function editProduct(id) {
     document.getElementById('productCategory').value = product.category;
     document.getElementById('productPrice').value = product.price;
     document.getElementById('productStock').value = product.stock;
+    document.getElementById('productDescription').value = product.description || '';
     document.getElementById('editingProductId').value = id;
     document.getElementById('productModal').style.display = 'flex';
+    
+    // عرض الصور الموجودة
+    if (product.images && product.images.length > 0) {
+        const preview = document.getElementById('imagePreview');
+        preview.innerHTML = product.images.map(img => 
+            `<img src="${img}" class="preview-image">`
+        ).join('');
+        document.getElementById('productImagesData').value = JSON.stringify(product.images);
+    }
 }
 
 function deleteProduct(id) {
@@ -1602,10 +2007,15 @@ function deleteProduct(id) {
         localStorage.setItem('nardoo_products', JSON.stringify(products));
         displayProducts();
         showAdvancedNotification(`✅ تم حذف المنتج ${product.name}`, 'info');
+        
+        // تحديث لوحة التاجر
+        if (currentUser.role === 'merchant_approved') {
+            showMerchantPanel();
+        }
     }
 }
 
-// ========== 32. لوحة التحكم ==========
+// ========== 40. لوحة التحكم ==========
 function openDashboard() {
     if (!currentUser || currentUser.role !== 'admin') {
         showAdvancedNotification('غير مصرح', 'error');
@@ -1635,6 +2045,7 @@ function switchDashboardTab(tab) {
 function showDashboardOverview(container) {
     const orderStats = orderManager.getOrderStatistics();
     const analytics = analyticsManager.generateComprehensiveReport();
+    const pendingMerchants = users.filter(u => u.role === 'merchant_pending').length;
 
     container.innerHTML = `
         <h3 style="margin-bottom: 30px; color: var(--gold);">نظرة عامة على المتجر</h3>
@@ -1643,7 +2054,18 @@ function showDashboardOverview(container) {
             <div class="stat-card"><i class="fas fa-coins"></i><div class="stat-value">${orderStats.totalRevenue.toLocaleString()}</div><div class="stat-label">الإيرادات (دج)</div></div>
             <div class="stat-card"><i class="fas fa-chart-line"></i><div class="stat-value">${orderStats.averageOrderValue.toFixed(0)}</div><div class="stat-label">متوسط قيمة الطلب</div></div>
             <div class="stat-card"><i class="fas fa-percent"></i><div class="stat-value">${analytics.conversionRate}%</div><div class="stat-label">معدل التحويل</div></div>
+            <div class="stat-card"><i class="fas fa-store"></i><div class="stat-value">${users.filter(u => u.role === 'merchant_approved').length}</div><div class="stat-label">التجار النشطين</div></div>
+            <div class="stat-card"><i class="fas fa-user-clock"></i><div class="stat-value">${pendingMerchants}</div><div class="stat-label">طلبات تجار</div></div>
         </div>
+        
+        ${pendingMerchants > 0 ? `
+            <div style="text-align: center; margin: 30px 0;">
+                <button class="btn-gold" onclick="showMerchantRequests()" style="padding: 15px 40px;">
+                    <i class="fas fa-bell"></i> عرض طلبات التجار (${pendingMerchants})
+                </button>
+            </div>
+        ` : ''}
+        
         <h4 style="margin: 30px 0 20px; color: var(--gold);">الطلبات الأخيرة</h4>
         <div style="overflow-x: auto;">
             <table>
@@ -1669,9 +2091,15 @@ function showDashboardOrders(container) {
     container.innerHTML = `
         <h3 style="margin-bottom: 20px; color: var(--gold);">جميع الطلبات</h3>
         <table>
-            <thead><tr><th>رقم الطلب</th><th>العميل</th><th>المجموع</th><th>الحالة</th></tr></thead>
+            <thead><tr><th>رقم الطلب</th><th>العميل</th><th>المجموع</th><th>الحالة</th><th>التاريخ</th></tr></thead>
             <tbody>
-                ${orders.map(o => `<tr><td>${o.id}</td><td>${o.customerName}</td><td>${o.total} دج</td><td>${o.status}</td></tr>`).join('')}
+                ${orders.map(o => `<tr>
+                    <td>${o.id}</td>
+                    <td>${o.customerName}</td>
+                    <td>${o.total} دج</td>
+                    <td><span style="background: ${o.status === 'delivered' ? '#4ade80' : o.status === 'cancelled' ? '#f87171' : '#fbbf24'}; color: #000; padding: 3px 8px; border-radius: 15px;">${orderManager.getStatusMessage(o.status)}</span></td>
+                    <td>${new Date(o.createdAt).toLocaleDateString('ar-DZ')}</td>
+                </tr>`).join('')}
             </tbody>
         </table>
     `;
@@ -1684,6 +2112,16 @@ function showDashboardAnalytics(container) {
         <div class="stats-grid">
             <div class="stat-card"><i class="fas fa-eye"></i><div class="stat-value">${analytics.visits.totalPageViews}</div><div class="stat-label">مشاهدات الصفحات</div></div>
             <div class="stat-card"><i class="fas fa-bolt"></i><div class="stat-value">${analytics.visits.totalEvents}</div><div class="stat-label">إجمالي الأحداث</div></div>
+        </div>
+        
+        <h4 style="margin: 30px 0 20px; color: var(--gold);">الأحداث حسب النوع</h4>
+        <div style="background: var(--glass); padding: 20px; border-radius: 20px;">
+            ${Object.entries(analytics.eventsByType).map(([type, count]) => `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; padding: 10px; border-bottom: 1px solid var(--glass-border);">
+                    <span>${type}</span>
+                    <span style="color: var(--gold); font-weight: bold;">${count}</span>
+                </div>
+            `).join('')}
         </div>
     `;
 }
@@ -1721,20 +2159,32 @@ function showDashboardMerchants(container) {
     container.innerHTML = `
         <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
             <h3 style="color: var(--gold);">إدارة التجار</h3>
-            <button class="btn-gold" onclick="showAddMerchantForm()">
-                <i class="fas fa-user-plus"></i> إضافة تاجر يدوياً
-            </button>
+            <div>
+                <button class="btn-gold" onclick="showMerchantRequests()" style="margin-right: 10px;">
+                    <i class="fas fa-bell"></i> طلبات التجار (${pendingMerchants.length})
+                </button>
+                <button class="btn-gold" onclick="showAddMerchantForm()">
+                    <i class="fas fa-user-plus"></i> إضافة تاجر يدوياً
+                </button>
+            </div>
         </div>
         
-        <h4 style="margin: 20px 0; color: var(--gold);">طلبات التجار (${pendingMerchants.length})</h4>
+        <h4 style="margin: 30px 0 20px; color: var(--gold);">طلبات التجار (${pendingMerchants.length})</h4>
         ${pendingMerchants.map(m => `
             <div style="background: var(--glass); border: 1px solid var(--gold); border-radius: 10px; padding: 15px; margin-bottom: 10px;">
-                <p><strong>${m.name}</strong> - ${m.email}</p>
-                <p>متجر: ${m.storeName || 'غير محدد'}</p>
-                <p>الوصف: ${m.merchantDesc || 'لا يوجد'}</p>
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button class="btn-gold" onclick="approveMerchant(${m.id})">✅ موافقة</button>
-                    <button class="btn-outline-gold" onclick="rejectMerchant(${m.id})">❌ رفض</button>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="width: 50px; height: 50px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-user" style="font-size: 25px;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <p><strong>${m.name}</strong> - ${m.email}</p>
+                        <p>متجر: ${m.storeName || 'غير محدد'} | مستوى: ${m.merchantLevel || 1}</p>
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="btn-gold" onclick="approveMerchant(${m.id})" style="padding: 5px 10px;">✅ قبول</button>
+                        <button class="btn-outline-gold" onclick="rejectMerchant(${m.id})" style="padding: 5px 10px;">❌ رفض</button>
+                        <button class="btn-outline-gold" onclick="customizeMerchant(${m.id})" style="padding: 5px 10px;">⚙️ تخصيص</button>
+                    </div>
                 </div>
             </div>
         `).join('')}
@@ -1744,18 +2194,21 @@ function showDashboardMerchants(container) {
             <div style="background: var(--glass); border: 2px solid ${m.storeColor || '#4ade80'}; border-radius: 10px; padding: 15px; margin-bottom: 10px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <div style="width: 20px; height: 20px; border-radius: 50%; background: ${m.storeColor || '#9b59b6'};"></div>
-                    <p style="flex: 1;"><strong>${m.name}</strong> - ${m.email}</p>
+                    <div style="flex: 1;">
+                        <p><strong>${m.name}</strong> - ${m.storeName}</p>
+                        <p>👤 ${m.username} | 🔐 ${m.password}</p>
+                        <p>📦 ${products.filter(p => p.merchantName === m.name).length}/${m.productsLimit || 5} منتج</p>
+                    </div>
+                    <div>
+                        <button class="btn-outline-gold" onclick="customizeMerchant(${m.id})" style="padding: 5px 10px;">⚙️ تعديل</button>
+                    </div>
                 </div>
-                <p>اسم المتجر: <span style="color: ${m.storeColor || '#9b59b6'}; font-weight: bold;">${m.storeName || 'غير محدد'}</span></p>
-                <p>اسم المستخدم: ${m.username || m.email}</p>
-                <p>كلمة المرور: ${m.password}</p>
-                <p>عدد المنتجات: ${products.filter(p => p.merchantName === m.name).length}</p>
             </div>
         `).join('')}
     `;
 }
 
-// ========== 33. تأثيرات الكتابة ==========
+// ========== 41. تأثيرات الكتابة ==========
 class TypingAnimation {
     constructor(element, texts, speed = 100, delay = 2000) {
         this.element = element;
@@ -1797,7 +2250,7 @@ class TypingAnimation {
     }
 }
 
-// ========== 34. تأثيرات الماوس ==========
+// ========== 42. تأثيرات الماوس ==========
 function initMouseEffects() {
     if (window.innerWidth <= 768) return;
     
@@ -1820,7 +2273,7 @@ function initMouseEffects() {
     });
 }
 
-// ========== 35. شريط تقدم التمرير ==========
+// ========== 43. شريط تقدم التمرير ==========
 function initScrollProgress() {
     const progressBar = document.createElement('div');
     progressBar.className = 'scroll-progress';
@@ -1834,7 +2287,7 @@ function initScrollProgress() {
     });
 }
 
-// ========== 36. جسيمات متحركة ==========
+// ========== 44. جسيمات متحركة ==========
 function initParticles() {
     const particlesContainer = document.createElement('div');
     particlesContainer.className = 'particles';
@@ -1850,7 +2303,7 @@ function initParticles() {
     }
 }
 
-// ========== 37. الاستماع لأوامر تلجرام مع منع التكرار ==========
+// ========== 45. الاستماع لأوامر تلجرام مع منع التكرار ==========
 setInterval(async () => {
     try {
         const response = await fetch(
@@ -1882,6 +2335,12 @@ setInterval(async () => {
                         await rejectMerchant(userId);
                         markUpdateAsProcessed(update.update_id);
                     }
+                    
+                    if (text.startsWith('/customize_')) {
+                        const userId = text.replace('/customize_', '').trim();
+                        customizeMerchant(userId);
+                        markUpdateAsProcessed(update.update_id);
+                    }
                 }
                 
                 if (update.message?.text) {
@@ -1898,6 +2357,12 @@ setInterval(async () => {
                         await rejectMerchant(userId);
                         markUpdateAsProcessed(update.update_id);
                     }
+                    
+                    if (text.startsWith('/customize_')) {
+                        const userId = text.replace('/customize_', '').trim();
+                        customizeMerchant(userId);
+                        markUpdateAsProcessed(update.update_id);
+                    }
                 }
             }
         }
@@ -1906,17 +2371,22 @@ setInterval(async () => {
     }
 }, 5000);
 
-// ========== 38. التهيئة (onload) ==========
+// ========== 46. التهيئة (onload) ==========
 window.onload = function() {
+    // تحميل المنتجات
     loadProducts();
+    
+    // تحميل السلة
     loadCart();
 
+    // تحميل المستخدم الحالي
     const savedUser = localStorage.getItem('current_user');
     if (savedUser) {
         currentUser = JSON.parse(savedUser);
         updateUIBasedOnRole();
     }
 
+    // تحميل الثيم
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
         isDarkMode = savedTheme === 'dark';
@@ -1926,15 +2396,22 @@ window.onload = function() {
             '<i class="fas fa-sun"></i><span>نهاري</span>';
     }
 
+    // إخفاء شاشة التحميل
     setTimeout(() => {
         document.getElementById('loader').style.opacity = '0';
         setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
     }, 1000);
 
+    // تتبع الصفحة
     analyticsManager.trackPageView('home');
     
+    // تحديث العداد
     updateFixedCartCounter();
+    
+    // إضافة مستمعين
     window.addEventListener('scroll', toggleQuickTopButton);
+    
+    // إضافة تأثيرات
     addScrollAnimations();
     updateCountdown();
     updateProgressBars();
@@ -1942,43 +2419,58 @@ window.onload = function() {
     initScrollProgress();
     initParticles();
     
+    // تأثير الكتابة
     const typingElement = document.getElementById('typing-text');
     if (typingElement) {
         new TypingAnimation(typingElement, ['نكهة وجمال', 'ناردو برو', 'تسوق آمن', 'جودة عالية'], 100, 2000).start();
     }
 };
 
+// ========== 47. إغلاق النوافذ المنبثقة عند الضغط خارجها ==========
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
         event.target.style.display = 'none';
     }
 };
 
-// ========== 39. دالة رفض التاجر (للمدير) ==========
-async function rejectMerchant(userId) {
-    console.log(`📨 أمر رفض ورد للتاجر ${userId}`);
-    
-    let currentUsers = JSON.parse(localStorage.getItem('nardoo_users')) || [];
-    const userIndex = currentUsers.findIndex(u => u.id == userId);
-    
-    if (userIndex !== -1 && currentUsers[userIndex].role === 'merchant_pending') {
-        currentUsers[userIndex].role = 'customer';
-        localStorage.setItem('nardoo_users', JSON.stringify(currentUsers));
-        users = currentUsers;
-        
-        const merchant = currentUsers[userIndex];
-        
-        await sendNotificationToTelegram(`❌ تم رفض طلب التاجر: ${merchant.name}`);
-        
-        console.log(`✅ تم رفض التاجر ${userId}`);
-        return true;
-    }
-    return false;
-}
-
-// ========== 40. دالة عرض التحديثات المعالجة ==========
+// ========== 48. عرض التحديثات المعالجة ==========
 function showProcessedUpdates() {
     const processed = JSON.parse(localStorage.getItem(PROCESSED_UPDATES_KEY)) || [];
     console.log('📋 آخر التحديثات المعالجة:', processed);
     showAdvancedNotification(`📋 عدد التحديثات المعالجة: ${processed.length}`, 'info');
 }
+
+// ========== 49. تصدير الدوال للاستخدام العام ==========
+window.addToCart = addToCart;
+window.toggleCart = toggleCart;
+window.updateCartItem = updateCartItem;
+window.removeFromCart = removeFromCart;
+window.checkoutCart = checkoutCart;
+window.filterProducts = filterProducts;
+window.searchProducts = searchProducts;
+window.changeSort = changeSort;
+window.viewProductDetails = viewProductDetails;
+window.openLoginModal = openLoginModal;
+window.closeModal = closeModal;
+window.switchAuthTab = switchAuthTab;
+window.toggleMerchantFields = toggleMerchantFields;
+window.handleLogin = handleLogin;
+window.handleRegister = handleRegister;
+window.showAddProductModal = showAddProductModal;
+window.saveProduct = saveProduct;
+window.editProduct = editProduct;
+window.deleteProduct = deleteProduct;
+window.openDashboard = openDashboard;
+window.switchDashboardTab = switchDashboardTab;
+window.showAddMerchantForm = showAddMerchantForm;
+window.saveManualMerchant = saveManualMerchant;
+window.approveMerchant = approveMerchant;
+window.rejectMerchant = rejectMerchant;
+window.customizeMerchant = customizeMerchant;
+window.saveMerchantCustomization = saveMerchantCustomization;
+window.showMerchantRequests = showMerchantRequests;
+window.viewMyProducts = viewMyProducts;
+window.toggleTheme = toggleTheme;
+window.scrollToTop = scrollToTop;
+window.scrollToBottom = scrollToBottom;
+window.showProcessedUpdates = showProcessedUpdates;
