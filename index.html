@@ -325,7 +325,7 @@
             <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
                 <div class="form-group">
                     <label>اسم المستخدم أو البريد الإلكتروني</label>
-                    <input type="text" class="form-control" id="loginEmail" placeholder="أدخل اسم المستخدم">
+                    <input type="text" class="form-control" id="loginEmail" placeholder="أدخل اسم المستخدم أو البريد">
                 </div>
                 <div class="form-group">
                     <label>كلمة المرور</label>
@@ -462,7 +462,14 @@
         </div>
     </div>
 
-    <!-- ===== 26. ربط ملف JavaScript ===== -->
+    <!-- ===== 26. زر اختبار تلجرام (للمطور) ===== -->
+    <div style="position: fixed; bottom: 10px; left: 10px; z-index: 9999;">
+        <button class="btn-outline-gold" onclick="showProcessedUpdates()" style="font-size: 12px; padding: 5px 10px;">
+            🔧 عرض التحديثات
+        </button>
+    </div>
+
+    <!-- ===== 27. ربط ملف JavaScript ===== -->
     <script src="script.js"></script>
 </body>
 </html>
