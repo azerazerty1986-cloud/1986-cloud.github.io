@@ -1199,11 +1199,15 @@ function toggleMerchantFields() {
     document.getElementById('merchantFields').style.display = isMerchant ? 'block' : 'none';
 }
 
+// ========== 26. تسجيل الدخول (باسم المستخدم أو البريد) ==========
 function handleLogin() {
-    const email = document.getElementById('loginEmail').value;
+    const emailOrUsername = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
 
-    const user = users.find(u => (u.email === email || u.username === email || u.name === email) && u.password === password);
+    const user = users.find(u => 
+        (u.email === emailOrUsername || u.username === emailOrUsername || u.name === emailOrUsername) 
+        && u.password === password
+    );
 
     if (user) {
         currentUser = user;
@@ -1213,15 +1217,17 @@ function handleLogin() {
         
         if (user.role === 'merchant_approved') {
             showAdvancedNotification(`🎉 مرحباً أيها التاجر ${user.name} في متجر ناردو`, 'success', 'تاجر ناردو');
+        } else if (user.role === 'admin') {
+            showAdvancedNotification(`👑 مرحباً بك يا مدير ${user.name}`, 'success', 'مدير');
         } else {
-            showAdvancedNotification(`مرحباً ${user.name}`, 'success');
+            showAdvancedNotification(`👤 مرحباً ${user.name}`, 'success');
         }
     } else {
-        showAdvancedNotification('بيانات الدخول غير صحيحة', 'error');
+        showAdvancedNotification('❌ اسم المستخدم أو كلمة المرور غير صحيحة', 'error');
     }
 }
 
-// 🔵 دالة تسجيل التاجر
+// ========== 27. تسجيل تاجر جديد (يرسل طلب للمدير فقط) ==========
 function handleRegister() {
     const name = document.getElementById('regName').value;
     const email = document.getElementById('regEmail').value;
@@ -1242,16 +1248,13 @@ function handleRegister() {
     const newUser = {
         id: users.length + 1,
         name: name,
-        username: email.split('@')[0],
         email: email,
         password: password,
         phone: phone,
         role: isMerchant ? 'merchant_pending' : 'customer',
         telegramId: null,
         storeName: isMerchant ? (document.getElementById('merchantDesc')?.value.split('\n')[0] || 'متجر ' + name) : '',
-        storeColor: isMerchant ? '#' + Math.floor(Math.random()*16777215).toString(16) : null,
-        merchantLevel: isMerchant ? document.getElementById('merchantLevel').value : null,
-        merchantDesc: isMerchant ? document.getElementById('merchantDesc').value : '',
+        merchantDesc: isMerchant ? document.getElementById('merchantDesc')?.value : '',
         createdAt: new Date().toISOString()
     };
 
@@ -1259,12 +1262,11 @@ function handleRegister() {
         sendMerchantRequestToTelegram(newUser);
         showAdvancedNotification('📋 تم إرسال طلب التسجيل إلى المدير', 'info');
     } else {
-        showAdvancedNotification('✅ تم التسجيل بنجاح', 'success');
+        users.push(newUser);
+        localStorage.setItem('nardoo_users', JSON.stringify(users));
+        showAdvancedNotification('✅ تم التسجيل كعميل بنجاح', 'success');
+        switchAuthTab('login');
     }
-
-    users.push(newUser);
-    localStorage.setItem('nardoo_users', JSON.stringify(users));
-    switchAuthTab('login');
 }
 
 function updateUIBasedOnRole() {
@@ -1338,95 +1340,7 @@ function showMerchantPanel() {
     `;
 }
 
-// ========== 26. الموافقة على تاجر مع إشعار ==========
-async function approveMerchant(userId) {
-    console.log(`📨 أمر موافقة ورد للتاجر ${userId}`);
-    
-    let currentUsers = JSON.parse(localStorage.getItem('nardoo_users')) || [];
-    const userIndex = currentUsers.findIndex(u => u.id == userId);
-    
-    if (userIndex !== -1) {
-        currentUsers[userIndex].role = 'merchant_approved';
-        if (!currentUsers[userIndex].storeColor) {
-            currentUsers[userIndex].storeColor = '#' + Math.floor(Math.random()*16777215).toString(16);
-        }
-        localStorage.setItem('nardoo_users', JSON.stringify(currentUsers));
-        users = currentUsers;
-        
-        const merchant = currentUsers[userIndex];
-        
-        await sendNotificationToTelegram(`✅ تمت الموافقة على التاجر: ${merchant.name} (ID: ${userId})`);
-        
-        if (merchant.telegramId) {
-            const welcomeMessage = `
-🎉 *تهانينا!* تمت الموافقة على طلبك كتاجر في *متجر ناردو*!
-
-🔑 *بيانات الدخول:*
-👤 اسم المستخدم: ${merchant.username || merchant.email}
-🔐 كلمة المرور: ${merchant.password}
-
-📦 يمكنك الآن:
-• إضافة منتجاتك
-• تعديل منتجاتك
-• مشاهدة مبيعاتك
-
-🌐 رابط المتجر: https://1986-cloud-github-io.pages.dev
-
-💚 شكراً لانضمامك إلى عائلة *ناردو*!
-            `;
-            
-            await sendPrivateMessageToMerchant(merchant.telegramId, welcomeMessage);
-        }
-        
-        console.log(`✅ تمت الموافقة على التاجر ${userId}`);
-        
-        if (document.getElementById('dashboardSection')?.style.display === 'block') {
-            switchDashboardTab('merchants');
-        }
-        
-        return true;
-    } else {
-        console.log(`❌ لم يتم العثور على تاجر بالمعرف ${userId}`);
-        return false;
-    }
-}
-
-async function rejectMerchant(userId) {
-    console.log(`📨 أمر رفض ورد للتاجر ${userId}`);
-    
-    let currentUsers = JSON.parse(localStorage.getItem('nardoo_users')) || [];
-    const userIndex = currentUsers.findIndex(u => u.id == userId);
-    
-    if (userIndex !== -1 && currentUsers[userIndex].role === 'merchant_pending') {
-        currentUsers[userIndex].role = 'customer';
-        localStorage.setItem('nardoo_users', JSON.stringify(currentUsers));
-        users = currentUsers;
-        
-        const merchant = currentUsers[userIndex];
-        
-        await sendNotificationToTelegram(`❌ تم رفض طلب التاجر: ${merchant.name} (ID: ${userId})`);
-        
-        if (merchant.telegramId) {
-            await sendPrivateMessageToMerchant(
-                merchant.telegramId,
-                `😔 *نأسف!* لم تتم الموافقة على طلبك كتاجر في متجر ناردو.\n\nيمكنك التواصل مع الإدارة للمزيد من المعلومات.`
-            );
-        }
-        
-        console.log(`✅ تم رفض التاجر ${userId}`);
-        
-        if (document.getElementById('dashboardSection')?.style.display === 'block') {
-            switchDashboardTab('merchants');
-        }
-        
-        return true;
-    } else {
-        console.log(`❌ لم يتم العثور على طلب تاجر بالمعرف ${userId}`);
-        return false;
-    }
-}
-
-// ========== 27. إضافة التاجر يدوياً (للمدير) ==========
+// ========== 28. إضافة التاجر يدوياً (للمدير فقط) ==========
 function showAddMerchantForm() {
     const formHtml = `
         <div class="modal" id="addMerchantModal" style="display: flex; z-index: 9999;">
@@ -1437,27 +1351,27 @@ function showAddMerchantForm() {
                 
                 <div class="form-group">
                     <label>الاسم الكامل</label>
-                    <input type="text" class="form-control" id="merchantFullName" placeholder="مثال: أحمد محمد">
+                    <input type="text" class="form-control" id="merchantFullName" placeholder="مثال: أحمد محمد" required>
                 </div>
                 
                 <div class="form-group">
                     <label>اسم المستخدم (للدخول)</label>
-                    <input type="text" class="form-control" id="merchantUsername" placeholder="مثال: ahmed_shop">
+                    <input type="text" class="form-control" id="merchantUsername" placeholder="مثال: ahmed_shop" required>
                 </div>
                 
                 <div class="form-group">
                     <label>كلمة المرور</label>
-                    <input type="text" class="form-control" id="merchantPassword" value="123456" placeholder="كلمة المرور">
+                    <input type="text" class="form-control" id="merchantPassword" value="123456" required>
                 </div>
                 
                 <div class="form-group">
                     <label>البريد الإلكتروني</label>
-                    <input type="email" class="form-control" id="merchantEmail" placeholder="example@email.com">
+                    <input type="email" class="form-control" id="merchantEmail" placeholder="example@email.com" required>
                 </div>
                 
                 <div class="form-group">
                     <label>اسم المتجر</label>
-                    <input type="text" class="form-control" id="merchantStoreName" placeholder="مثال: متجر العطور">
+                    <input type="text" class="form-control" id="merchantStoreName" placeholder="مثال: متجر العطور" required>
                 </div>
                 
                 <div class="form-group">
@@ -1472,7 +1386,7 @@ function showAddMerchantForm() {
                 
                 <div style="display: flex; gap: 15px; margin-top: 30px;">
                     <button class="btn-gold" style="flex: 2;" onclick="saveManualMerchant()">
-                        <i class="fas fa-save"></i> حفظ التاجر
+                        <i class="fas fa-save"></i> إضافة التاجر
                     </button>
                     <button class="btn-outline-gold" style="flex: 1;" onclick="closeModal('addMerchantModal')">
                         <i class="fas fa-times"></i> إلغاء
@@ -1490,6 +1404,7 @@ function showAddMerchantForm() {
     document.body.appendChild(modalDiv.firstChild);
 }
 
+// ========== 29. حفظ التاجر المضاف يدوياً ==========
 function saveManualMerchant() {
     const name = document.getElementById('merchantFullName')?.value;
     const username = document.getElementById('merchantUsername')?.value;
@@ -1535,14 +1450,46 @@ function saveManualMerchant() {
     closeModal('addMerchantModal');
     showAdvancedNotification(`✅ تم إضافة التاجر ${name} بنجاح`, 'success');
     
-    sendNotificationToTelegram(`✅ تم إضافة تاجر جديد: ${name} (${storeName})`);
+    sendNotificationToTelegram(`✅ تم إضافة تاجر جديد: ${name} (${storeName}) - اسم المستخدم: ${username}`);
     
     if (document.getElementById('dashboardSection').style.display === 'block') {
         switchDashboardTab('merchants');
     }
 }
 
-// ========== 28. إضافة المنتجات ==========
+// ========== 30. الموافقة على تاجر (للمدير عبر تلجرام) ==========
+async function approveMerchant(userId) {
+    console.log(`📨 أمر موافقة ورد للتاجر ${userId}`);
+    
+    let currentUsers = JSON.parse(localStorage.getItem('nardoo_users')) || [];
+    const userIndex = currentUsers.findIndex(u => u.id == userId);
+    
+    if (userIndex !== -1 && currentUsers[userIndex].role === 'merchant_pending') {
+        const username = currentUsers[userIndex].email.split('@')[0] + '_' + Math.floor(Math.random()*1000);
+        const password = '123456';
+        
+        currentUsers[userIndex].role = 'merchant_approved';
+        currentUsers[userIndex].username = username;
+        currentUsers[userIndex].password = password;
+        currentUsers[userIndex].storeColor = '#' + Math.floor(Math.random()*16777215).toString(16);
+        
+        localStorage.setItem('nardoo_users', JSON.stringify(currentUsers));
+        users = currentUsers;
+        
+        const merchant = currentUsers[userIndex];
+        
+        await sendNotificationToTelegram(`✅ تمت الموافقة على التاجر: ${merchant.name}
+🔑 بيانات الدخول:
+👤 اسم المستخدم: ${username}
+🔐 كلمة المرور: ${password}`);
+        
+        console.log(`✅ تمت الموافقة على التاجر ${userId}`);
+        return true;
+    }
+    return false;
+}
+
+// ========== 31. إضافة المنتجات مع صلاحيات ==========
 function showAddProductModal() {
     if (!currentUser) {
         showAdvancedNotification('يجب تسجيل الدخول أولاً', 'warning');
@@ -1658,7 +1605,7 @@ function deleteProduct(id) {
     }
 }
 
-// ========== 29. لوحة التحكم ==========
+// ========== 32. لوحة التحكم ==========
 function openDashboard() {
     if (!currentUser || currentUser.role !== 'admin') {
         showAdvancedNotification('غير مصرح', 'error');
@@ -1784,7 +1731,7 @@ function showDashboardMerchants(container) {
             <div style="background: var(--glass); border: 1px solid var(--gold); border-radius: 10px; padding: 15px; margin-bottom: 10px;">
                 <p><strong>${m.name}</strong> - ${m.email}</p>
                 <p>متجر: ${m.storeName || 'غير محدد'}</p>
-                <p>مستوى: ${m.merchantLevel || '1'}</p>
+                <p>الوصف: ${m.merchantDesc || 'لا يوجد'}</p>
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
                     <button class="btn-gold" onclick="approveMerchant(${m.id})">✅ موافقة</button>
                     <button class="btn-outline-gold" onclick="rejectMerchant(${m.id})">❌ رفض</button>
@@ -1799,7 +1746,7 @@ function showDashboardMerchants(container) {
                     <div style="width: 20px; height: 20px; border-radius: 50%; background: ${m.storeColor || '#9b59b6'};"></div>
                     <p style="flex: 1;"><strong>${m.name}</strong> - ${m.email}</p>
                 </div>
-                <p>متجر: <span style="color: ${m.storeColor || '#9b59b6'}; font-weight: bold;">${m.storeName || 'غير محدد'}</span></p>
+                <p>اسم المتجر: <span style="color: ${m.storeColor || '#9b59b6'}; font-weight: bold;">${m.storeName || 'غير محدد'}</span></p>
                 <p>اسم المستخدم: ${m.username || m.email}</p>
                 <p>كلمة المرور: ${m.password}</p>
                 <p>عدد المنتجات: ${products.filter(p => p.merchantName === m.name).length}</p>
@@ -1808,7 +1755,7 @@ function showDashboardMerchants(container) {
     `;
 }
 
-// ========== 30. تأثيرات الكتابة ==========
+// ========== 33. تأثيرات الكتابة ==========
 class TypingAnimation {
     constructor(element, texts, speed = 100, delay = 2000) {
         this.element = element;
@@ -1850,7 +1797,7 @@ class TypingAnimation {
     }
 }
 
-// ========== 31. تأثيرات الماوس ==========
+// ========== 34. تأثيرات الماوس ==========
 function initMouseEffects() {
     if (window.innerWidth <= 768) return;
     
@@ -1873,7 +1820,7 @@ function initMouseEffects() {
     });
 }
 
-// ========== 32. شريط تقدم التمرير ==========
+// ========== 35. شريط تقدم التمرير ==========
 function initScrollProgress() {
     const progressBar = document.createElement('div');
     progressBar.className = 'scroll-progress';
@@ -1887,7 +1834,7 @@ function initScrollProgress() {
     });
 }
 
-// ========== 33. جسيمات متحركة ==========
+// ========== 36. جسيمات متحركة ==========
 function initParticles() {
     const particlesContainer = document.createElement('div');
     particlesContainer.className = 'particles';
@@ -1903,7 +1850,7 @@ function initParticles() {
     }
 }
 
-// ========== 34. الاستماع لأوامر تلجرام مع منع التكرار ==========
+// ========== 37. الاستماع لأوامر تلجرام مع منع التكرار ==========
 setInterval(async () => {
     try {
         const response = await fetch(
@@ -1959,7 +1906,7 @@ setInterval(async () => {
     }
 }, 5000);
 
-// ========== 35. التهيئة (onload) ==========
+// ========== 38. التهيئة (onload) ==========
 window.onload = function() {
     loadProducts();
     loadCart();
@@ -2007,7 +1954,29 @@ window.onclick = function(event) {
     }
 };
 
-// ========== 36. دالة لعرض التحديثات المعالجة ==========
+// ========== 39. دالة رفض التاجر (للمدير) ==========
+async function rejectMerchant(userId) {
+    console.log(`📨 أمر رفض ورد للتاجر ${userId}`);
+    
+    let currentUsers = JSON.parse(localStorage.getItem('nardoo_users')) || [];
+    const userIndex = currentUsers.findIndex(u => u.id == userId);
+    
+    if (userIndex !== -1 && currentUsers[userIndex].role === 'merchant_pending') {
+        currentUsers[userIndex].role = 'customer';
+        localStorage.setItem('nardoo_users', JSON.stringify(currentUsers));
+        users = currentUsers;
+        
+        const merchant = currentUsers[userIndex];
+        
+        await sendNotificationToTelegram(`❌ تم رفض طلب التاجر: ${merchant.name}`);
+        
+        console.log(`✅ تم رفض التاجر ${userId}`);
+        return true;
+    }
+    return false;
+}
+
+// ========== 40. دالة عرض التحديثات المعالجة ==========
 function showProcessedUpdates() {
     const processed = JSON.parse(localStorage.getItem(PROCESSED_UPDATES_KEY)) || [];
     console.log('📋 آخر التحديثات المعالجة:', processed);
