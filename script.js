@@ -27,6 +27,7 @@ async function loadProductsFromTelegram() {
                 // البحث عن رسائل المنتجات (🟣)
                 if (update.channel_post?.text?.includes('🟣')) {
                     const text = update.channel_post.text;
+                    console.log('📦 وجدنا منتج:', text);
                     
                     // استخراج البيانات
                     let name = 'منتج';
@@ -43,7 +44,11 @@ async function loadProductsFromTelegram() {
                             const match = line.match(/\d+/);
                             if (match) price = parseInt(match[0]);
                         } else if (line.includes('*القسم:*')) {
-                            category = line.replace('*القسم:*', '').replace(/\*/g, '').trim();
+                            const catText = line.replace('*القسم:*', '').replace(/\*/g, '').trim().toLowerCase();
+                            if (catText.includes('promo')) category = 'promo';
+                            else if (catText.includes('spices') || catText.includes('توابل')) category = 'spices';
+                            else if (catText.includes('cosmetic') || catText.includes('كوسمتيك')) category = 'cosmetic';
+                            else category = 'other';
                         } else if (line.includes('*الكمية:*')) {
                             const match = line.match(/\d+/);
                             if (match) stock = parseInt(match[0]);
@@ -98,7 +103,7 @@ async function addProductToTelegram(product) {
     `;
 
     try {
-        await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -107,7 +112,9 @@ async function addProductToTelegram(product) {
                 parse_mode: 'Markdown'
             })
         });
-        return true;
+        
+        const result = await response.json();
+        return result.ok;
     } catch (error) {
         console.error('❌ خطأ في إضافة المنتج:', error);
         return false;
@@ -1276,7 +1283,6 @@ async function approveMerchant(userId) {
     await sendNotificationToTelegram(`✅ تمت الموافقة على التاجر: ${user.name}`);
     showAdvancedNotification('تمت الموافقة على التاجر', 'success');
     
-    // تحديث لوحة التحكم إذا كانت مفتوحة
     if (document.getElementById('dashboardSection').style.display === 'block') {
         switchDashboardTab('merchants');
     }
@@ -1292,7 +1298,6 @@ async function rejectMerchant(userId) {
     await sendNotificationToTelegram(`❌ تم رفض طلب التاجر: ${user.name}`);
     showAdvancedNotification('تم رفض طلب التاجر', 'info');
     
-    // تحديث لوحة التحكم إذا كانت مفتوحة
     if (document.getElementById('dashboardSection').style.display === 'block') {
         switchDashboardTab('merchants');
     }
@@ -1372,7 +1377,6 @@ async function saveProduct() {
         showAdvancedNotification('✅ تم إضافة المنتج وسيظهر قريباً', 'success');
         closeModal('productModal');
         
-        // انتظر ثانيتين ثم أعد تحميل المنتجات
         setTimeout(async () => {
             await loadProducts();
         }, 2000);
