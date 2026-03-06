@@ -5,34 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نكهة وجمال | ناردو برو - المتجر الذكي المتكامل 2026</title>
     
-    <!-- ===== 1. Google Fonts - Cairo ===== -->
+    <!-- الخطوط والمكتبات -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- ===== 2. Font Awesome 6 ===== -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- ===== 3. Chart.js للرسوم البيانية ===== -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    
-    <!-- ===== 4. Swiper للمعرض ===== -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    
-    <!-- ===== 5. ربط ملف CSS ===== -->
+    <!-- ربط ملف CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- ===== 6. شاشة التحميل ===== -->
+    <!-- ===== 1. شاشة التحميل ===== -->
     <div class="loader" id="loader">
         <div class="loader-spinner"></div>
     </div>
 
-    <!-- ===== 7. نظام الإشعارات ===== -->
-    <div class="notification-container" id="notificationContainer"></div>
+    <!-- ===== 2. نظام الإشعارات ===== -->
+    <div class="toast-container" id="notificationContainer"></div>
 
-    <!-- ===== 8. سلة التسوق الجانبية ===== -->
+    <!-- ===== 3. سلة التسوق الجانبية ===== -->
     <div class="cart-sidebar" id="cartSidebar">
         <div class="cart-header">
             <h3><i class="fas fa-shopping-cart"></i> سلة التسوق</h3>
@@ -50,7 +41,7 @@
         </div>
     </div>
 
-    <!-- ===== 9. الشريط العلوي ===== -->
+    <!-- ===== 4. الشريط العلوي ===== -->
     <div class="top-bar">
         <div class="container">
             <div class="top-bar-item">
@@ -72,10 +63,9 @@
         </div>
     </div>
 
-    <!-- ===== 10. شريط المميزات الحركية المتحرك ===== -->
+    <!-- ===== 5. شريط المميزات المتحرك ===== -->
     <div class="marquee-bar">
         <div class="marquee-content">
-            <!-- العنصر 1 - float -->
             <div class="marquee-item float-item">
                 <i class="fas fa-truck"></i>
                 <span>شحن سريع</span>
@@ -83,8 +73,6 @@
                     <div class="marquee-progress-fill" style="width: 85%"></div>
                 </div>
             </div>
-            
-            <!-- العنصر 2 - bounce -->
             <div class="marquee-item bounce-item">
                 <i class="fas fa-shield-alt"></i>
                 <span>ضمان الجودة</span>
@@ -92,8 +80,6 @@
                     <div class="marquee-progress-fill" style="width: 95%"></div>
                 </div>
             </div>
-            
-            <!-- العنصر 3 - pulse -->
             <div class="marquee-item pulse-item">
                 <i class="fas fa-gem"></i>
                 <span>عروض حصرية</span>
@@ -101,8 +87,6 @@
                     <div class="marquee-progress-fill" style="width: 75%"></div>
                 </div>
             </div>
-            
-            <!-- العنصر 4 - rotate -->
             <div class="marquee-item rotate-item">
                 <i class="fas fa-clock"></i>
                 <span>عداد: <span id="marqueeHours">12</span>:<span id="marqueeMinutes">30</span>:<span id="marqueeSeconds">45</span></span>
@@ -110,8 +94,6 @@
                     <div class="marquee-progress-fill" style="width: 60%"></div>
                 </div>
             </div>
-            
-            <!-- العنصر 5 - glow -->
             <div class="marquee-item glow-item">
                 <i class="fas fa-star"></i>
                 <span>تقييم 4.8</span>
@@ -119,8 +101,6 @@
                     <div class="marquee-progress-fill" style="width: 96%"></div>
                 </div>
             </div>
-            
-            <!-- العنصر 6 - shadow pulse -->
             <div class="marquee-item shadow-pulse-item">
                 <i class="fas fa-fire"></i>
                 <span>تخفيضات</span>
@@ -128,7 +108,6 @@
                     <div class="marquee-progress-fill" style="width: 50%"></div>
                 </div>
             </div>
-            
             <!-- تكرار للحركة المستمرة -->
             <div class="marquee-item float-item">
                 <i class="fas fa-truck"></i>
@@ -137,7 +116,6 @@
                     <div class="marquee-progress-fill" style="width: 85%"></div>
                 </div>
             </div>
-            
             <div class="marquee-item bounce-item">
                 <i class="fas fa-shield-alt"></i>
                 <span>ضمان الجودة</span>
@@ -145,18 +123,10 @@
                     <div class="marquee-progress-fill" style="width: 95%"></div>
                 </div>
             </div>
-            
-            <div class="marquee-item pulse-item">
-                <i class="fas fa-gem"></i>
-                <span>عروض حصرية</span>
-                <div class="marquee-progress">
-                    <div class="marquee-progress-fill" style="width: 75%"></div>
-                </div>
-            </div>
         </div>
     </div>
 
-    <!-- ===== 11. الهيدر الرئيسي ===== -->
+    <!-- ===== 6. الهيدر الرئيسي ===== -->
     <header class="main-header">
         <div class="container header-content">
             <div class="logo">
@@ -169,15 +139,16 @@
                 </div>
             </div>
             
-            <!-- ===== 12. شريط البحث ===== -->
+            <!-- ===== 7. شريط البحث ===== -->
             <div class="search-wrapper">
                 <div class="search-box">
                     <input type="text" id="searchInput" placeholder="ابحث عن منتج..." onkeyup="searchProducts()">
                     <button onclick="searchProducts()"><i class="fas fa-search"></i></button>
                 </div>
+                <div class="search-indicator" id="searchIndicator"></div>
             </div>
             
-            <!-- ===== 13. أزرار الإجراءات ===== -->
+            <!-- ===== 8. أزرار الإجراءات ===== -->
             <div class="header-actions">
                 <button class="action-btn" onclick="openLoginModal()" id="userBtn">
                     <i class="far fa-user"></i>
@@ -189,11 +160,14 @@
                 <button class="action-btn admin-only" onclick="openDashboard()" id="dashboardBtn" style="display: none;">
                     <i class="fas fa-chart-line"></i>
                 </button>
+                <button class="action-btn merchant-only" onclick="viewMyProducts()" id="merchantProductsBtn" style="display: none;">
+                    <i class="fas fa-box"></i>
+                </button>
             </div>
         </div>
     </header>
 
-    <!-- ===== 14. القائمة الرئيسية ===== -->
+    <!-- ===== 9. القائمة الرئيسية ===== -->
     <div class="container">
         <nav class="nav-menu" id="mainNav">
             <a class="nav-link active" onclick="filterProducts('all')">
@@ -219,7 +193,14 @@
         </nav>
     </div>
 
-    <!-- ===== 15. خيارات الفرز ===== -->
+    <!-- ===== 10. نص متحرك ===== -->
+    <div class="container">
+        <div class="typing-container">
+            <span id="typing-text"></span>
+        </div>
+    </div>
+
+    <!-- ===== 11. خيارات الفرز ===== -->
     <div class="container">
         <div class="sort-options">
             <select class="sort-select" onchange="changeSort(this.value)">
@@ -231,15 +212,15 @@
         </div>
     </div>
 
-    <!-- ===== 16. لوحة التاجر (تظهر للتاجر فقط) ===== -->
+    <!-- ===== 12. لوحة التاجر (تظهر للتاجر فقط) ===== -->
     <div class="container" id="merchantPanelContainer" style="display: none;"></div>
 
-    <!-- ===== 17. المنتجات - شبكة 3 أعمدة ===== -->
+    <!-- ===== 13. المنتجات - شبكة 3 أعمدة ===== -->
     <div class="container">
         <div class="products-grid" id="productsContainer"></div>
     </div>
 
-    <!-- ===== 18. لوحة التحكم (للمدير فقط) ===== -->
+    <!-- ===== 14. لوحة التحكم (للمدير فقط) ===== -->
     <div class="container dashboard-section admin-only" id="dashboardSection" style="display: none;">
         <div class="dashboard-tabs">
             <button class="dashboard-tab active" onclick="switchDashboardTab('overview')">نظرة عامة</button>
@@ -247,14 +228,13 @@
             <button class="dashboard-tab" onclick="switchDashboardTab('analytics')">التحليلات</button>
             <button class="dashboard-tab" onclick="switchDashboardTab('products')">إدارة المنتجات</button>
             <button class="dashboard-tab" onclick="switchDashboardTab('merchants')">التجار</button>
+            <button class="dashboard-tab" onclick="switchDashboardTab('pending')">طلبات التجار</button>
         </div>
 
-        <div class="dashboard-content" id="dashboardContent">
-            <!-- المحتوى يتم تعبئته بواسطة JavaScript -->
-        </div>
+        <div class="dashboard-content" id="dashboardContent"></div>
     </div>
 
-    <!-- ===== 19. الفوتر ===== -->
+    <!-- ===== 15. الفوتر ===== -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -288,13 +268,13 @@
         </div>
     </footer>
 
-    <!-- ===== 20. أيقونة السلة الثابتة ===== -->
+    <!-- ===== 16. أيقونة السلة الثابتة ===== -->
     <div class="fixed-cart" onclick="toggleCart()" id="fixedCart">
         <i class="fas fa-shopping-cart"></i>
         <span class="fixed-cart-count" id="fixedCartCounter">0</span>
     </div>
 
-    <!-- ===== 21. أزرار الصعود والهبوط ===== -->
+    <!-- ===== 17. أزرار الصعود والهبوط ===== -->
     <div class="navigation-buttons">
         <button class="nav-btn up-btn" onclick="scrollToTop()" title="الصعود للأعلى">
             <i class="fas fa-arrow-up"></i>
@@ -304,12 +284,12 @@
         </button>
     </div>
 
-    <!-- ===== 22. زر العودة للأعلى ===== -->
+    <!-- ===== 18. زر العودة للأعلى ===== -->
     <button class="quick-top-btn" onclick="scrollToTop()" id="quickTopBtn">
         <i class="fas fa-chevron-up"></i>
     </button>
 
-    <!-- ===== 23. نافذة تسجيل الدخول ===== -->
+    <!-- ===== 19. نافذة تسجيل الدخول ===== -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <h2 style="text-align: center; margin-bottom: 30px;">
@@ -368,7 +348,13 @@
                             <option value="1">المستوى الأول (5 منتجات)</option>
                             <option value="2">المستوى الثاني (10 منتجات)</option>
                             <option value="3">المستوى الثالث (15 منتج)</option>
+                            <option value="4">المستوى الرابع (25 منتج)</option>
+                            <option value="5">المستوى الخامس (50 منتج)</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label>اسم المتجر</label>
+                        <input type="text" class="form-control" id="merchantStoreName" placeholder="اسم متجرك التجاري">
                     </div>
                     <div class="form-group">
                         <label>وصف النشاط التجاري</label>
@@ -387,7 +373,7 @@
         </div>
     </div>
 
-    <!-- ===== 24. نافذة إضافة منتج ===== -->
+    <!-- ===== 20. نافذة إضافة منتج ===== -->
     <div class="modal" id="productModal">
         <div class="modal-content modal-lg">
             <h2 style="text-align: center; margin-bottom: 30px;">
@@ -422,11 +408,9 @@
                     <input type="number" class="form-control" id="productStock" required min="0">
                 </div>
 
-                <div class="form-group" id="merchantSelectGroup" style="display: none;">
-                    <label>التاجر</label>
-                    <select class="form-control" id="productMerchant">
-                        <option value="">منتج عام</option>
-                    </select>
+                <div class="form-group">
+                    <label>وصف المنتج</label>
+                    <textarea class="form-control" id="productDescription" rows="3" placeholder="اكتب وصفاً للمنتج..."></textarea>
                 </div>
 
                 <!-- رفع الصور -->
@@ -455,21 +439,44 @@
         </div>
     </div>
 
-    <!-- ===== 25. نافذة تفاصيل المنتج ===== -->
+    <!-- ===== 21. نافذة تفاصيل المنتج ===== -->
     <div class="modal" id="productDetailModal">
-        <div class="modal-content modal-lg" id="productDetailContent">
-            <!-- يتم تعبئتها ديناميكياً -->
+        <div class="modal-content modal-lg" id="productDetailContent"></div>
+    </div>
+
+    <!-- ===== 22. نافذة طلبات التجار (للمدير) ===== -->
+    <div class="modal" id="merchantRequestsModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <h2 style="color: var(--gold); text-align: center; margin-bottom: 30px;">
+                <i class="fas fa-user-clock"></i> طلبات انضمام التجار
+            </h2>
+            <div id="merchantRequestsList" style="max-height: 500px; overflow-y: auto;"></div>
+            <div style="text-align: left; margin-top: 20px;">
+                <button class="btn-outline-gold" onclick="closeModal('merchantRequestsModal')">
+                    <i class="fas fa-times"></i> إغلاق
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- ===== 26. زر اختبار تلجرام (للمطور) ===== -->
+    <!-- ===== 23. نافذة تخصيص التاجر ===== -->
+    <div class="modal" id="customizeMerchantModal">
+        <div class="modal-content">
+            <h2 style="color: var(--gold); text-align: center; margin-bottom: 30px;">
+                <i class="fas fa-sliders-h"></i> تخصيص إعدادات التاجر
+            </h2>
+            <div id="customizeMerchantContent"></div>
+        </div>
+    </div>
+
+    <!-- ===== 24. زر اختبار للمطور ===== -->
     <div style="position: fixed; bottom: 10px; left: 10px; z-index: 9999;">
         <button class="btn-outline-gold" onclick="showProcessedUpdates()" style="font-size: 12px; padding: 5px 10px;">
             🔧 عرض التحديثات
         </button>
     </div>
 
-    <!-- ===== 27. ربط ملف JavaScript ===== -->
+    <!-- ربط ملف JavaScript -->
     <script src="script.js"></script>
 </body>
 </html>
