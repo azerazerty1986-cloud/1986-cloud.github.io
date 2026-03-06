@@ -1,4 +1,4 @@
-// ========== 1. إعدادات تلجرام (قناة واحدة متكاملة) ==========
+// ========== 1. إعدادات تلجرام (السحابة الأساسية) ==========
 const TELEGRAM = {
     botToken: '8576673096:AAHCg7pM2MyzmVuCqWdK-ZbrDQy7zAR09x4',
     channelId: '-1003822964890',
@@ -68,22 +68,29 @@ function loadUsers() {
 }
 loadUsers();
 
-// ========== 5. جلب المنتجات من قناة تلجرام ==========
-async function loadProductsFromTelegram() {
+// ========== 5. جلب المنتجات من تلجرام (السحابة) - تظهر للجميع ==========
+async function loadProductsFromTelegram(forceRefresh = false) {
     try {
-        console.log('🔄 جاري جلب المنتجات من تلجرام...');
+        console.log('🔄 جاري جلب المنتجات من تلجرام (السحابة)...');
         
-        // محاولة جلب المنتجات المحفوظة أولاً
-        const savedProducts = localStorage.getItem('nardoo_products');
-        let localProducts = savedProducts ? JSON.parse(savedProducts) : [];
+        // إذا لم يكن forceRefresh، نعرض المحفوظ أولاً للسرعة
+        if (!forceRefresh) {
+            const savedProducts = localStorage.getItem('nardoo_products');
+            if (savedProducts) {
+                products = JSON.parse(savedProducts);
+                displayProducts();
+                console.log(`📦 تم عرض ${products.length} منتج من التخزين المحلي مؤقتاً`);
+            }
+        }
         
-        // جلب آخر التحديثات من تلجرام
+        // جلب من تلجرام دائماً (المصدر الرئيسي)
         const response = await fetch(
             `https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates`
         );
         
         const data = await response.json();
-        let newProducts = [];
+        let telegramProducts = [];
+        let newProductsCount = 0;
         
         if (data.ok && data.result) {
             console.log(`✅ تم العثور على ${data.result.length} تحديث في تلجرام`);
@@ -95,34 +102,20 @@ async function loadProductsFromTelegram() {
             const updates = [...data.result].reverse();
             
             for (const update of updates) {
-                // التحقق من عدم معالجة هذا التحديث مسبقاً
-                if (isUpdateProcessed(update.update_id)) {
-                    continue;
-                }
-                
                 // التحقق من وجود رسالة في القناة
                 if (update.channel_post) {
                     const post = update.channel_post;
                     
-                    // ===== 5.1 معالجة المنتجات الجديدة (🟣) =====
+                    // ===== معالجة المنتجات (🟣) =====
                     if (post.text && post.text.includes('🟣')) {
-                        console.log('📦 العثور على منتج جديد:', post.text.substring(0, 50));
-                        
                         const product = parseProductFromTelegram(post);
                         if (product) {
-                            // التحقق من عدم وجود المنتج مسبقاً
-                            const exists = localProducts.some(p => p.telegramId === post.message_id);
-                            if (!exists) {
-                                newProducts.push(product);
-                                markUpdateAsProcessed(update.update_id);
-                            }
+                            telegramProducts.push(product);
                         }
                     }
                     
-                    // ===== 5.2 معالجة طلبات التجار (🔵) =====
-                    if (post.text && post.text.includes('🔵')) {
-                        console.log('👤 العثور على طلب تاجر جديد');
-                        
+                    // ===== معالجة طلبات التجار (🔵) =====
+                    if (post.text && post.text.includes('🔵') && !isUpdateProcessed(update.update_id)) {
                         const merchantRequest = parseMerchantRequestFromTelegram(post);
                         if (merchantRequest) {
                             // التحقق من عدم وجود الطلب مسبقاً
@@ -152,6 +145,7 @@ async function loadProductsFromTelegram() {
                                 showNotification(`📬 طلب تاجر جديد: ${merchantRequest.name}`, 'info');
                                 
                                 markUpdateAsProcessed(update.update_id);
+                                newProductsCount++;
                             }
                         }
                     }
@@ -159,20 +153,34 @@ async function loadProductsFromTelegram() {
             }
         }
         
-        // دمج المنتجات الجديدة مع المحفوظة
-        if (newProducts.length > 0) {
-            localProducts = [...newProducts, ...localProducts];
-            localStorage.setItem('nardoo_products', JSON.stringify(localProducts));
-            console.log(`✅ تمت إضافة ${newProducts.length} منتج جديد من تلجرام`);
+        // ترتيب المنتجات حسب التاريخ (الأحدث أولاً)
+        telegramProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        // حفظ في localStorage كـ Cache فقط (وليس المصدر الرئيسي)
+        localStorage.setItem('nardoo_products', JSON.stringify(telegramProducts));
+        
+        // تحديث المتغير العام وعرض المنتجات
+        products = telegramProducts;
+        displayProducts();
+        
+        console.log(`✅ تم تحميل ${telegramProducts.length} منتج من تلجرام (السحابة)`);
+        
+        if (newProductsCount > 0) {
+            showNotification(`📦 تمت إضافة ${newProductsCount} منتج جديد`, 'success');
         }
         
-        products = localProducts;
-        return products;
+        return telegramProducts;
         
     } catch (error) {
         console.error('❌ خطأ في جلب المنتجات من تلجرام:', error);
+        
+        // في حالة الخطأ، استخدم المنتجات المحفوظة
         const saved = localStorage.getItem('nardoo_products');
-        products = saved ? JSON.parse(saved) : [];
+        if (saved) {
+            products = JSON.parse(saved);
+            displayProducts();
+            showNotification('📦 تم استخدام المنتجات المخزنة محلياً', 'info');
+        }
         return products;
     }
 }
@@ -357,7 +365,6 @@ async function sendMerchantRequestToTelegram(merchant) {
 ⬇️ *للإجراء من المدير*
 ✅ للموافقة: /approve_${merchant.id}
 ❌ للرفض: /reject_${merchant.id}
-⚙️ للتخصيص: /customize_${merchant.id}
     `;
 
     try {
@@ -516,8 +523,7 @@ function getProductsLimit(level) {
 
 // ========== 15. تحميل المنتجات وعرضها ==========
 async function loadProducts() {
-    products = await loadProductsFromTelegram();
-    displayProducts();
+    await loadProductsFromTelegram();
 }
 
 function displayProducts() {
@@ -985,7 +991,6 @@ function updateUIBasedOnRole() {
         document.getElementById('dashboardBtn').style.display = 'flex';
         document.getElementById('userBtn').innerHTML = '<i class="fas fa-crown"></i>';
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
-        showAdminPanel();
     } 
     else if (currentUser.role === 'merchant_approved') {
         document.getElementById('dashboardBtn').style.display = 'none';
@@ -1048,16 +1053,7 @@ function viewMyProducts() {
     displayProducts();
 }
 
-// ========== 25. عرض لوحة المدير ==========
-function showAdminPanel() {
-    const pendingMerchants = users.filter(u => u.role === 'merchant_pending');
-    
-    if (pendingMerchants.length > 0) {
-        showNotification(`📬 لديك ${pendingMerchants.length} طلب تاجر جديد`, 'info');
-    }
-}
-
-// ========== 26. فتح لوحة التحكم ==========
+// ========== 25. فتح لوحة التحكم ==========
 function openDashboard() {
     if (!currentUser || currentUser.role !== 'admin') {
         showNotification('غير مصرح', 'error');
@@ -1232,7 +1228,7 @@ function showPendingMerchantsModal() {
     document.getElementById('merchantRequestsModal').style.display = 'flex';
 }
 
-// ========== 27. إدارة المنتجات ==========
+// ========== 26. إدارة المنتجات ==========
 function showAddProductModal() {
     if (!currentUser) {
         showNotification('يجب تسجيل الدخول أولاً', 'warning');
@@ -1246,7 +1242,7 @@ function showAddProductModal() {
             const merchantProducts = products.filter(p => p.merchantName === currentUser.name || p.merchantName === currentUser.storeName).length;
             const maxProducts = currentUser.productsLimit || 5;
             
-            if (merchantProducts >= maxProducts && !currentUser.canAddProducts) {
+            if (merchantProducts >= maxProducts) {
                 showNotification(`❌ وصلت للحد الأقصى (${maxProducts} منتج)`, 'error');
                 return;
             }
@@ -1322,8 +1318,8 @@ async function saveProduct() {
         showNotification(`✅ تم إضافة المنتج ${name} بنجاح`, 'success');
         closeModal('productModal');
         
-        // تحديث المنتجات
-        await loadProducts();
+        // إعادة تحميل المنتجات من تلجرام (تظهر للجميع فوراً)
+        await loadProductsFromTelegram(true);
         
         // تحديث لوحة التاجر
         if (currentUser.role === 'merchant_approved') {
@@ -1427,7 +1423,7 @@ function viewProductDetails(productId) {
     modal.style.display = 'flex';
 }
 
-// ========== 28. نظام الإشعارات ==========
+// ========== 27. نظام الإشعارات ==========
 function showNotification(message, type = 'info', title = '') {
     let container = document.querySelector('.toast-container');
     if (!container) {
@@ -1468,7 +1464,7 @@ function showNotification(message, type = 'info', title = '') {
     }, 3000);
 }
 
-// ========== 29. دوال التمرير ==========
+// ========== 28. دوال التمرير ==========
 function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -1483,7 +1479,7 @@ function toggleQuickTopButton() {
     quickTopBtn.classList.toggle('show', window.scrollY > 300);
 }
 
-// ========== 30. عداد تنازلي ==========
+// ========== 29. عداد تنازلي ==========
 function updateCountdown() {
     const hoursElement = document.getElementById('marqueeHours');
     const minutesElement = document.getElementById('marqueeMinutes');
@@ -1505,7 +1501,7 @@ function updateCountdown() {
     }, 1000);
 }
 
-// ========== 31. تأثيرات إضافية ==========
+// ========== 30. تأثيرات إضافية ==========
 function toggleTheme() {
     isDarkMode = !isDarkMode;
     document.body.classList.toggle('light-mode', !isDarkMode);
@@ -1566,7 +1562,7 @@ function initParticles() {
     }
 }
 
-// ========== 32. الاستماع لأوامر تلجرام ==========
+// ========== 31. الاستماع لأوامر تلجرام ==========
 setInterval(async () => {
     try {
         const response = await fetch(
@@ -1603,9 +1599,9 @@ setInterval(async () => {
     }
 }, 10000); // كل 10 ثواني
 
-// ========== 33. التهيئة ==========
+// ========== 32. التهيئة ==========
 window.onload = function() {
-    // تحميل المنتجات
+    // تحميل المنتجات من تلجرام (السحابة)
     loadProducts();
     
     // تحميل السلة
@@ -1654,24 +1650,24 @@ window.onload = function() {
         }, 2000);
     }
     
-    console.log('✅ تم تهيئة المتجر بنجاح');
+    console.log('✅ تم تهيئة المتجر بنجاح - تلجرام هو السحابة');
 };
 
-// ========== 34. إغلاق النوافذ المنبثقة ==========
+// ========== 33. إغلاق النوافذ المنبثقة ==========
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
         event.target.style.display = 'none';
     }
 };
 
-// ========== 35. عرض التحديثات المعالجة ==========
+// ========== 34. عرض التحديثات المعالجة ==========
 function showProcessedUpdates() {
     const processed = JSON.parse(localStorage.getItem(PROCESSED_UPDATES_KEY)) || [];
     console.log('📋 آخر التحديثات المعالجة:', processed);
     showNotification(`📋 عدد التحديثات المعالجة: ${processed.length}`, 'info');
 }
 
-// ========== 36. تصدير الدوال للاستخدام العام ==========
+// ========== 35. تصدير الدوال للاستخدام العام ==========
 window.addToCart = addToCart;
 window.toggleCart = toggleCart;
 window.updateCartItem = updateCartItem;
