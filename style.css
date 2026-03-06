@@ -26,6 +26,7 @@
     --transition: all 0.3s ease;
 }
 
+/* ===== 1.1 الوضع النهاري ===== */
 body.light-mode {
     --bg-primary: #f8f9fa;
     --bg-secondary: #ffffff;
@@ -37,6 +38,7 @@ body.light-mode {
     --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
+/* ===== 2. الإعدادات الأساسية ===== */
 * {
     margin: 0;
     padding: 0;
@@ -60,7 +62,7 @@ body {
     padding: 0 15px;
 }
 
-/* ===== 2. شريط تقدم التمرير ===== */
+/* ===== 3. شريط تقدم التمرير ===== */
 .scroll-progress {
     position: fixed;
     top: 0;
@@ -84,7 +86,7 @@ body {
     filter: blur(5px);
 }
 
-/* ===== 3. جسيمات متحركة ===== */
+/* ===== 4. جسيمات متحركة ===== */
 .particles {
     position: fixed;
     top: 0;
@@ -122,7 +124,7 @@ body {
     }
 }
 
-/* ===== 4. شاشة التحميل ===== */
+/* ===== 5. شاشة التحميل ===== */
 .loader {
     position: fixed;
     top: 0;
@@ -150,7 +152,7 @@ body {
     to { transform: rotate(360deg); }
 }
 
-/* ===== 5. نظام الإشعارات Toast ===== */
+/* ===== 6. نظام الإشعارات Toast ===== */
 .toast-container {
     position: fixed;
     top: 20px;
@@ -251,18 +253,18 @@ body {
     to { transform: translateX(400px); opacity: 0; }
 }
 
-/* ===== 6. سلة التسوق الجانبية ===== */
+/* ===== 7. سلة التسوق الجانبية ===== */
 .cart-sidebar {
     position: fixed;
     top: 0;
-    left: -400px;
+    right: -400px;
     width: 400px;
     height: 100vh;
     background: var(--bg-secondary);
     backdrop-filter: blur(20px);
     border-left: 2px solid var(--gold);
     z-index: 2000;
-    transition: left 0.3s ease;
+    transition: right 0.3s ease;
     display: flex;
     flex-direction: column;
     padding: 20px;
@@ -270,7 +272,7 @@ body {
 }
 
 .cart-sidebar.open {
-    left: 0;
+    right: 0;
 }
 
 .cart-header {
@@ -404,7 +406,7 @@ body {
     box-shadow: 0 0 30px var(--green);
 }
 
-/* ===== 7. أيقونة السلة الثابتة ===== */
+/* ===== 8. أيقونة السلة الثابتة ===== */
 .fixed-cart {
     position: fixed;
     bottom: 100px;
@@ -450,7 +452,7 @@ body {
     border: 2px solid var(--bg-primary);
 }
 
-/* ===== 8. أزرار الصعود والهبوط ===== */
+/* ===== 9. أزرار الصعود والهبوط ===== */
 .navigation-buttons {
     position: fixed;
     bottom: 100px;
@@ -493,7 +495,7 @@ body {
     animation: float 2s ease-in-out infinite reverse;
 }
 
-/* ===== 9. زر العودة للأعلى ===== */
+/* ===== 10. زر العودة للأعلى ===== */
 .quick-top-btn {
     position: fixed;
     bottom: 30px;
@@ -524,7 +526,7 @@ body {
     display: flex;
 }
 
-/* ===== 10. الشريط العلوي ===== */
+/* ===== 11. الشريط العلوي ===== */
 .top-bar {
     background: var(--bg-secondary);
     backdrop-filter: blur(10px);
@@ -573,7 +575,7 @@ body {
     color: var(--bg-primary);
 }
 
-/* ===== 11. شريط المميزات المتحرك ===== */
+/* ===== 12. شريط المميزات المتحرك ===== */
 .marquee-bar {
     background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-dark));
     padding: 10px 0;
@@ -635,7 +637,7 @@ body {
 .glow-item { animation: textGlow 2s infinite; }
 .shadow-pulse-item { animation: shadowPulse 2s infinite; }
 
-/* ===== 12. الهيدر الرئيسي ===== */
+/* ===== 13. الهيدر الرئيسي ===== */
 .main-header {
     background: var(--bg-card);
     backdrop-filter: blur(20px);
@@ -695,7 +697,7 @@ body {
     font-weight: 600;
 }
 
-/* ===== 13. البحث ===== */
+/* ===== 14. البحث ===== */
 .search-wrapper {
     flex: 0 1 400px;
     position: relative;
@@ -758,7 +760,7 @@ body {
     animation: pulse 1.5s infinite;
 }
 
-/* ===== 14. أزرار الإجراءات ===== */
+/* ===== 15. أزرار الإجراءات ===== */
 .header-actions {
     display: flex;
     align-items: center;
@@ -804,7 +806,7 @@ body {
     justify-content: center;
 }
 
-/* ===== 15. القائمة الرئيسية ===== */
+/* ===== 16. القائمة الرئيسية ===== */
 .nav-menu {
     background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
     backdrop-filter: blur(10px);
@@ -877,7 +879,7 @@ body {
     font-size: 16px;
 }
 
-/* ===== 16. نص متحرك (Typing Animation) ===== */
+/* ===== 17. نص متحرك ===== */
 .typing-container {
     text-align: center;
     margin: 20px 0;
@@ -896,7 +898,7 @@ body {
     51%, 100% { opacity: 0; }
 }
 
-/* ===== 17. لوحة التاجر ===== */
+/* ===== 18. لوحة التاجر ===== */
 .merchant-panel {
     background: linear-gradient(135deg, var(--purple), var(--purple-dark));
     border-radius: 30px;
@@ -942,7 +944,7 @@ body {
     color: var(--gold);
 }
 
-/* ===== 18. شبكة المنتجات ===== */
+/* ===== 19. شبكة المنتجات ===== */
 .products-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -1019,7 +1021,7 @@ body {
     box-shadow: 0 0 15px var(--purple);
 }
 
-/* ===== 19. معرض الصور ===== */
+/* ===== 20. معرض الصور ===== */
 .product-gallery {
     position: relative;
     width: 100%;
@@ -1039,53 +1041,7 @@ body {
     transform: scale(1.1);
 }
 
-.swiper {
-    width: 100%;
-    height: 100%;
-}
-
-.swiper-slide {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--nardoo-dark), var(--nardoo));
-}
-
-.swiper-slide img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.swiper-pagination-bullet {
-    background: var(--gold);
-    width: 8px;
-    height: 8px;
-    opacity: 0.7;
-}
-
-.swiper-pagination-bullet-active {
-    background: var(--gold);
-    opacity: 1;
-    width: 20px;
-    border-radius: 10px;
-}
-
-.swiper-button-next,
-.swiper-button-prev {
-    color: var(--gold);
-    background: rgba(0, 0, 0, 0.5);
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-}
-
-.swiper-button-next:after,
-.swiper-button-prev:after {
-    font-size: 14px;
-}
-
-/* ===== 20. معلومات المنتج ===== */
+/* ===== 21. معلومات المنتج ===== */
 .product-info {
     padding: 20px;
     flex: 1;
@@ -1213,7 +1169,7 @@ body {
     transform: scale(1.05);
 }
 
-/* ===== 21. شارة الوقت ===== */
+/* ===== 22. شارة الوقت ===== */
 .product-time-badge {
     position: absolute;
     top: 60px;
@@ -1238,7 +1194,7 @@ body {
     color: var(--gold-light);
 }
 
-/* ===== 22. معلومات التاجر مع لون مميز ===== */
+/* ===== 23. معلومات التاجر مع لون مميز ===== */
 .product-merchant-info {
     display: flex;
     align-items: center;
@@ -1261,7 +1217,7 @@ body {
     transform: translateX(-5px);
 }
 
-/* ===== 23. تقييم النجوم ===== */
+/* ===== 24. تقييم النجوم ===== */
 .product-rating {
     display: flex;
     align-items: center;
@@ -1309,7 +1265,7 @@ body {
     border-radius: 15px;
 }
 
-/* ===== 24. خيارات الفرز ===== */
+/* ===== 25. خيارات الفرز ===== */
 .sort-options {
     display: flex;
     justify-content: flex-end;
@@ -1339,7 +1295,7 @@ body {
     color: var(--text-primary);
 }
 
-/* ===== 25. لوحة التحكم ===== */
+/* ===== 26. لوحة التحكم ===== */
 .dashboard-section {
     margin: 40px 0;
 }
@@ -1409,12 +1365,7 @@ body {
     color: var(--text-secondary);
 }
 
-.chart-container {
-    height: 400px;
-    margin: 30px 0;
-}
-
-/* ===== 26. نموذج إضافة منتج ===== */
+/* ===== 27. نموذج إضافة منتج ===== */
 .product-form {
     display: grid;
     gap: 20px;
@@ -1485,7 +1436,7 @@ body {
     border: 2px solid var(--gold);
 }
 
-/* ===== 27. النوافذ المنبثقة ===== */
+/* ===== 28. النوافذ المنبثقة ===== */
 .modal {
     display: none;
     position: fixed;
@@ -1516,7 +1467,7 @@ body {
     max-width: 1000px;
 }
 
-/* ===== 28. الفوتر ===== */
+/* ===== 29. الفوتر ===== */
 .footer {
     background: var(--bg-secondary);
     padding: 60px 0 30px;
@@ -1555,7 +1506,7 @@ body {
     border-top: 1px solid var(--gold-dark);
 }
 
-/* ===== 29. الجداول ===== */
+/* ===== 30. الجداول ===== */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -1574,7 +1525,7 @@ td {
     border-bottom: 1px solid var(--glass-border);
 }
 
-/* ===== 30. تأثيرات حركية أساسية ===== */
+/* ===== 31. تأثيرات حركية أساسية ===== */
 @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
@@ -1637,7 +1588,7 @@ td {
     animation: fadeInUp 0.5s ease forwards;
 }
 
-/* ===== 31. تأثيرات إضافية ===== */
+/* ===== 32. تأثيرات إضافية ===== */
 .glow-text {
     text-shadow: 0 0 10px var(--gold);
 }
@@ -1682,7 +1633,7 @@ td {
     display: block;
 }
 
-/* ===== 32. تأثيرات الماوس ===== */
+/* ===== 33. تأثيرات الماوس ===== */
 .mouse-effect {
     position: fixed;
     width: 20px;
@@ -1711,7 +1662,7 @@ td {
     background: rgba(212, 175, 55, 0.1);
 }
 
-/* ===== 33. تأثير Ripple ===== */
+/* ===== 34. تأثير Ripple ===== */
 .ripple {
     position: relative;
     overflow: hidden;
@@ -1746,7 +1697,7 @@ td {
     }
 }
 
-/* ===== 34. Skeleton Loading ===== */
+/* ===== 35. Skeleton Loading ===== */
 .skeleton {
     background: linear-gradient(
         90deg,
@@ -1782,7 +1733,7 @@ td {
     margin: 15px 0;
 }
 
-/* ===== 35. تأثيرات 3D ===== */
+/* ===== 36. تأثيرات 3D ===== */
 .card-3d {
     transform-style: preserve-3d;
     perspective: 1000px;
@@ -1798,29 +1749,7 @@ td {
     transform: rotateY(10deg) rotateX(5deg);
 }
 
-.card-3d-front,
-.card-3d-back {
-    backface-visibility: hidden;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 30px;
-    padding: 20px;
-}
-
-.card-3d-back {
-    transform: rotateY(180deg);
-    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-    color: var(--bg-primary);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-/* ===== 36. تأثير Parallax ===== */
+/* ===== 37. تأثير Parallax ===== */
 .parallax {
     background-attachment: fixed;
     background-position: center;
@@ -1850,7 +1779,7 @@ td {
     padding: 100px 20px;
 }
 
-/* ===== 37. تأثير التحويم المتقدم على الصور ===== */
+/* ===== 38. تأثير التحويم المتقدم على الصور ===== */
 .image-hover-advanced {
     position: relative;
     overflow: hidden;
@@ -1897,7 +1826,7 @@ td {
     bottom: 0;
 }
 
-/* ===== 38. ألوان التجار المميزة ===== */
+/* ===== 39. ألوان التجار المميزة ===== */
 .merchant-color-dot {
     width: 12px;
     height: 12px;
@@ -1914,13 +1843,13 @@ td {
     font-weight: 600;
 }
 
-/* ===== 39. بطاقات التجار في لوحة التحكم ===== */
+/* ===== 40. بطاقات التجار في لوحة التحكم ===== */
 .merchant-card {
     background: var(--glass);
     border-radius: 15px;
     padding: 15px;
     margin-bottom: 15px;
-    border-left: 5px solid;
+    border-right: 5px solid;
     transition: var(--transition);
 }
 
@@ -1943,7 +1872,7 @@ td {
     border: 2px solid var(--gold);
 }
 
-/* ===== 40. شارات الحالة ===== */
+/* ===== 41. شارات الحالة ===== */
 .status-badge {
     padding: 3px 8px;
     border-radius: 20px;
@@ -1970,7 +1899,7 @@ td {
     border: 1px solid #f87171;
 }
 
-/* ===== 41. تحسينات إضافية للشاشات الصغيرة ===== */
+/* ===== 42. تحسينات إضافية للشاشات الصغيرة ===== */
 @media (max-width: 768px) {
     .fixed-cart {
         bottom: 80px;
@@ -2029,7 +1958,7 @@ td {
     
     .cart-sidebar {
         width: 100%;
-        left: -100%;
+        right: -100%;
     }
     
     .dashboard-tabs {
@@ -2042,7 +1971,7 @@ td {
     }
 }
 
-/* ===== 42. تأثيرات التمرير ===== */
+/* ===== 43. تأثيرات التمرير ===== */
 @keyframes scrollGlow {
     0%, 100% { opacity: 0.3; }
     50% { opacity: 1; }
