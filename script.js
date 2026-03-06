@@ -1,13 +1,16 @@
-// ========== 1. إعدادات تلجرام ==========
+// ========== 1. إعدادات تلجرام (قناة واحدة ملونة) ==========
 const TELEGRAM = {
     botToken: '8576673096:AAHCg7pM2MyzmVuCqWdK-ZbrDQy7zAR09x4',
-    ordersChannel: '-1003822964890'
+    channelId: '-1003822964890',
+    adminId: '7461896689'
 };
 
-// ========== 2. إرسال الطلب إلى تلجرام ==========
+// ========== 2. دوال إرسال الرسائل الملونة ==========
+
+// 🟢 طلب شراء جديد (أخضر)
 async function sendOrderToTelegram(order) {
     const message = `
-🛍️ *طلب جديد من نكهة وجمال*
+🟢 *طلب شراء جديد*
 ━━━━━━━━━━━━━━━━━━━━━━
 👤 *الزبون:* ${order.customerName}
 📦 *المنتجات:*
@@ -16,32 +19,88 @@ ${order.items.map((item, i) =>
 ).join('\n')}
 💰 *الإجمالي:* ${order.total} دج
 🕐 *الوقت:* ${new Date().toLocaleString('ar-DZ')}
-🔗 *رابط المتجر:* ${window.location.href}
     `;
 
-    try {
-        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: TELEGRAM.ordersChannel,
-                text: message,
-                parse_mode: 'Markdown'
-            })
-        });
-        
-        const result = await response.json();
-        if (result.ok) {
-            console.log('✅ تم إرسال الطلب إلى تلجرام');
-            return true;
-        } else {
-            console.error('❌ فشل الإرسال:', result);
-            return false;
-        }
-    } catch (error) {
-        console.error('❌ خطأ في الاتصال:', error);
-        return false;
-    }
+    await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: TELEGRAM.channelId,
+            text: message,
+            parse_mode: 'Markdown'
+        })
+    });
+}
+
+// 🔵 طلب انضمام تاجر (أزرق)
+async function sendMerchantRequestToTelegram(merchant) {
+    const message = `
+🔵 *طلب انضمام تاجر جديد*
+━━━━━━━━━━━━━━━━━━━━━━
+🏪 *اسم المتجر:* ${merchant.storeName}
+👤 *التاجر:* ${merchant.name}
+📧 *البريد:* ${merchant.email}
+📞 *الهاتف:* ${merchant.phone}
+📊 *المستوى:* ${merchant.level}
+📝 *الوصف:* ${merchant.desc}
+
+⬇️ *للإجراء*
+✅ للموافقة: /approve_${merchant.id}
+❌ للرفض: /reject_${merchant.id}
+    `;
+
+    await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: TELEGRAM.channelId,
+            text: message,
+            parse_mode: 'Markdown'
+        })
+    });
+}
+
+// 🟣 منتج جديد (بنفسجي)
+async function sendNewProductToTelegram(product) {
+    const message = `
+🟣 *منتج جديد في المتجر*
+━━━━━━━━━━━━━━━━━━━━━━
+📦 *المنتج:* ${product.name}
+💰 *السعر:* ${product.price} دج
+🏷️ *القسم:* ${product.category}
+📊 *الكمية:* ${product.stock}
+👤 *التاجر:* ${product.merchantName || 'المتجر'}
+    `;
+
+    await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: TELEGRAM.channelId,
+            text: message,
+            parse_mode: 'Markdown'
+        })
+    });
+}
+
+// 🟡 إشعار عام (أصفر)
+async function sendNotificationToTelegram(text) {
+    const message = `
+🟡 *إشعار*
+━━━━━━━━━━━━━━━━━━━━━━
+${text}
+🕐 ${new Date().toLocaleString('ar-DZ')}
+    `;
+
+    await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: TELEGRAM.channelId,
+            text: message,
+            parse_mode: 'Markdown'
+        })
+    });
 }
 
 // ========== 3. النظام الأساسي والمتغيرات العامة ==========
@@ -67,6 +126,7 @@ function loadUsers() {
                 email: 'azer@admin.com', 
                 password: '123456', 
                 role: 'admin',
+                phone: '',
                 createdAt: new Date().toISOString()
             }
         ];
@@ -545,6 +605,7 @@ function loadProducts() {
                 rating: 5.0,
                 images: ["https://via.placeholder.com/300/ff6b6b/ffffff?text=عرض+رمضان"],
                 merchantId: null,
+                merchantName: 'المتجر',
                 soldCount: 0,
                 createdAt: new Date().toISOString()
             },
@@ -557,42 +618,7 @@ function loadProducts() {
                 rating: 4.5,
                 images: ["https://via.placeholder.com/300/ffd93d/000000?text=برياني"],
                 merchantId: null,
-                soldCount: 0,
-                createdAt: new Date().toISOString()
-            },
-            { 
-                id: 3, 
-                name: "زعفران أصلي - درجة أولى", 
-                category: "spices", 
-                price: 12000, 
-                stock: 25, 
-                rating: 5.0,
-                images: ["https://via.placeholder.com/300/8b0000/ffffff?text=زعفران"],
-                merchantId: null,
-                soldCount: 0,
-                createdAt: new Date().toISOString()
-            },
-            { 
-                id: 4, 
-                name: "زيت أرغان للشعر - عضوي 100%", 
-                category: "cosmetic", 
-                price: 3500, 
-                stock: 8, 
-                rating: 4.8,
-                images: ["https://via.placeholder.com/300/ff9f9f/000000?text=أرغان"],
-                merchantId: null,
-                soldCount: 0,
-                createdAt: new Date().toISOString()
-            },
-            { 
-                id: 5, 
-                name: "ماسك طين طبيعي - للبشرة", 
-                category: "cosmetic", 
-                price: 2500, 
-                stock: 3, 
-                rating: 4.3,
-                images: ["https://via.placeholder.com/300/228b22/ffffff?text=طين"],
-                merchantId: null,
+                merchantName: 'المتجر',
                 soldCount: 0,
                 createdAt: new Date().toISOString()
             }
@@ -742,7 +768,6 @@ function displayProducts() {
         `;
     }).join('');
 
-    // تهيئة Swiper
     setTimeout(() => {
         filtered.forEach(product => {
             const swiperEl = document.querySelector(`.product-swiper-${product.id}`);
@@ -855,7 +880,7 @@ function addToCart(productId) {
             quantity: 1,
             image: product.images?.[0] || '',
             merchantId: product.merchantId,
-            merchantName: product.merchantId ? users.find(u => u.id === product.merchantId)?.name : null
+            merchantName: product.merchantName
         });
     }
 
@@ -943,33 +968,28 @@ function removeFromCart(productId) {
     showAdvancedNotification('تمت إزالة المنتج من السلة', 'info', 'تم');
 }
 
+// 🟢 دالة إتمام الشراء (مع إرسال تلجرام)
 async function checkoutCart() {
     if (cart.length === 0) {
         showAdvancedNotification('السلة فارغة', 'warning');
         return;
     }
 
-    const orderDetails = {
+    const order = {
         customerName: currentUser?.name || 'عميل',
         items: cart,
         total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 800
     };
 
-    // إرسال الطلب إلى تلجرام
-    const sent = await sendOrderToTelegram(orderDetails);
-    
-    if (sent) {
-        showAdvancedNotification('✅ تم إرسال الطلب إلى المدير', 'success');
-    } else {
-        showAdvancedNotification('⚠️ فشل إرسال الطلب', 'error');
-    }
+    // 🟢 إرسال طلب أخضر إلى تلجرام
+    await sendOrderToTelegram(order);
 
-    // إرسال واتساب للتاجر
+    // إرسال واتساب للتجار
     const merchants = {};
     cart.forEach(item => {
         if (item.merchantId && !merchants[item.merchantId]) {
             const merchant = users.find(u => u.id === item.merchantId);
-            if (merchant && merchant.phone) {
+            if (merchant?.phone) {
                 merchants[item.merchantId] = {
                     phone: merchant.phone,
                     items: []
@@ -982,14 +1002,15 @@ async function checkoutCart() {
     });
 
     Object.values(merchants).forEach(merchant => {
-        const message = `🛍️ لديك طلب جديد من ${orderDetails.customerName}`;
-        window.open(`https://wa.me/${merchant.phone}?text=${encodeURIComponent(message)}`, '_blank');
+        const msg = `🛍️ لديك طلب جديد من ${order.customerName}`;
+        window.open(`https://wa.me/${merchant.phone}?text=${encodeURIComponent(msg)}`, '_blank');
     });
 
     cart = [];
     saveCart();
     updateCartCounter();
     toggleCart();
+    showAdvancedNotification('✅ تم إرسال الطلب', 'success');
 }
 
 // ========== 15. دوال التمرير ==========
@@ -1004,35 +1025,24 @@ function scrollToBottom() {
 function scrollToElement(elementId) {
     const element = document.getElementById(elementId);
     if (element) {
-        element.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 }
 
 function toggleQuickTopButton() {
     const quickTopBtn = document.getElementById('quickTopBtn');
     if (!quickTopBtn) return;
-    
-    if (window.scrollY > 300) {
-        quickTopBtn.classList.add('show');
-    } else {
-        quickTopBtn.classList.remove('show');
-    }
+    quickTopBtn.classList.toggle('show', window.scrollY > 300);
 }
 
 function updateFixedCartCounter() {
     const fixedCounter = document.getElementById('fixedCartCounter');
     if (fixedCounter) {
-        const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-        fixedCounter.textContent = count;
+        fixedCounter.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
     }
 }
 
 function addScrollAnimations() {
-    const elements = document.querySelectorAll('.product-card, .feature-card, .marquee-item');
-    
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -1041,8 +1051,8 @@ function addScrollAnimations() {
         });
     }, { threshold: 0.1 });
     
-    elements.forEach(element => {
-        observer.observe(element);
+    document.querySelectorAll('.product-card, .feature-card, .marquee-item').forEach(el => {
+        observer.observe(el);
     });
 }
 
@@ -1054,48 +1064,25 @@ function updateCountdown() {
     
     if (!hoursElement || !minutesElement || !secondsElement) return;
     
-    let hours = 12;
-    let minutes = 30;
-    let seconds = 45;
+    let hours = 12, minutes = 30, seconds = 45;
     
-    const interval = setInterval(() => {
+    setInterval(() => {
         seconds--;
+        if (seconds < 0) { seconds = 59; minutes--; }
+        if (minutes < 0) { minutes = 59; hours--; }
+        if (hours < 0) { hours = 12; minutes = 30; seconds = 45; }
         
-        if (seconds < 0) {
-            seconds = 59;
-            minutes--;
-            
-            if (minutes < 0) {
-                minutes = 59;
-                hours--;
-                
-                if (hours < 0) {
-                    hours = 12;
-                    minutes = 30;
-                    seconds = 45;
-                }
-            }
-        }
-        
-        const displayValue = (num) => num.toString().padStart(2, '0');
-        
-        hoursElement.textContent = displayValue(hours);
-        minutesElement.textContent = displayValue(minutes);
-        secondsElement.textContent = displayValue(seconds);
-        
+        hoursElement.textContent = hours.toString().padStart(2, '0');
+        minutesElement.textContent = minutes.toString().padStart(2, '0');
+        secondsElement.textContent = seconds.toString().padStart(2, '0');
     }, 1000);
-    
-    return interval;
 }
 
 // ========== 17. أشرطة التقدم ==========
 function updateProgressBars() {
-    const progressFills = document.querySelectorAll('.progress-fill, .marquee-progress-fill');
-    
     setInterval(() => {
-        progressFills.forEach(fill => {
-            const randomWidth = Math.floor(Math.random() * 50) + 50;
-            fill.style.width = randomWidth + '%';
+        document.querySelectorAll('.progress-fill, .marquee-progress-fill').forEach(fill => {
+            fill.style.width = Math.floor(Math.random() * 50) + 50 + '%';
         });
     }, 5000);
 }
@@ -1112,56 +1099,21 @@ function viewProductDetails(productId) {
         <img src="${img}" style="width: 100%; height: 300px; object-fit: cover; border-radius: 20px; margin-bottom: 10px;">
     `).join('') || '<div style="height: 300px; background: var(--nardoo); display: flex; align-items: center; justify-content: center; border-radius: 20px;"><i class="fas fa-image" style="font-size: 80px; color: var(--gold);"></i></div>';
 
-    const merchant = users.find(u => u.id === product.merchantId);
     const timeAgo = getSimpleTimeAgo(product.createdAt);
 
     content.innerHTML = `
         <h2 style="text-align: center; margin-bottom: 20px; color: var(--gold);">${product.name}</h2>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <div><div style="display: grid; gap: 10px;">${images}</div></div>
             <div>
-                <div style="display: grid; gap: 10px;">
-                    ${images}
-                </div>
-                <div style="margin-top: 15px; display: flex; gap: 15px; justify-content: center;">
-                    <span class="product-time-badge" style="position: relative; top: 0; right: 0;">
-                        <i class="far fa-clock"></i> ${timeAgo}
-                    </span>
-                    ${product.merchantId ? `
-                        <span class="merchant-badge" style="position: relative; top: 0; left: 0;">
-                            <i class="fas fa-store"></i> ${merchant?.name || 'تاجر'}
-                        </span>
-                    ` : ''}
-                </div>
-            </div>
-            <div>
-                <div style="margin-bottom: 20px;">
-                    <span style="background: var(--gold); padding: 5px 15px; border-radius: 20px; color: var(--bg-primary); font-weight: 700;">${getCategoryName(product.category)}</span>
-                </div>
-                <p style="margin-bottom: 20px; color: var(--text-secondary);">${product.description || 'منتج عالي الجودة من نكهة وجمال'}</p>
-                
-                <div class="product-rating" style="margin-bottom: 20px;">
-                    <div class="stars-container">
-                        ${generateStars(product.rating || 4.5)}
-                    </div>
-                    <span class="rating-value">${(product.rating || 4.5).toFixed(1)}</span>
-                </div>
-                
-                <div style="margin-bottom: 20px;">
-                    <span style="font-size: 32px; font-weight: 800; color: var(--gold);">${product.price.toLocaleString()}</span>
-                    <small style="color: var(--gold-light);"> دج</small>
-                </div>
-                <div style="margin-bottom: 20px;">
-                    <span class="product-stock ${product.stock <= 0 ? 'out-of-stock' : product.stock < 5 ? 'low-stock' : 'in-stock'}" style="padding: 8px 15px;">
-                        ${product.stock <= 0 ? 'غير متوفر' : product.stock < 5 ? `كمية محدودة (${product.stock})` : `متوفر (${product.stock})`}
-                    </span>
-                </div>
+                <div style="margin-bottom: 20px;"><span style="background: var(--gold); padding: 5px 15px; border-radius: 20px; color: var(--bg-primary); font-weight: 700;">${getCategoryName(product.category)}</span></div>
+                <p style="margin-bottom: 20px;">${product.description || 'منتج عالي الجودة'}</p>
+                <div class="product-rating"><div class="stars-container">${generateStars(product.rating || 4.5)}</div><span class="rating-value">${(product.rating || 4.5).toFixed(1)}</span></div>
+                <div style="margin-bottom: 20px;"><span style="font-size: 32px; font-weight: 800; color: var(--gold);">${product.price.toLocaleString()} دج</span></div>
+                <div style="margin-bottom: 20px;"><span class="product-stock ${product.stock <= 0 ? 'out-of-stock' : product.stock < 5 ? 'low-stock' : 'in-stock'}">${product.stock <= 0 ? 'غير متوفر' : product.stock < 5 ? `كمية محدودة (${product.stock})` : `متوفر (${product.stock})`}</span></div>
                 <div style="display: flex; gap: 15px;">
-                    <button class="btn-gold" style="flex: 2;" onclick="addToCart(${product.id}); closeModal('productDetailModal')">
-                        <i class="fas fa-shopping-cart"></i> أضف للسلة
-                    </button>
-                    <button class="btn-outline-gold" style="flex: 1;" onclick="closeModal('productDetailModal')">
-                        إغلاق
-                    </button>
+                    <button class="btn-gold" onclick="addToCart(${product.id}); closeModal('productDetailModal')">أضف للسلة</button>
+                    <button class="btn-outline-gold" onclick="closeModal('productDetailModal')">إغلاق</button>
                 </div>
             </div>
         </div>
@@ -1182,18 +1134,13 @@ function closeModal(modalId) {
 function switchAuthTab(tab) {
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
-    const buttons = document.querySelectorAll('#loginModal .btn-gold, #loginModal .btn-outline-gold');
 
     if (tab === 'login') {
         loginForm.style.display = 'block';
         registerForm.style.display = 'none';
-        buttons[0].className = 'btn-gold';
-        buttons[1].className = 'btn-outline-gold';
     } else {
         loginForm.style.display = 'none';
         registerForm.style.display = 'block';
-        buttons[0].className = 'btn-outline-gold';
-        buttons[1].className = 'btn-gold';
     }
 }
 
@@ -1212,23 +1159,62 @@ function handleLogin() {
         currentUser = user;
         localStorage.setItem('current_user', JSON.stringify(user));
         closeModal('loginModal');
-        
         updateUIBasedOnRole();
-        
-        showAdvancedNotification(`مرحباً ${user.name}`, 'success', 'تسجيل دخول ناجح');
-        analyticsManager.trackEvent('login', { userId: user.id, role: user.role });
+        showAdvancedNotification(`مرحباً ${user.name}`, 'success');
     } else {
-        showAdvancedNotification('بيانات الدخول غير صحيحة', 'error', 'خطأ');
+        showAdvancedNotification('بيانات الدخول غير صحيحة', 'error');
     }
+}
+
+// 🔵 دالة تسجيل التاجر (مع إرسال تلجرام)
+function handleRegister() {
+    const name = document.getElementById('regName').value;
+    const email = document.getElementById('regEmail').value;
+    const password = document.getElementById('regPassword').value;
+    const phone = document.getElementById('regPhone')?.value || '';
+    const isMerchant = document.getElementById('isMerchant').checked;
+
+    if (!name || !email || !password) {
+        showAdvancedNotification('الرجاء ملء جميع الحقول', 'error');
+        return;
+    }
+
+    if (users.find(u => u.email === email)) {
+        showAdvancedNotification('البريد الإلكتروني مستخدم بالفعل', 'error');
+        return;
+    }
+
+    const newUser = {
+        id: users.length + 1,
+        name,
+        email,
+        password,
+        phone,
+        role: isMerchant ? 'merchant_pending' : 'customer',
+        createdAt: new Date().toISOString()
+    };
+
+    if (isMerchant) {
+        newUser.merchantLevel = document.getElementById('merchantLevel').value;
+        newUser.merchantDesc = document.getElementById('merchantDesc').value;
+        newUser.storeName = newUser.merchantDesc.split('\n')[0] || 'متجر ' + name;
+        
+        // 🔵 إرسال طلب أزرق إلى تلجرام
+        sendMerchantRequestToTelegram(newUser);
+        showAdvancedNotification('📋 تم إرسال طلب التسجيل إلى المدير', 'info');
+    } else {
+        showAdvancedNotification('✅ تم التسجيل بنجاح', 'success');
+    }
+
+    users.push(newUser);
+    localStorage.setItem('nardoo_users', JSON.stringify(users));
+    switchAuthTab('login');
 }
 
 function updateUIBasedOnRole() {
     if (!currentUser) return;
 
-    document.querySelectorAll('.admin-only').forEach(el => {
-        el.style.display = 'none';
-    });
-    
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
     document.getElementById('merchantPanelContainer').style.display = 'none';
     
     const myProductsBtn = document.getElementById('myProductsBtn');
@@ -1237,21 +1223,15 @@ function updateUIBasedOnRole() {
     if (currentUser.role === 'admin') {
         document.getElementById('dashboardBtn').style.display = 'flex';
         document.getElementById('userBtn').innerHTML = '<i class="fas fa-crown"></i>';
-        
-        document.querySelectorAll('.admin-only').forEach(el => {
-            el.style.display = 'block';
-        });
-        
-        showAdvancedNotification('مرحباً بك يا مدير - لديك صلاحيات كاملة', 'success', 'مدير');
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+        showAdvancedNotification('مرحباً بك يا مدير', 'success');
     } 
     else if (currentUser.role === 'merchant_approved') {
         document.getElementById('dashboardBtn').style.display = 'none';
         document.getElementById('userBtn').innerHTML = '<i class="fas fa-store"></i>';
-        
         addMerchantMenuButton();
         showMerchantPanel();
-        
-        showAdvancedNotification('مرحباً أيها التاجر - يمكنك إدارة منتجاتك فقط', 'info', 'تاجر');
+        showAdvancedNotification('مرحباً أيها التاجر', 'info');
     } 
     else {
         document.getElementById('dashboardBtn').style.display = 'none';
@@ -1274,11 +1254,7 @@ function addMerchantMenuButton() {
 function viewMyProducts() {
     if (!currentUser || currentUser.role !== 'merchant_approved') return;
     currentFilter = 'my_products';
-    
-    document.querySelectorAll('.nav-link, .category-btn').forEach(el => {
-        el.classList.remove('active');
-    });
-    
+    document.querySelectorAll('.nav-link, .category-btn').forEach(el => el.classList.remove('active'));
     document.getElementById('myProductsBtn').classList.add('active');
     displayProducts();
 }
@@ -1289,516 +1265,74 @@ function showMerchantPanel() {
     const merchantProducts = products.filter(p => p.merchantId === currentUser.id);
     const totalSales = merchantProducts.reduce((sum, p) => sum + (p.price * (p.soldCount || 0)), 0);
     
-    const panelContainer = document.getElementById('merchantPanelContainer');
-    panelContainer.style.display = 'block';
-    
-    panelContainer.innerHTML = `
+    document.getElementById('merchantPanelContainer').style.display = 'block';
+    document.getElementById('merchantPanelContainer').innerHTML = `
         <div class="merchant-panel">
-            <h3>
-                <i class="fas fa-store"></i>
-                لوحة التاجر - ${currentUser.name}
-            </h3>
+            <h3><i class="fas fa-store"></i> لوحة التاجر - ${currentUser.name}</h3>
             <div class="stats">
-                <div class="stat-item">
-                    <div class="number">${merchantProducts.length}</div>
-                    <div>إجمالي المنتجات</div>
-                </div>
-                <div class="stat-item">
-                    <div class="number">${merchantProducts.filter(p => p.stock > 0).length}</div>
-                    <div>المنتجات المتاحة</div>
-                </div>
-                <div class="stat-item">
-                    <div class="number">${totalSales.toLocaleString()} دج</div>
-                    <div>إجمالي المبيعات</div>
-                </div>
+                <div class="stat-item"><div class="number">${merchantProducts.length}</div><div>إجمالي المنتجات</div></div>
+                <div class="stat-item"><div class="number">${merchantProducts.filter(p => p.stock > 0).length}</div><div>المنتجات المتاحة</div></div>
+                <div class="stat-item"><div class="number">${totalSales.toLocaleString()} دج</div><div>إجمالي المبيعات</div></div>
             </div>
             <div style="display: flex; gap: 15px; margin-top: 20px; justify-content: center;">
-                <button class="btn-gold" onclick="showAddProductModal()">
-                    <i class="fas fa-plus"></i> إضافة منتج جديد
-                </button>
-                <button class="btn-outline-gold" onclick="viewMyProducts()">
-                    <i class="fas fa-box"></i> عرض منتجاتي
-                </button>
+                <button class="btn-gold" onclick="showAddProductModal()"><i class="fas fa-plus"></i> إضافة منتج جديد</button>
+                <button class="btn-outline-gold" onclick="viewMyProducts()"><i class="fas fa-box"></i> عرض منتجاتي</button>
             </div>
         </div>
     `;
 }
 
-function handleRegister() {
-    const name = document.getElementById('regName').value;
-    const email = document.getElementById('regEmail').value;
-    const password = document.getElementById('regPassword').value;
-    const isMerchant = document.getElementById('isMerchant').checked;
+// ========== 20. الموافقة على تاجر (للمدير) ==========
+async function approveMerchant(userId) {
+    const user = users.find(u => u.id == userId);
+    if (!user || currentUser?.role !== 'admin') return;
 
-    if (!name || !email || !password) {
-        showAdvancedNotification('الرجاء ملء جميع الحقول', 'error', 'خطأ');
-        return;
-    }
-
-    if (users.find(u => u.email === email)) {
-        showAdvancedNotification('البريد الإلكتروني مستخدم بالفعل', 'error', 'خطأ');
-        return;
-    }
-
-    const newUser = {
-        id: users.length + 1,
-        name,
-        email,
-        password,
-        role: isMerchant ? 'merchant_pending' : 'customer',
-        createdAt: new Date().toISOString()
-    };
-
-    if (isMerchant) {
-        newUser.merchantLevel = document.getElementById('merchantLevel').value;
-        newUser.merchantDesc = document.getElementById('merchantDesc').value;
-    }
-
-    users.push(newUser);
+    user.role = 'merchant_approved';
     localStorage.setItem('nardoo_users', JSON.stringify(users));
-    showAdvancedNotification('تم التسجيل بنجاح' + (isMerchant ? '، طلبك قيد المراجعة' : ''), 'success', 'مرحباً بك');
-    switchAuthTab('login');
-}
-
-// ========== 20. لوحة التحكم ==========
-function openDashboard() {
-    if (!currentUser || currentUser.role !== 'admin') {
-        showAdvancedNotification('غير مصرح لك بالدخول - هذه الصفحة للمدير فقط', 'error', 'خطأ');
-        return;
-    }
-
-    document.getElementById('dashboardSection').style.display = 'block';
-    document.getElementById('dashboardSection').scrollIntoView({ behavior: 'smooth' });
-    switchDashboardTab('overview');
-}
-
-function switchDashboardTab(tab) {
-    if (!currentUser || currentUser.role !== 'admin') return;
     
-    const tabs = document.querySelectorAll('.dashboard-tab');
-    tabs.forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
+    // 🟡 إشعار أصفر في تلجرام
+    await sendNotificationToTelegram(`✅ تمت الموافقة على التاجر: ${user.name}`);
+    showAdvancedNotification('تمت الموافقة على التاجر', 'success');
+}
 
-    const content = document.getElementById('dashboardContent');
+// ========== 21. رفض تاجر (للمدير) ==========
+async function rejectMerchant(userId) {
+    const user = users.find(u => u.id == userId);
+    if (!user || currentUser?.role !== 'admin') return;
+
+    user.role = 'customer';
+    localStorage.setItem('nardoo_users', JSON.stringify(users));
     
-    switch(tab) {
-        case 'overview':
-            showDashboardOverview(content);
-            break;
-        case 'orders':
-            showDashboardOrders(content);
-            break;
-        case 'analytics':
-            showDashboardAnalytics(content);
-            break;
-        case 'products':
-            showDashboardProducts(content);
-            break;
-        case 'merchants':
-            showDashboardMerchants(content);
-            break;
-    }
+    // 🟡 إشعار أصفر في تلجرام
+    await sendNotificationToTelegram(`❌ تم رفض طلب التاجر: ${user.name}`);
+    showAdvancedNotification('تم رفض طلب التاجر', 'info');
 }
 
-function showDashboardOverview(container) {
-    if (!currentUser || currentUser.role !== 'admin') return;
-    
-    const orderStats = orderManager.getOrderStatistics();
-    const whatsappStats = whatsappManager.getSalesStatistics();
-    const analytics = analyticsManager.generateComprehensiveReport();
-
-    container.innerHTML = `
-        <h3 style="margin-bottom: 30px; color: var(--gold);">نظرة عامة على المتجر</h3>
-        
-        <div class="stats-grid">
-            <div class="stat-card">
-                <i class="fas fa-shopping-cart"></i>
-                <div class="stat-value">${orderStats.totalOrders}</div>
-                <div class="stat-label">إجمالي الطلبات</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-coins"></i>
-                <div class="stat-value">${orderStats.totalRevenue.toLocaleString()}</div>
-                <div class="stat-label">الإيرادات (دج)</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-chart-line"></i>
-                <div class="stat-value">${orderStats.averageOrderValue.toFixed(0)}</div>
-                <div class="stat-label">متوسط قيمة الطلب</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-percent"></i>
-                <div class="stat-value">${analytics.conversionRate}%</div>
-                <div class="stat-label">معدل التحويل</div>
-            </div>
-        </div>
-
-        <div class="chart-container">
-            <canvas id="ordersChart"></canvas>
-        </div>
-
-        <h4 style="margin: 30px 0 20px; color: var(--gold);">الطلبات الأخيرة</h4>
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>رقم الطلب</th>
-                        <th>العميل</th>
-                        <th>المجموع</th>
-                        <th>الحالة</th>
-                        <th>التاريخ</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${orderStats.recentOrders.map(order => `
-                        <tr>
-                            <td>${order.id}</td>
-                            <td>${order.customerName}</td>
-                            <td style="color: var(--gold); font-weight: 700;">${order.total.toLocaleString()} دج</td>
-                            <td>
-                                <span style="background: ${order.status === 'delivered' ? '#4ade80' : order.status === 'cancelled' ? '#f87171' : '#fbbf24'}; 
-                                             color: ${order.status === 'delivered' ? '#000' : '#fff'}; 
-                                             padding: 5px 10px; border-radius: 20px; font-size: 12px;">
-                                    ${orderManager.getStatusMessage(order.status)}
-                                </span>
-                            </td>
-                            <td>${new Date(order.createdAt).toLocaleDateString('ar-DZ')}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        </div>
-    `;
-
-    setTimeout(() => {
-        const ctx = document.getElementById('ordersChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
-                datasets: [{
-                    label: 'الطلبات',
-                    data: [12, 19, 15, 25, 22, 30],
-                    borderColor: '#d4af37',
-                    backgroundColor: 'rgba(212, 175, 55, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        labels: { color: getComputedStyle(document.body).getPropertyValue('--text-primary') }
-                    }
-                },
-                scales: {
-                    y: {
-                        grid: { color: 'rgba(212, 175, 55, 0.1)' },
-                        ticks: { color: getComputedStyle(document.body).getPropertyValue('--text-secondary') }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: getComputedStyle(document.body).getPropertyValue('--text-secondary') }
-                    }
-                }
-            }
-        });
-    }, 100);
-}
-
-function showDashboardOrders(container) {
-    if (!currentUser || currentUser.role !== 'admin') return;
-    
-    const orders = orderManager.orders;
-
-    container.innerHTML = `
-        <h3 style="margin-bottom: 30px; color: var(--gold);">إدارة الطلبات</h3>
-        
-        <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-            <input type="text" class="form-control" id="orderSearch" placeholder="بحث برقم الطلب أو اسم العميل..." style="width: 300px;">
-            <button class="btn-gold" onclick="searchOrders()">بحث</button>
-        </div>
-
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>رقم الطلب</th>
-                        <th>العميل</th>
-                        <th>المجموع</th>
-                        <th>الحالة</th>
-                        <th>طريقة الدفع</th>
-                        <th>الإجراءات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${orders.map(order => `
-                        <tr>
-                            <td>${order.id}</td>
-                            <td>${order.customerName}</td>
-                            <td style="color: var(--gold); font-weight: 700;">${order.total.toLocaleString()} دج</td>
-                            <td>
-                                <select class="form-control" onchange="updateOrderStatus('${order.id}', this.value)" style="width: 140px;">
-                                    ${orderManager.orderStatuses.map(status => `
-                                        <option value="${status}" ${order.status === status ? 'selected' : ''}>
-                                            ${orderManager.getStatusMessage(status)}
-                                        </option>
-                                    `).join('')}
-                                </select>
-                            </td>
-                            <td>${order.paymentMethod}</td>
-                            <td>
-                                <button class="btn-outline-gold" onclick="viewOrderDetails('${order.id}')" style="padding: 5px 10px;">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        </div>
-    `;
-}
-
-function updateOrderStatus(orderId, status) {
-    if (!currentUser || currentUser.role !== 'admin') return;
-    orderManager.updateOrderStatus(orderId, status);
-    showAdvancedNotification('تم تحديث حالة الطلب', 'success', 'نجاح');
-}
-
-function showDashboardAnalytics(container) {
-    if (!currentUser || currentUser.role !== 'admin') return;
-    
-    const analytics = analyticsManager.generateComprehensiveReport();
-    const eventsByType = Object.entries(analytics.eventsByType).map(([type, count]) => ({ type, count }));
-
-    container.innerHTML = `
-        <h3 style="margin-bottom: 30px; color: var(--gold);">التحليلات والإحصائيات</h3>
-        
-        <div class="stats-grid">
-            <div class="stat-card">
-                <i class="fas fa-eye"></i>
-                <div class="stat-value">${analytics.visits.totalPageViews}</div>
-                <div class="stat-label">مشاهدات الصفحات</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-chart-bar"></i>
-                <div class="stat-value">${analytics.visits.uniquePages}</div>
-                <div class="stat-label">صفحات فريدة</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-bolt"></i>
-                <div class="stat-value">${analytics.visits.totalEvents}</div>
-                <div class="stat-label">إجمالي الأحداث</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-percent"></i>
-                <div class="stat-value">${analytics.conversionRate}%</div>
-                <div class="stat-label">معدل التحويل</div>
-            </div>
-        </div>
-
-        <div class="chart-container">
-            <canvas id="eventsChart"></canvas>
-        </div>
-    `;
-
-    setTimeout(() => {
-        const ctx = document.getElementById('eventsChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: eventsByType.map(e => e.type),
-                datasets: [{
-                    label: 'عدد الأحداث',
-                    data: eventsByType.map(e => e.count),
-                    backgroundColor: '#d4af37',
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(212, 175, 55, 0.1)' },
-                        ticks: { color: getComputedStyle(document.body).getPropertyValue('--text-secondary') }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: getComputedStyle(document.body).getPropertyValue('--text-secondary') }
-                    }
-                }
-            }
-        });
-    }, 100);
-}
-
-function showDashboardProducts(container) {
-    if (!currentUser || currentUser.role !== 'admin') return;
-
-    container.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <h3 style="color: var(--gold);">إدارة المنتجات</h3>
-            <button class="btn-gold" onclick="showAddProductModal()">
-                <i class="fas fa-plus"></i> إضافة منتج
-            </button>
-        </div>
-
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>المنتج</th>
-                        <th>القسم</th>
-                        <th>السعر</th>
-                        <th>الكمية</th>
-                        <th>التاجر</th>
-                        <th>التقييم</th>
-                        <th>الإجراءات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${products.map(product => {
-                        const merchant = users.find(u => u.id === product.merchantId);
-                        return `
-                            <tr>
-                                <td>${product.name}</td>
-                                <td>${getCategoryName(product.category)}</td>
-                                <td style="color: var(--gold); font-weight: 700;">${product.price.toLocaleString()} دج</td>
-                                <td>
-                                    <span class="${product.stock <= 0 ? 'out-of-stock' : product.stock < 5 ? 'low-stock' : 'in-stock'}" 
-                                          style="padding: 3px 10px; border-radius: 20px; font-size: 12px;">
-                                        ${product.stock}
-                                    </span>
-                                </td>
-                                <td>${merchant ? merchant.name : 'منتج عام'}</td>
-                                <td>${product.rating} ⭐</td>
-                                <td>
-                                    <button class="btn-outline-gold" onclick="editProduct(${product.id})" style="padding: 5px 10px; margin-left: 5px;">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn-outline-gold" onclick="deleteProduct(${product.id})" style="padding: 5px 10px; background: #f87171; color: white;">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('')}
-                </tbody>
-            </table>
-        </div>
-    `;
-}
-
-function showDashboardMerchants(container) {
-    if (!currentUser || currentUser.role !== 'admin') return;
-    
-    const pendingMerchants = users.filter(u => u.role === 'merchant_pending');
-    const approvedMerchants = users.filter(u => u.role === 'merchant_approved');
-
-    container.innerHTML = `
-        <h3 style="margin-bottom: 30px; color: var(--gold);">إدارة التجار</h3>
-        
-        <h4 style="margin: 20px 0; color: var(--gold);">طلبات الانضمام (${pendingMerchants.length})</h4>
-        ${pendingMerchants.map(merchant => `
-            <div style="background: var(--glass); border: 1px solid var(--gold); border-radius: 20px; padding: 20px; margin-bottom: 15px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <h5 style="color: var(--gold);">${merchant.name}</h5>
-                        <p><i class="fas fa-envelope" style="color: var(--gold);"></i> ${merchant.email}</p>
-                        <p><i class="fas fa-store" style="color: var(--gold);"></i> المستوى: ${merchant.merchantLevel} | ${merchant.merchantDesc}</p>
-                    </div>
-                    <div>
-                        <button class="btn-gold" onclick="approveMerchant(${merchant.id})" style="margin-left: 10px;">
-                            <i class="fas fa-check"></i> موافقة
-                        </button>
-                        <button class="btn-outline-gold" onclick="rejectMerchant(${merchant.id})">
-                            <i class="fas fa-times"></i> رفض
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `).join('')}
-
-        <h4 style="margin: 30px 0 20px; color: var(--gold);">التجار المعتمدون (${approvedMerchants.length})</h4>
-        ${approvedMerchants.map(merchant => `
-            <div style="background: var(--glass); border: 1px solid var(--gold); border-radius: 20px; padding: 20px; margin-bottom: 15px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <h5 style="color: var(--gold);">${merchant.name} <i class="fas fa-check-circle" style="color: #4ade80;"></i></h5>
-                        <p><i class="fas fa-envelope" style="color: var(--gold);"></i> ${merchant.email}</p>
-                        <p><i class="fas fa-store" style="color: var(--gold);"></i> المستوى: ${merchant.merchantLevel}</p>
-                    </div>
-                </div>
-            </div>
-        `).join('')}
-    `;
-}
-
-function approveMerchant(userId) {
-    if (!currentUser || currentUser.role !== 'admin') return;
-    
-    const user = users.find(u => u.id === userId);
-    if (user) {
-        user.role = 'merchant_approved';
-        localStorage.setItem('nardoo_users', JSON.stringify(users));
-        showAdvancedNotification('تمت الموافقة على التاجر', 'success', 'نجاح');
-        openDashboard();
-        switchDashboardTab('merchants');
-    }
-}
-
-function rejectMerchant(userId) {
-    if (!currentUser || currentUser.role !== 'admin') return;
-    
-    const user = users.find(u => u.id === userId);
-    if (user) {
-        user.role = 'customer';
-        localStorage.setItem('nardoo_users', JSON.stringify(users));
-        showAdvancedNotification('تم رفض طلب التاجر', 'info', 'تم');
-        openDashboard();
-        switchDashboardTab('merchants');
-    }
-}
-
-// ========== 21. إضافة وتعديل وحذف المنتجات ==========
+// ========== 22. إضافة وتعديل وحذف المنتجات ==========
 function showAddProductModal() {
-    console.log('فتح نافذة إضافة منتج');
-    
     if (!currentUser) {
-        showAdvancedNotification('يجب تسجيل الدخول أولاً', 'warning', 'تنبيه');
+        showAdvancedNotification('يجب تسجيل الدخول أولاً', 'warning');
         openLoginModal();
         return;
     }
 
     if (currentUser.role === 'merchant_approved') {
         document.getElementById('modalTitle').textContent = 'إضافة منتج جديد (خاص بك)';
-        
         const merchantSelect = document.getElementById('productMerchant');
         merchantSelect.innerHTML = `<option value="${currentUser.id}">${currentUser.name}</option>`;
         merchantSelect.disabled = true;
-        
-        showAdvancedNotification('يمكنك إضافة منتج خاص بك فقط', 'info', 'تاجر');
     } 
     else if (currentUser.role === 'admin') {
         document.getElementById('modalTitle').textContent = 'إضافة منتج جديد';
-        
         const merchantSelect = document.getElementById('productMerchant');
         merchantSelect.innerHTML = '<option value="">منتج عام</option>';
         users.filter(u => u.role === 'merchant_approved').forEach(m => {
-            merchantSelect.innerHTML += `<option value="${m.id}">${m.name} (مستوى ${m.merchantLevel})</option>`;
+            merchantSelect.innerHTML += `<option value="${m.id}">${m.name}</option>`;
         });
         merchantSelect.disabled = false;
     } 
     else {
-        showAdvancedNotification('فقط المدير والتجار يمكنهم إضافة منتجات', 'error', 'خطأ');
+        showAdvancedNotification('فقط المدير والتجار يمكنهم إضافة منتجات', 'error');
         return;
     }
     
@@ -1809,7 +1343,6 @@ function showAddProductModal() {
     document.getElementById('editingProductId').value = '';
     document.getElementById('imagePreview').innerHTML = '';
     document.getElementById('productImagesData').value = '';
-
     document.getElementById('productModal').style.display = 'flex';
 }
 
@@ -1823,20 +1356,19 @@ function handleImageUpload(event) {
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const reader = new FileReader();
-
         reader.onload = function(e) {
             preview.innerHTML += `<img src="${e.target.result}" class="preview-image">`;
             imagesData.push(e.target.result);
             document.getElementById('productImagesData').value = JSON.stringify(imagesData);
         };
-
         reader.readAsDataURL(file);
     }
 }
 
-function saveProduct() {
+// 🟣 دالة حفظ المنتج (مع إرسال تلجرام)
+async function saveProduct() {
     if (!currentUser) {
-        showAdvancedNotification('يجب تسجيل الدخول أولاً', 'error', 'خطأ');
+        showAdvancedNotification('يجب تسجيل الدخول أولاً', 'error');
         return;
     }
 
@@ -1848,12 +1380,7 @@ function saveProduct() {
     const imagesData = document.getElementById('productImagesData').value;
 
     if (!name || !category || !price || !stock) {
-        showAdvancedNotification('الرجاء ملء جميع الحقول', 'error', 'خطأ');
-        return;
-    }
-
-    if (price <= 0 || stock < 0) {
-        showAdvancedNotification('السعر والكمية يجب أن تكون أرقام صحيحة', 'error', 'خطأ');
+        showAdvancedNotification('الرجاء ملء جميع الحقول', 'error');
         return;
     }
 
@@ -1883,30 +1410,28 @@ function saveProduct() {
         rating: 4.5,
         images: images,
         merchantId: merchantId,
+        merchantName: currentUser.name,
         soldCount: 0,
-        createdAt: new Date().toISOString(),
-        createdByName: currentUser.name,
-        createdById: currentUser.id
+        createdAt: new Date().toISOString()
     };
+
+    // 🟣 إرسال إشعار بنفسجي إلى تلجرام
+    await sendNewProductToTelegram(productData);
 
     if (editingId) {
         const index = products.findIndex(p => p.id == editingId);
         if (index !== -1) {
             if (currentUser.role === 'merchant_approved' && products[index].merchantId !== currentUser.id) {
-                showAdvancedNotification('لا يمكنك تعديل منتجات الآخرين', 'error', 'خطأ');
+                showAdvancedNotification('لا يمكنك تعديل منتجات الآخرين', 'error');
                 return;
             }
-            
             products[index] = { ...productData, id: editingId };
-            showAdvancedNotification('تم تعديل المنتج بنجاح', 'success', 'نجاح');
+            showAdvancedNotification('تم تعديل المنتج بنجاح', 'success');
         }
     } else {
         const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-        products.push({
-            id: newId,
-            ...productData
-        });
-        showAdvancedNotification('تم إضافة المنتج بنجاح', 'success', 'نجاح');
+        products.push({ id: newId, ...productData });
+        showAdvancedNotification('تم إضافة المنتج بنجاح', 'success');
     }
 
     saveProducts();
@@ -1916,23 +1441,11 @@ function saveProduct() {
     if (currentUser.role === 'merchant_approved') {
         showMerchantPanel();
     }
-    
-    analyticsManager.trackEvent('productAdded', { name, merchantId });
 }
 
 function editProduct(id) {
-    if (!currentUser) {
-        showAdvancedNotification('يجب تسجيل الدخول أولاً', 'error', 'خطأ');
-        return;
-    }
-
     const product = products.find(p => p.id == id);
     if (!product) return;
-
-    if (currentUser.role === 'merchant_approved' && product.merchantId !== currentUser.id) {
-        showAdvancedNotification('لا يمكنك تعديل منتجات الآخرين', 'error', 'خطأ');
-        return;
-    }
 
     document.getElementById('modalTitle').textContent = 'تعديل المنتج';
     document.getElementById('productName').value = product.name;
@@ -1941,24 +1454,10 @@ function editProduct(id) {
     document.getElementById('productStock').value = product.stock;
     document.getElementById('editingProductId').value = id;
 
-    const merchantSelect = document.getElementById('productMerchant');
-    if (currentUser.role === 'merchant_approved') {
-        merchantSelect.innerHTML = `<option value="${currentUser.id}">${currentUser.name}</option>`;
-        merchantSelect.disabled = true;
-    } else if (currentUser.role === 'admin') {
-        merchantSelect.innerHTML = '<option value="">منتج عام</option>';
-        users.filter(u => u.role === 'merchant_approved').forEach(m => {
-            merchantSelect.innerHTML += `<option value="${m.id}" ${product.merchantId === m.id ? 'selected' : ''}>${m.name}</option>`;
-        });
-        merchantSelect.disabled = false;
-    }
-
     const preview = document.getElementById('imagePreview');
     preview.innerHTML = '';
     if (product.images) {
-        product.images.forEach(img => {
-            preview.innerHTML += `<img src="${img}" class="preview-image">`;
-        });
+        product.images.forEach(img => preview.innerHTML += `<img src="${img}" class="preview-image">`);
     }
 
     document.getElementById('productModal').style.display = 'flex';
@@ -1966,14 +1465,14 @@ function editProduct(id) {
 
 function deleteProduct(id) {
     if (!currentUser) {
-        showAdvancedNotification('يجب تسجيل الدخول أولاً', 'error', 'خطأ');
+        showAdvancedNotification('يجب تسجيل الدخول أولاً', 'error');
         return;
     }
 
     const product = products.find(p => p.id == id);
     
     if (currentUser.role === 'merchant_approved' && product.merchantId !== currentUser.id) {
-        showAdvancedNotification('لا يمكنك حذف منتجات الآخرين', 'error', 'خطأ');
+        showAdvancedNotification('لا يمكنك حذف منتجات الآخرين', 'error');
         return;
     }
     
@@ -1981,17 +1480,15 @@ function deleteProduct(id) {
         products = products.filter(p => p.id != id);
         saveProducts();
         displayProducts();
-        showAdvancedNotification('تم حذف المنتج', 'info', 'تم');
+        showAdvancedNotification('تم حذف المنتج', 'info');
         
         if (currentUser.role === 'merchant_approved') {
             showMerchantPanel();
         }
-        
-        analyticsManager.trackEvent('productDeleted', { productId: id });
     }
 }
 
-// ========== 22. تأثيرات الكتابة ==========
+// ========== 23. تأثيرات الكتابة ==========
 class TypingAnimation {
     constructor(element, texts, speed = 100, delay = 2000) {
         this.element = element;
@@ -2009,7 +1506,6 @@ class TypingAnimation {
 
     type() {
         const current = this.texts[this.currentIndex];
-        
         if (this.isDeleting) {
             this.text = current.substring(0, this.text.length - 1);
         } else {
@@ -2019,10 +1515,7 @@ class TypingAnimation {
         this.element.innerHTML = this.text + '<span class="typing-cursor">|</span>';
 
         let typeSpeed = this.speed;
-
-        if (this.isDeleting) {
-            typeSpeed /= 2;
-        }
+        if (this.isDeleting) typeSpeed /= 2;
 
         if (!this.isDeleting && this.text === current) {
             typeSpeed = this.delay;
@@ -2037,7 +1530,7 @@ class TypingAnimation {
     }
 }
 
-// ========== 23. نظام المقارنة ==========
+// ========== 24. نظام المقارنة ==========
 class ProductComparator {
     constructor() {
         this.compareList = JSON.parse(localStorage.getItem('compare_list')) || [];
@@ -2045,14 +1538,13 @@ class ProductComparator {
 
     addToCompare(product) {
         if (this.compareList.length >= 4) {
-            showAdvancedNotification('لا يمكن مقارنة أكثر من 4 منتجات', 'warning', 'تنبيه');
+            showAdvancedNotification('لا يمكن مقارنة أكثر من 4 منتجات', 'warning');
             return false;
         }
-        
         if (!this.compareList.find(p => p.id === product.id)) {
             this.compareList.push(product);
             localStorage.setItem('compare_list', JSON.stringify(this.compareList));
-            showAdvancedNotification('تمت الإضافة للمقارنة', 'success', 'نجاح');
+            showAdvancedNotification('تمت الإضافة للمقارنة', 'success');
             return true;
         }
         return false;
@@ -2075,8 +1567,10 @@ class ProductComparator {
 
 const comparator = new ProductComparator();
 
-// ========== 24. تأثيرات الماوس ==========
+// ========== 25. تأثيرات الماوس ==========
 function initMouseEffects() {
+    if (window.innerWidth <= 768) return;
+    
     const cursor = document.createElement('div');
     cursor.className = 'mouse-effect';
     
@@ -2097,7 +1591,7 @@ function initMouseEffects() {
     });
 }
 
-// ========== 25. شريط تقدم التمرير ==========
+// ========== 26. شريط تقدم التمرير ==========
 function initScrollProgress() {
     const progressBar = document.createElement('div');
     progressBar.className = 'scroll-progress';
@@ -2111,7 +1605,7 @@ function initScrollProgress() {
     });
 }
 
-// ========== 26. جسيمات متحركة ==========
+// ========== 27. جسيمات متحركة ==========
 function initParticles() {
     const particlesContainer = document.createElement('div');
     particlesContainer.className = 'particles';
@@ -2125,11 +1619,6 @@ function initParticles() {
         particle.style.animationDuration = (10 + Math.random() * 10) + 's';
         particlesContainer.appendChild(particle);
     }
-}
-
-// ========== 27. دوال إضافية ==========
-function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
 }
 
 // ========== 28. التهيئة (onload) ==========
@@ -2147,17 +1636,14 @@ window.onload = function() {
     if (savedTheme) {
         isDarkMode = savedTheme === 'dark';
         document.body.classList.toggle('light-mode', !isDarkMode);
-        const toggle = document.getElementById('themeToggle');
-        toggle.innerHTML = isDarkMode ? 
+        document.getElementById('themeToggle').innerHTML = isDarkMode ? 
             '<i class="fas fa-moon"></i><span>ليلي</span>' : 
             '<i class="fas fa-sun"></i><span>نهاري</span>';
     }
 
     setTimeout(() => {
         document.getElementById('loader').style.opacity = '0';
-        setTimeout(() => {
-            document.getElementById('loader').style.display = 'none';
-        }, 500);
+        setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
     }, 1000);
 
     analyticsManager.trackPageView('home');
@@ -2173,13 +1659,7 @@ window.onload = function() {
     
     const typingElement = document.getElementById('typing-text');
     if (typingElement) {
-        const typing = new TypingAnimation(
-            typingElement,
-            ['نكهة وجمال', 'ناردو برو', 'تسوق آمن', 'جودة عالية'],
-            100,
-            2000
-        );
-        typing.start();
+        new TypingAnimation(typingElement, ['نكهة وجمال', 'ناردو برو', 'تسوق آمن', 'جودة عالية'], 100, 2000).start();
     }
 };
 
