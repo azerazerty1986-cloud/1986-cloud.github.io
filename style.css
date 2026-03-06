@@ -50,6 +50,7 @@ body {
     line-height: 1.6;
     transition: var(--transition);
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 .container {
@@ -1018,6 +1019,18 @@ body {
     width: 100%;
     height: 250px;
     overflow: hidden;
+    border-radius: 30px 30px 0 0;
+}
+
+.product-gallery img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.product-card:hover .product-gallery img {
+    transform: scale(1.1);
 }
 
 .swiper {
@@ -1066,6 +1079,7 @@ body {
     font-size: 14px;
 }
 
+/* ===== 20. معلومات المنتج ===== */
 .product-info {
     padding: 20px;
     flex: 1;
@@ -1193,7 +1207,7 @@ body {
     transform: scale(1.05);
 }
 
-/* ===== 20. شارة الوقت ===== */
+/* ===== 21. شارة الوقت ===== */
 .product-time-badge {
     position: absolute;
     top: 60px;
@@ -1218,7 +1232,7 @@ body {
     color: var(--gold-light);
 }
 
-/* ===== 21. معلومات التاجر ===== */
+/* ===== 22. معلومات التاجر ===== */
 .product-merchant-info {
     display: flex;
     align-items: center;
@@ -1237,7 +1251,7 @@ body {
     font-size: 10px;
 }
 
-/* ===== 22. تقييم النجوم ===== */
+/* ===== 23. تقييم النجوم ===== */
 .product-rating {
     display: flex;
     align-items: center;
@@ -1285,7 +1299,7 @@ body {
     border-radius: 15px;
 }
 
-/* ===== 23. خيارات الفرز ===== */
+/* ===== 24. خيارات الفرز ===== */
 .sort-options {
     display: flex;
     justify-content: flex-end;
@@ -1315,7 +1329,7 @@ body {
     color: var(--text-primary);
 }
 
-/* ===== 24. لوحة التحكم ===== */
+/* ===== 25. لوحة التحكم ===== */
 .dashboard-section {
     margin: 40px 0;
 }
@@ -1390,7 +1404,78 @@ body {
     margin: 30px 0;
 }
 
-/* ===== 25. النوافذ المنبثقة ===== */
+/* ===== 26. نموذج إضافة منتج ===== */
+.product-form {
+    display: grid;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--gold);
+}
+
+.form-control {
+    padding: 15px;
+    background: var(--glass);
+    border: 2px solid var(--glass-border);
+    border-radius: 20px;
+    color: var(--text-primary);
+    font-family: 'Cairo', sans-serif;
+    transition: var(--transition);
+}
+
+.form-control:focus {
+    border-color: var(--gold);
+    outline: none;
+}
+
+.form-control:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.image-upload-area {
+    border: 2px dashed var(--gold);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.image-upload-area:hover {
+    background: var(--glass);
+}
+
+.image-upload-area i {
+    font-size: 40px;
+    color: var(--gold);
+    margin-bottom: 10px;
+}
+
+.image-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.preview-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 15px;
+    object-fit: cover;
+    border: 2px solid var(--gold);
+}
+
+/* ===== 27. النوافذ المنبثقة ===== */
 .modal {
     display: none;
     position: fixed;
@@ -1421,7 +1506,7 @@ body {
     max-width: 1000px;
 }
 
-/* ===== 26. الفوتر ===== */
+/* ===== 28. الفوتر ===== */
 .footer {
     background: var(--bg-secondary);
     padding: 60px 0 30px;
@@ -1460,7 +1545,7 @@ body {
     border-top: 1px solid var(--gold-dark);
 }
 
-/* ===== 27. الجداول ===== */
+/* ===== 29. الجداول ===== */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -1479,7 +1564,7 @@ td {
     border-bottom: 1px solid var(--glass-border);
 }
 
-/* ===== 28. تأثيرات حركية وتحسينات للشاشات الصغيرة ===== */
+/* ===== 30. تأثيرات حركية أساسية ===== */
 @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
@@ -1532,10 +1617,17 @@ td {
     }
 }
 
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
 .fade-in-up {
     animation: fadeInUp 0.5s ease forwards;
 }
 
+/* ===== 31. تأثيرات إضافية ===== */
 .glow-text {
     text-shadow: 0 0 10px var(--gold);
 }
@@ -1580,6 +1672,7 @@ td {
     display: block;
 }
 
+/* ===== 32. تأثيرات الماوس ===== */
 .mouse-effect {
     position: fixed;
     width: 20px;
@@ -1608,6 +1701,193 @@ td {
     background: rgba(212, 175, 55, 0.1);
 }
 
+/* ===== 33. تأثير Ripple ===== */
+.ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+}
+
+.ripple:focus:not(:active)::after {
+    animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(20, 20);
+        opacity: 0;
+    }
+}
+
+/* ===== 34. Skeleton Loading ===== */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--glass) 25%,
+        rgba(212, 175, 55, 0.1) 50%,
+        var(--glass) 75%
+    );
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 10px;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton-card {
+    height: 350px;
+    border-radius: 30px;
+    margin-bottom: 20px;
+}
+
+.skeleton-text {
+    height: 20px;
+    margin: 10px 0;
+    width: 80%;
+}
+
+.skeleton-title {
+    height: 30px;
+    width: 60%;
+    margin: 15px 0;
+}
+
+/* ===== 35. تأثيرات 3D ===== */
+.card-3d {
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+
+.card-3d-inner {
+    transition: transform 0.5s;
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+
+.card-3d:hover .card-3d-inner {
+    transform: rotateY(10deg) rotateX(5deg);
+}
+
+.card-3d-front,
+.card-3d-back {
+    backface-visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 30px;
+    padding: 20px;
+}
+
+.card-3d-back {
+    transform: rotateY(180deg);
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: var(--bg-primary);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ===== 36. تأثير Parallax ===== */
+.parallax {
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    min-height: 400px;
+    position: relative;
+    overflow: hidden;
+}
+
+.parallax::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.parallax-content {
+    position: relative;
+    z-index: 2;
+    color: white;
+    text-align: center;
+    padding: 100px 20px;
+}
+
+/* ===== 37. تأثير التحويم المتقدم على الصور ===== */
+.image-hover-advanced {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+}
+
+.image-hover-advanced img {
+    transition: transform 0.5s;
+}
+
+.image-hover-advanced:hover img {
+    transform: scale(1.1);
+}
+
+.image-hover-advanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+    z-index: 2;
+}
+
+.image-hover-advanced:hover::before {
+    left: 100%;
+}
+
+.image-overlay {
+    position: absolute;
+    bottom: -50px;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    color: white;
+    padding: 20px;
+    transition: bottom 0.3s;
+    z-index: 3;
+}
+
+.image-hover-advanced:hover .image-overlay {
+    bottom: 0;
+}
+
+/* ===== 38. تحسينات للشاشات الصغيرة ===== */
 @media (max-width: 768px) {
     .fixed-cart {
         bottom: 80px;
@@ -1662,5 +1942,10 @@ td {
     .sort-select {
         width: 100%;
         text-align: center;
+    }
+    
+    .cart-sidebar {
+        width: 100%;
+        left: -100%;
     }
 }
