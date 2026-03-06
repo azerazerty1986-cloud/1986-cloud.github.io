@@ -757,7 +757,53 @@ body {
     animation: pulse 1.5s infinite;
 }
 
-/* ===== 14. القائمة الرئيسية ===== */
+/* ===== 14. أزرار الإجراءات ===== */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.action-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    color: var(--gold);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    position: relative;
+}
+
+.action-btn:hover {
+    background: var(--gold);
+    color: var(--bg-primary);
+    transform: translateY(-3px);
+    border-color: var(--gold);
+}
+
+.cart-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--gold);
+    color: var(--bg-primary);
+    font-size: 12px;
+    font-weight: 700;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ===== 15. القائمة الرئيسية ===== */
 .nav-menu {
     background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
     backdrop-filter: blur(10px);
@@ -830,7 +876,26 @@ body {
     font-size: 16px;
 }
 
-/* ===== 15. لوحة التاجر ===== */
+/* ===== 16. نص متحرك (Typing Animation) ===== */
+.typing-container {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gold);
+    min-height: 60px;
+}
+
+.typing-cursor {
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* ===== 17. لوحة التاجر ===== */
 .merchant-panel {
     background: linear-gradient(135deg, var(--purple), var(--purple-dark));
     border-radius: 30px;
@@ -870,7 +935,7 @@ body {
     color: var(--gold);
 }
 
-/* ===== 16. شبكة المنتجات ===== */
+/* ===== 18. شبكة المنتجات ===== */
 .products-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -947,7 +1012,7 @@ body {
     box-shadow: 0 0 15px var(--purple);
 }
 
-/* ===== 17. معرض الصور ===== */
+/* ===== 19. معرض الصور ===== */
 .product-gallery {
     position: relative;
     width: 100%;
@@ -1001,7 +1066,6 @@ body {
     font-size: 14px;
 }
 
-/* ===== 18. معلومات المنتج ===== */
 .product-info {
     padding: 20px;
     flex: 1;
@@ -1129,7 +1193,7 @@ body {
     transform: scale(1.05);
 }
 
-/* ===== 19. شارة الوقت ===== */
+/* ===== 20. شارة الوقت ===== */
 .product-time-badge {
     position: absolute;
     top: 60px;
@@ -1154,7 +1218,7 @@ body {
     color: var(--gold-light);
 }
 
-/* ===== 20. معلومات التاجر ===== */
+/* ===== 21. معلومات التاجر ===== */
 .product-merchant-info {
     display: flex;
     align-items: center;
@@ -1173,7 +1237,7 @@ body {
     font-size: 10px;
 }
 
-/* ===== 21. تقييم النجوم ===== */
+/* ===== 22. تقييم النجوم ===== */
 .product-rating {
     display: flex;
     align-items: center;
@@ -1221,7 +1285,7 @@ body {
     border-radius: 15px;
 }
 
-/* ===== 22. خيارات الفرز ===== */
+/* ===== 23. خيارات الفرز ===== */
 .sort-options {
     display: flex;
     justify-content: flex-end;
@@ -1251,7 +1315,7 @@ body {
     color: var(--text-primary);
 }
 
-/* ===== 23. لوحة التحكم ===== */
+/* ===== 24. لوحة التحكم ===== */
 .dashboard-section {
     margin: 40px 0;
 }
@@ -1326,7 +1390,7 @@ body {
     margin: 30px 0;
 }
 
-/* ===== 24. النوافذ المنبثقة ===== */
+/* ===== 25. النوافذ المنبثقة ===== */
 .modal {
     display: none;
     position: fixed;
@@ -1357,7 +1421,7 @@ body {
     max-width: 1000px;
 }
 
-/* ===== 25. الفوتر ===== */
+/* ===== 26. الفوتر ===== */
 .footer {
     background: var(--bg-secondary);
     padding: 60px 0 30px;
@@ -1396,7 +1460,7 @@ body {
     border-top: 1px solid var(--gold-dark);
 }
 
-/* ===== 26. الجداول ===== */
+/* ===== 27. الجداول ===== */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -1415,7 +1479,7 @@ td {
     border-bottom: 1px solid var(--glass-border);
 }
 
-/* ===== 27. تأثيرات حركية (float, bounce, pulse, rotate) ===== */
+/* ===== 28. تأثيرات حركية وتحسينات للشاشات الصغيرة ===== */
 @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
@@ -1472,7 +1536,6 @@ td {
     animation: fadeInUp 0.5s ease forwards;
 }
 
-/* ===== 28. تأثيرات إضافية وتحسينات للشاشات الصغيرة ===== */
 .glow-text {
     text-shadow: 0 0 10px var(--gold);
 }
