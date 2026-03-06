@@ -1,11 +1,11 @@
 // ========== 1. إعدادات تلجرام (قناة واحدة متكاملة) ==========
 const TELEGRAM = {
     botToken: '8576673096:AAHCg7pM2MyzmVuCqWdK-ZbrDQy7zAR09x4',
-    channelId: '-1003822964890',
-    adminId: '7461896689'
+    channelId: '-1005658665988',
+    adminId: '74638985'
 };
 
-// ========== 2. جلب المنتجات من قناة تلجرام ==========
+// ========== 2. جلب المنتجات من قناة تلجرام (معدلة لتنسيق قناتك) ==========
 async function loadProductsFromTelegram() {
     try {
         console.log('🔄 جاري جلب المنتجات من تلجرام...');
@@ -24,59 +24,64 @@ async function loadProductsFromTelegram() {
             const updates = [...data.result].reverse();
             
             for (const update of updates) {
-                // البحث عن رسائل المنتجات (🟣)
-                if (update.channel_post?.text?.includes('🟣')) {
-                    const text = update.channel_post.text;
-                    console.log('📦 وجدنا منتج:', text);
+                // التحقق من وجود رسالة في القناة
+                if (update.channel_post) {
+                    const post = update.channel_post;
                     
-                    // استخراج البيانات
-                    let name = 'منتج';
-                    let price = 0;
-                    let category = 'other';
-                    let stock = 0;
-                    let merchant = 'المتجر';
-                    
-                    const lines = text.split('\n');
-                    lines.forEach(line => {
-                        if (line.includes('*المنتج:*')) {
-                            name = line.replace('*المنتج:*', '').replace(/\*/g, '').trim();
-                        } else if (line.includes('*السعر:*')) {
-                            const match = line.match(/\d+/);
-                            if (match) price = parseInt(match[0]);
-                        } else if (line.includes('*القسم:*')) {
-                            const catText = line.replace('*القسم:*', '').replace(/\*/g, '').trim().toLowerCase();
-                            if (catText.includes('promo')) category = 'promo';
-                            else if (catText.includes('spices') || catText.includes('توابل')) category = 'spices';
-                            else if (catText.includes('cosmetic') || catText.includes('كوسمتيك')) category = 'cosmetic';
-                            else category = 'other';
-                        } else if (line.includes('*الكمية:*')) {
-                            const match = line.match(/\d+/);
-                            if (match) stock = parseInt(match[0]);
-                        } else if (line.includes('*التاجر:*')) {
-                            merchant = line.replace('*التاجر:*', '').replace(/\*/g, '').trim();
-                        }
-                    });
-                    
-                    products.push({
-                        id: update.channel_post.message_id,
-                        name: name,
-                        price: price,
-                        category: category,
-                        stock: stock,
-                        merchantName: merchant,
-                        rating: 4.5,
-                        images: ["https://via.placeholder.com/300/2c5e4f/ffffff?text=نكهة+وجمال"],
-                        createdAt: new Date(update.channel_post.date * 1000).toISOString()
-                    });
-                    
-                    console.log(`✅ منتج مضاف: ${name} - ${price} دج`);
+                    // البحث عن رسائل المنتجات (🟣)
+                    if (post.text && post.text.includes('🟣')) {
+                        console.log('📦 وجدنا منتج:', post.text);
+                        
+                        // استخراج البيانات من النص
+                        const lines = post.text.split('\n');
+                        let name = 'منتج';
+                        let price = 0;
+                        let category = 'other';
+                        let stock = 0;
+                        let merchant = 'المتجر';
+                        
+                        lines.forEach(line => {
+                            if (line.includes('المنتج:')) {
+                                name = line.replace('المنتج:', '').replace(/[🟣*]/g, '').trim();
+                            } else if (line.includes('السعر:')) {
+                                const match = line.match(/\d+/);
+                                if (match) price = parseInt(match[0]);
+                            } else if (line.includes('القسم:')) {
+                                const cat = line.replace('القسم:', '').replace(/[🟣*]/g, '').trim().toLowerCase();
+                                if (cat.includes('promo') || cat.includes('برموسيو')) category = 'promo';
+                                else if (cat.includes('spices') || cat.includes('توابل')) category = 'spices';
+                                else if (cat.includes('cosmetic') || cat.includes('كوسمتيك')) category = 'cosmetic';
+                                else category = 'other';
+                            } else if (line.includes('الكمية:')) {
+                                const match = line.match(/\d+/);
+                                if (match) stock = parseInt(match[0]);
+                            } else if (line.includes('التاجر:')) {
+                                merchant = line.replace('التاجر:', '').replace(/[🟣*]/g, '').trim();
+                            }
+                        });
+                        
+                        products.push({
+                            id: post.message_id,
+                            name: name,
+                            price: price,
+                            category: category,
+                            stock: stock,
+                            merchantName: merchant || 'المتجر',
+                            rating: 4.5,
+                            images: ["https://via.placeholder.com/300/2c5e4f/ffffff?text=نكهة+وجمال"],
+                            createdAt: new Date(post.date * 1000).toISOString()
+                        });
+                        
+                        console.log(`✅ منتج مضاف: ${name} - ${price} دج`);
+                    }
                 }
             }
         }
         
+        console.log(`✅ تم تحميل ${products.length} منتج من تلجرام`);
+        
         // حفظ نسخة احتياطية في localStorage
         localStorage.setItem('nardoo_products', JSON.stringify(products));
-        console.log(`✅ تم تحميل ${products.length} منتج من تلجرام`);
         
         return products;
         
