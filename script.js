@@ -1,11 +1,11 @@
 // ========== 1. إعدادات تلجرام (قناة واحدة متكاملة) ==========
 const TELEGRAM = {
     botToken: '8576673096:AAHCg7pM2MyzmVuCqWdK-ZbrDQy7zAR09x4',
-    channelId: '-1003822964890',
-    adminId: '7461896689'
+    channelId: '-1005658665988',
+    adminId: '74638985'
 };
 
-// ========== 2. جلب المنتجات من قناة تلجرام (معدلة لتنسيق قناتك) ==========
+// ========== 2. جلب المنتجات من قناة تلجرام ==========
 async function loadProductsFromTelegram() {
     try {
         console.log('🔄 جاري جلب المنتجات من تلجرام...');
@@ -20,19 +20,15 @@ async function loadProductsFromTelegram() {
         if (data.ok && data.result) {
             console.log(`✅ تم العثور على ${data.result.length} تحديث`);
             
-            // عكس الترتيب لجلب الأحدث أولاً
             const updates = [...data.result].reverse();
             
             for (const update of updates) {
-                // التحقق من وجود رسالة في القناة
                 if (update.channel_post) {
                     const post = update.channel_post;
                     
-                    // البحث عن رسائل المنتجات (🟣)
                     if (post.text && post.text.includes('🟣')) {
                         console.log('📦 وجدنا منتج:', post.text);
                         
-                        // استخراج البيانات من النص
                         const lines = post.text.split('\n');
                         let name = 'منتج';
                         let price = 0;
@@ -78,17 +74,13 @@ async function loadProductsFromTelegram() {
             }
         }
         
-        console.log(`✅ تم تحميل ${products.length} منتج من تلجرام`);
-        
-        // حفظ نسخة احتياطية في localStorage
         localStorage.setItem('nardoo_products', JSON.stringify(products));
+        console.log(`✅ تم تحميل ${products.length} منتج من تلجرام`);
         
         return products;
         
     } catch (error) {
         console.error('❌ خطأ في جلب المنتجات:', error);
-        
-        // استخدم localStorage كاحتياطي
         const saved = localStorage.getItem('nardoo_products');
         return saved ? JSON.parse(saved) : [];
     }
@@ -159,9 +151,9 @@ async function sendMerchantRequestToTelegram(merchant) {
 🏪 *اسم المتجر:* ${merchant.storeName}
 👤 *التاجر:* ${merchant.name}
 📧 *البريد:* ${merchant.email}
-📞 *الهاتف:* ${merchant.phone}
-📊 *المستوى:* ${merchant.level}
-📝 *الوصف:* ${merchant.desc}
+📞 *الهاتف:* ${merchant.phone || 'غير متوفر'}
+📊 *المستوى:* ${merchant.merchantLevel || '1'}
+📝 *الوصف:* ${merchant.merchantDesc || 'تاجر جديد'}
 
 ⬇️ *للإجراء*
 ✅ للموافقة: /approve_${merchant.id}
@@ -199,7 +191,25 @@ ${text}
     });
 }
 
-// ========== 7. النظام الأساسي والمتغيرات العامة ==========
+// ========== 7. إرسال رسالة خاصة لتاجر (📱) ==========
+async function sendPrivateMessageToMerchant(merchantId, text) {
+    try {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: merchantId,
+                text: text,
+                parse_mode: 'Markdown'
+            })
+        });
+        console.log(`📱 تم إرسال رسالة خاصة للتاجر ${merchantId}`);
+    } catch (error) {
+        console.error('❌ فشل إرسال الرسالة الخاصة:', error);
+    }
+}
+
+// ========== 8. النظام الأساسي والمتغيرات العامة ==========
 let products = [];
 let currentUser = null;
 let cart = [];
@@ -209,7 +219,7 @@ let searchTerm = '';
 let sortBy = 'newest';
 let users = [];
 
-// ========== 8. تحميل المستخدمين من localStorage ==========
+// ========== 9. تحميل المستخدمين من localStorage ==========
 function loadUsers() {
     const saved = localStorage.getItem('nardoo_users');
     if (saved) {
@@ -223,6 +233,8 @@ function loadUsers() {
                 password: '123456', 
                 role: 'admin',
                 phone: '',
+                telegramId: TELEGRAM.adminId,
+                storeName: 'المتجر الرئيسي',
                 createdAt: new Date().toISOString()
             }
         ];
@@ -231,7 +243,7 @@ function loadUsers() {
 }
 loadUsers();
 
-// ========== 9. نظام إدارة الطلبات ==========
+// ========== 10. نظام إدارة الطلبات ==========
 class OrderManagementSystem {
     constructor() {
         this.orders = this.loadOrders();
@@ -358,7 +370,7 @@ class OrderManagementSystem {
     }
 }
 
-// ========== 10. نظام الواتساب ==========
+// ========== 11. نظام الواتساب ==========
 class WhatsAppIntegration {
     constructor() {
         this.storePhone = '213562243648';
@@ -468,7 +480,7 @@ class WhatsAppIntegration {
     }
 }
 
-// ========== 11. نظام التحليلات ==========
+// ========== 12. نظام التحليلات ==========
 class AnalyticsSystem {
     constructor() {
         this.events = this.loadEvents();
@@ -551,12 +563,12 @@ class AnalyticsSystem {
     }
 }
 
-// ========== 12. إنشاء الكائنات ==========
+// ========== 13. إنشاء الكائنات ==========
 const orderManager = new OrderManagementSystem();
 const whatsappManager = new WhatsAppIntegration();
 const analyticsManager = new AnalyticsSystem();
 
-// ========== 13. دوال المساعدة والإشعارات ==========
+// ========== 14. دوال المساعدة والإشعارات ==========
 function showAdvancedNotification(message, type = 'info', title = '') {
     let container = document.querySelector('.toast-container');
     if (!container) {
@@ -607,7 +619,7 @@ function toggleTheme() {
     localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
 }
 
-// ========== 14. دوال التاريخ والوقت ==========
+// ========== 15. دوال التاريخ والوقت ==========
 function getSimpleTimeAgo(dateString) {
     if (!dateString) return '';
     
@@ -640,7 +652,7 @@ function getSimpleTimeAgo(dateString) {
     return `منذ ${years} ${years === 1 ? 'سنة' : 'سنوات'}`;
 }
 
-// ========== 15. دوال تقييم النجوم ==========
+// ========== 16. دوال تقييم النجوم ==========
 function generateStars(rating) {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
@@ -663,7 +675,7 @@ function generateStars(rating) {
     return starsHTML;
 }
 
-// ========== 16. دوال الفرز ==========
+// ========== 17. دوال الفرز ==========
 function sortProducts(productsArray) {
     switch(sortBy) {
         case 'newest':
@@ -684,7 +696,7 @@ function changeSort(value) {
     displayProducts();
 }
 
-// ========== 17. تحميل المنتجات من تلجرام ==========
+// ========== 18. تحميل المنتجات من تلجرام ==========
 async function loadProducts() {
     products = await loadProductsFromTelegram();
     displayProducts();
@@ -844,7 +856,7 @@ function showSearchIndicator(term) {
     }, 3000);
 }
 
-// ========== 18. إدارة السلة ==========
+// ========== 19. إدارة السلة ==========
 function loadCart() {
     const saved = localStorage.getItem('nardoo_cart');
     cart = saved ? JSON.parse(saved) : [];
@@ -983,10 +995,8 @@ async function checkoutCart() {
         total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 800
     };
 
-    // 🟢 إرسال طلب أخضر إلى تلجرام
     await sendOrderToTelegram(order);
 
-    // إرسال واتساب للتجار
     const merchants = {};
     cart.forEach(item => {
         const merchant = users.find(u => u.name === item.merchantName);
@@ -1010,7 +1020,7 @@ async function checkoutCart() {
     showAdvancedNotification('✅ تم إرسال الطلب', 'success');
 }
 
-// ========== 19. دوال التمرير ==========
+// ========== 20. دوال التمرير ==========
 function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -1053,7 +1063,7 @@ function addScrollAnimations() {
     });
 }
 
-// ========== 20. عداد تنازلي ==========
+// ========== 21. عداد تنازلي ==========
 function updateCountdown() {
     const hoursElement = document.getElementById('marqueeHours');
     const minutesElement = document.getElementById('marqueeMinutes');
@@ -1075,7 +1085,7 @@ function updateCountdown() {
     }, 1000);
 }
 
-// ========== 21. أشرطة التقدم ==========
+// ========== 22. أشرطة التقدم ==========
 function updateProgressBars() {
     setInterval(() => {
         document.querySelectorAll('.progress-fill, .marquee-progress-fill').forEach(fill => {
@@ -1084,7 +1094,7 @@ function updateProgressBars() {
     }, 5000);
 }
 
-// ========== 22. عرض تفاصيل المنتج ==========
+// ========== 23. عرض تفاصيل المنتج ==========
 function viewProductDetails(productId) {
     const product = products.find(p => p.id == productId);
     if (!product) return;
@@ -1117,7 +1127,7 @@ function viewProductDetails(productId) {
     modal.style.display = 'flex';
 }
 
-// ========== 23. إدارة المستخدمين ==========
+// ========== 24. إدارة المستخدمين ==========
 function openLoginModal() {
     document.getElementById('loginModal').style.display = 'flex';
 }
@@ -1186,15 +1196,16 @@ function handleRegister() {
         password,
         phone,
         role: isMerchant ? 'merchant_pending' : 'customer',
+        telegramId: null,
+        storeName: '',
+        merchantLevel: isMerchant ? document.getElementById('merchantLevel').value : null,
+        merchantDesc: isMerchant ? document.getElementById('merchantDesc').value : '',
         createdAt: new Date().toISOString()
     };
 
     if (isMerchant) {
-        newUser.merchantLevel = document.getElementById('merchantLevel').value;
-        newUser.merchantDesc = document.getElementById('merchantDesc').value;
         newUser.storeName = newUser.merchantDesc.split('\n')[0] || 'متجر ' + name;
         
-        // 🔵 إرسال طلب أزرق إلى تلجرام
         sendMerchantRequestToTelegram(newUser);
         showAdvancedNotification('📋 تم إرسال طلب التسجيل إلى المدير', 'info');
     } else {
@@ -1226,7 +1237,7 @@ function updateUIBasedOnRole() {
         document.getElementById('userBtn').innerHTML = '<i class="fas fa-store"></i>';
         addMerchantMenuButton();
         showMerchantPanel();
-        showAdvancedNotification('مرحباً أيها التاجر', 'info');
+        showAdvancedNotification(`مرحباً أيها التاجر ${currentUser.name}`, 'info');
     } 
     else {
         document.getElementById('dashboardBtn').style.display = 'none';
@@ -1277,38 +1288,91 @@ function showMerchantPanel() {
     `;
 }
 
-// ========== 24. الموافقة على تاجر (للمدير) ==========
+// ========== 25. الموافقة على تاجر (معدلة مع إشعار) ==========
 async function approveMerchant(userId) {
-    const user = users.find(u => u.id == userId);
-    if (!user || currentUser?.role !== 'admin') return;
-
-    user.role = 'merchant_approved';
-    localStorage.setItem('nardoo_users', JSON.stringify(users));
+    console.log(`📨 أمر موافقة ورد للتاجر ${userId}`);
     
-    await sendNotificationToTelegram(`✅ تمت الموافقة على التاجر: ${user.name}`);
-    showAdvancedNotification('تمت الموافقة على التاجر', 'success');
+    let currentUsers = JSON.parse(localStorage.getItem('nardoo_users')) || [];
+    const userIndex = currentUsers.findIndex(u => u.id == userId);
     
-    if (document.getElementById('dashboardSection').style.display === 'block') {
-        switchDashboardTab('merchants');
+    if (userIndex !== -1) {
+        currentUsers[userIndex].role = 'merchant_approved';
+        localStorage.setItem('nardoo_users', JSON.stringify(currentUsers));
+        users = currentUsers;
+        
+        const merchant = currentUsers[userIndex];
+        
+        await sendNotificationToTelegram(`✅ تمت الموافقة على التاجر: ${merchant.name}`);
+        
+        // إرسال رسالة خاصة للتاجر إذا كان لديه معرف تلجرام
+        if (merchant.telegramId) {
+            await sendPrivateMessageToMerchant(
+                merchant.telegramId,
+                `🎉 *تهانينا!* تمت الموافقة على طلبك كتاجر في متجر نكهة وجمال.\n\n🔑 يمكنك الآن تسجيل الدخول وإضافة منتجاتك.\n\n🌐 رابط المتجر: https://1986-cloud-github-io.pages.dev`
+            );
+        }
+        
+        console.log(`✅ تمت الموافقة على التاجر ${userId}`);
+        
+        if (document.getElementById('dashboardSection')?.style.display === 'block') {
+            switchDashboardTab('merchants');
+        }
+    } else {
+        console.log(`❌ لم يتم العثور على تاجر بالمعرف ${userId}`);
+        
+        // إنشاء تاجر جديد إذا لم يكن موجوداً
+        const newMerchant = {
+            id: parseInt(userId),
+            name: `تاجر_${userId}`,
+            email: `merchant_${userId}@temp.com`,
+            password: '123456',
+            phone: '',
+            role: 'merchant_approved',
+            storeName: `متجر ${userId}`,
+            telegramId: null,
+            createdAt: new Date().toISOString()
+        };
+        
+        currentUsers.push(newMerchant);
+        localStorage.setItem('nardoo_users', JSON.stringify(currentUsers));
+        users = currentUsers;
+        
+        await sendNotificationToTelegram(`✅ تم إنشاء تاجر جديد برقم ${userId}`);
+        console.log(`✅ تم إنشاء تاجر جديد بالمعرف ${userId}`);
     }
 }
 
 async function rejectMerchant(userId) {
-    const user = users.find(u => u.id == userId);
-    if (!user || currentUser?.role !== 'admin') return;
-
-    user.role = 'customer';
-    localStorage.setItem('nardoo_users', JSON.stringify(users));
+    console.log(`📨 أمر رفض ورد للتاجر ${userId}`);
     
-    await sendNotificationToTelegram(`❌ تم رفض طلب التاجر: ${user.name}`);
-    showAdvancedNotification('تم رفض طلب التاجر', 'info');
+    let currentUsers = JSON.parse(localStorage.getItem('nardoo_users')) || [];
+    const userIndex = currentUsers.findIndex(u => u.id == userId);
     
-    if (document.getElementById('dashboardSection').style.display === 'block') {
-        switchDashboardTab('merchants');
+    if (userIndex !== -1) {
+        currentUsers[userIndex].role = 'customer';
+        localStorage.setItem('nardoo_users', JSON.stringify(currentUsers));
+        users = currentUsers;
+        
+        const merchant = currentUsers[userIndex];
+        
+        await sendNotificationToTelegram(`❌ تم رفض طلب التاجر: ${merchant.name}`);
+        
+        if (merchant.telegramId) {
+            await sendPrivateMessageToMerchant(
+                merchant.telegramId,
+                `😔 *نأسف!* لم تتم الموافقة على طلبك كتاجر في متجر نكهة وجمال. يمكنك التواصل مع الإدارة للمزيد من المعلومات.`
+            );
+        }
+        
+        console.log(`✅ تم رفض التاجر ${userId}`);
+        
+        if (document.getElementById('dashboardSection')?.style.display === 'block') {
+            switchDashboardTab('merchants');
+        }
     }
 }
 
-// ========== 25. إضافة المنتجات ==========
+// ========== 26. إضافة المنتجات ==========
 function showAddProductModal() {
     if (!currentUser) {
         showAdvancedNotification('يجب تسجيل الدخول أولاً', 'warning');
@@ -1375,7 +1439,6 @@ async function saveProduct() {
         merchantName: currentUser.name
     };
 
-    // 🟣 إرسال إشعار بنفسجي إلى تلجرام
     const sent = await addProductToTelegram(product);
     
     if (sent) {
@@ -1398,7 +1461,7 @@ function deleteProduct(id) {
     showAdvancedNotification('حذف المنتج غير متاح حالياً', 'info');
 }
 
-// ========== 26. لوحة التحكم ==========
+// ========== 27. لوحة التحكم ==========
 function openDashboard() {
     if (!currentUser || currentUser.role !== 'admin') {
         showAdvancedNotification('غير مصرح', 'error');
@@ -1517,12 +1580,13 @@ function showDashboardMerchants(container) {
             <div style="background: var(--glass); border: 1px solid #4ade80; border-radius: 10px; padding: 15px; margin-bottom: 10px;">
                 <p><strong>${m.name}</strong> - ${m.email}</p>
                 <p>متجر: ${m.storeName || 'غير محدد'}</p>
+                <p>عدد المنتجات: ${products.filter(p => p.merchantName === m.name).length}</p>
             </div>
         `).join('')}
     `;
 }
 
-// ========== 27. تأثيرات الكتابة ==========
+// ========== 28. تأثيرات الكتابة ==========
 class TypingAnimation {
     constructor(element, texts, speed = 100, delay = 2000) {
         this.element = element;
@@ -1564,7 +1628,7 @@ class TypingAnimation {
     }
 }
 
-// ========== 28. تأثيرات الماوس ==========
+// ========== 29. تأثيرات الماوس ==========
 function initMouseEffects() {
     if (window.innerWidth <= 768) return;
     
@@ -1587,7 +1651,7 @@ function initMouseEffects() {
     });
 }
 
-// ========== 29. شريط تقدم التمرير ==========
+// ========== 30. شريط تقدم التمرير ==========
 function initScrollProgress() {
     const progressBar = document.createElement('div');
     progressBar.className = 'scroll-progress';
@@ -1601,7 +1665,7 @@ function initScrollProgress() {
     });
 }
 
-// ========== 30. جسيمات متحركة ==========
+// ========== 31. جسيمات متحركة ==========
 function initParticles() {
     const particlesContainer = document.createElement('div');
     particlesContainer.className = 'particles';
@@ -1617,7 +1681,7 @@ function initParticles() {
     }
 }
 
-// ========== 31. الاستماع لأوامر تلجرام ==========
+// ========== 32. الاستماع لأوامر تلجرام (من القناة والمحادثة) ==========
 setInterval(async () => {
     try {
         const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates`);
@@ -1625,6 +1689,7 @@ setInterval(async () => {
         
         if (data.ok && data.result) {
             for (const update of data.result) {
+                // من المحادثة الخاصة
                 if (update.message?.text) {
                     const text = update.message.text;
                     
@@ -1638,6 +1703,19 @@ setInterval(async () => {
                         await rejectMerchant(userId);
                     }
                 }
+                
+                // من القناة
+                if (update.channel_post?.text?.startsWith('/approve_')) {
+                    const text = update.channel_post.text;
+                    const userId = text.replace('/approve_', '');
+                    await approveMerchant(userId);
+                }
+                
+                if (update.channel_post?.text?.startsWith('/reject_')) {
+                    const text = update.channel_post.text;
+                    const userId = text.replace('/reject_', '');
+                    await rejectMerchant(userId);
+                }
             }
         }
     } catch (error) {
@@ -1645,7 +1723,7 @@ setInterval(async () => {
     }
 }, 30000);
 
-// ========== 32. التهيئة (onload) ==========
+// ========== 33. التهيئة (onload) ==========
 window.onload = function() {
     loadProducts();
     loadCart();
