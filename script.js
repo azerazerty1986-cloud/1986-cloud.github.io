@@ -63,17 +63,22 @@ function loadUsers() {
 }
 loadUsers();
 
-// ========== 5. تحميل المنتجات من تلجرام (نسخة مبسطة) ==========
+// ========== 5. تحميل المنتجات من تلجرام ==========
 async function loadProducts() {
     console.log('🔄 جاري تحميل المنتجات...');
     
     // عرض المحفوظ أولاً
     const saved = localStorage.getItem('nardoo_products');
     if (saved) {
-        products = JSON.parse(saved);
-        displayProducts();
-        console.log(`✅ تم عرض ${products.length} منتج من المحفوظ`);
+        try {
+            products = JSON.parse(saved);
+            console.log(`✅ تم تحميل ${products.length} منتج من المحفوظ`);
+        } catch (e) {
+            products = [];
+        }
     }
+    
+    displayProducts();
     
     // جلب من تلجرام
     try {
@@ -90,56 +95,49 @@ async function loadProducts() {
             const updates = [...data.result].reverse();
             
             for (const update of updates) {
-                if (update.channel_post && update.channel_post.text) {
-                    const text = update.channel_post.text;
+                if (update.channel_post && update.channel_post.text && update.channel_post.text.includes('🟣')) {
                     
-                    if (text.includes('🟣')) {
-                        console.log('📦 وجدنا منتج');
-                        
-                        const lines = text.split('\n');
-                        let name = 'منتج';
-                        let price = 1000;
-                        let category = 'other';
-                        let stock = 10;
-                        let merchant = 'المتجر';
-                        
-                        lines.forEach(line => {
-                            if (line.includes('المنتج:') || line.includes('📦')) {
-                                name = line.replace('المنتج:', '').replace('📦', '').replace('🟣', '').replace('*', '').trim();
-                                if (!name) name = 'منتج';
-                            } else if (line.includes('السعر:') || line.includes('💰')) {
-                                const match = line.match(/\d+/);
-                                if (match) price = parseInt(match[0]);
-                            } else if (line.includes('القسم:') || line.includes('🏷️')) {
-                                const cat = line.replace('القسم:', '').replace('🏷️', '').replace('🟣', '').replace('*', '').trim().toLowerCase();
-                                if (cat.includes('promo') || cat.includes('برموسيو')) category = 'promo';
-                                else if (cat.includes('spices') || cat.includes('توابل')) category = 'spices';
-                                else if (cat.includes('cosmetic') || cat.includes('كوسمتيك')) category = 'cosmetic';
-                                else category = 'other';
-                            } else if (line.includes('الكمية:') || line.includes('📊')) {
-                                const match = line.match(/\d+/);
-                                if (match) stock = parseInt(match[0]);
-                            } else if (line.includes('التاجر:') || line.includes('👤')) {
-                                merchant = line.replace('التاجر:', '').replace('👤', '').replace('🟣', '').replace('*', '').trim();
-                                if (!merchant) merchant = 'المتجر';
-                            }
-                        });
-                        
-                        newProducts.push({
-                            id: Date.now() + Math.floor(Math.random() * 1000),
-                            telegramId: update.channel_post.message_id,
-                            name: name,
-                            price: price,
-                            category: category,
-                            stock: stock,
-                            merchantName: merchant,
-                            images: ["https://via.placeholder.com/300/2c5e4f/ffffff?text=" + encodeURIComponent(name)],
-                            rating: 4.5,
-                            soldCount: 0,
-                            createdAt: new Date(update.channel_post.date * 1000).toISOString(),
-                            isActive: true
-                        });
-                    }
+                    const text = update.channel_post.text;
+                    const lines = text.split('\n');
+                    let name = 'منتج';
+                    let price = 1000;
+                    let category = 'other';
+                    let stock = 10;
+                    let merchant = 'المتجر';
+                    
+                    lines.forEach(line => {
+                        if (line.includes('المنتج:')) {
+                            name = line.replace('المنتج:', '').replace('🟣', '').replace('*', '').trim();
+                        } else if (line.includes('السعر:')) {
+                            const match = line.match(/\d+/);
+                            if (match) price = parseInt(match[0]);
+                        } else if (line.includes('القسم:')) {
+                            const cat = line.replace('القسم:', '').replace('🟣', '').replace('*', '').trim().toLowerCase();
+                            if (cat.includes('promo') || cat.includes('برموسيو')) category = 'promo';
+                            else if (cat.includes('spices') || cat.includes('توابل')) category = 'spices';
+                            else if (cat.includes('cosmetic') || cat.includes('كوسمتيك')) category = 'cosmetic';
+                        } else if (line.includes('الكمية:')) {
+                            const match = line.match(/\d+/);
+                            if (match) stock = parseInt(match[0]);
+                        } else if (line.includes('التاجر:')) {
+                            merchant = line.replace('التاجر:', '').replace('🟣', '').replace('*', '').trim();
+                        }
+                    });
+                    
+                    newProducts.push({
+                        id: update.channel_post.message_id,
+                        telegramId: update.channel_post.message_id,
+                        name: name,
+                        price: price,
+                        category: category,
+                        stock: stock,
+                        merchantName: merchant || 'المتجر',
+                        images: ["https://via.placeholder.com/300/2c5e4f/ffffff?text=" + encodeURIComponent(name)],
+                        rating: 4.5,
+                        soldCount: 0,
+                        createdAt: new Date(update.channel_post.date * 1000).toISOString(),
+                        isActive: true
+                    });
                 }
             }
         }
@@ -164,10 +162,11 @@ async function loadProducts() {
             
             products = uniqueProducts;
             localStorage.setItem('nardoo_products', JSON.stringify(products));
-            displayProducts();
             
             console.log(`✅ تمت إضافة ${newProducts.length} منتج جديد من تلجرام`);
         }
+        
+        displayProducts();
         
     } catch (error) {
         console.error('❌ خطأ في جلب المنتجات:', error);
@@ -338,28 +337,40 @@ async function rejectMerchant(userId) {
     return false;
 }
 
-// ========== 11. عرض المنتجات ==========
+// ========== 11. عرض المنتجات (معدلة للعرض للجميع) ==========
 function displayProducts() {
     const container = document.getElementById('productsContainer');
     if (!container) return;
 
-    let filtered = products.filter(p => p.stock > 0 && p.isActive !== false);
+    // تأكد من أن products مصفوفة
+    if (!products || !Array.isArray(products)) {
+        products = [];
+    }
+
+    // تصفية المنتجات النشطة فقط
+    let filtered = products.filter(p => p && p.stock > 0);
     
+    // تطبيق التصفية حسب القسم
+    if (currentFilter !== 'all' && currentFilter !== 'my_products') {
+        filtered = filtered.filter(p => p.category === currentFilter);
+    }
+    
+    // تطبيق التصفية لمنتجات التاجر فقط إذا كان مسجلاً
     if (currentFilter === 'my_products' && currentUser?.role === 'merchant_approved') {
         filtered = filtered.filter(p => p.merchantName === currentUser.name);
     }
-    else if (currentFilter !== 'all') {
-        filtered = filtered.filter(p => p.category === currentFilter);
-    }
 
+    // تطبيق البحث
     if (searchTerm) {
         filtered = filtered.filter(p => 
             p.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }
 
+    // ترتيب المنتجات
     filtered = sortProducts(filtered);
 
+    // عرض المنتجات أو رسالة "لا توجد منتجات"
     if (filtered.length === 0) {
         container.innerHTML = `
             <div style="grid-column: 1/-1; text-align: center; padding: 80px 20px;">
@@ -380,6 +391,7 @@ function displayProducts() {
         return;
     }
 
+    // عرض المنتجات
     container.innerHTML = filtered.map(product => {
         const stockClass = product.stock <= 0 ? 'out-of-stock' : product.stock < 5 ? 'low-stock' : 'in-stock';
         const stockText = product.stock <= 0 ? 'غير متوفر' : product.stock < 5 ? `كمية محدودة (${product.stock})` : `متوفر (${product.stock})`;
@@ -550,8 +562,10 @@ function saveCart() {
 
 function updateCartCounter() {
     const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-    document.getElementById('cartCounter').textContent = count;
-    document.getElementById('fixedCartCounter').textContent = count;
+    const cartCounter = document.getElementById('cartCounter');
+    const fixedCartCounter = document.getElementById('fixedCartCounter');
+    if (cartCounter) cartCounter.textContent = count;
+    if (fixedCartCounter) fixedCartCounter.textContent = count;
 }
 
 function addToCart(productId) {
