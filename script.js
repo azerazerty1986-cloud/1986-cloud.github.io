@@ -63,41 +63,7 @@ function loadUsers() {
 }
 loadUsers();
 
-// ========== 5. تشخيص فوري للمنتجات عند تحميل الصفحة ==========
-(function fixProductDisplay() {
-    console.log('🔧 بدء تشخيص عرض المنتجات...');
-    
-    // جلب المنتجات من localStorage
-    const saved = localStorage.getItem('nardoo_products');
-    if (saved) {
-        try {
-            products = JSON.parse(saved);
-            console.log(`✅ تم تحميل ${products.length} منتج من localStorage`);
-            
-            // عرض المنتجات فوراً
-            setTimeout(() => {
-                if (typeof displayProducts === 'function') {
-                    displayProducts();
-                    console.log('✅ تم عرض المنتجات');
-                }
-            }, 500);
-        } catch (e) {
-            console.error('❌ خطأ في قراءة المنتجات:', e);
-            products = [];
-        }
-    } else {
-        console.log('⚠️ لا توجد منتجات في localStorage');
-    }
-    
-    // جلب المنتجات من تلجرام في الخلفية
-    setTimeout(() => {
-        if (typeof loadProducts === 'function') {
-            loadProducts();
-        }
-    }, 2000);
-})();
-
-// ========== 6. دالة قراءة المنتج من الجدول المنظم ==========
+// ========== 5. دالة قراءة المنتج من الجدول المنظم ==========
 function parseProductFromTable(text) {
     try {
         // البحث عن النص داخل ``` ```
@@ -142,7 +108,7 @@ function parseProductFromTable(text) {
     }
 }
 
-// ========== 7. تحميل المنتجات من تلجرام (مع دعم الجدول) ==========
+// ========== 6. تحميل المنتجات من تلجرام ==========
 async function loadProducts() {
     console.log('🔄 جاري تحميل المنتجات من تلجرام...');
     
@@ -187,11 +153,6 @@ async function loadProducts() {
                             console.log(`📦 منتج مضاف من الجدول: ${tableProduct.name}`);
                         }
                     }
-                    // إذا لم يجد جدولاً، يحاول الطريقة القديمة (احتياطي)
-                    else if (text.includes('🟣') && !text.includes('```')) {
-                        console.log('⚠️ منتج بالتنسيق القديم:', text.substring(0, 50));
-                        // يمكن إضافة الكود القديم هنا إذا أردت
-                    }
                 }
             }
         }
@@ -219,6 +180,8 @@ async function loadProducts() {
             
             console.log(`✅ تم حفظ ${products.length} منتج في localStorage`);
             displayProducts();
+        } else {
+            console.log('⚠️ لم يتم العثور على منتجات جديدة');
         }
         
     } catch (error) {
@@ -226,7 +189,7 @@ async function loadProducts() {
     }
 }
 
-// ========== 8. إضافة منتج جديد إلى تلجرام (بجدول منظم) ==========
+// ========== 7. إضافة منتج جديد إلى تلجرام (بجدول منظم) ==========
 async function addProductToTelegram(product) {
     const message = `
 🟣 *منتج جديد في المتجر*
@@ -291,7 +254,7 @@ async function addProductToTelegram(product) {
     }
 }
 
-// ========== 9. إرسال طلب تاجر إلى تلجرام ==========
+// ========== 8. إرسال طلب تاجر إلى تلجرام ==========
 async function sendMerchantRequestToTelegram(merchant) {
     const message = `
 🔵 *طلب انضمام تاجر جديد*
@@ -336,7 +299,7 @@ async function sendMerchantRequestToTelegram(merchant) {
     }
 }
 
-// ========== 10. إرسال طلب شراء إلى تلجرام ==========
+// ========== 9. إرسال طلب شراء إلى تلجرام ==========
 async function sendOrderToTelegram(order) {
     const message = `
 🟢 *طلب شراء جديد*
@@ -366,7 +329,7 @@ ${order.items.map((item, i) => `  ${i+1}. ${item.name} (${item.quantity}) - ${it
     }
 }
 
-// ========== 11. الموافقة على تاجر ==========
+// ========== 10. الموافقة على تاجر ==========
 async function approveMerchant(userId) {
     const userIndex = users.findIndex(u => u.id == userId);
     
@@ -382,7 +345,7 @@ async function approveMerchant(userId) {
     return false;
 }
 
-// ========== 12. رفض تاجر ==========
+// ========== 11. رفض تاجر ==========
 async function rejectMerchant(userId) {
     const userIndex = users.findIndex(u => u.id == userId);
     
@@ -396,7 +359,7 @@ async function rejectMerchant(userId) {
     return false;
 }
 
-// ========== 13. عرض المنتجات (للكل) ==========
+// ========== 12. عرض المنتجات (للكل) ==========
 function displayProducts() {
     const container = document.getElementById('productsContainer');
     if (!container) return;
@@ -524,7 +487,7 @@ function displayProducts() {
     }).join('');
 }
 
-// ========== 14. دوال المساعدة ==========
+// ========== 13. دوال المساعدة ==========
 function getCategoryName(category) {
     const names = {
         'promo': 'برموسيو',
@@ -610,7 +573,7 @@ function changeSort(value) {
     displayProducts();
 }
 
-// ========== 15. إدارة السلة ==========
+// ========== 14. إدارة السلة ==========
 function loadCart() {
     const saved = localStorage.getItem('nardoo_cart');
     cart = saved ? JSON.parse(saved) : [];
@@ -731,7 +694,7 @@ function removeFromCart(productId) {
     showNotification('تمت إزالة المنتج من السلة', 'info');
 }
 
-// ========== 16. إتمام الشراء ==========
+// ========== 15. إتمام الشراء ==========
 async function checkoutCart() {
     if (cart.length === 0) {
         showNotification('السلة فارغة', 'warning');
@@ -754,7 +717,7 @@ async function checkoutCart() {
     showNotification('✅ تم إرسال الطلب بنجاح', 'success');
 }
 
-// ========== 17. إدارة المستخدمين ==========
+// ========== 16. إدارة المستخدمين ==========
 function openLoginModal() {
     document.getElementById('loginModal').style.display = 'flex';
 }
@@ -919,7 +882,7 @@ function viewMyProducts() {
     displayProducts();
 }
 
-// ========== 18. إدارة المنتجات ==========
+// ========== 17. إدارة المنتجات ==========
 function showAddProductModal() {
     if (!currentUser) {
         showNotification('يجب تسجيل الدخول أولاً', 'warning');
@@ -1049,7 +1012,7 @@ function viewProductDetails(productId) {
     modal.style.display = 'flex';
 }
 
-// ========== 19. نظام الإشعارات ==========
+// ========== 18. نظام الإشعارات ==========
 function showNotification(message, type = 'info', title = '') {
     let container = document.querySelector('.toast-container');
     if (!container) {
@@ -1090,7 +1053,7 @@ function showNotification(message, type = 'info', title = '') {
     }, 3000);
 }
 
-// ========== 20. دوال التمرير ==========
+// ========== 19. دوال التمرير ==========
 function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -1105,7 +1068,7 @@ function toggleQuickTopButton() {
     quickTopBtn.classList.toggle('show', window.scrollY > 300);
 }
 
-// ========== 21. عداد تنازلي ==========
+// ========== 20. عداد تنازلي ==========
 function updateCountdown() {
     const hoursElement = document.getElementById('marqueeHours');
     const minutesElement = document.getElementById('marqueeMinutes');
@@ -1127,7 +1090,7 @@ function updateCountdown() {
     }, 1000);
 }
 
-// ========== 22. تأثيرات إضافية ==========
+// ========== 21. تأثيرات إضافية ==========
 function toggleTheme() {
     isDarkMode = !isDarkMode;
     document.body.classList.toggle('light-mode', !isDarkMode);
@@ -1188,7 +1151,7 @@ function initParticles() {
     }
 }
 
-// ========== 23. الاستماع لأوامر تلجرام ==========
+// ========== 22. الاستماع لأوامر تلجرام ==========
 setInterval(async () => {
     try {
         const response = await fetch(
@@ -1225,15 +1188,52 @@ setInterval(async () => {
     }
 }, 10000);
 
-// ========== 24. تحديث دوري للمنتجات ==========
+// ========== 23. تحديث دوري للمنتجات ==========
 setInterval(() => {
     console.log('🔄 تحديث دوري للمنتجات...');
     loadProducts();
 }, 30000);
 
+// ========== 24. تشغيل قوي للمنتجات عند تحميل الصفحة ==========
+(function forceProductDisplay() {
+    console.log('🚀 تشغيل قوي للمنتجات...');
+    
+    // 1. جلب المنتجات من localStorage
+    const saved = localStorage.getItem('nardoo_products');
+    if (saved) {
+        try {
+            products = JSON.parse(saved);
+            console.log(`✅ تم تحميل ${products.length} منتج من localStorage`);
+            
+            // 2. عرض المنتجات فوراً
+            if (typeof displayProducts === 'function') {
+                displayProducts();
+            }
+        } catch (e) {
+            console.error('خطأ في قراءة المنتجات:', e);
+        }
+    }
+    
+    // 3. جلب المنتجات من تلجرام بعد ثانية واحدة
+    setTimeout(() => {
+        console.log('🔄 جلب المنتجات من تلجرام...');
+        if (typeof loadProducts === 'function') {
+            loadProducts();
+        }
+    }, 1000);
+    
+    // 4. جلب المنتجات مرة أخرى بعد 5 ثواني (للتأكد)
+    setTimeout(() => {
+        console.log('🔄 جلب المنتجات مرة أخرى...');
+        if (typeof loadProducts === 'function') {
+            loadProducts();
+        }
+    }, 5000);
+})();
+
 // ========== 25. التهيئة ==========
 window.onload = function() {
-    // تحميل المنتجات (تم بالفعل في التشخيص)
+    // تحميل السلة
     loadCart();
 
     const savedUser = localStorage.getItem('current_user');
