@@ -1,6 +1,6 @@
 // ========== 1. إعدادات تلجرام (قناة واحدة متكاملة) ==========
 const TELEGRAM = {
-    botToken: '8576673096:AAEFKd-YSJcW_0d_wAHZBt-5nPg_VOjDX_0',
+    botToken: '8576673096:AAHCg7pM2MyzmVuCqWdK-ZbrDQy7zAR09x4',
     channelId: '-1003822964890',
     adminId: '7461896689'
 };
@@ -1410,4 +1410,285 @@ function openDashboard() {
     switchDashboardTab('overview');
 }
 
-function
+function switchDashboardTab(tab) {
+    if (!currentUser || currentUser.role !== 'admin') return;
+    
+    document.querySelectorAll('.dashboard-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+
+    const content = document.getElementById('dashboardContent');
+    
+    if (tab === 'overview') showDashboardOverview(content);
+    else if (tab === 'orders') showDashboardOrders(content);
+    else if (tab === 'analytics') showDashboardAnalytics(content);
+    else if (tab === 'products') showDashboardProducts(content);
+    else if (tab === 'merchants') showDashboardMerchants(content);
+}
+
+function showDashboardOverview(container) {
+    const orderStats = orderManager.getOrderStatistics();
+    const analytics = analyticsManager.generateComprehensiveReport();
+
+    container.innerHTML = `
+        <h3 style="margin-bottom: 30px; color: var(--gold);">نظرة عامة على المتجر</h3>
+        <div class="stats-grid">
+            <div class="stat-card"><i class="fas fa-shopping-cart"></i><div class="stat-value">${orderStats.totalOrders}</div><div class="stat-label">إجمالي الطلبات</div></div>
+            <div class="stat-card"><i class="fas fa-coins"></i><div class="stat-value">${orderStats.totalRevenue.toLocaleString()}</div><div class="stat-label">الإيرادات (دج)</div></div>
+            <div class="stat-card"><i class="fas fa-chart-line"></i><div class="stat-value">${orderStats.averageOrderValue.toFixed(0)}</div><div class="stat-label">متوسط قيمة الطلب</div></div>
+            <div class="stat-card"><i class="fas fa-percent"></i><div class="stat-value">${analytics.conversionRate}%</div><div class="stat-label">معدل التحويل</div></div>
+        </div>
+        <h4 style="margin: 30px 0 20px; color: var(--gold);">الطلبات الأخيرة</h4>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead><tr><th>رقم الطلب</th><th>العميل</th><th>المجموع</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+                <tbody>
+                    ${orderStats.recentOrders.map(order => `
+                        <tr>
+                            <td>${order.id}</td>
+                            <td>${order.customerName}</td>
+                            <td style="color: var(--gold); font-weight: 700;">${order.total.toLocaleString()} دج</td>
+                            <td><span style="background: ${order.status === 'delivered' ? '#4ade80' : order.status === 'cancelled' ? '#f87171' : '#fbbf24'}; color: #000; padding: 5px 10px; border-radius: 20px; font-size: 12px;">${orderManager.getStatusMessage(order.status)}</span></td>
+                            <td>${new Date(order.createdAt).toLocaleDateString('ar-DZ')}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function showDashboardOrders(container) {
+    const orders = orderManager.orders;
+    container.innerHTML = `
+        <h3 style="margin-bottom: 20px; color: var(--gold);">جميع الطلبات</h3>
+        <table>
+            <thead><tr><th>رقم الطلب</th><th>العميل</th><th>المجموع</th><th>الحالة</th></tr></thead>
+            <tbody>
+                ${orders.map(o => `<tr><td>${o.id}</td><td>${o.customerName}</td><td>${o.total} دج</td><td>${o.status}</td></tr>`).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function showDashboardAnalytics(container) {
+    const analytics = analyticsManager.generateComprehensiveReport();
+    container.innerHTML = `
+        <h3 style="margin-bottom: 30px; color: var(--gold);">التحليلات</h3>
+        <div class="stats-grid">
+            <div class="stat-card"><i class="fas fa-eye"></i><div class="stat-value">${analytics.visits.totalPageViews}</div><div class="stat-label">مشاهدات الصفحات</div></div>
+            <div class="stat-card"><i class="fas fa-bolt"></i><div class="stat-value">${analytics.visits.totalEvents}</div><div class="stat-label">إجمالي الأحداث</div></div>
+        </div>
+    `;
+}
+
+function showDashboardProducts(container) {
+    container.innerHTML = `
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+            <h3 style="color: var(--gold);">المنتجات</h3>
+            <button class="btn-gold" onclick="showAddProductModal()">إضافة منتج</button>
+        </div>
+        <table>
+            <thead><tr><th>المنتج</th><th>السعر</th><th>الكمية</th><th>التاجر</th></tr></thead>
+            <tbody>
+                ${products.map(p => `<tr><td>${p.name}</td><td>${p.price} دج</td><td>${p.stock}</td><td>${p.merchantName}</td></tr>`).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function showDashboardMerchants(container) {
+    const pendingMerchants = users.filter(u => u.role === 'merchant_pending');
+    const approvedMerchants = users.filter(u => u.role === 'merchant_approved');
+
+    container.innerHTML = `
+        <h3 style="margin-bottom: 20px; color: var(--gold);">طلبات التجار (${pendingMerchants.length})</h3>
+        ${pendingMerchants.map(m => `
+            <div style="background: var(--glass); border: 1px solid var(--gold); border-radius: 10px; padding: 15px; margin-bottom: 10px;">
+                <p><strong>${m.name}</strong> - ${m.email}</p>
+                <p>متجر: ${m.storeName || 'غير محدد'}</p>
+                <p>مستوى: ${m.merchantLevel || '1'}</p>
+                <button class="btn-gold" onclick="approveMerchant(${m.id})">✅ موافقة</button>
+                <button class="btn-outline-gold" onclick="rejectMerchant(${m.id})">❌ رفض</button>
+            </div>
+        `).join('')}
+
+        <h3 style="margin: 30px 0 20px; color: var(--gold);">التجار المعتمدون (${approvedMerchants.length})</h3>
+        ${approvedMerchants.map(m => `
+            <div style="background: var(--glass); border: 1px solid #4ade80; border-radius: 10px; padding: 15px; margin-bottom: 10px;">
+                <p><strong>${m.name}</strong> - ${m.email}</p>
+                <p>متجر: ${m.storeName || 'غير محدد'}</p>
+            </div>
+        `).join('')}
+    `;
+}
+
+// ========== 27. تأثيرات الكتابة ==========
+class TypingAnimation {
+    constructor(element, texts, speed = 100, delay = 2000) {
+        this.element = element;
+        this.texts = texts;
+        this.speed = speed;
+        this.delay = delay;
+        this.currentIndex = 0;
+        this.isDeleting = false;
+        this.text = '';
+    }
+
+    start() {
+        this.type();
+    }
+
+    type() {
+        const current = this.texts[this.currentIndex];
+        if (this.isDeleting) {
+            this.text = current.substring(0, this.text.length - 1);
+        } else {
+            this.text = current.substring(0, this.text.length + 1);
+        }
+
+        this.element.innerHTML = this.text + '<span class="typing-cursor">|</span>';
+
+        let typeSpeed = this.speed;
+        if (this.isDeleting) typeSpeed /= 2;
+
+        if (!this.isDeleting && this.text === current) {
+            typeSpeed = this.delay;
+            this.isDeleting = true;
+        } else if (this.isDeleting && this.text === '') {
+            this.isDeleting = false;
+            this.currentIndex = (this.currentIndex + 1) % this.texts.length;
+            typeSpeed = 500;
+        }
+
+        setTimeout(() => this.type(), typeSpeed);
+    }
+}
+
+// ========== 28. تأثيرات الماوس ==========
+function initMouseEffects() {
+    if (window.innerWidth <= 768) return;
+    
+    const cursor = document.createElement('div');
+    cursor.className = 'mouse-effect';
+    const cursorDot = document.createElement('div');
+    cursorDot.className = 'mouse-effect-dot';
+    
+    document.body.appendChild(cursor);
+    document.body.appendChild(cursorDot);
+    
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.transform = `translate(${e.clientX - 10}px, ${e.clientY - 10}px)`;
+        cursorDot.style.transform = `translate(${e.clientX - 2}px, ${e.clientY - 2}px)`;
+    });
+    
+    document.querySelectorAll('a, button, .product-card').forEach(el => {
+        el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+        el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+    });
+}
+
+// ========== 29. شريط تقدم التمرير ==========
+function initScrollProgress() {
+    const progressBar = document.createElement('div');
+    progressBar.className = 'scroll-progress';
+    document.body.appendChild(progressBar);
+    
+    window.addEventListener('scroll', () => {
+        const winScroll = document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (winScroll / height) * 100;
+        progressBar.style.width = scrolled + '%';
+    });
+}
+
+// ========== 30. جسيمات متحركة ==========
+function initParticles() {
+    const particlesContainer = document.createElement('div');
+    particlesContainer.className = 'particles';
+    document.body.appendChild(particlesContainer);
+    
+    for (let i = 0; i < 30; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 10 + 's';
+        particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+        particlesContainer.appendChild(particle);
+    }
+}
+
+// ========== 31. الاستماع لأوامر تلجرام ==========
+setInterval(async () => {
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates`);
+        const data = await response.json();
+        
+        if (data.ok && data.result) {
+            for (const update of data.result) {
+                if (update.message?.text) {
+                    const text = update.message.text;
+                    
+                    if (text.startsWith('/approve_')) {
+                        const userId = text.replace('/approve_', '');
+                        await approveMerchant(userId);
+                    }
+                    
+                    if (text.startsWith('/reject_')) {
+                        const userId = text.replace('/reject_', '');
+                        await rejectMerchant(userId);
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error('خطأ في التحقق من أوامر تلجرام:', error);
+    }
+}, 30000);
+
+// ========== 32. التهيئة (onload) ==========
+window.onload = function() {
+    loadProducts();
+    loadCart();
+
+    const savedUser = localStorage.getItem('current_user');
+    if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        updateUIBasedOnRole();
+    }
+
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        isDarkMode = savedTheme === 'dark';
+        document.body.classList.toggle('light-mode', !isDarkMode);
+        document.getElementById('themeToggle').innerHTML = isDarkMode ? 
+            '<i class="fas fa-moon"></i><span>ليلي</span>' : 
+            '<i class="fas fa-sun"></i><span>نهاري</span>';
+    }
+
+    setTimeout(() => {
+        document.getElementById('loader').style.opacity = '0';
+        setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
+    }, 1000);
+
+    analyticsManager.trackPageView('home');
+    
+    updateFixedCartCounter();
+    window.addEventListener('scroll', toggleQuickTopButton);
+    addScrollAnimations();
+    updateCountdown();
+    updateProgressBars();
+    initMouseEffects();
+    initScrollProgress();
+    initParticles();
+    
+    const typingElement = document.getElementById('typing-text');
+    if (typingElement) {
+        new TypingAnimation(typingElement, ['نكهة وجمال', 'ناردو برو', 'تسوق آمن', 'جودة عالية'], 100, 2000).start();
+    }
+};
+
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+    }
+};
