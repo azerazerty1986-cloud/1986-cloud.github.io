@@ -347,8 +347,10 @@ function displayProducts() {
         products = [];
     }
 
-    // تصفية المنتجات النشطة فقط
+    // عرض جميع المنتجات النشطة (بدون شرط currentUser)
     let filtered = products.filter(p => p && p.stock > 0);
+    
+    console.log(`📦 عرض ${filtered.length} منتج للزائر`);
     
     // تطبيق التصفية حسب القسم
     if (currentFilter !== 'all' && currentFilter !== 'my_products') {
