@@ -63,24 +63,89 @@ function loadUsers() {
 }
 loadUsers();
 
-// ========== 5. تحميل المنتجات من تلجرام ==========
-async function loadProducts() {
-    console.log('🔄 جاري تحميل المنتجات...');
+// ========== 5. تشخيص فوري للمنتجات عند تحميل الصفحة ==========
+(function fixProductDisplay() {
+    console.log('🔧 بدء تشخيص عرض المنتجات...');
     
-    // عرض المحفوظ أولاً
+    // جلب المنتجات من localStorage
     const saved = localStorage.getItem('nardoo_products');
     if (saved) {
         try {
             products = JSON.parse(saved);
-            console.log(`✅ تم تحميل ${products.length} منتج من المحفوظ`);
+            console.log(`✅ تم تحميل ${products.length} منتج من localStorage`);
+            
+            // عرض المنتجات فوراً
+            setTimeout(() => {
+                if (typeof displayProducts === 'function') {
+                    displayProducts();
+                    console.log('✅ تم عرض المنتجات');
+                }
+            }, 500);
         } catch (e) {
+            console.error('❌ خطأ في قراءة المنتجات:', e);
             products = [];
         }
+    } else {
+        console.log('⚠️ لا توجد منتجات في localStorage');
     }
     
-    displayProducts();
+    // جلب المنتجات من تلجرام في الخلفية
+    setTimeout(() => {
+        if (typeof loadProducts === 'function') {
+            loadProducts();
+        }
+    }, 2000);
+})();
+
+// ========== 6. دالة قراءة المنتج من الجدول المنظم ==========
+function parseProductFromTable(text) {
+    try {
+        // البحث عن النص داخل ``` ```
+        const tableMatch = text.match(/```\n([\s\S]*?)\n```/);
+        if (!tableMatch) return null;
+        
+        const tableContent = tableMatch[1];
+        const lines = tableContent.split('\n');
+        
+        let product = {
+            name: 'منتج',
+            price: 1000,
+            category: 'other',
+            stock: 10,
+            merchant: 'المتجر'
+        };
+        
+        lines.forEach(line => {
+            if (line.includes('المنتج:')) {
+                product.name = line.replace('المنتج:', '').trim();
+            } else if (line.includes('السعر:')) {
+                const match = line.match(/\d+/);
+                if (match) product.price = parseInt(match[0]);
+            } else if (line.includes('القسم:')) {
+                const cat = line.replace('القسم:', '').trim().toLowerCase();
+                if (cat.includes('promo') || cat.includes('برموسيو')) product.category = 'promo';
+                else if (cat.includes('spices') || cat.includes('توابل')) product.category = 'spices';
+                else if (cat.includes('cosmetic') || cat.includes('كوسمتيك')) product.category = 'cosmetic';
+                else product.category = 'other';
+            } else if (line.includes('الكمية:')) {
+                const match = line.match(/\d+/);
+                if (match) product.stock = parseInt(match[0]);
+            } else if (line.includes('التاجر:')) {
+                product.merchant = line.replace('التاجر:', '').trim();
+            }
+        });
+        
+        return product;
+    } catch (error) {
+        console.error('خطأ في قراءة الجدول:', error);
+        return null;
+    }
+}
+
+// ========== 7. تحميل المنتجات من تلجرام (مع دعم الجدول) ==========
+async function loadProducts() {
+    console.log('🔄 جاري تحميل المنتجات من تلجرام...');
     
-    // جلب من تلجرام
     try {
         const response = await fetch(
             `https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates`
@@ -95,49 +160,38 @@ async function loadProducts() {
             const updates = [...data.result].reverse();
             
             for (const update of updates) {
-                if (update.channel_post && update.channel_post.text && update.channel_post.text.includes('🟣')) {
-                    
+                if (update.channel_post && update.channel_post.text) {
                     const text = update.channel_post.text;
-                    const lines = text.split('\n');
-                    let name = 'منتج';
-                    let price = 1000;
-                    let category = 'other';
-                    let stock = 10;
-                    let merchant = 'المتجر';
                     
-                    lines.forEach(line => {
-                        if (line.includes('المنتج:')) {
-                            name = line.replace('المنتج:', '').replace('🟣', '').replace('*', '').trim();
-                        } else if (line.includes('السعر:')) {
-                            const match = line.match(/\d+/);
-                            if (match) price = parseInt(match[0]);
-                        } else if (line.includes('القسم:')) {
-                            const cat = line.replace('القسم:', '').replace('🟣', '').replace('*', '').trim().toLowerCase();
-                            if (cat.includes('promo') || cat.includes('برموسيو')) category = 'promo';
-                            else if (cat.includes('spices') || cat.includes('توابل')) category = 'spices';
-                            else if (cat.includes('cosmetic') || cat.includes('كوسمتيك')) category = 'cosmetic';
-                        } else if (line.includes('الكمية:')) {
-                            const match = line.match(/\d+/);
-                            if (match) stock = parseInt(match[0]);
-                        } else if (line.includes('التاجر:')) {
-                            merchant = line.replace('التاجر:', '').replace('🟣', '').replace('*', '').trim();
+                    // محاولة قراءة الجدول أولاً
+                    const tableProduct = parseProductFromTable(text);
+                    
+                    if (tableProduct) {
+                        // التحقق من عدم تكرار المنتج
+                        const exists = products.some(p => p.telegramId === update.channel_post.message_id);
+                        if (!exists) {
+                            newProducts.push({
+                                id: update.channel_post.message_id,
+                                telegramId: update.channel_post.message_id,
+                                name: tableProduct.name,
+                                price: tableProduct.price,
+                                category: tableProduct.category,
+                                stock: tableProduct.stock,
+                                merchantName: tableProduct.merchant,
+                                images: ["https://via.placeholder.com/300/2c5e4f/ffffff?text=" + encodeURIComponent(tableProduct.name)],
+                                rating: 4.5,
+                                soldCount: 0,
+                                createdAt: new Date(update.channel_post.date * 1000).toISOString(),
+                                isActive: true
+                            });
+                            console.log(`📦 منتج مضاف من الجدول: ${tableProduct.name}`);
                         }
-                    });
-                    
-                    newProducts.push({
-                        id: update.channel_post.message_id,
-                        telegramId: update.channel_post.message_id,
-                        name: name,
-                        price: price,
-                        category: category,
-                        stock: stock,
-                        merchantName: merchant || 'المتجر',
-                        images: ["https://via.placeholder.com/300/2c5e4f/ffffff?text=" + encodeURIComponent(name)],
-                        rating: 4.5,
-                        soldCount: 0,
-                        createdAt: new Date(update.channel_post.date * 1000).toISOString(),
-                        isActive: true
-                    });
+                    }
+                    // إذا لم يجد جدولاً، يحاول الطريقة القديمة (احتياطي)
+                    else if (text.includes('🟣') && !text.includes('```')) {
+                        console.log('⚠️ منتج بالتنسيق القديم:', text.substring(0, 50));
+                        // يمكن إضافة الكود القديم هنا إذا أردت
+                    }
                 }
             }
         }
@@ -163,27 +217,28 @@ async function loadProducts() {
             products = uniqueProducts;
             localStorage.setItem('nardoo_products', JSON.stringify(products));
             
-            console.log(`✅ تمت إضافة ${newProducts.length} منتج جديد من تلجرام`);
+            console.log(`✅ تم حفظ ${products.length} منتج في localStorage`);
+            displayProducts();
         }
-        
-        displayProducts();
         
     } catch (error) {
         console.error('❌ خطأ في جلب المنتجات:', error);
     }
 }
 
-// ========== 6. إضافة منتج جديد إلى تلجرام ==========
+// ========== 8. إضافة منتج جديد إلى تلجرام (بجدول منظم) ==========
 async function addProductToTelegram(product) {
     const message = `
 🟣 *منتج جديد في المتجر*
 ━━━━━━━━━━━━━━━━━━━━━━
-📦 *المنتج:* ${product.name}
-💰 *السعر:* ${product.price} دج
-🏷️ *القسم:* ${product.category}
-📊 *الكمية:* ${product.stock}
-👤 *التاجر:* ${product.merchantName}
-🕐 *تاريخ الإضافة:* ${new Date().toLocaleString('ar-DZ')}
+\`\`\`
+المنتج: ${product.name}
+السعر: ${product.price} دج
+القسم: ${product.category}
+الكمية: ${product.stock}
+التاجر: ${product.merchantName}
+التاريخ: ${new Date().toLocaleString('ar-DZ')}
+\`\`\`
     `;
 
     try {
@@ -236,18 +291,21 @@ async function addProductToTelegram(product) {
     }
 }
 
-// ========== 7. إرسال طلب تاجر إلى تلجرام ==========
+// ========== 9. إرسال طلب تاجر إلى تلجرام ==========
 async function sendMerchantRequestToTelegram(merchant) {
     const message = `
 🔵 *طلب انضمام تاجر جديد*
 ━━━━━━━━━━━━━━━━━━━━━━
-🏪 *المتجر:* ${merchant.storeName || merchant.name}
-👤 *التاجر:* ${merchant.name}
-📧 *البريد:* ${merchant.email}
-📞 *الهاتف:* ${merchant.phone || 'غير متوفر'}
-📊 *المستوى:* ${merchant.merchantLevel || '1'}
-📝 *الوصف:* ${merchant.merchantDesc || 'تاجر جديد'}
-🆔 *رقم الطلب:* ${merchant.id}
+\`\`\`
+المتجر: ${merchant.storeName || merchant.name}
+التاجر: ${merchant.name}
+البريد: ${merchant.email}
+الهاتف: ${merchant.phone || 'غير متوفر'}
+المستوى: ${merchant.merchantLevel || '1'}
+الوصف: ${merchant.merchantDesc || 'تاجر جديد'}
+رقم الطلب: ${merchant.id}
+التاريخ: ${new Date().toLocaleString('ar-DZ')}
+\`\`\`
 
 ⬇️ *للإجراء من المدير*
 ✅ للموافقة: /approve_${merchant.id}
@@ -278,18 +336,19 @@ async function sendMerchantRequestToTelegram(merchant) {
     }
 }
 
-// ========== 8. إرسال طلب شراء إلى تلجرام ==========
+// ========== 10. إرسال طلب شراء إلى تلجرام ==========
 async function sendOrderToTelegram(order) {
     const message = `
 🟢 *طلب شراء جديد*
 ━━━━━━━━━━━━━━━━━━━━━━
-👤 *الزبون:* ${order.customerName}
-📦 *المنتجات:*
-${order.items.map((item, i) => 
-    `  ${i+1}. ${item.name} (${item.quantity}) - ${item.price} دج`
-).join('\n')}
-💰 *الإجمالي:* ${order.total} دج
-🕐 *الوقت:* ${new Date().toLocaleString('ar-DZ')}
+\`\`\`
+الزبون: ${order.customerName}
+الهاتف: ${order.customerPhone || 'غير متوفر'}
+المنتجات:
+${order.items.map((item, i) => `  ${i+1}. ${item.name} (${item.quantity}) - ${item.price} دج`).join('\n')}
+الإجمالي: ${order.total} دج
+الوقت: ${new Date().toLocaleString('ar-DZ')}
+\`\`\`
     `;
 
     try {
@@ -307,7 +366,7 @@ ${order.items.map((item, i) =>
     }
 }
 
-// ========== 9. الموافقة على تاجر ==========
+// ========== 11. الموافقة على تاجر ==========
 async function approveMerchant(userId) {
     const userIndex = users.findIndex(u => u.id == userId);
     
@@ -323,7 +382,7 @@ async function approveMerchant(userId) {
     return false;
 }
 
-// ========== 10. رفض تاجر ==========
+// ========== 12. رفض تاجر ==========
 async function rejectMerchant(userId) {
     const userIndex = users.findIndex(u => u.id == userId);
     
@@ -337,7 +396,7 @@ async function rejectMerchant(userId) {
     return false;
 }
 
-// ========== 11. عرض المنتجات (معدلة للعرض للجميع) ==========
+// ========== 13. عرض المنتجات (للكل) ==========
 function displayProducts() {
     const container = document.getElementById('productsContainer');
     if (!container) return;
@@ -347,7 +406,7 @@ function displayProducts() {
         products = [];
     }
 
-    // عرض جميع المنتجات النشطة (بدون شرط currentUser)
+    // عرض جميع المنتجات النشطة
     let filtered = products.filter(p => p && p.stock > 0);
     
     console.log(`📦 عرض ${filtered.length} منتج للزائر`);
@@ -465,7 +524,7 @@ function displayProducts() {
     }).join('');
 }
 
-// ========== 12. دوال المساعدة ==========
+// ========== 14. دوال المساعدة ==========
 function getCategoryName(category) {
     const names = {
         'promo': 'برموسيو',
@@ -551,7 +610,7 @@ function changeSort(value) {
     displayProducts();
 }
 
-// ========== 13. إدارة السلة ==========
+// ========== 15. إدارة السلة ==========
 function loadCart() {
     const saved = localStorage.getItem('nardoo_cart');
     cart = saved ? JSON.parse(saved) : [];
@@ -672,7 +731,7 @@ function removeFromCart(productId) {
     showNotification('تمت إزالة المنتج من السلة', 'info');
 }
 
-// ========== 14. إتمام الشراء ==========
+// ========== 16. إتمام الشراء ==========
 async function checkoutCart() {
     if (cart.length === 0) {
         showNotification('السلة فارغة', 'warning');
@@ -695,7 +754,7 @@ async function checkoutCart() {
     showNotification('✅ تم إرسال الطلب بنجاح', 'success');
 }
 
-// ========== 15. إدارة المستخدمين ==========
+// ========== 17. إدارة المستخدمين ==========
 function openLoginModal() {
     document.getElementById('loginModal').style.display = 'flex';
 }
@@ -860,7 +919,7 @@ function viewMyProducts() {
     displayProducts();
 }
 
-// ========== 16. إدارة المنتجات ==========
+// ========== 18. إدارة المنتجات ==========
 function showAddProductModal() {
     if (!currentUser) {
         showNotification('يجب تسجيل الدخول أولاً', 'warning');
@@ -990,7 +1049,7 @@ function viewProductDetails(productId) {
     modal.style.display = 'flex';
 }
 
-// ========== 17. نظام الإشعارات ==========
+// ========== 19. نظام الإشعارات ==========
 function showNotification(message, type = 'info', title = '') {
     let container = document.querySelector('.toast-container');
     if (!container) {
@@ -1031,7 +1090,7 @@ function showNotification(message, type = 'info', title = '') {
     }, 3000);
 }
 
-// ========== 18. دوال التمرير ==========
+// ========== 20. دوال التمرير ==========
 function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -1046,7 +1105,7 @@ function toggleQuickTopButton() {
     quickTopBtn.classList.toggle('show', window.scrollY > 300);
 }
 
-// ========== 19. عداد تنازلي ==========
+// ========== 21. عداد تنازلي ==========
 function updateCountdown() {
     const hoursElement = document.getElementById('marqueeHours');
     const minutesElement = document.getElementById('marqueeMinutes');
@@ -1068,7 +1127,7 @@ function updateCountdown() {
     }, 1000);
 }
 
-// ========== 20. تأثيرات إضافية ==========
+// ========== 22. تأثيرات إضافية ==========
 function toggleTheme() {
     isDarkMode = !isDarkMode;
     document.body.classList.toggle('light-mode', !isDarkMode);
@@ -1129,7 +1188,7 @@ function initParticles() {
     }
 }
 
-// ========== 21. الاستماع لأوامر تلجرام ==========
+// ========== 23. الاستماع لأوامر تلجرام ==========
 setInterval(async () => {
     try {
         const response = await fetch(
@@ -1166,15 +1225,15 @@ setInterval(async () => {
     }
 }, 10000);
 
-// ========== 22. تحديث دوري للمنتجات ==========
+// ========== 24. تحديث دوري للمنتجات ==========
 setInterval(() => {
     console.log('🔄 تحديث دوري للمنتجات...');
     loadProducts();
 }, 30000);
 
-// ========== 23. التهيئة ==========
+// ========== 25. التهيئة ==========
 window.onload = function() {
-    loadProducts();
+    // تحميل المنتجات (تم بالفعل في التشخيص)
     loadCart();
 
     const savedUser = localStorage.getItem('current_user');
@@ -1222,7 +1281,7 @@ window.onclick = function(event) {
     }
 };
 
-// ========== 24. تصدير الدوال ==========
+// ========== 26. تصدير الدوال ==========
 window.addToCart = addToCart;
 window.toggleCart = toggleCart;
 window.updateCartItem = updateCartItem;
