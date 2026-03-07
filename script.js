@@ -47,9 +47,9 @@ function loadUsers() {
             { 
                 id: 1, 
                 name: 'المدير', 
-                username: 'admin',
+                username: 'azer',
                 email: 'admin@nardoo.com', 
-                password: 'admin123', 
+                password: '123456', 
                 role: 'admin',
                 phone: '0562243648',
                 telegramId: TELEGRAM.adminId,
