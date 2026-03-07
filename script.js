@@ -185,7 +185,7 @@ async function forceLoadProductsFromTelegram() {
                 console.log('%c❌ لم نجد أي منتجات في تلجرام', 'color: red; font-size: 12px');
                 console.log('تأكد من:');
                 console.log('1. البوت مشرف في القناة');
-                console.log('2. -معرف القناة صحيح: 1003822964890');
+                console.log('2. معرف القناة صحيح: -1003822964890');
                 console.log('3. الرسالة تبدأ بـ 🟣');
                 
                 // التحقق من وجود أي رسائل في القناة
