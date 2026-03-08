@@ -1810,33 +1810,76 @@ class TypingAnimation {
     }
 }
 
-// ========== 32. الاستماع لأوامر تلجرام ==========
+// ========== 32. الاستماع لأوامر تلجرام (معدل لمنع التكرار) ==========
+
+// مجموعة لتخزين معرفات التحديثات التي تمت معالجتها
+const processedUpdates = new Set();
+
 setInterval(async () => {
     try {
         const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates`);
         const data = await response.json();
         
         if (data.ok && data.result) {
+            console.log(`📡 جاري التحقق من التحديثات... ${data.result.length} تحديث`);
+            
             for (const update of data.result) {
+                // التحقق من وجود رسالة نصية
                 if (update.message?.text) {
-                    const text = update.message.text;
+                    const updateId = update.update_id;
                     
+                    // ===== منع التكرار: إذا تمت معالجة هذا التحديث مسبقاً، تجاهله =====
+                    if (processedUpdates.has(updateId)) {
+                        console.log(`⏭️ تجاهل تحديث مكرر: ${updateId}`);
+                        continue; // تخطي هذا التحديث
+                    }
+                    
+                    // تسجيل التحديث كمعالج
+                    processedUpdates.add(updateId);
+                    
+                    // الحفاظ على حجم المجموعة (لا تزيد عن 100)
+                    if (processedUpdates.size > 100) {
+                        const first = Array.from(processedUpdates)[0];
+                        processedUpdates.delete(first);
+                    }
+                    
+                    const text = update.message.text;
+                    console.log(`📨 أمر جديد: ${text}`);
+                    
+                    // معالجة أوامر الموافقة
                     if (text.startsWith('/approve_')) {
                         const userId = text.replace('/approve_', '');
+                        console.log(`✅ الموافقة على تاجر ${userId}`);
                         await approveMerchant(userId);
                     }
                     
+                    // معالجة أوامر الرفض
                     if (text.startsWith('/reject_')) {
                         const userId = text.replace('/reject_', '');
+                        console.log(`❌ رفض تاجر ${userId}`);
                         await rejectMerchant(userId);
+                    }
+                    
+                    // أمر عرض التجار المعلقين
+                    if (text === '/pending_merchants' || text === '🔵 التجار المعلقين') {
+                        console.log('📋 عرض التجار المعلقين');
+                        await showPendingMerchants();
+                    }
+                    
+                    // أمر عرض منتجات تاجر
+                    if (text.startsWith('/merchant_products_')) {
+                        const merchantId = text.replace('/merchant_products_', '');
+                        console.log(`📦 عرض منتجات تاجر ${merchantId}`);
+                        await showMerchantProducts(merchantId);
                     }
                 }
             }
         }
     } catch (error) {
-        console.error('خطأ في التحقق من أوامر تلجرام:', error);
+        console.error('❌ خطأ في التحقق من أوامر تلجرام:', error);
     }
-}, 30000);
+}, 30000); // يعمل كل 30 ثانية
+
 
 // ========== 33. التهيئة (onload) ==========
 window.onload = async function() {
