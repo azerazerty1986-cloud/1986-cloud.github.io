@@ -1614,56 +1614,157 @@ function showDashboardProducts(container) {
     `;
 }
 
+// ========== هذه هي الدالة المعدلة (showDashboardMerchants) ==========
 function showDashboardMerchants(container) {
-    const pendingMerchants = users.filter(u => u.role === 'merchant_pending');
-    const approvedMerchants = users.filter(u => u.role === 'merchant_approved');
-
-    container.innerHTML = `
-        <h3 style="margin-bottom: 20px; color: var(--gold);">طلبات التجار (${pendingMerchants.length})</h3>
-        ${pendingMerchants.map(m => `
+    // جلب المستخدمين من localStorage
+    const users = JSON.parse(localStorage.getItem('nardoo_users') || '[]');
+    
+    // تصنيف التجار
+    const pendingMerchants = users.filter(u => u.role === 'merchant_pending' || u.status === 'pending');
+    const approvedMerchants = users.filter(u => u.role === 'merchant_approved' && u.status === 'approved');
+    
+    console.log('📊 التجار المعلقين:', pendingMerchants.length);
+    console.log('📊 التجار المعتمدين:', approvedMerchants.length);
+    console.log('👤 جميع المستخدمين:', users);
+    
+    // عرض طلبات التجار المعلقين
+    let pendingHTML = '';
+    if (pendingMerchants.length === 0) {
+        pendingHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">لا يوجد طلبات تجار في الانتظار</p>';
+    } else {
+        pendingHTML = pendingMerchants.map(m => `
             <div style="background: var(--glass); border: 1px solid var(--gold); border-radius: 10px; padding: 15px; margin-bottom: 10px;">
-                <div style="display: flex; justify-content: space-between;">
-                    <div>
-                        <p><strong>${m.storeName || m.name}</strong> - ${m.email}</p>
-                        <p>👤 التاجر: ${m.name}</p>
-                        <p>🏪 متجر: ${m.storeName || 'غير محدد'}</p>
-                        <p>📊 مستوى: ${m.merchantLevel || '1'}</p>
-                        <p>📞 هاتف: ${m.phone || 'غير متوفر'}</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <span style="background: #fbbf24; color: #000; padding: 5px 10px; border-radius: 20px; font-size: 12px;">⏳ في انتظار الموافقة</span>
+                            <span style="background: var(--gold); color: var(--bg-primary); padding: 5px 10px; border-radius: 20px; font-size: 12px;">مستوى ${m.merchantLevel || '1'}</span>
+                        </div>
+                        
+                        <p style="font-size: 18px; font-weight: 700; margin-bottom: 5px; color: var(--gold);">
+                            <i class="fas fa-store"></i> ${m.storeName || 'متجر ' + m.name}
+                        </p>
+                        
+                        <p style="margin-bottom: 3px;">
+                            <i class="fas fa-user" style="color: var(--gold); width: 20px;"></i> ${m.name}
+                        </p>
+                        
+                        <p style="margin-bottom: 3px;">
+                            <i class="fas fa-envelope" style="color: var(--gold); width: 20px;"></i> ${m.email}
+                        </p>
+                        
+                        <p style="margin-bottom: 3px;">
+                            <i class="fas fa-phone" style="color: var(--gold); width: 20px;"></i> ${m.phone || 'غير متوفر'}
+                        </p>
+                        
+                        ${m.merchantDesc ? `
+                        <p style="margin-top: 5px; font-size: 13px; color: var(--text-secondary); background: var(--glass); padding: 8px; border-radius: 10px;">
+                            <i class="fas fa-info-circle" style="color: var(--gold);"></i> ${m.merchantDesc}
+                        </p>
+                        ` : ''}
+                        
+                        <p style="margin-top: 5px; font-size: 12px; color: var(--text-secondary);">
+                            <i class="far fa-calendar-alt" style="color: var(--gold);"></i> تاريخ التسجيل: ${new Date(m.createdAt).toLocaleDateString('ar-DZ')}
+                        </p>
                     </div>
-                    <div>
-                        <button class="btn-gold" onclick="approveMerchant(${m.id})">✅ موافقة</button>
-                        <button class="btn-outline-gold" onclick="rejectMerchant(${m.id})">❌ رفض</button>
+                    
+                    <div style="display: flex; gap: 10px; flex-direction: column;">
+                        <button class="btn-gold" onclick="approveMerchant(${m.id})" style="padding: 12px 25px;">
+                            <i class="fas fa-check"></i> موافقة
+                        </button>
+                        <button class="btn-outline-gold" onclick="rejectMerchant(${m.id})" style="padding: 12px 25px;">
+                            <i class="fas fa-times"></i> رفض
+                        </button>
                     </div>
                 </div>
             </div>
-        `).join('')}
+        `).join('');
+    }
+    
+    // عرض التجار المعتمدين في جدول مرتب
+    let approvedHTML = '';
+    if (approvedMerchants.length === 0) {
+        approvedHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">لا يوجد تجار معتمدين</p>';
+    } else {
+        approvedHTML = `
+            <div style="overflow-x: auto; margin-top: 20px;">
+                <table style="width: 100%; border-collapse: collapse; background: var(--glass); border-radius: 15px; overflow: hidden;">
+                    <thead>
+                        <tr style="background: var(--gold); color: var(--bg-primary);">
+                            <th style="padding: 15px; text-align: center;">#</th>
+                            <th style="padding: 15px; text-align: right;">المتجر</th>
+                            <th style="padding: 15px; text-align: right;">التاجر</th>
+                            <th style="padding: 15px; text-align: center;">المستوى</th>
+                            <th style="padding: 15px; text-align: center;">المنتجات</th>
+                            <th style="padding: 15px; text-align: center;">البريد</th>
+                            <th style="padding: 15px; text-align: center;">الهاتف</th>
+                            <th style="padding: 15px; text-align: center;">تاريخ التسجيل</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${approvedMerchants.map((m, index) => {
+                            // حساب عدد منتجات التاجر
+                            const merchantProducts = products.filter(p => 
+                                p.merchantName === m.storeName || 
+                                p.merchantName === m.name || 
+                                p.merchantId == m.id
+                            );
+                            
+                            return `
+                                <tr style="border-bottom: 1px solid var(--border-color); transition: var(--transition);" 
+                                    onmouseover="this.style.background='var(--glass)'" 
+                                    onmouseout="this.style.background='transparent'">
+                                    <td style="padding: 15px; text-align: center; font-weight: 700;">${index + 1}</td>
+                                    <td style="padding: 15px; font-weight: 700;">
+                                        <i class="fas fa-store" style="color: var(--gold); margin-left: 5px;"></i>
+                                        ${m.storeName || 'متجر ' + m.name}
+                                    </td>
+                                    <td style="padding: 15px;">${m.name}</td>
+                                    <td style="padding: 15px; text-align: center;">
+                                        <span style="background: var(--gold); color: var(--bg-primary); padding: 5px 15px; border-radius: 20px; font-weight: 700;">
+                                            المستوى ${m.merchantLevel || '1'}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 15px; text-align: center; color: var(--gold); font-weight: 700; font-size: 18px;">
+                                        ${merchantProducts.length}
+                                    </td>
+                                    <td style="padding: 15px; text-align: center; font-size: 13px;">${m.email}</td>
+                                    <td style="padding: 15px; text-align: center;">${m.phone || '—'}</td>
+                                    <td style="padding: 15px; text-align: center; font-size: 12px;">${new Date(m.createdAt).toLocaleDateString('ar-DZ')}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+    
+    // إضافة كود سريع لإظهار جميع المستخدمين (للتشخيص)
+    const allUsersHTML = `
+        <details style="margin-top: 40px; background: var(--glass); padding: 15px; border-radius: 10px;">
+            <summary style="color: var(--gold); font-weight: 700; cursor: pointer;">
+                <i class="fas fa-database"></i> جميع المستخدمين في النظام (${users.length})
+            </summary>
+            <pre style="background: #000; color: #0f0; padding: 15px; border-radius: 10px; margin-top: 15px; overflow-x: auto; font-size: 12px; direction: ltr; text-align: left;">
+                ${JSON.stringify(users, null, 2)}
+            </pre>
+        </details>
+    `;
+    
+    // تجميع المحتوى
+    container.innerHTML = `
+        <h3 style="margin-bottom: 20px; color: var(--gold);">
+            <i class="fas fa-clock"></i> طلبات التجار (${pendingMerchants.length})
+        </h3>
+        ${pendingHTML}
 
-        <h3 style="margin: 30px 0 20px; color: var(--gold);">التجار المعتمدون (${approvedMerchants.length})</h3>
-        <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="background: var(--gold); color: var(--bg-primary);">
-                        <th style="padding: 12px;">التاجر</th>
-                        <th style="padding: 12px;">المتجر</th>
-                        <th style="padding: 12px;">المستوى</th>
-                        <th style="padding: 12px;">المنتجات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${approvedMerchants.map(m => {
-                        const merchantProducts = products.filter(p => p.merchantName === m.storeName || p.merchantName === m.name);
-                        return `
-                            <tr style="border-bottom: 1px solid var(--border-color);">
-                                <td style="padding: 12px;">${m.name}</td>
-                                <td style="padding: 12px;">${m.storeName || 'غير محدد'}</td>
-                                <td style="padding: 12px;">${m.merchantLevel || '1'}</td>
-                                <td style="padding: 12px;">${merchantProducts.length}</td>
-                            </tr>
-                        `;
-                    }).join('')}
-                </tbody>
-            </table>
-        </div>
+        <h3 style="margin: 40px 0 20px; color: var(--gold);">
+            <i class="fas fa-check-circle"></i> التجار المعتمدون (${approvedMerchants.length})
+        </h3>
+        ${approvedHTML}
+        
+        ${allUsersHTML}
     `;
 }
 
