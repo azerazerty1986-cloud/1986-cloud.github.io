@@ -45,81 +45,49 @@ loadUsers();
 // ========== 4. نظام الإشعارات المتقدم ==========
 const NotificationSystem = {
     init: function() {
-        if (!document.getElementById('advancedNotificationContainer')) {
+        if (!document.getElementById('notificationContainer')) {
             const container = document.createElement('div');
-            container.id = 'advancedNotificationContainer';
-            container.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 9999;
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-                max-width: 350px;
-            `;
+            container.id = 'notificationContainer';
+            container.className = 'notification-container';
             document.body.appendChild(container);
         }
-        return document.getElementById('advancedNotificationContainer');
+        return document.getElementById('notificationContainer');
     },
 
     show: function(message, type = 'info', duration = 3000) {
         const container = this.init();
         const id = 'notif_' + Date.now() + Math.random().toString(36).substr(2, 5);
         
-        const colors = {
-            success: { bg: '#4ade80', text: '#000', icon: 'fa-check-circle' },
-            error: { bg: '#f87171', text: '#000', icon: 'fa-times-circle' },
-            warning: { bg: '#fbbf24', text: '#000', icon: 'fa-exclamation-triangle' },
-            info: { bg: '#60a5fa', text: '#000', icon: 'fa-info-circle' },
-            loading: { bg: '#fbbf24', text: '#000', icon: 'fa-spinner fa-spin' }
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-times-circle',
+            warning: 'fa-exclamation-triangle',
+            info: 'fa-info-circle',
+            loading: 'fa-spinner fa-spin'
         };
 
-        const color = colors[type] || colors.info;
+        const icon = icons[type] || icons.info;
 
         const notification = document.createElement('div');
         notification.id = id;
-        notification.style.cssText = `
-            background: ${color.bg};
-            color: ${color.text};
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transform: translateX(400px);
-            opacity: 0;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            border-right: 5px solid ${type === 'success' ? '#166534' : type === 'error' ? '#991b1b' : type === 'warning' ? '#854d0e' : '#1e3a8a'};
-            direction: rtl;
-            font-family: 'Cairo', sans-serif;
-        `;
-
+        notification.className = `notification ${type}`;
+        
         notification.innerHTML = `
-            <i class="fas ${color.icon}" style="font-size: 20px;"></i>
-            <div style="flex: 1;">${message}</div>
-            <i class="fas fa-times" style="cursor: pointer; opacity: 0.7; font-size: 14px;" onclick="document.getElementById('${id}').remove()"></i>
+            <i class="fas ${icon}"></i>
+            <div class="message">${message}</div>
+            <i class="fas fa-times close-btn" onclick="this.parentElement.remove()"></i>
         `;
 
         container.appendChild(notification);
 
         setTimeout(() => {
-            notification.style.transform = 'translateX(0)';
-            notification.style.opacity = '1';
+            notification.classList.add('show');
         }, 10);
 
         if (duration > 0 && type !== 'loading') {
             setTimeout(() => {
                 if (document.getElementById(id)) {
-                    notification.style.transform = 'translateX(400px)';
-                    notification.style.opacity = '0';
-                    setTimeout(() => {
-                        if (document.getElementById(id)) {
-                            notification.remove();
-                        }
-                    }, 300);
+                    notification.remove();
                 }
             }, duration);
         }
@@ -130,18 +98,12 @@ const NotificationSystem = {
     hide: function(id) {
         const notif = document.getElementById(id);
         if (notif) {
-            notif.style.transform = 'translateX(400px)';
-            notif.style.opacity = '0';
-            setTimeout(() => {
-                if (document.getElementById(id)) {
-                    notif.remove();
-                }
-            }, 300);
+            notif.remove();
         }
     },
 
     hideAll: function() {
-        const container = document.getElementById('advancedNotificationContainer');
+        const container = document.getElementById('notificationContainer');
         if (container) {
             container.innerHTML = '';
         }
@@ -511,7 +473,7 @@ function displayProducts() {
                 <div class="product-gallery">
                     <img src="${images[0]}" alt="${product.name}" 
                          onerror="this.src='https://via.placeholder.com/300/2c5e4f/ffffff?text=نكهة+وجمال'">
-                    ${product.telegramPhoto ? '<span class="telegram-badge" style="position: absolute; top: 10px; left: 10px; background: #0088cc; color: white; padding: 5px 10px; border-radius: 20px; font-size: 12px;"><i class="fab fa-telegram"></i> تلجرام</span>' : ''}
+                    ${product.telegramPhoto ? '<span class="telegram-badge"><i class="fab fa-telegram"></i> تلجرام</span>' : ''}
                 </div>
                 <div class="product-info">
                     <div class="product-category">
@@ -542,8 +504,6 @@ function displayProducts() {
 function viewProductDetails(productId) {
     const product = products.find(p => p.id == productId);
     if (!product) return;
-
-    analyticsManager.trackEvent('viewProduct', { productId: productId });
 
     const modal = document.getElementById('productDetailModal');
     const content = document.getElementById('productDetailContent');
@@ -832,8 +792,8 @@ async function handleImageUpload(event) {
         reader.onload = function(e) {
             preview.innerHTML += `
                 <div class="image-upload-item" data-index="${i}" style="display: inline-block; margin: 5px; position: relative;">
-                    <img src="${e.target.result}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 10px; border: 2px solid var(--gold);">
-                    <div class="upload-progress" style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: white; text-align: center; font-size: 12px; padding: 2px; border-radius: 0 0 10px 10px;">⏳ جاري الرفع...</div>
+                    <img src="${e.target.result}" class="preview-image">
+                    <div class="upload-progress">⏳ جاري الرفع...</div>
                 </div>
             `;
         };
@@ -1462,7 +1422,7 @@ function updateCartDisplay() {
                 <div class="cart-item-details">
                     <div class="cart-item-title">${item.name}</div>
                     <div class="cart-item-price">${item.price.toLocaleString()} دج</div>
-                    <div class="cart-item-merchant" style="font-size: 12px; color: var(--gold);">${item.merchantName || 'المتجر'}</div>
+                    <div class="cart-item-merchant">${item.merchantName || 'المتجر'}</div>
                     <div class="cart-item-quantity">
                         <button class="quantity-btn" onclick="updateCartItem(${item.productId}, ${item.quantity - 1})">-</button>
                         <span>${item.quantity}</span>
@@ -1765,7 +1725,7 @@ function addMerchantMenuButton() {
 function viewMyProducts() {
     if (!currentUser || currentUser.role !== 'merchant_approved') return;
     currentFilter = 'my_products';
-    document.querySelectorAll('.nav-link, .category-btn').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
     const btn = document.getElementById('myProductsBtn');
     if (btn) btn.classList.add('active');
     displayProducts();
@@ -1782,17 +1742,17 @@ function showMerchantPanel() {
     panel.innerHTML = `
         <div class="merchant-panel">
             <h3><i class="fas fa-store"></i> لوحة التاجر - ${currentUser.storeName || currentUser.name}</h3>
-            <div class="stats" style="display: flex; gap: 20px; justify-content: center; margin: 20px 0;">
-                <div style="text-align: center;">
-                    <div style="font-size: 32px; font-weight: 800; color: var(--gold);">${merchantProducts.length}</div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="number">${merchantProducts.length}</div>
                     <div>إجمالي المنتجات</div>
                 </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 32px; font-weight: 800; color: var(--gold);">${merchantProducts.filter(p => p.stock > 0).length}</div>
+                <div class="stat-item">
+                    <div class="number">${merchantProducts.filter(p => p.stock > 0).length}</div>
                     <div>المنتجات المتاحة</div>
                 </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 32px; font-weight: 800; color: var(--gold);">${totalSales.toLocaleString()} دج</div>
+                <div class="stat-item">
+                    <div class="number">${totalSales.toLocaleString()} دج</div>
                     <div>إجمالي المبيعات</div>
                 </div>
             </div>
@@ -1958,28 +1918,24 @@ function showDashboardOverview(container) {
         
         <h4 style="margin: 30px 0 20px; color: var(--gold);">الطلبات الأخيرة</h4>
         <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse;">
+            <table>
                 <thead>
-                    <tr style="background: var(--gold); color: var(--bg-primary);">
-                        <th style="padding: 12px;">رقم الطلب</th>
-                        <th style="padding: 12px;">العميل</th>
-                        <th style="padding: 12px;">المجموع</th>
-                        <th style="padding: 12px;">الحالة</th>
-                        <th style="padding: 12px;">التاريخ</th>
+                    <tr>
+                        <th>رقم الطلب</th>
+                        <th>العميل</th>
+                        <th>المجموع</th>
+                        <th>الحالة</th>
+                        <th>التاريخ</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${orderStats.recentOrders.map(order => `
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 12px;">${order.id}</td>
-                            <td style="padding: 12px;">${order.customerName}</td>
-                            <td style="padding: 12px; color: var(--gold); font-weight: 700;">${order.total.toLocaleString()} دج</td>
-                            <td style="padding: 12px;">
-                                <span style="background: ${order.status === 'delivered' ? '#4ade80' : order.status === 'cancelled' ? '#f87171' : '#fbbf24'}; color: #000; padding: 5px 10px; border-radius: 20px; font-size: 12px;">
-                                    ${orderManager.getStatusMessage(order.status)}
-                                </span>
-                            </td>
-                            <td style="padding: 12px;">${new Date(order.createdAt).toLocaleDateString('ar-DZ')}</td>
+                        <tr>
+                            <td>${order.id}</td>
+                            <td>${order.customerName}</td>
+                            <td style="color: var(--gold); font-weight: 700;">${order.total.toLocaleString()} دج</td>
+                            <td><span class="status-badge status-${order.status}">${orderManager.getStatusMessage(order.status)}</span></td>
+                            <td>${new Date(order.createdAt).toLocaleDateString('ar-DZ')}</td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -1993,30 +1949,30 @@ function showDashboardOrders(container) {
     container.innerHTML = `
         <h3 style="margin-bottom: 20px; color: var(--gold);">جميع الطلبات</h3>
         <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse;">
+            <table>
                 <thead>
-                    <tr style="background: var(--gold); color: var(--bg-primary);">
-                        <th style="padding: 12px;">رقم الطلب</th>
-                        <th style="padding: 12px;">العميل</th>
-                        <th style="padding: 12px;">المجموع</th>
-                        <th style="padding: 12px;">الحالة</th>
-                        <th style="padding: 12px;">التاريخ</th>
+                    <tr>
+                        <th>رقم الطلب</th>
+                        <th>العميل</th>
+                        <th>المجموع</th>
+                        <th>الحالة</th>
+                        <th>التاريخ</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${orders.map(order => `
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 12px;">${order.id}</td>
-                            <td style="padding: 12px;">${order.customerName}</td>
-                            <td style="padding: 12px;">${order.total} دج</td>
-                            <td style="padding: 12px;">
-                                <select onchange="orderManager.updateOrderStatus('${order.id}', this.value)" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--gold); padding: 5px; border-radius: 5px;">
+                        <tr>
+                            <td>${order.id}</td>
+                            <td>${order.customerName}</td>
+                            <td>${order.total} دج</td>
+                            <td>
+                                <select onchange="orderManager.updateOrderStatus('${order.id}', this.value)" style="background: var(--glass); color: var(--text-primary); border: 1px solid var(--gold); padding: 5px; border-radius: 5px;">
                                     ${orderManager.orderStatuses.map(status => `
                                         <option value="${status}" ${order.status === status ? 'selected' : ''}>${orderManager.getStatusMessage(status)}</option>
                                     `).join('')}
                                 </select>
                             </td>
-                            <td style="padding: 12px;">${new Date(order.createdAt).toLocaleDateString('ar-DZ')}</td>
+                            <td>${new Date(order.createdAt).toLocaleDateString('ar-DZ')}</td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -2032,32 +1988,28 @@ function showDashboardProducts(container) {
             <button class="btn-gold" onclick="showAddProductModal()">إضافة منتج</button>
         </div>
         <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse;">
+            <table>
                 <thead>
-                    <tr style="background: var(--gold); color: var(--bg-primary);">
-                        <th style="padding: 12px;">#</th>
-                        <th style="padding: 12px;">الصورة</th>
-                        <th style="padding: 12px;">المنتج</th>
-                        <th style="padding: 12px;">السعر</th>
-                        <th style="padding: 12px;">الكمية</th>
-                        <th style="padding: 12px;">التاجر</th>
-                        <th style="padding: 12px;">المصدر</th>
+                    <tr>
+                        <th>#</th>
+                        <th>الصورة</th>
+                        <th>المنتج</th>
+                        <th>السعر</th>
+                        <th>الكمية</th>
+                        <th>التاجر</th>
+                        <th>المصدر</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${products.map((p, index) => `
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 12px;">${index + 1}</td>
-                            <td style="padding: 12px;">
-                                <img src="${p.images?.[0] || 'https://via.placeholder.com/50'}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
-                            </td>
-                            <td style="padding: 12px;">${p.name}</td>
-                            <td style="padding: 12px;">${p.price} دج</td>
-                            <td style="padding: 12px;">${p.stock}</td>
-                            <td style="padding: 12px;">${p.merchantName}</td>
-                            <td style="padding: 12px;">
-                                ${p.telegramPhoto ? '<span style="color: #4ade80;"><i class="fab fa-telegram"></i> تلجرام</span>' : 'محلي'}
-                            </td>
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td><img src="${p.images?.[0] || 'https://via.placeholder.com/50'}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;"></td>
+                            <td>${p.name}</td>
+                            <td>${p.price} دج</td>
+                            <td>${p.stock}</td>
+                            <td>${p.merchantName}</td>
+                            <td>${p.telegramPhoto ? '<span style="color: #4ade80;"><i class="fab fa-telegram"></i> تلجرام</span>' : 'محلي'}</td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -2075,55 +2027,20 @@ function showDashboardMerchants(container) {
         pendingHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">لا يوجد طلبات تجار في الانتظار</p>';
     } else {
         pendingHTML = pendingMerchants.map(m => `
-            <div style="background: var(--glass); border: 1px solid var(--gold); border-radius: 10px; padding: 15px; margin-bottom: 10px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-                    <div style="flex: 1;">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                            <span style="background: #fbbf24; color: #000; padding: 5px 10px; border-radius: 20px; font-size: 12px;">⏳ في انتظار الموافقة</span>
-                            <span style="background: var(--gold); color: var(--bg-primary); padding: 5px 10px; border-radius: 20px; font-size: 12px;">مستوى ${m.merchantLevel || '1'}</span>
-                        </div>
-                        
-                        <p style="font-size: 18px; font-weight: 700; margin-bottom: 5px; color: var(--gold);">
-                            <i class="fas fa-store"></i> ${m.storeName || 'متجر ' + m.name}
-                        </p>
-                        
-                        <p style="margin-bottom: 3px;">
-                            <i class="fas fa-user" style="color: var(--gold); width: 20px;"></i> ${m.name}
-                        </p>
-                        
-                        <p style="margin-bottom: 3px;">
-                            <i class="fas fa-envelope" style="color: var(--gold); width: 20px;"></i> ${m.email}
-                        </p>
-                        
-                        <p style="margin-bottom: 3px;">
-                            <i class="fas fa-phone" style="color: var(--gold); width: 20px;"></i> ${m.phone || 'غير متوفر'}
-                        </p>
-                        
-                        ${m.merchantDesc ? `
-                        <p style="margin-top: 5px; font-size: 13px; color: var(--text-secondary); background: var(--glass); padding: 8px; border-radius: 10px;">
-                            <i class="fas fa-info-circle" style="color: var(--gold);"></i> ${m.merchantDesc}
-                        </p>
-                        ` : ''}
-                        
-                        <p style="margin-top: 5px; font-size: 12px; color: var(--text-secondary);">
-                            <i class="far fa-calendar-alt" style="color: var(--gold);"></i> تاريخ التسجيل: ${new Date(m.createdAt).toLocaleDateString('ar-DZ')}
-                        </p>
-                        
-                        ${m.telegramId ? `
-                        <p style="margin-top: 5px; font-size: 12px; color: #4ade80;">
-                            <i class="fab fa-telegram"></i> معرف تلجرام: موجود
-                        </p>
-                        ` : ''}
-                    </div>
-                    
-                    <div style="display: flex; gap: 10px; flex-direction: column;">
-                        <button class="btn-gold" onclick="approveMerchant(${m.id})" style="padding: 12px 25px;">
-                            <i class="fas fa-check"></i> موافقة
-                        </button>
-                        <button class="btn-outline-gold" onclick="rejectMerchant(${m.id})" style="padding: 12px 25px;">
-                            <i class="fas fa-times"></i> رفض
-                        </button>
-                    </div>
+            <div class="merchant-card" style="border-left-color: #fbbf24;">
+                <div class="merchant-card-header">
+                    <div class="merchant-color-sample" style="background: #fbbf24;"></div>
+                    <h4>${m.storeName || 'متجر ' + m.name}</h4>
+                    <span class="status-badge status-pending">في انتظار الموافقة</span>
+                </div>
+                <p><i class="fas fa-user"></i> ${m.name}</p>
+                <p><i class="fas fa-envelope"></i> ${m.email}</p>
+                <p><i class="fas fa-phone"></i> ${m.phone || 'غير متوفر'}</p>
+                <p><i class="fas fa-chart-line"></i> المستوى ${m.merchantLevel || '1'}</p>
+                ${m.merchantDesc ? `<p><i class="fas fa-info-circle"></i> ${m.merchantDesc}</p>` : ''}
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="btn-gold" onclick="approveMerchant(${m.id})" style="flex: 1;"><i class="fas fa-check"></i> موافقة</button>
+                    <button class="btn-outline-gold" onclick="rejectMerchant(${m.id})" style="flex: 1;"><i class="fas fa-times"></i> رفض</button>
                 </div>
             </div>
         `).join('');
@@ -2134,18 +2051,18 @@ function showDashboardMerchants(container) {
         approvedHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">لا يوجد تجار معتمدين</p>';
     } else {
         approvedHTML = `
-            <div style="overflow-x: auto; margin-top: 20px;">
-                <table style="width: 100%; border-collapse: collapse; background: var(--glass); border-radius: 15px; overflow: hidden;">
+            <div style="overflow-x: auto;">
+                <table>
                     <thead>
-                        <tr style="background: var(--gold); color: var(--bg-primary);">
-                            <th style="padding: 15px; text-align: center;">#</th>
-                            <th style="padding: 15px; text-align: right;">المتجر</th>
-                            <th style="padding: 15px; text-align: right;">التاجر</th>
-                            <th style="padding: 15px; text-align: center;">المستوى</th>
-                            <th style="padding: 15px; text-align: center;">المنتجات</th>
-                            <th style="padding: 15px; text-align: center;">البريد</th>
-                            <th style="padding: 15px; text-align: center;">الهاتف</th>
-                            <th style="padding: 15px; text-align: center;">تلجرام</th>
+                        <tr>
+                            <th>#</th>
+                            <th>المتجر</th>
+                            <th>التاجر</th>
+                            <th>المستوى</th>
+                            <th>المنتجات</th>
+                            <th>البريد</th>
+                            <th>الهاتف</th>
+                            <th>تلجرام</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -2157,26 +2074,15 @@ function showDashboardMerchants(container) {
                             );
                             
                             return `
-                                <tr style="border-bottom: 1px solid var(--border-color);">
-                                    <td style="padding: 15px; text-align: center; font-weight: 700;">${index + 1}</td>
-                                    <td style="padding: 15px; font-weight: 700;">
-                                        <i class="fas fa-store" style="color: var(--gold); margin-left: 5px;"></i>
-                                        ${m.storeName || 'متجر ' + m.name}
-                                    </td>
-                                    <td style="padding: 15px;">${m.name}</td>
-                                    <td style="padding: 15px; text-align: center;">
-                                        <span style="background: var(--gold); color: var(--bg-primary); padding: 5px 15px; border-radius: 20px; font-weight: 700;">
-                                            المستوى ${m.merchantLevel || '1'}
-                                        </span>
-                                    </td>
-                                    <td style="padding: 15px; text-align: center; color: var(--gold); font-weight: 700; font-size: 18px;">
-                                        ${merchantProducts.length}
-                                    </td>
-                                    <td style="padding: 15px; text-align: center; font-size: 13px;">${m.email}</td>
-                                    <td style="padding: 15px; text-align: center;">${m.phone || '—'}</td>
-                                    <td style="padding: 15px; text-align: center;">
-                                        ${m.telegramId ? '✅' : '❌'}
-                                    </td>
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td><i class="fas fa-store" style="color: var(--gold);"></i> ${m.storeName || 'متجر ' + m.name}</td>
+                                    <td>${m.name}</td>
+                                    <td><span class="status-badge status-approved">المستوى ${m.merchantLevel || '1'}</span></td>
+                                    <td style="color: var(--gold); font-weight: 700;">${merchantProducts.length}</td>
+                                    <td>${m.email}</td>
+                                    <td>${m.phone || '—'}</td>
+                                    <td>${m.telegramId ? '✅' : '❌'}</td>
                                 </tr>
                             `;
                         }).join('')}
@@ -2187,14 +2093,10 @@ function showDashboardMerchants(container) {
     }
     
     container.innerHTML = `
-        <h3 style="margin-bottom: 20px; color: var(--gold);">
-            <i class="fas fa-clock"></i> طلبات التجار (${pendingMerchants.length})
-        </h3>
+        <h3 style="margin-bottom: 20px; color: var(--gold);"><i class="fas fa-clock"></i> طلبات التجار (${pendingMerchants.length})</h3>
         ${pendingHTML}
 
-        <h3 style="margin: 40px 0 20px; color: var(--gold);">
-            <i class="fas fa-check-circle"></i> التجار المعتمدون (${approvedMerchants.length})
-        </h3>
+        <h3 style="margin: 40px 0 20px; color: var(--gold);"><i class="fas fa-check-circle"></i> التجار المعتمدون (${approvedMerchants.length})</h3>
         ${approvedHTML}
     `;
 }
@@ -2284,6 +2186,12 @@ window.onload = async function() {
     // تحميل السلة
     loadCart();
 
+    // إضافة جسيمات متحركة
+    createParticles();
+    
+    // إضافة تأثير الماوس
+    createMouseEffect();
+
     // استعادة المستخدم الحالي
     const savedUser = localStorage.getItem('current_user');
     if (savedUser) {
@@ -2314,6 +2222,7 @@ window.onload = async function() {
 
     // إعدادات إضافية
     window.addEventListener('scroll', toggleQuickTopButton);
+    window.addEventListener('scroll', updateScrollProgress);
     updateCountdown();
     updateProgressBars();
     
@@ -2330,9 +2239,143 @@ window.onload = async function() {
     }
 };
 
+// ========== 37. جسيمات متحركة ==========
+function createParticles() {
+    const particlesContainer = document.createElement('div');
+    particlesContainer.className = 'particles';
+    document.body.appendChild(particlesContainer);
+    
+    for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 10 + 's';
+        particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+        particlesContainer.appendChild(particle);
+    }
+}
+
+// ========== 38. تأثير الماوس ==========
+function createMouseEffect() {
+    const cursor = document.createElement('div');
+    cursor.className = 'mouse-effect';
+    document.body.appendChild(cursor);
+    
+    const cursorDot = document.createElement('div');
+    cursorDot.className = 'mouse-effect-dot';
+    document.body.appendChild(cursorDot);
+    
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.transform = `translate(${e.clientX - 10}px, ${e.clientY - 10}px)`;
+        cursorDot.style.transform = `translate(${e.clientX - 2}px, ${e.clientY - 2}px)`;
+    });
+    
+    document.querySelectorAll('a, button, .product-card, .nav-link').forEach(el => {
+        el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+        el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+    });
+}
+
+// ========== 39. تحديث شريط تقدم التمرير ==========
+function updateScrollProgress() {
+    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrolled = (winScroll / height) * 100;
+    
+    let progressBar = document.querySelector('.scroll-progress');
+    if (!progressBar) {
+        progressBar = document.createElement('div');
+        progressBar.className = 'scroll-progress';
+        document.body.appendChild(progressBar);
+    }
+    progressBar.style.width = scrolled + '%';
+}
+
 // ========== إغلاق النوافذ عند النقر خارجها ==========
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
         event.target.style.display = 'none';
     }
 };
+
+// ========== 40. جلب التجار من تليجرام ==========
+async function loadMerchantsFromTelegram() {
+    try {
+        console.log('🔄 جاري جلب طلبات التجار من تلجرام...');
+        
+        const response = await fetch(
+            `https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates`
+        );
+        
+        const data = await response.json();
+        const merchants = [];
+        
+        if (data.ok && data.result) {
+            const updates = [...data.result].reverse();
+            
+            for (const update of updates) {
+                if (update.channel_post && update.channel_post.text && update.channel_post.text.includes('🔵')) {
+                    const post = update.channel_post;
+                    
+                    const lines = post.text.split('\n');
+                    let merchantData = {
+                        id: post.message_id,
+                        name: 'تاجر',
+                        storeName: 'متجر',
+                        email: '',
+                        phone: '',
+                        level: '1',
+                        desc: '',
+                        status: 'pending',
+                        telegramId: post.from?.id || null,
+                        createdAt: new Date(post.date * 1000).toISOString()
+                    };
+                    
+                    lines.forEach(line => {
+                        if (line.includes('التاجر:')) {
+                            merchantData.name = line.replace('التاجر:', '').replace(/[🔵*]/g, '').trim();
+                        } else if (line.includes('المتجر:')) {
+                            merchantData.storeName = line.replace('المتجر:', '').replace(/[🔵*]/g, '').trim();
+                        } else if (line.includes('البريد:')) {
+                            merchantData.email = line.replace('البريد:', '').replace(/[🔵*]/g, '').trim();
+                        } else if (line.includes('الهاتف:')) {
+                            merchantData.phone = line.replace('الهاتف:', '').replace(/[🔵*]/g, '').trim();
+                        } else if (line.includes('المستوى:')) {
+                            merchantData.level = line.replace('المستوى:', '').replace(/[🔵*]/g, '').trim();
+                        } else if (line.includes('الوصف:')) {
+                            merchantData.desc = line.replace('الوصف:', '').replace(/[🔵*]/g, '').trim();
+                        }
+                    });
+                    
+                    merchants.push(merchantData);
+                    
+                    const existingUser = users.find(u => u.email === merchantData.email);
+                    if (!existingUser) {
+                        users.push({
+                            id: users.length + 1,
+                            name: merchantData.name,
+                            email: merchantData.email,
+                            password: 'temp123',
+                            phone: merchantData.phone,
+                            role: 'merchant_pending',
+                            status: 'pending',
+                            storeName: merchantData.storeName,
+                            merchantLevel: merchantData.level,
+                            merchantDesc: merchantData.desc,
+                            telegramId: merchantData.telegramId,
+                            createdAt: merchantData.createdAt
+                        });
+                    }
+                }
+            }
+        }
+        
+        localStorage.setItem('nardoo_users', JSON.stringify(users));
+        console.log(`✅ تم تحميل ${merchants.length} طلب تاجر من تلجرام`);
+        return merchants;
+        
+    } catch (error) {
+        console.error('❌ خطأ في جلب التجار:', error);
+        return [];
+    }
+}
