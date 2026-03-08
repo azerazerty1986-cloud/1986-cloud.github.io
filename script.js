@@ -32,6 +32,7 @@ function loadUsers() {
                 email: 'azer@admin.com', 
                 password: '123456', 
                 role: 'admin',
+                status: 'approved',
                 phone: '',
                 createdAt: new Date().toISOString()
             }
@@ -202,6 +203,7 @@ async function loadMerchantsFromTelegram() {
                     password: 'temp123', // كلمة مؤقتة
                     phone: merchant.phone,
                     role: 'merchant_pending',
+                    status: 'pending',
                     storeName: merchant.storeName,
                     merchantLevel: merchant.level,
                     merchantDesc: merchant.desc,
@@ -223,6 +225,8 @@ async function loadMerchantsFromTelegram() {
 
 // ========== 6. إضافة منتج إلى تليجرام (🟣) ==========
 async function addProductToTelegram(product) {
+    const merchant = currentUser;
+    
     const message = `
 🟣 *منتج جديد في المتجر*
 ━━━━━━━━━━━━━━━━━━━━━━
@@ -230,7 +234,7 @@ async function addProductToTelegram(product) {
 💰 *السعر:* ${product.price} دج
 🏷️ *القسم:* ${product.category}
 📊 *الكمية:* ${product.stock}
-👤 *التاجر:* ${product.merchantName}
+👤 *التاجر:* ${merchant.storeName || merchant.name}
 🕐 *تاريخ الإضافة:* ${new Date().toLocaleString('ar-DZ')}
     `;
 
@@ -308,20 +312,54 @@ ${order.items.map((item, i) =>
     });
 }
 
-// ========== 9. الموافقة على تاجر ==========
+// ========== 9. الموافقة على تاجر (مصححة - بدون تكرار) ==========
 async function approveMerchant(merchantId) {
-    const merchant = users.find(u => u.id == merchantId);
-    if (!merchant) return;
-
+    console.log('🔄 الموافقة على التاجر:', merchantId);
+    
+    // جلب المستخدمين
+    let users = JSON.parse(localStorage.getItem('nardoo_users') || '[]');
+    
+    // البحث عن التاجر
+    let merchant = users.find(u => u.id == merchantId);
+    
+    if (!merchant) {
+        console.log('❌ التاجر غير موجود');
+        
+        // محاولة إنشاء التاجر إذا كان من تليجرام
+        merchant = {
+            id: parseInt(merchantId),
+            name: 'تاجر',
+            email: `merchant_${merchantId}@temp.com`,
+            password: '123456',
+            role: 'merchant_approved',
+            status: 'approved',
+            storeName: 'متجر جديد',
+            merchantLevel: '1',
+            createdAt: new Date().toISOString()
+        };
+        users.push(merchant);
+    }
+    
+    // التحقق من التكرار
+    if (merchant.role === 'merchant_approved' && merchant.status === 'approved') {
+        console.log('⚠️ التاجر مفعل مسبقاً');
+        showAdvancedNotification('التاجر مفعل بالفعل', 'info');
+        return;
+    }
+    
+    // تفعيل التاجر
     merchant.role = 'merchant_approved';
     merchant.status = 'approved';
+    
+    // حفظ التغييرات
     localStorage.setItem('nardoo_users', JSON.stringify(users));
-
-    // إرسال إشعار الموافقة
+    console.log('✅ تم تفعيل التاجر:', merchant);
+    
+    // إرسال رسالة تأكيد واحدة فقط
     const message = `
 ✅ *تمت الموافقة على تاجر*
 ━━━━━━━━━━━━━━━━━━━━━━
-🏪 *المتجر:* ${merchant.storeName}
+🏪 *المتجر:* ${merchant.storeName || merchant.name}
 👤 *التاجر:* ${merchant.name}
 🎉 *مبروك! يمكنك الآن إضافة منتجاتك*
     `;
@@ -337,22 +375,35 @@ async function approveMerchant(merchantId) {
     });
 
     showAdvancedNotification(`تمت الموافقة على التاجر: ${merchant.name}`, 'success');
+    
+    // تحديث لوحة التحكم
+    setTimeout(() => {
+        if (document.getElementById('dashboardSection')?.style.display === 'block') {
+            switchDashboardTab('merchants');
+        }
+    }, 1000);
 }
 
 // ========== 10. رفض تاجر ==========
 async function rejectMerchant(merchantId) {
-    const merchant = users.find(u => u.id == merchantId);
-    if (!merchant) return;
-
+    console.log('🔄 رفض التاجر:', merchantId);
+    
+    let users = JSON.parse(localStorage.getItem('nardoo_users') || '[]');
+    let merchant = users.find(u => u.id == merchantId);
+    
+    if (!merchant) {
+        console.log('❌ التاجر غير موجود');
+        return;
+    }
+    
     merchant.role = 'customer';
     merchant.status = 'rejected';
     localStorage.setItem('nardoo_users', JSON.stringify(users));
-
-    // إرسال إشعار الرفض
+    
     const message = `
 ❌ *تم رفض طلب تاجر*
 ━━━━━━━━━━━━━━━━━━━━━━
-🏪 *المتجر:* ${merchant.storeName}
+🏪 *المتجر:* ${merchant.storeName || merchant.name}
 👤 *التاجر:* ${merchant.name}
 😞 *نأسف، لم تتم الموافقة على طلبك*
     `;
@@ -1246,13 +1297,15 @@ function handleLogin() {
     }
 }
 
-// ========== 27. تسجيل تاجر جديد ==========
+// ========== 27. تسجيل تاجر جديد (معدل مع إضافة storeName) ==========
 function handleRegister() {
-    const name = document.getElementById('regName').value;
-    const email = document.getElementById('regEmail').value;
-    const password = document.getElementById('regPassword').value;
+    console.log('📝 بدء عملية التسجيل...');
+    
+    const name = document.getElementById('regName')?.value;
+    const email = document.getElementById('regEmail')?.value;
+    const password = document.getElementById('regPassword')?.value;
     const phone = document.getElementById('regPhone')?.value || '';
-    const isMerchant = document.getElementById('isMerchant').checked;
+    const isMerchant = document.getElementById('isMerchant')?.checked || false;
 
     if (!name || !email || !password) {
         showAdvancedNotification('الرجاء ملء جميع الحقول', 'error');
@@ -1266,18 +1319,21 @@ function handleRegister() {
 
     const newUser = {
         id: users.length + 1,
-        name,
-        email,
-        password,
-        phone,
+        name: name,
+        email: email,
+        password: password,
+        phone: phone,
         role: isMerchant ? 'merchant_pending' : 'customer',
+        status: isMerchant ? 'pending' : 'approved',
         createdAt: new Date().toISOString()
     };
 
     if (isMerchant) {
-        newUser.merchantLevel = document.getElementById('merchantLevel').value;
-        newUser.merchantDesc = document.getElementById('merchantDesc').value;
-        newUser.storeName = document.getElementById('storeName').value || 'متجر ' + name;
+        newUser.merchantLevel = document.getElementById('merchantLevel')?.value || '1';
+        newUser.merchantDesc = document.getElementById('merchantDesc')?.value || '';
+        newUser.storeName = document.getElementById('storeName')?.value || 'متجر ' + name;
+        
+        console.log('👤 تسجيل تاجر جديد:', newUser);
         
         // 🔵 إرسال طلب أزرق إلى تلجرام
         sendMerchantRequestToTelegram(newUser);
@@ -1614,20 +1670,15 @@ function showDashboardProducts(container) {
     `;
 }
 
-// ========== هذه هي الدالة المعدلة (showDashboardMerchants) ==========
 function showDashboardMerchants(container) {
-    // جلب المستخدمين من localStorage
     const users = JSON.parse(localStorage.getItem('nardoo_users') || '[]');
     
-    // تصنيف التجار
     const pendingMerchants = users.filter(u => u.role === 'merchant_pending' || u.status === 'pending');
     const approvedMerchants = users.filter(u => u.role === 'merchant_approved' && u.status === 'approved');
     
     console.log('📊 التجار المعلقين:', pendingMerchants.length);
     console.log('📊 التجار المعتمدين:', approvedMerchants.length);
-    console.log('👤 جميع المستخدمين:', users);
     
-    // عرض طلبات التجار المعلقين
     let pendingHTML = '';
     if (pendingMerchants.length === 0) {
         pendingHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">لا يوجد طلبات تجار في الانتظار</p>';
@@ -1662,10 +1713,6 @@ function showDashboardMerchants(container) {
                             <i class="fas fa-info-circle" style="color: var(--gold);"></i> ${m.merchantDesc}
                         </p>
                         ` : ''}
-                        
-                        <p style="margin-top: 5px; font-size: 12px; color: var(--text-secondary);">
-                            <i class="far fa-calendar-alt" style="color: var(--gold);"></i> تاريخ التسجيل: ${new Date(m.createdAt).toLocaleDateString('ar-DZ')}
-                        </p>
                     </div>
                     
                     <div style="display: flex; gap: 10px; flex-direction: column;">
@@ -1681,7 +1728,6 @@ function showDashboardMerchants(container) {
         `).join('');
     }
     
-    // عرض التجار المعتمدين في جدول مرتب
     let approvedHTML = '';
     if (approvedMerchants.length === 0) {
         approvedHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">لا يوجد تجار معتمدين</p>';
@@ -1698,12 +1744,10 @@ function showDashboardMerchants(container) {
                             <th style="padding: 15px; text-align: center;">المنتجات</th>
                             <th style="padding: 15px; text-align: center;">البريد</th>
                             <th style="padding: 15px; text-align: center;">الهاتف</th>
-                            <th style="padding: 15px; text-align: center;">تاريخ التسجيل</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${approvedMerchants.map((m, index) => {
-                            // حساب عدد منتجات التاجر
                             const merchantProducts = products.filter(p => 
                                 p.merchantName === m.storeName || 
                                 p.merchantName === m.name || 
@@ -1711,9 +1755,7 @@ function showDashboardMerchants(container) {
                             );
                             
                             return `
-                                <tr style="border-bottom: 1px solid var(--border-color); transition: var(--transition);" 
-                                    onmouseover="this.style.background='var(--glass)'" 
-                                    onmouseout="this.style.background='transparent'">
+                                <tr style="border-bottom: 1px solid var(--border-color);">
                                     <td style="padding: 15px; text-align: center; font-weight: 700;">${index + 1}</td>
                                     <td style="padding: 15px; font-weight: 700;">
                                         <i class="fas fa-store" style="color: var(--gold); margin-left: 5px;"></i>
@@ -1730,7 +1772,6 @@ function showDashboardMerchants(container) {
                                     </td>
                                     <td style="padding: 15px; text-align: center; font-size: 13px;">${m.email}</td>
                                     <td style="padding: 15px; text-align: center;">${m.phone || '—'}</td>
-                                    <td style="padding: 15px; text-align: center; font-size: 12px;">${new Date(m.createdAt).toLocaleDateString('ar-DZ')}</td>
                                 </tr>
                             `;
                         }).join('')}
@@ -1740,19 +1781,6 @@ function showDashboardMerchants(container) {
         `;
     }
     
-    // إضافة كود سريع لإظهار جميع المستخدمين (للتشخيص)
-    const allUsersHTML = `
-        <details style="margin-top: 40px; background: var(--glass); padding: 15px; border-radius: 10px;">
-            <summary style="color: var(--gold); font-weight: 700; cursor: pointer;">
-                <i class="fas fa-database"></i> جميع المستخدمين في النظام (${users.length})
-            </summary>
-            <pre style="background: #000; color: #0f0; padding: 15px; border-radius: 10px; margin-top: 15px; overflow-x: auto; font-size: 12px; direction: ltr; text-align: left;">
-                ${JSON.stringify(users, null, 2)}
-            </pre>
-        </details>
-    `;
-    
-    // تجميع المحتوى
     container.innerHTML = `
         <h3 style="margin-bottom: 20px; color: var(--gold);">
             <i class="fas fa-clock"></i> طلبات التجار (${pendingMerchants.length})
@@ -1763,8 +1791,6 @@ function showDashboardMerchants(container) {
             <i class="fas fa-check-circle"></i> التجار المعتمدون (${approvedMerchants.length})
         </h3>
         ${approvedHTML}
-        
-        ${allUsersHTML}
     `;
 }
 
@@ -1810,76 +1836,92 @@ class TypingAnimation {
     }
 }
 
-// ========== 32. الاستماع لأوامر تلجرام (معدل لمنع التكرار) ==========
+// ========== 32. الاستماع لأوامر تلجرام (مصحح بالكامل - بدون تكرار) ==========
 
-// مجموعة لتخزين معرفات التحديثات التي تمت معالجتها
-const processedUpdates = new Set();
+// متغيرات لمنع التكرار
+let lastUpdateId = 0;
+const processedCommands = new Set();
 
+// تحميل آخر تحديث من localStorage
+try {
+    const saved = localStorage.getItem('telegram_last_update');
+    if (saved) {
+        lastUpdateId = parseInt(saved);
+        console.log('📂 آخر تحديث:', lastUpdateId);
+    }
+} catch (e) {
+    console.log('لا يوجد آخر تحديث');
+}
+
+// بدء الاستماع لأوامر تلجرام
 setInterval(async () => {
     try {
-        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates`);
+        // جلب التحديثات الجديدة فقط
+        const url = `https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates?offset=${lastUpdateId + 1}`;
+        const response = await fetch(url);
         const data = await response.json();
         
-        if (data.ok && data.result) {
-            console.log(`📡 جاري التحقق من التحديثات... ${data.result.length} تحديث`);
+        if (data.ok && data.result && data.result.length > 0) {
+            console.log(`📨 تم استلام ${data.result.length} أمر جديد`);
             
             for (const update of data.result) {
+                const updateId = update.update_id;
+                
                 // التحقق من وجود رسالة نصية
-                if (update.message?.text) {
-                    const updateId = update.update_id;
-                    
-                    // ===== منع التكرار: إذا تمت معالجة هذا التحديث مسبقاً، تجاهله =====
-                    if (processedUpdates.has(updateId)) {
-                        console.log(`⏭️ تجاهل تحديث مكرر: ${updateId}`);
-                        continue; // تخطي هذا التحديث
-                    }
-                    
-                    // تسجيل التحديث كمعالج
-                    processedUpdates.add(updateId);
-                    
-                    // الحفاظ على حجم المجموعة (لا تزيد عن 100)
-                    if (processedUpdates.size > 100) {
-                        const first = Array.from(processedUpdates)[0];
-                        processedUpdates.delete(first);
-                    }
-                    
+                if (update.message && update.message.text) {
                     const text = update.message.text;
-                    console.log(`📨 أمر جديد: ${text}`);
+                    console.log('📝 الأمر:', text);
                     
-                    // معالجة أوامر الموافقة
+                    // معالجة أمر الموافقة
                     if (text.startsWith('/approve_')) {
-                        const userId = text.replace('/approve_', '');
-                        console.log(`✅ الموافقة على تاجر ${userId}`);
-                        await approveMerchant(userId);
+                        const merchantId = text.replace('/approve_', '');
+                        const commandKey = `approve_${merchantId}`;
+                        
+                        // التحقق من عدم تكرار الأمر
+                        if (!processedCommands.has(commandKey)) {
+                            console.log(`✅ تنفيذ أمر الموافقة على التاجر ${merchantId}`);
+                            processedCommands.add(commandKey);
+                            await approveMerchant(merchantId);
+                            
+                            // تنظيف القديم بعد 5 دقائق
+                            setTimeout(() => {
+                                processedCommands.delete(commandKey);
+                            }, 300000);
+                        } else {
+                            console.log(`⚠️ أمر الموافقة ${merchantId} تم تنفيذه مسبقاً`);
+                        }
                     }
                     
-                    // معالجة أوامر الرفض
+                    // معالجة أمر الرفض
                     if (text.startsWith('/reject_')) {
-                        const userId = text.replace('/reject_', '');
-                        console.log(`❌ رفض تاجر ${userId}`);
-                        await rejectMerchant(userId);
-                    }
-                    
-                    // أمر عرض التجار المعلقين
-                    if (text === '/pending_merchants' || text === '🔵 التجار المعلقين') {
-                        console.log('📋 عرض التجار المعلقين');
-                        await showPendingMerchants();
-                    }
-                    
-                    // أمر عرض منتجات تاجر
-                    if (text.startsWith('/merchant_products_')) {
-                        const merchantId = text.replace('/merchant_products_', '');
-                        console.log(`📦 عرض منتجات تاجر ${merchantId}`);
-                        await showMerchantProducts(merchantId);
+                        const merchantId = text.replace('/reject_', '');
+                        const commandKey = `reject_${merchantId}`;
+                        
+                        if (!processedCommands.has(commandKey)) {
+                            console.log(`❌ تنفيذ أمر رفض التاجر ${merchantId}`);
+                            processedCommands.add(commandKey);
+                            await rejectMerchant(merchantId);
+                            
+                            setTimeout(() => {
+                                processedCommands.delete(commandKey);
+                            }, 300000);
+                        } else {
+                            console.log(`⚠️ أمر الرفض ${merchantId} تم تنفيذه مسبقاً`);
+                        }
                     }
                 }
+                
+                // تحديث آخر معرف
+                lastUpdateId = updateId;
             }
+            
+            // حفظ آخر تحديث
+            localStorage.setItem('telegram_last_update', lastUpdateId.toString());
         }
     } catch (error) {
-        console.error('❌ خطأ في التحقق من أوامر تلجرام:', error);
+        console.error('❌ خطأ في الاستماع لتلجرام:', error);
     }
-}, 30000); // يعمل كل 30 ثانية
-
+}, 10000); // فحص كل 10 ثواني
 
 // ========== 33. التهيئة (onload) ==========
 window.onload = async function() {
