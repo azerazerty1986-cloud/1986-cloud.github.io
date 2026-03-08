@@ -1706,39 +1706,74 @@ class TypingAnimation {
     }
 }
 
-// ========== 33. التهيئة النهائية ==========
+// ========== 33. التهيئة النهائية (معدلة - للزوار العاديين) ==========
 window.onload = function() {
     console.log('🚀 بدء تشغيل النظام...');
     
+    // تحميل المنتجات - الكل يشوفها (زوار، عملاء، تجار، مدير)
     loadProducts();
+    
+    // تحميل السلة - لكل زائر سلة خاصة فيه
     loadCart();
     
+    // إضافة حقول التاجر لنموذج التسجيل
     setTimeout(addMerchantFieldsToRegisterForm, 500);
+    
+    // بدء الاستماع لأوامر التلجرام
     startTelegramListener();
     
-    const savedUser = localStorage.getItem('current_user');
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        updateUIBasedOnRole();
-    }
+    // ✅ الأهم: ما فيش تسجيل دخول تلقائي أبداً
+    // الزائر يدخل كضيف يشوف المنتجات ويشتري
+    currentUser = null;
+    console.log('👤 زائر جديد - يشوف المنتجات ويشتري');
     
+    // إخفاء كل حاجات المدير والتجار
+    const dashboardBtn = document.getElementById('dashboardBtn');
+    if (dashboardBtn) dashboardBtn.style.display = 'none';
+    
+    const merchantPanel = document.getElementById('merchantPanelContainer');
+    if (merchantPanel) merchantPanel.style.display = 'none';
+    
+    // إزالة أي أزرار خاصة
+    const myProductsBtn = document.getElementById('myProductsBtn');
+    if (myProductsBtn) myProductsBtn.remove();
+    
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) logoutBtn.remove();
+    
+    // استعادة الثيم (الوضع الليلي/النهاري)
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
         isDarkMode = savedTheme === 'dark';
         document.body.classList.toggle('light-mode', !isDarkMode);
+        
+        const toggle = document.getElementById('themeToggle');
+        if (toggle) {
+            toggle.innerHTML = isDarkMode ? 
+                '<i class="fas fa-moon"></i><span>ليلي</span>' : 
+                '<i class="fas fa-sun"></i><span>نهاري</span>';
+        }
     }
     
+    // أحداث التمرير
     window.addEventListener('scroll', toggleQuickTopButton);
+    
+    // تشغيل العداد
     updateCountdown();
+    
+    // تشغيل أشرطة التقدم
     updateProgressBars();
     
+    // تشغيل تأثير الكتابة
     const typingElement = document.getElementById('typing-text');
     if (typingElement) {
         new TypingAnimation(typingElement, ['نكهة وجمال', 'تسوق آمن', 'جودة عالية', 'توصيل سريع'], 100, 2000).start();
     }
     
-    console.log('✅ النظام جاهز - جميع الأقسام 33 موجودة');
+    console.log('✅ النظام جاهز - الزوار يشوفون المنتجات ويشترون');
 };
+
+
 
 // ========== إغلاق النوافذ عند النقر خارجها ==========
 window.onclick = function(event) {
