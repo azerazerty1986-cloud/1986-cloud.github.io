@@ -5,1240 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نكهة وجمال | ناردو برو - المتجر الذكي المتكامل 2026</title>
     
-    <!-- ===== Google Fonts - Cairo ===== -->
+    <!-- Google Fonts - Cairo -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- ===== Font Awesome 6 ===== -->
+    <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- ===== Chart.js للرسوم البيانية ===== -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
-    <!-- ===== Swiper للمعرض ===== -->
+    <!-- Swiper -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     
-    <style>
-        /* ========== أنماط CSS الأساسية ========== */
-        :root {
-            --bg-primary: #0a0f0d;
-            --bg-secondary: #1a2a24;
-            --text-primary: #ffffff;
-            --text-secondary: #b0bec5;
-            --gold: #ffd700;
-            --gold-hover: #ffed4a;
-            --nardoo: #2c5e4f;
-            --glass: rgba(255, 255, 255, 0.05);
-            --border-color: rgba(255, 215, 0, 0.2);
-            --transition: all 0.3s ease;
-            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            --shadow-gold: 0 0 20px rgba(255, 215, 0, 0.3);
-        }
-
-        body.light-mode {
-            --bg-primary: #f5f5f5;
-            --bg-secondary: #ffffff;
-            --text-primary: #333333;
-            --text-secondary: #666666;
-            --glass: rgba(0, 0, 0, 0.02);
-            --border-color: rgba(44, 94, 79, 0.2);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Cairo', sans-serif;
-        }
-
-        body {
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            transition: var(--transition);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* ===== شاشة التحميل ===== */
-        .loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-primary);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s;
-        }
-
-        .loader-spinner {
-            width: 60px;
-            height: 60px;
-            border: 5px solid var(--gold);
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ===== نظام الإشعارات المتقدم (أنداكس) ===== */
-        .notification-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 350px;
-        }
-
-        .notification {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transform: translateX(400px);
-            opacity: 0;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            border-right: 5px solid;
-            direction: rtl;
-            box-shadow: var(--shadow);
-        }
-
-        .notification.show {
-            transform: translateX(0);
-            opacity: 1;
-        }
-
-        .notification.success {
-            background: #4ade80;
-            color: #000;
-            border-right-color: #166534;
-        }
-
-        .notification.error {
-            background: #f87171;
-            color: #000;
-            border-right-color: #991b1b;
-        }
-
-        .notification.warning {
-            background: #fbbf24;
-            color: #000;
-            border-right-color: #854d0e;
-        }
-
-        .notification.info {
-            background: #60a5fa;
-            color: #000;
-            border-right-color: #1e3a8a;
-        }
-
-        .notification.loading {
-            background: #fbbf24;
-            color: #000;
-            border-right-color: #854d0e;
-        }
-
-        .notification i {
-            font-size: 20px;
-        }
-
-        .notification .message {
-            flex: 1;
-        }
-
-        .notification .close-btn {
-            cursor: pointer;
-            opacity: 0.7;
-            font-size: 14px;
-        }
-
-        .notification .close-btn:hover {
-            opacity: 1;
-        }
-
-        /* ===== سلة التسوق الجانبية ===== */
-        .cart-sidebar {
-            position: fixed;
-            top: 0;
-            left: -400px;
-            width: 400px;
-            height: 100vh;
-            background: var(--bg-secondary);
-            border-left: 1px solid var(--gold);
-            box-shadow: var(--shadow);
-            z-index: 1000;
-            transition: left 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .cart-sidebar.open {
-            left: 0;
-        }
-
-        .cart-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .cart-header h3 {
-            color: var(--gold);
-        }
-
-        .close-cart {
-            cursor: pointer;
-            font-size: 20px;
-            color: var(--text-secondary);
-        }
-
-        .cart-items {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-        }
-
-        .cart-item {
-            display: flex;
-            gap: 15px;
-            padding: 15px;
-            background: var(--glass);
-            border-radius: 10px;
-            margin-bottom: 10px;
-            border: 1px solid var(--border-color);
-        }
-
-        .cart-item-image {
-            width: 60px;
-            height: 60px;
-            background: var(--nardoo);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: var(--gold);
-        }
-
-        .cart-item-details {
-            flex: 1;
-        }
-
-        .cart-item-title {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .cart-item-price {
-            color: var(--gold);
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .cart-item-merchant {
-            font-size: 12px;
-            color: var(--gold);
-            margin-bottom: 5px;
-        }
-
-        .cart-item-quantity {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .quantity-btn {
-            width: 30px;
-            height: 30px;
-            border: 1px solid var(--gold);
-            background: var(--glass);
-            color: var(--text-primary);
-            border-radius: 5px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .quantity-btn:hover {
-            background: var(--gold);
-            color: #000;
-        }
-
-        .cart-footer {
-            padding: 20px;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .cart-total {
-            display: flex;
-            justify-content: space-between;
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: var(--gold);
-        }
-
-        .checkout-btn {
-            width: 100%;
-            padding: 15px;
-            background: #25D366;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 16px;
-        }
-
-        .checkout-btn:hover {
-            background: #128C7E;
-            transform: translateY(-2px);
-        }
-
-        /* ===== الشريط العلوي ===== */
-        .top-bar {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
-            padding: 10px 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .top-bar .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .top-bar-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        .top-bar-item i {
-            color: var(--gold);
-        }
-
-        .theme-toggle {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-            padding: 5px 15px;
-            border-radius: 20px;
-            background: var(--glass);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            transition: var(--transition);
-        }
-
-        .theme-toggle:hover {
-            border-color: var(--gold);
-        }
-
-        /* ===== شريط المميزات المتحرك ===== */
-        .marquee-bar {
-            background: linear-gradient(90deg, var(--nardoo), var(--gold));
-            padding: 15px 0;
-            overflow: hidden;
-            white-space: nowrap;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .marquee-content {
-            display: inline-block;
-            animation: marquee 30s linear infinite;
-        }
-
-        .marquee-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            margin: 0 30px;
-            color: #000;
-            font-weight: 600;
-        }
-
-        .marquee-item i {
-            font-size: 20px;
-        }
-
-        .marquee-progress {
-            width: 100px;
-            height: 5px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .marquee-progress-fill {
-            height: 100%;
-            background: #000;
-            border-radius: 10px;
-            transition: width 0.3s;
-        }
-
-        @keyframes marquee {
-            from { transform: translateX(0); }
-            to { transform: translateX(-50%); }
-        }
-
-        .float-item { animation: float 3s ease-in-out infinite; }
-        .bounce-item { animation: bounce 2s ease infinite; }
-        .pulse-item { animation: pulse 2s ease infinite; }
-        .rotate-item { animation: rotate 4s linear infinite; }
-        .glow-item { animation: glow 2s ease-in-out infinite; }
-        .shadow-pulse-item { animation: shadowPulse 2s ease-in-out infinite; }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes glow {
-            0%, 100% { text-shadow: 0 0 5px var(--gold); }
-            50% { text-shadow: 0 0 20px var(--gold); }
-        }
-
-        @keyframes shadowPulse {
-            0%, 100% { box-shadow: 0 0 10px var(--gold); }
-            50% { box-shadow: 0 0 30px var(--gold); }
-        }
-
-        /* ===== الهيدر الرئيسي ===== */
-        .main-header {
-            padding: 20px 0;
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logo-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--nardoo), var(--gold));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            color: #000;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        .logo-text h1 {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--gold), #fff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .logo-text span {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        /* ===== شريط البحث ===== */
-        .search-wrapper {
-            flex: 1;
-            max-width: 500px;
-            margin: 0 30px;
-        }
-
-        .search-box {
-            display: flex;
-            background: var(--glass);
-            border: 1px solid var(--border-color);
-            border-radius: 50px;
-            overflow: hidden;
-            transition: var(--transition);
-        }
-
-        .search-box:focus-within {
-            border-color: var(--gold);
-            box-shadow: var(--shadow-gold);
-        }
-
-        .search-box input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            padding: 15px 20px;
-            color: var(--text-primary);
-            font-size: 16px;
-        }
-
-        .search-box input::placeholder {
-            color: var(--text-secondary);
-        }
-
-        .search-box button {
-            background: var(--gold);
-            border: none;
-            padding: 0 25px;
-            color: #000;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 18px;
-        }
-
-        .search-box button:hover {
-            background: var(--gold-hover);
-        }
-
-        /* ===== أزرار الإجراءات ===== */
-        .header-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .action-btn {
-            position: relative;
-            background: var(--glass);
-            border: 1px solid var(--border-color);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 20px;
-        }
-
-        .action-btn:hover {
-            border-color: var(--gold);
-            transform: translateY(-2px);
-        }
-
-        .cart-count, .fixed-cart-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: var(--gold);
-            color: #000;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-        }
-
-        /* ===== القائمة الرئيسية ===== */
-        .nav-menu {
-            display: flex;
-            gap: 10px;
-            padding: 20px 0;
-            flex-wrap: wrap;
-        }
-
-        .nav-link {
-            padding: 10px 20px;
-            background: var(--glass);
-            border: 1px solid var(--border-color);
-            border-radius: 50px;
-            color: var(--text-primary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .nav-link i {
-            color: var(--gold);
-        }
-
-        .nav-link:hover, .nav-link.active {
-            background: var(--gold);
-            color: #000;
-        }
-
-        .nav-link:hover i {
-            color: #000;
-        }
-
-        /* ===== خيارات الفرز ===== */
-        .sort-options {
-            display: flex;
-            justify-content: flex-end;
-            margin: 20px 0;
-        }
-
-        .sort-select {
-            background: var(--glass);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 10px 20px;
-            color: var(--text-primary);
-            cursor: pointer;
-            outline: none;
-        }
-
-        .sort-select option {
-            background: var(--bg-secondary);
-        }
-
-        /* ===== نص متحرك ===== */
-        .typing-container {
-            text-align: center;
-            margin: 30px 0;
-            font-size: 32px;
-            font-weight: 800;
-            min-height: 80px;
-            color: var(--gold);
-        }
-
-        .typing-cursor {
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-
-        /* ===== شبكة المنتجات ===== */
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 30px;
-            padding: 30px 0;
-        }
-
-        .product-card {
-            background: var(--glass);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            overflow: hidden;
-            transition: var(--transition);
-            position: relative;
-            backdrop-filter: blur(10px);
-            cursor: pointer;
-        }
-
-        .product-card:hover {
-            transform: translateY(-10px);
-            box-shadow: var(--shadow-gold);
-            border-color: var(--gold);
-        }
-
-        .product-time-badge {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(0, 0, 0, 0.8);
-            color: var(--gold);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            z-index: 10;
-            border: 1px solid var(--gold);
-        }
-
-        .product-gallery {
-            position: relative;
-            height: 250px;
-            overflow: hidden;
-        }
-
-        .product-gallery img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s;
-        }
-
-        .product-card:hover .product-gallery img {
-            transform: scale(1.1);
-        }
-
-        .telegram-badge {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: #0088cc;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            z-index: 10;
-        }
-
-        .product-info {
-            padding: 20px;
-        }
-
-        .product-category {
-            display: inline-block;
-            background: var(--gold);
-            color: #000;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-
-        .product-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: var(--gold);
-        }
-
-        .product-merchant-info {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 10px;
-        }
-
-        .product-rating {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .stars-container {
-            display: flex;
-            gap: 2px;
-        }
-
-        .star {
-            color: var(--text-secondary);
-        }
-
-        .star.filled {
-            color: var(--gold);
-        }
-
-        .star.half {
-            color: var(--gold);
-        }
-
-        .rating-value {
-            font-weight: 700;
-            color: var(--gold);
-        }
-
-        .product-price {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--gold);
-            margin-bottom: 10px;
-        }
-
-        .product-stock {
-            font-size: 14px;
-            padding: 5px 10px;
-            border-radius: 20px;
-            display: inline-block;
-            margin-bottom: 15px;
-        }
-
-        .product-stock.in-stock {
-            background: #4ade80;
-            color: #000;
-        }
-
-        .product-stock.low-stock {
-            background: #fbbf24;
-            color: #000;
-        }
-
-        .product-stock.out-of-stock {
-            background: #f87171;
-            color: #000;
-        }
-
-        .product-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .add-to-cart {
-            flex: 1;
-            background: var(--gold);
-            border: none;
-            padding: 12px;
-            border-radius: 10px;
-            font-weight: 700;
-            color: #000;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .add-to-cart:hover:not(:disabled) {
-            background: var(--gold-hover);
-            transform: translateY(-2px);
-        }
-
-        .add-to-cart:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* ===== أزرار ثابتة ===== */
-        .fixed-cart {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 70px;
-            height: 70px;
-            background: var(--gold);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #000;
-            font-size: 30px;
-            cursor: pointer;
-            box-shadow: var(--shadow);
-            animation: pulse 2s infinite;
-            z-index: 99;
-        }
-
-        .navigation-buttons {
-            position: fixed;
-            left: 30px;
-            bottom: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            z-index: 99;
-        }
-
-        .nav-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--gold);
-            border: none;
-            color: #000;
-            font-size: 20px;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .nav-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .quick-top-btn {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--gold);
-            border: none;
-            color: #000;
-            font-size: 20px;
-            cursor: pointer;
-            transition: var(--transition);
-            display: none;
-            z-index: 99;
-        }
-
-        .quick-top-btn.show {
-            display: block;
-        }
-
-        /* ===== النوافذ المنبثقة ===== */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            background: var(--bg-secondary);
-            border: 1px solid var(--gold);
-            border-radius: 30px;
-            padding: 40px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow);
-        }
-
-        .modal-lg {
-            max-width: 800px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--gold);
-            font-weight: 600;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            background: var(--glass);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            color: var(--text-primary);
-            font-size: 16px;
-            transition: var(--transition);
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--gold);
-            box-shadow: var(--shadow-gold);
-        }
-
-        textarea.form-control {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .btn-gold {
-            background: var(--gold);
-            color: #000;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 16px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .btn-gold:hover {
-            background: var(--gold-hover);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-gold);
-        }
-
-        .btn-outline-gold {
-            background: transparent;
-            color: var(--gold);
-            border: 1px solid var(--gold);
-            padding: 12px 30px;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 16px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .btn-outline-gold:hover {
-            background: var(--gold);
-            color: #000;
-        }
-
-        /* ===== رفع الصور ===== */
-        .image-upload-area {
-            border: 2px dashed var(--gold);
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .image-upload-area:hover {
-            background: var(--glass);
-            border-color: var(--gold-hover);
-        }
-
-        .image-upload-area i {
-            font-size: 50px;
-            color: var(--gold);
-            margin-bottom: 15px;
-        }
-
-        .image-preview {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 20px;
-            justify-content: center;
-        }
-
-        .preview-image {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 10px;
-            border: 2px solid var(--gold);
-        }
-
-        .image-upload-item {
-            position: relative;
-            display: inline-block;
-            margin: 5px;
-        }
-
-        .upload-progress {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            text-align: center;
-            font-size: 12px;
-            padding: 2px;
-            border-radius: 0 0 10px 10px;
-        }
-
-        .upload-status {
-            margin-top: 10px;
-            color: var(--text-secondary);
-            display: none;
-            text-align: center;
-        }
-
-        /* ===== لوحة التاجر ===== */
-        .merchant-panel {
-            background: var(--glass);
-            border: 1px solid var(--gold);
-            border-radius: 30px;
-            padding: 30px;
-            margin: 30px 0;
-            text-align: center;
-            backdrop-filter: blur(10px);
-        }
-
-        /* ===== لوحة التحكم ===== */
-        .dashboard-section {
-            margin: 50px 0;
-        }
-
-        .dashboard-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .dashboard-tab {
-            padding: 10px 20px;
-            background: var(--glass);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .dashboard-tab:hover,
-        .dashboard-tab.active {
-            background: var(--gold);
-            color: #000;
-        }
-
-        .dashboard-content {
-            background: var(--glass);
-            border: 1px solid var(--border-color);
-            border-radius: 30px;
-            padding: 30px;
-            backdrop-filter: blur(10px);
-            overflow-x: auto;
-        }
-
-        .dashboard-content table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .dashboard-content th {
-            background: var(--gold);
-            color: var(--bg-primary);
-            padding: 12px;
-        }
-
-        .dashboard-content td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        /* ===== الفوتر ===== */
-        .footer {
-            background: var(--glass);
-            border-top: 1px solid var(--border-color);
-            padding: 60px 0 20px;
-            margin-top: 80px;
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            margin-bottom: 40px;
-        }
-
-        .footer-col h3 {
-            color: var(--gold);
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-
-        .footer-col p {
-            margin-bottom: 10px;
-            color: var(--text-secondary);
-        }
-
-        .footer-col i {
-            color: var(--gold);
-            margin-left: 10px;
-        }
-
-        .copyright {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-            color: var(--text-secondary);
-        }
-
-        /* ===== التجاوب مع الشاشات ===== */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-            }
-
-            .search-wrapper {
-                max-width: 100%;
-                margin: 0;
-            }
-
-            .top-bar .container {
-                justify-content: center;
-            }
-
-            .cart-sidebar {
-                width: 100%;
-                left: -100%;
-            }
-
-            .products-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .modal-content {
-                padding: 20px;
-            }
-
-            .notification-container {
-                max-width: 300px;
-                right: 10px;
-                left: 10px;
-            }
-        }
-    </style>
+    <!-- ربط ملف CSS -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- ===== شاشة التحميل ===== -->
+    <!-- شاشة التحميل -->
     <div class="loader" id="loader">
         <div class="loader-spinner"></div>
     </div>
 
-    <!-- ===== نظام الإشعارات المتقدم (أنداكس) ===== -->
-    <div class="notification-container" id="notificationContainer"></div>
+    <!-- شريط تقدم التمرير -->
+    <div class="scroll-progress" id="scrollProgress"></div>
 
-    <!-- ===== سلة التسوق الجانبية ===== -->
+    <!-- نظام الإشعارات Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- سلة التسوق الجانبية -->
     <div class="cart-sidebar" id="cartSidebar">
         <div class="cart-header">
             <h3><i class="fas fa-shopping-cart"></i> سلة التسوق</h3>
@@ -1256,7 +53,7 @@
         </div>
     </div>
 
-    <!-- ===== الشريط العلوي ===== -->
+    <!-- الشريط العلوي -->
     <div class="top-bar">
         <div class="container">
             <div class="top-bar-item">
@@ -1278,7 +75,7 @@
         </div>
     </div>
 
-    <!-- ===== شريط المميزات الحركية المتحرك ===== -->
+    <!-- شريط المميزات المتحرك -->
     <div class="marquee-bar">
         <div class="marquee-content">
             <div class="marquee-item float-item">
@@ -1323,31 +120,10 @@
                     <div class="marquee-progress-fill" style="width: 50%"></div>
                 </div>
             </div>
-            <div class="marquee-item float-item">
-                <i class="fas fa-truck"></i>
-                <span>شحن سريع</span>
-                <div class="marquee-progress">
-                    <div class="marquee-progress-fill" style="width: 85%"></div>
-                </div>
-            </div>
-            <div class="marquee-item bounce-item">
-                <i class="fas fa-shield-alt"></i>
-                <span>ضمان الجودة</span>
-                <div class="marquee-progress">
-                    <div class="marquee-progress-fill" style="width: 95%"></div>
-                </div>
-            </div>
-            <div class="marquee-item pulse-item">
-                <i class="fas fa-gem"></i>
-                <span>عروض حصرية</span>
-                <div class="marquee-progress">
-                    <div class="marquee-progress-fill" style="width: 75%"></div>
-                </div>
-            </div>
         </div>
     </div>
 
-    <!-- ===== الهيدر الرئيسي ===== -->
+    <!-- الهيدر الرئيسي -->
     <header class="main-header">
         <div class="container header-content">
             <div class="logo">
@@ -1360,6 +136,7 @@
                 </div>
             </div>
             
+            <!-- شريط البحث -->
             <div class="search-wrapper">
                 <div class="search-box">
                     <input type="text" id="searchInput" placeholder="ابحث عن منتج..." onkeyup="searchProducts()">
@@ -1367,6 +144,7 @@
                 </div>
             </div>
             
+            <!-- أزرار الإجراءات -->
             <div class="header-actions">
                 <button class="action-btn" onclick="openLoginModal()" id="userBtn">
                     <i class="far fa-user"></i>
@@ -1382,6 +160,7 @@
         </div>
     </header>
 
+    <!-- القائمة الرئيسية -->
     <div class="container">
         <nav class="nav-menu" id="mainNav">
             <a class="nav-link active" onclick="filterProducts('all')">
@@ -1407,6 +186,7 @@
         </nav>
     </div>
 
+    <!-- خيارات الفرز -->
     <div class="container">
         <div class="sort-options">
             <select class="sort-select" onchange="changeSort(this.value)">
@@ -1418,18 +198,22 @@
         </div>
     </div>
 
+    <!-- نص متحرك -->
     <div class="container">
         <div class="typing-container">
             <span id="typing-text"></span>
         </div>
     </div>
 
+    <!-- لوحة التاجر -->
     <div class="container" id="merchantPanelContainer" style="display: none;"></div>
 
+    <!-- المنتجات -->
     <div class="container">
         <div class="products-grid" id="productsContainer"></div>
     </div>
 
+    <!-- لوحة التحكم (للمدير فقط) -->
     <div class="container dashboard-section admin-only" id="dashboardSection" style="display: none;">
         <div class="dashboard-tabs">
             <button class="dashboard-tab active" onclick="switchDashboardTab('overview')">نظرة عامة</button>
@@ -1440,6 +224,7 @@
         <div class="dashboard-content" id="dashboardContent"></div>
     </div>
 
+    <!-- الفوتر -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -1473,11 +258,13 @@
         </div>
     </footer>
 
+    <!-- أيقونة السلة الثابتة -->
     <div class="fixed-cart" onclick="toggleCart()" id="fixedCart">
         <i class="fas fa-shopping-cart"></i>
         <span class="fixed-cart-count" id="fixedCartCounter">0</span>
     </div>
 
+    <!-- أزرار الصعود والهبوط -->
     <div class="navigation-buttons">
         <button class="nav-btn up-btn" onclick="scrollToTop()" title="الصعود للأعلى">
             <i class="fas fa-arrow-up"></i>
@@ -1487,11 +274,12 @@
         </button>
     </div>
 
+    <!-- زر العودة للأعلى -->
     <button class="quick-top-btn" onclick="scrollToTop()" id="quickTopBtn">
         <i class="fas fa-chevron-up"></i>
     </button>
 
-    <!-- ===== نافذة تسجيل الدخول ===== -->
+    <!-- نافذة تسجيل الدخول -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <h2 style="text-align: center; margin-bottom: 30px;">
@@ -1503,20 +291,22 @@
                 <button class="btn-outline-gold" style="flex: 1;" onclick="switchAuthTab('register')">حساب جديد</button>
             </div>
 
+            <!-- نموذج تسجيل الدخول -->
             <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
                 <div class="form-group">
                     <label>اسم المستخدم أو البريد الإلكتروني</label>
-                    <input type="text" class="form-control" id="loginEmail" placeholder="أدخل اسم المستخدم">
+                    <input type="text" class="form-control" id="loginEmail">
                 </div>
                 <div class="form-group">
                     <label>كلمة المرور</label>
-                    <input type="password" class="form-control" id="loginPassword" placeholder="أدخل كلمة المرور">
+                    <input type="password" class="form-control" id="loginPassword">
                 </div>
                 <button type="submit" class="btn-gold" style="width: 100%; margin-top: 20px;">
                     <i class="fas fa-sign-in-alt"></i> دخول
                 </button>
             </form>
 
+            <!-- نموذج التسجيل -->
             <form id="registerForm" style="display: none;" onsubmit="event.preventDefault(); handleRegister();">
                 <div class="form-group">
                     <label>الاسم الكامل</label>
@@ -1532,7 +322,7 @@
                 </div>
                 <div class="form-group">
                     <label>رقم الهاتف</label>
-                    <input type="tel" class="form-control" id="regPhone" placeholder="مثال: 0555123456">
+                    <input type="tel" class="form-control" id="regPhone">
                 </div>
                 <div class="form-group">
                     <label style="display: flex; align-items: center; gap: 10px;">
@@ -1541,25 +331,24 @@
                     </label>
                 </div>
                 
-                <div id="merchantFields" style="display: none; margin-top: 15px; padding: 15px; background: var(--glass); border-radius: 15px; border: 1px solid var(--gold);">
-                    <h4 style="color: var(--gold); margin-bottom: 15px;">معلومات المتجر</h4>
+                <!-- حقول التاجر -->
+                <div id="merchantFields" style="display: none;">
                     <div class="form-group">
-                        <label>اسم المتجر <span style="color: var(--gold);">*</span></label>
-                        <input type="text" class="form-control" id="storeName" placeholder="مثال: متجر العطار" required>
-                        <small style="color: var(--text-secondary);">سيظهر هذا الاسم على منتجاتك</small>
+                        <label>اسم المتجر</label>
+                        <input type="text" class="form-control" id="storeName">
                     </div>
                     <div class="form-group">
                         <label>مستوى التاجر</label>
                         <select class="form-control" id="merchantLevel">
-                            <option value="1">المستوى الأول (5 منتجات)</option>
-                            <option value="2" selected>المستوى الثاني (10 منتجات)</option>
-                            <option value="3">المستوى الثالث (15 منتج)</option>
-                            <option value="4">المستوى الرابع (غير محدود)</option>
+                            <option value="1">المستوى الأول</option>
+                            <option value="2" selected>المستوى الثاني</option>
+                            <option value="3">المستوى الثالث</option>
+                            <option value="4">المستوى الرابع</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>وصف النشاط التجاري</label>
-                        <textarea class="form-control" id="merchantDesc" rows="3" placeholder="اكتب وصفاً لمتجرك..."></textarea>
+                        <label>وصف المتجر</label>
+                        <textarea class="form-control" id="merchantDesc" rows="3"></textarea>
                     </div>
                 </div>
 
@@ -1574,7 +363,7 @@
         </div>
     </div>
 
-    <!-- ===== نافذة إضافة منتج مع رفع الصور ===== -->
+    <!-- نافذة إضافة منتج -->
     <div class="modal" id="productModal">
         <div class="modal-content modal-lg">
             <h2 style="text-align: center; margin-bottom: 30px;">
@@ -1582,7 +371,7 @@
                 <span id="modalTitle">إضافة منتج جديد</span>
             </h2>
 
-            <form id="productForm" class="product-form">
+            <form id="productForm">
                 <div class="form-group">
                     <label>اسم المنتج</label>
                     <input type="text" class="form-control" id="productName" required>
@@ -1609,19 +398,18 @@
                     <input type="number" class="form-control" id="productStock" required min="0">
                 </div>
 
-                <!-- قسم رفع الصور -->
+                <!-- رفع الصور -->
                 <div class="form-group">
                     <label>صور المنتج</label>
                     <div class="image-upload-area" onclick="document.getElementById('productImages').click()">
                         <i class="fas fa-cloud-upload-alt"></i>
-                        <p>اضغط لرفع الصور أو اسحبها هنا</p>
+                        <p>اضغط لرفع الصور</p>
                     </div>
                     <input type="file" id="productImages" multiple accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
                     <div class="image-preview" id="imagePreview"></div>
                     <div class="upload-status" id="uploadStatus"></div>
                 </div>
 
-                <input type="hidden" id="editingProductId">
                 <input type="hidden" id="productImagesData">
 
                 <div style="display: flex; gap: 15px; margin-top: 30px;">
@@ -1636,12 +424,12 @@
         </div>
     </div>
 
-    <!-- ===== نافذة تفاصيل المنتج ===== -->
+    <!-- نافذة تفاصيل المنتج -->
     <div class="modal" id="productDetailModal">
         <div class="modal-content modal-lg" id="productDetailContent"></div>
     </div>
 
-    <!-- ===== ربط ملف JavaScript ===== -->
+    <!-- ربط ملف JavaScript -->
     <script src="script.js"></script>
 </body>
 </html>
