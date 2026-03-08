@@ -231,15 +231,22 @@
         </div>
     </div>
 
-    <!-- ===== 16. لوحة التاجر (تظهر للتاجر فقط) ===== -->
+    <!-- ===== 16. نص متحرك (Typing Animation) ===== -->
+    <div class="container">
+        <div class="typing-container">
+            <span id="typing-text"></span>
+        </div>
+    </div>
+
+    <!-- ===== 17. لوحة التاجر (تظهر للتاجر فقط) ===== -->
     <div class="container" id="merchantPanelContainer" style="display: none;"></div>
 
-    <!-- ===== 17. المنتجات - شبكة 3 أعمدة ===== -->
+    <!-- ===== 18. المنتجات - شبكة 3 أعمدة ===== -->
     <div class="container">
         <div class="products-grid" id="productsContainer"></div>
     </div>
 
-    <!-- ===== 18. لوحة التحكم (للمدير فقط) ===== -->
+    <!-- ===== 19. لوحة التحكم (للمدير فقط) ===== -->
     <div class="container dashboard-section admin-only" id="dashboardSection" style="display: none;">
         <div class="dashboard-tabs">
             <button class="dashboard-tab active" onclick="switchDashboardTab('overview')">نظرة عامة</button>
@@ -254,7 +261,7 @@
         </div>
     </div>
 
-    <!-- ===== 19. الفوتر ===== -->
+    <!-- ===== 20. الفوتر ===== -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -288,13 +295,13 @@
         </div>
     </footer>
 
-    <!-- ===== 20. أيقونة السلة الثابتة ===== -->
+    <!-- ===== 21. أيقونة السلة الثابتة ===== -->
     <div class="fixed-cart" onclick="toggleCart()" id="fixedCart">
         <i class="fas fa-shopping-cart"></i>
         <span class="fixed-cart-count" id="fixedCartCounter">0</span>
     </div>
 
-    <!-- ===== 21. أزرار الصعود والهبوط ===== -->
+    <!-- ===== 22. أزرار الصعود والهبوط ===== -->
     <div class="navigation-buttons">
         <button class="nav-btn up-btn" onclick="scrollToTop()" title="الصعود للأعلى">
             <i class="fas fa-arrow-up"></i>
@@ -304,12 +311,12 @@
         </button>
     </div>
 
-    <!-- ===== 22. زر العودة للأعلى ===== -->
+    <!-- ===== 23. زر العودة للأعلى ===== -->
     <button class="quick-top-btn" onclick="scrollToTop()" id="quickTopBtn">
         <i class="fas fa-chevron-up"></i>
     </button>
 
-    <!-- ===== 23. نافذة تسجيل الدخول ===== -->
+    <!-- ===== 24. نافذة تسجيل الدخول ===== -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <h2 style="text-align: center; margin-bottom: 30px;">
@@ -387,7 +394,7 @@
         </div>
     </div>
 
-    <!-- ===== 24. نافذة إضافة منتج ===== -->
+    <!-- ===== 25. نافذة إضافة منتج ===== -->
     <div class="modal" id="productModal">
         <div class="modal-content modal-lg">
             <h2 style="text-align: center; margin-bottom: 30px;">
@@ -455,15 +462,14 @@
         </div>
     </div>
 
-    <!-- ===== 25. نافذة تفاصيل المنتج ===== -->
+    <!-- ===== 26. نافذة تفاصيل المنتج ===== -->
     <div class="modal" id="productDetailModal">
         <div class="modal-content modal-lg" id="productDetailContent">
             <!-- يتم تعبئتها ديناميكياً -->
         </div>
     </div>
 
-    <!-- ===== 26. ربط ملف JavaScript ===== -->
+    <!-- ===== 27. ربط ملف JavaScript ===== -->
     <script src="script.js"></script>
 </body>
 </html>
-
