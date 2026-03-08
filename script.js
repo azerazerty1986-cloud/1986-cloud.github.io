@@ -1773,8 +1773,6 @@ window.onload = function() {
     console.log('✅ النظام جاهز - الزوار يشوفون المنتجات ويشترون');
 };
 
-
-
 // ========== إغلاق النوافذ عند النقر خارجها ==========
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
