@@ -316,7 +316,7 @@
         <i class="fas fa-chevron-up"></i>
     </button>
 
-    <!-- ===== 24. نافذة تسجيل الدخول ===== -->
+    <!-- ===== 24. نافذة تسجيل الدخول (معدلة مع إضافة storeName) ===== -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <h2 style="text-align: center; margin-bottom: 30px;">
@@ -343,24 +343,28 @@
                 </button>
             </form>
 
-            <!-- نموذج التسجيل -->
+            <!-- نموذج التسجيل (معدل مع إضافة حقل اسم المتجر) -->
             <form id="registerForm" style="display: none;" onsubmit="event.preventDefault(); handleRegister();">
                 <div class="form-group">
                     <label>الاسم الكامل</label>
                     <input type="text" class="form-control" id="regName" required>
                 </div>
+                
                 <div class="form-group">
                     <label>البريد الإلكتروني</label>
                     <input type="email" class="form-control" id="regEmail" required>
                 </div>
+                
                 <div class="form-group">
                     <label>كلمة المرور</label>
                     <input type="password" class="form-control" id="regPassword" required>
                 </div>
+                
                 <div class="form-group">
-                    <label>رقم الهاتف (للتاجر)</label>
+                    <label>رقم الهاتف</label>
                     <input type="tel" class="form-control" id="regPhone" placeholder="مثال: 0555123456">
                 </div>
+                
                 <div class="form-group">
                     <label style="display: flex; align-items: center; gap: 10px;">
                         <input type="checkbox" id="isMerchant" onchange="toggleMerchantFields()">
@@ -368,15 +372,27 @@
                     </label>
                 </div>
                 
-                <div id="merchantFields" style="display: none;">
+                <!-- ===== حقول التاجر (معدلة مع إضافة storeName) ===== -->
+                <div id="merchantFields" style="display: none; margin-top: 15px; padding: 15px; background: var(--glass); border-radius: 15px; border: 1px solid var(--gold);">
+                    <h4 style="color: var(--gold); margin-bottom: 15px;">معلومات المتجر</h4>
+                    
+                    <!-- ===== هذا الحقل كان مفقوداً وأضفناه ===== -->
+                    <div class="form-group">
+                        <label>اسم المتجر <span style="color: var(--gold);">*</span></label>
+                        <input type="text" class="form-control" id="storeName" placeholder="مثال: متجر العطار" required>
+                        <small style="color: var(--text-secondary);">سيظهر هذا الاسم على منتجاتك</small>
+                    </div>
+                    
                     <div class="form-group">
                         <label>مستوى التاجر</label>
                         <select class="form-control" id="merchantLevel">
                             <option value="1">المستوى الأول (5 منتجات)</option>
-                            <option value="2">المستوى الثاني (10 منتجات)</option>
+                            <option value="2" selected>المستوى الثاني (10 منتجات)</option>
                             <option value="3">المستوى الثالث (15 منتج)</option>
+                            <option value="4">المستوى الرابع (غير محدود)</option>
                         </select>
                     </div>
+                    
                     <div class="form-group">
                         <label>وصف النشاط التجاري</label>
                         <textarea class="form-control" id="merchantDesc" rows="3" placeholder="اكتب وصفاً لمتجرك..."></textarea>
