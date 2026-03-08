@@ -17,6 +17,8 @@ let currentFilter = 'all';
 let searchTerm = '';
 let sortBy = 'newest';
 let users = [];
+let lastUpdateId = 0;
+let processingCommands = new Set();
 
 // ========== 3. تحميل المستخدمين ==========
 function loadUsers() {
@@ -180,7 +182,7 @@ ${order.items.map((item, i) =>
     });
 }
 
-// ========== 7. 🔵 الفكرة 2: إرسال طلب انضمام تاجر (مع أزرار عربية) ==========
+// ========== 7. 🔵 الفكرة 2: إرسال طلب انضمام تاجر ==========
 async function sendMerchantRequestToTelegram(merchant) {
     console.log('🔵 محاولة إرسال طلب تاجر:', merchant);
     
@@ -263,7 +265,7 @@ ${text}
     });
 }
 
-// ========== 9. نظام إدارة الطلبات (OrderManagementSystem) ==========
+// ========== 9. نظام إدارة الطلبات ==========
 class OrderManagementSystem {
     constructor() {
         this.orders = this.loadOrders();
@@ -368,7 +370,7 @@ class OrderManagementSystem {
     }
 }
 
-// ========== 10. نظام الواتساب (WhatsAppIntegration) ==========
+// ========== 10. نظام الواتساب ==========
 class WhatsAppIntegration {
     constructor() {
         this.storePhone = '213562243648';
@@ -454,7 +456,7 @@ class WhatsAppIntegration {
     }
 }
 
-// ========== 11. نظام التحليلات (AnalyticsSystem) ==========
+// ========== 11. نظام التحليلات ==========
 class AnalyticsSystem {
     constructor() {
         this.events = this.loadEvents();
@@ -562,14 +564,14 @@ function rejectMerchant(userId) {
     return true;
 }
 
-// ========== 15. 🔍 الاستماع لأوامر التلجرام (بالعربية والإنجليزية) ==========
+// ========== 15. 🔍 الاستماع لأوامر التلجرام (محسن - بدون تكرار) ==========
 function startTelegramListener() {
     console.log('🔄 بدء الاستماع لأوامر التلجرام...');
     
     setInterval(async () => {
         try {
             const response = await fetch(
-                `https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates`
+                `https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates?offset=${lastUpdateId}`
             );
             
             const data = await response.json();
@@ -577,10 +579,22 @@ function startTelegramListener() {
             if (data.ok && data.result) {
                 for (const update of data.result) {
                     
+                    // تحديث آخر ID معالج
+                    lastUpdateId = update.update_id + 1;
+                    
+                    // ===== معالجة الأزرار (callback queries) =====
                     if (update.callback_query) {
                         const callback = update.callback_query;
                         const data = callback.data;
                         console.log('🔘 تم ضغط زر:', data);
+                        
+                        // تحقق من تكرار الأمر
+                        if (processingCommands.has(data)) {
+                            console.log('⚠️ الأمر قيد المعالجة بالفعل:', data);
+                            continue;
+                        }
+                        
+                        processingCommands.add(data);
                         
                         if (data.startsWith('approve_')) {
                             const userId = data.replace('approve_', '');
@@ -633,54 +647,107 @@ function startTelegramListener() {
                                 })
                             });
                         }
+                        
+                        // إزالة الأمر بعد ثانيتين
+                        setTimeout(() => {
+                            processingCommands.delete(data);
+                        }, 2000);
                     }
                     
+                    // ===== معالجة النصوص =====
                     if (update.message?.text) {
                         const text = update.message.text.trim();
+                        
+                        // تجاهل رسائل الإشعارات
+                        if (text.includes('🟡') || text.includes('نجاح') || text.includes('خطأ')) {
+                            continue;
+                        }
+                        
                         console.log('📨 رسالة جديدة:', text);
                         
+                        // ✅ الأوامر العربية للموافقة
                         if (text.match(/^(قبول|موافقة|اقبل|نعم|اوافق)_?(\d+)/i) || 
                             (text.includes('✅') && text.match(/\d+/))) {
                             
                             const match = text.match(/\d+/);
                             if (match) {
                                 const userId = match[0];
+                                const commandKey = `approve_${userId}`;
+                                
+                                if (processingCommands.has(commandKey)) {
+                                    console.log('⚠️ الأمر قيد المعالجة:', commandKey);
+                                    continue;
+                                }
+                                
+                                processingCommands.add(commandKey);
                                 console.log('✅ أمر موافقة عربي:', text, 'للتاجر:', userId);
                                 approveMerchant(userId);
                                 
-                                sendNotificationToTelegram(
-                                    `✅ تم قبول التاجر رقم ${userId}`,
-                                    'success'
-                                );
+                                setTimeout(() => {
+                                    processingCommands.delete(commandKey);
+                                }, 2000);
                             }
                         }
                         
+                        // ❌ الأوامر العربية للرفض
                         if (text.match(/^(رفض|لا|مرفوض|غير موافق)_?(\d+)/i) || 
                             (text.includes('❌') && text.match(/\d+/))) {
                             
                             const match = text.match(/\d+/);
                             if (match) {
                                 const userId = match[0];
+                                const commandKey = `reject_${userId}`;
+                                
+                                if (processingCommands.has(commandKey)) {
+                                    console.log('⚠️ الأمر قيد المعالجة:', commandKey);
+                                    continue;
+                                }
+                                
+                                processingCommands.add(commandKey);
                                 console.log('❌ أمر رفض عربي:', text, 'للتاجر:', userId);
                                 rejectMerchant(userId);
                                 
-                                sendNotificationToTelegram(
-                                    `❌ تم رفض التاجر رقم ${userId}`,
-                                    'error'
-                                );
+                                setTimeout(() => {
+                                    processingCommands.delete(commandKey);
+                                }, 2000);
                             }
                         }
                         
+                        // ✅ الأوامر الإنجليزية
                         if (text.startsWith('/approve_')) {
                             const userId = text.replace('/approve_', '');
+                            const commandKey = `approve_${userId}`;
+                            
+                            if (processingCommands.has(commandKey)) {
+                                console.log('⚠️ الأمر قيد المعالجة:', commandKey);
+                                continue;
+                            }
+                            
+                            processingCommands.add(commandKey);
                             console.log('✅ أمر موافقة إنجليزي:', userId);
                             approveMerchant(userId);
+                            
+                            setTimeout(() => {
+                                processingCommands.delete(commandKey);
+                            }, 2000);
                         }
                         
                         if (text.startsWith('/reject_')) {
                             const userId = text.replace('/reject_', '');
+                            const commandKey = `reject_${userId}`;
+                            
+                            if (processingCommands.has(commandKey)) {
+                                console.log('⚠️ الأمر قيد المعالجة:', commandKey);
+                                continue;
+                            }
+                            
+                            processingCommands.add(commandKey);
                             console.log('❌ أمر رفض إنجليزي:', userId);
                             rejectMerchant(userId);
+                            
+                            setTimeout(() => {
+                                processingCommands.delete(commandKey);
+                            }, 2000);
                         }
                     }
                 }
@@ -1342,7 +1409,7 @@ async function saveProduct() {
     }
 }
 
-// ========== 30. دوال التجار (toggle, register, fields) ==========
+// ========== 30. دوال التجار ==========
 function toggleMerchantFields() {
     const isMerchant = document.getElementById('isMerchant')?.checked;
     const merchantFields = document.getElementById('merchantFields');
@@ -1597,7 +1664,7 @@ function showAddProductModal() {
     }
 }
 
-// ========== 32. تأثيرات الكتابة (TypingAnimation) ==========
+// ========== 32. تأثيرات الكتابة ==========
 class TypingAnimation {
     constructor(element, texts, speed = 100, delay = 2000) {
         this.element = element;
@@ -1639,7 +1706,7 @@ class TypingAnimation {
     }
 }
 
-// ========== 33. التهيئة النهائية (window.onload) ==========
+// ========== 33. التهيئة النهائية ==========
 window.onload = function() {
     console.log('🚀 بدء تشغيل النظام...');
     
