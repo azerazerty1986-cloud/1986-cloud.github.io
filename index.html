@@ -35,6 +35,13 @@
     <!-- نظام الإشعارات Toast -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- جسيمات متحركة -->
+    <div class="particles" id="particles"></div>
+
+    <!-- تأثير الماوس -->
+    <div class="mouse-effect" id="mouseEffect"></div>
+    <div class="mouse-effect-dot" id="mouseEffectDot"></div>
+
     <!-- سلة التسوق الجانبية -->
     <div class="cart-sidebar" id="cartSidebar">
         <div class="cart-header">
@@ -118,6 +125,28 @@
                 <span>تخفيضات</span>
                 <div class="marquee-progress">
                     <div class="marquee-progress-fill" style="width: 50%"></div>
+                </div>
+            </div>
+            <!-- تكرار للحركة المستمرة -->
+            <div class="marquee-item float-item">
+                <i class="fas fa-truck"></i>
+                <span>شحن سريع</span>
+                <div class="marquee-progress">
+                    <div class="marquee-progress-fill" style="width: 85%"></div>
+                </div>
+            </div>
+            <div class="marquee-item bounce-item">
+                <i class="fas fa-shield-alt"></i>
+                <span>ضمان الجودة</span>
+                <div class="marquee-progress">
+                    <div class="marquee-progress-fill" style="width: 95%"></div>
+                </div>
+            </div>
+            <div class="marquee-item pulse-item">
+                <i class="fas fa-gem"></i>
+                <span>عروض حصرية</span>
+                <div class="marquee-progress">
+                    <div class="marquee-progress-fill" style="width: 75%"></div>
                 </div>
             </div>
         </div>
@@ -205,10 +234,10 @@
         </div>
     </div>
 
-    <!-- لوحة التاجر -->
+    <!-- لوحة التاجر (تظهر للتاجر فقط) -->
     <div class="container" id="merchantPanelContainer" style="display: none;"></div>
 
-    <!-- المنتجات -->
+    <!-- المنتجات - شبكة 3 أعمدة -->
     <div class="container">
         <div class="products-grid" id="productsContainer"></div>
     </div>
@@ -295,35 +324,39 @@
             <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
                 <div class="form-group">
                     <label>اسم المستخدم أو البريد الإلكتروني</label>
-                    <input type="text" class="form-control" id="loginEmail">
+                    <input type="text" class="form-control" id="loginEmail" placeholder="أدخل اسم المستخدم">
                 </div>
                 <div class="form-group">
                     <label>كلمة المرور</label>
-                    <input type="password" class="form-control" id="loginPassword">
+                    <input type="password" class="form-control" id="loginPassword" placeholder="أدخل كلمة المرور">
                 </div>
                 <button type="submit" class="btn-gold" style="width: 100%; margin-top: 20px;">
                     <i class="fas fa-sign-in-alt"></i> دخول
                 </button>
             </form>
 
-            <!-- نموذج التسجيل -->
+            <!-- نموذج التسجيل مع إضافة اسم المتجر -->
             <form id="registerForm" style="display: none;" onsubmit="event.preventDefault(); handleRegister();">
                 <div class="form-group">
                     <label>الاسم الكامل</label>
                     <input type="text" class="form-control" id="regName" required>
                 </div>
+                
                 <div class="form-group">
                     <label>البريد الإلكتروني</label>
                     <input type="email" class="form-control" id="regEmail" required>
                 </div>
+                
                 <div class="form-group">
                     <label>كلمة المرور</label>
                     <input type="password" class="form-control" id="regPassword" required>
                 </div>
+                
                 <div class="form-group">
                     <label>رقم الهاتف</label>
-                    <input type="tel" class="form-control" id="regPhone">
+                    <input type="tel" class="form-control" id="regPhone" placeholder="مثال: 0555123456">
                 </div>
+                
                 <div class="form-group">
                     <label style="display: flex; align-items: center; gap: 10px;">
                         <input type="checkbox" id="isMerchant" onchange="toggleMerchantFields()">
@@ -331,24 +364,30 @@
                     </label>
                 </div>
                 
-                <!-- حقول التاجر -->
-                <div id="merchantFields" style="display: none;">
+                <!-- حقول التاجر مع إضافة storeName -->
+                <div id="merchantFields" style="display: none; margin-top: 15px; padding: 15px; background: var(--glass); border-radius: 15px; border: 1px solid var(--gold);">
+                    <h4 style="color: var(--gold); margin-bottom: 15px;">معلومات المتجر</h4>
+                    
+                    <!-- حقل اسم المتجر -->
                     <div class="form-group">
-                        <label>اسم المتجر</label>
-                        <input type="text" class="form-control" id="storeName">
+                        <label>اسم المتجر <span style="color: var(--gold);">*</span></label>
+                        <input type="text" class="form-control" id="storeName" placeholder="مثال: متجر العطار" required>
+                        <small style="color: var(--text-secondary);">سيظهر هذا الاسم على منتجاتك</small>
                     </div>
+                    
                     <div class="form-group">
                         <label>مستوى التاجر</label>
                         <select class="form-control" id="merchantLevel">
-                            <option value="1">المستوى الأول</option>
-                            <option value="2" selected>المستوى الثاني</option>
-                            <option value="3">المستوى الثالث</option>
-                            <option value="4">المستوى الرابع</option>
+                            <option value="1">المستوى الأول (5 منتجات)</option>
+                            <option value="2" selected>المستوى الثاني (10 منتجات)</option>
+                            <option value="3">المستوى الثالث (15 منتج)</option>
+                            <option value="4">المستوى الرابع (غير محدود)</option>
                         </select>
                     </div>
+                    
                     <div class="form-group">
-                        <label>وصف المتجر</label>
-                        <textarea class="form-control" id="merchantDesc" rows="3"></textarea>
+                        <label>وصف النشاط التجاري</label>
+                        <textarea class="form-control" id="merchantDesc" rows="3" placeholder="اكتب وصفاً لمتجرك..."></textarea>
                     </div>
                 </div>
 
@@ -363,7 +402,7 @@
         </div>
     </div>
 
-    <!-- نافذة إضافة منتج -->
+    <!-- نافذة إضافة منتج مع رفع الصور -->
     <div class="modal" id="productModal">
         <div class="modal-content modal-lg">
             <h2 style="text-align: center; margin-bottom: 30px;">
@@ -403,7 +442,7 @@
                     <label>صور المنتج</label>
                     <div class="image-upload-area" onclick="document.getElementById('productImages').click()">
                         <i class="fas fa-cloud-upload-alt"></i>
-                        <p>اضغط لرفع الصور</p>
+                        <p>اضغط لرفع الصور أو اسحبها هنا</p>
                     </div>
                     <input type="file" id="productImages" multiple accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
                     <div class="image-preview" id="imagePreview"></div>
