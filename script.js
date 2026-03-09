@@ -1,267 +1,270 @@
-// ========== ناردو - الإصدار النهائي الكامل ==========
+// ========== ناردو برو - النظام الكامل ==========
 
-// 1. إعدادات تلجرام
+// إعدادات تلجرام
 const TELEGRAM = {
     botToken: '8576673096:AAEFKd-YSJcW_0d_wAHZBt-5nPg_VOjDX_0',
     channelId: '-1003822964890'
 };
 
-// 2. المتغيرات
+// المتغيرات العامة
 let products = [];
+let users = [
+    { id: 1, name: 'مدير', email: 'admin@nardoo.com', password: 'admin123', role: 'admin' }
+];
 let currentUser = null;
+let cart = [];
 
-// 3. دالة إضافة منتج مع صورة (بنفس تنسيق صورتك)
-async function addTestProduct() {
-    // صورة منتج حقيقية
-    const imageUrl = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500';
-    
-    // نفس التنسيق اللي ظهر في صورتك
-    const message = `منتج جديد
-الاسم: منتج تجريبي
-السعر: 999 دج
-القسم: promo
-الكمية: 50
-التاجر: تاجر تجريبي`;
-
+// تحميل المنتجات من تلجرام
+async function loadProducts() {
     try {
-        // إرسال الصورة مع النص
-        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendPhoto`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                chat_id: TELEGRAM.channelId,
-                photo: imageUrl,
-                caption: message
-            })
-        });
-        
-        const result = await response.json();
-        console.log('✅ تم الإرسال:', result);
-        return result.ok;
-    } catch (error) {
-        console.error('❌ خطأ:', error);
-        return false;
-    }
-}
-
-// 4. دالة جلب المنتجات مع الصور (مطورة)
-async function getProducts() {
-    try {
-        console.log('🔍 جلب المنتجات من تلجرام...');
-        
         const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates`);
         const data = await response.json();
-        
         products = [];
-        
-        if (data.ok && data.result) {
-            console.log(`📨 وجدنا ${data.result.length} تحديث`);
+
+        for (const update of data.result || []) {
+            const post = update.channel_post;
+            if (!post || !post.photo) continue;
+
+            const fileId = post.photo[post.photo.length - 1].file_id;
+            const fileRes = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/getFile?file_id=${fileId}`);
+            const fileData = await fileRes.json();
             
-            for (const update of data.result) {
-                const post = update.channel_post;
-                if (!post) continue;
-                
-                // البحث عن الصور
-                if (post.photo && post.photo.length > 0) {
-                    const text = post.caption || '';
-                    
-                    // أي رسالة تحتوي على "منتج" نعتبرها منتج
-                    if (text.includes('منتج') || text.includes('السعر')) {
-                        console.log('✅ وجدنا منتج مع صورة');
-                        
-                        // جلب رابط الصورة
-                        const fileId = post.photo[post.photo.length - 1].file_id;
-                        const fileResponse = await fetch(
-                            `https://api.telegram.org/bot${TELEGRAM.botToken}/getFile?file_id=${fileId}`
-                        );
-                        const fileData = await fileResponse.json();
-                        
-                        if (fileData.ok) {
-                            const imageUrl = `https://api.telegram.org/file/bot${TELEGRAM.botToken}/${fileData.result.file_path}`;
-                            
-                            // استخراج البيانات (بنفس تنسيق صورتك)
-                            let name = 'منتج';
-                            let price = 0;
-                            let category = 'promo';
-                            let stock = 0;
-                            let merchant = 'تاجر';
-                            
-                            const lines = text.split('\n');
-                            lines.forEach(line => {
-                                if (line.includes('الاسم:') || line.includes('اسم:')) {
-                                    name = line.replace(/.*(الاسم:|اسم:)/, '').trim();
-                                }
-                                if (line.includes('السعر:')) {
-                                    const match = line.match(/\d+/);
-                                    if (match) price = parseInt(match[0]);
-                                }
-                                if (line.includes('القسم:')) {
-                                    category = line.replace('القسم:', '').trim();
-                                }
-                                if (line.includes('الكمية:')) {
-                                    const match = line.match(/\d+/);
-                                    if (match) stock = parseInt(match[0]);
-                                }
-                                if (line.includes('التاجر:')) {
-                                    merchant = line.replace('التاجر:', '').trim();
-                                }
-                                if (line.includes('التاريخ:')) {
-                                    // تجاهل حقل التاريخ
-                                }
-                            });
-                            
-                            products.push({
-                                id: post.message_id,
-                                name: name,
-                                price: price,
-                                category: category,
-                                stock: stock,
-                                merchant: merchant,
-                                image: imageUrl,
-                                rating: 4.5,
-                                date: new Date(post.date * 1000)
-                            });
-                        }
-                    }
-                }
+            const imageUrl = `https://api.telegram.org/file/bot${TELEGRAM.botToken}/${fileData.result.file_path}`;
+            const text = post.caption || '';
+
+            if (text.includes('منتج')) {
+                let name = 'منتج', price = 0, category = 'promo', stock = 0, merchant = 'تاجر';
+                text.split('\n').forEach(line => {
+                    if (line.includes('الاسم:')) name = line.replace('الاسم:', '').trim();
+                    if (line.includes('السعر:')) price = parseInt(line.match(/\d+/)?.[0] || 0);
+                    if (line.includes('القسم:')) category = line.replace('القسم:', '').trim();
+                    if (line.includes('الكمية:')) stock = parseInt(line.match(/\d+/)?.[0] || 0);
+                    if (line.includes('التاجر:')) merchant = line.replace('التاجر:', '').trim();
+                });
+
+                products.push({
+                    id: post.message_id,
+                    name, price, category, stock, merchant,
+                    image: imageUrl,
+                    rating: 4.5
+                });
             }
         }
-        
-        console.log(`📦 تم جلب ${products.length} منتج مع صور`);
-        return products;
-        
+        displayProducts();
     } catch (error) {
-        console.error('❌ خطأ:', error);
-        return [];
+        console.error('خطأ:', error);
     }
 }
 
-// 5. عرض المنتجات بشكل احترافي
-function showProducts() {
+// عرض المنتجات
+function displayProducts() {
     const container = document.getElementById('productsContainer');
     if (!container) return;
-    
+
     if (products.length === 0) {
-        container.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 80px 20px;">
-                <i class="fas fa-box-open" style="font-size: 80px; color: #d4af37; margin-bottom: 20px;"></i>
-                <h3 style="color: #d4af37; font-size: 28px;">لا توجد منتجات</h3>
-                <p style="color: white; font-size: 18px;">اضغط على "إضافة منتج" للبدء</p>
-            </div>
-        `;
+        container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:50px;">لا توجد منتجات</div>';
         return;
     }
-    
+
     container.innerHTML = products.map(p => `
-        <div class="product-card" style="background: #1a2f28; border: 2px solid #d4af37; border-radius: 25px; overflow: hidden; transition: all 0.3s;">
-            <div style="position: relative; height: 250px;">
-                <img src="${p.image}" style="width: 100%; height: 100%; object-fit: cover;" 
-                     onerror="this.src='https://via.placeholder.com/300/d4af37/000000?text=نكهة+وجمال'">
-                <span style="position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.8); color: #d4af37; padding: 5px 15px; border-radius: 25px; font-size: 12px;">
-                    <i class="far fa-clock"></i> الآن
-                </span>
-            </div>
-            <div style="padding: 20px;">
-                <span style="background: #d4af37; color: #0a1a15; padding: 5px 15px; border-radius: 25px; font-size: 12px; font-weight: bold; display: inline-block; margin-bottom: 10px;">
-                    ${p.category || 'برموسيو'}
-                </span>
-                <h3 style="color: #d4af37; font-size: 20px; margin: 10px 0;">${p.name}</h3>
-                <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 10px;">
-                    <i class="fas fa-store" style="color: #d4af37;"></i>
-                    <span style="color: white;">${p.merchant}</span>
+        <div style="background:#1a2f28; border:2px solid #d4af37; border-radius:25px; overflow:hidden;">
+            <img src="${p.image}" style="width:100%; height:250px; object-fit:cover;">
+            <div style="padding:20px;">
+                <span style="background:#d4af37; color:#0a1a15; padding:5px 15px; border-radius:25px;">${p.category}</span>
+                <h3 style="color:#d4af37; margin:15px 0;">${p.name}</h3>
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                    <i class="fas fa-store" style="color:#d4af37;"></i>
+                    <span>${p.merchant}</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 15px;">
-                    ${'<i class="fas fa-star" style="color: #d4af37;"></i>'.repeat(Math.floor(p.rating))}
-                    ${'<i class="far fa-star" style="color: #d4af37;"></i>'.repeat(5 - Math.floor(p.rating))}
-                    <span style="color: #d4af37;">${p.rating}</span>
-                </div>
-                <div style="font-size: 28px; font-weight: bold; color: #d4af37; margin-bottom: 15px;">
-                    ${p.price} <small style="font-size: 14px;">دج</small>
-                </div>
-                <div style="background: rgba(74,222,128,0.2); color: #4ade80; padding: 5px 15px; border-radius: 25px; display: inline-block; margin-bottom: 15px;">
-                    <i class="fas fa-check-circle"></i> متوفر (${p.stock})
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="addToCart(${p.id})" style="flex: 2; background: linear-gradient(135deg, #d4af37, #b38f2c); border: none; padding: 12px; border-radius: 30px; color: #0a1a15; font-weight: bold; cursor: pointer;">
-                        <i class="fas fa-shopping-cart"></i> أضف للسلة
-                    </button>
-                    <button onclick="viewDetails(${p.id})" style="width: 50px; height: 50px; border-radius: 50%; background: transparent; border: 2px solid #d4af37; color: #d4af37; cursor: pointer;">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
+                <div style="font-size:24px; color:#d4af37; margin:15px 0;">${p.price} دج</div>
+                <div style="color:#4ade80; margin-bottom:15px;">متوفر: ${p.stock}</div>
+                <button onclick="addToCart(${p.id})" style="background:#d4af37; border:none; padding:10px 20px; border-radius:30px; font-weight:bold; cursor:pointer;">
+                    أضف للسلة
+                </button>
             </div>
         </div>
     `).join('');
 }
 
-// 6. دوال مساعدة
-function addToCart(id) {
-    alert('✅ تمت الإضافة للسلة');
-}
+// إضافة منتج جديد
+async function saveProduct() {
+    if (!currentUser || (currentUser.role !== 'merchant' && currentUser.role !== 'admin')) {
+        alert('غير مصرح لك بإضافة منتجات');
+        return;
+    }
 
-function viewDetails(id) {
-    alert('🔍 تفاصيل المنتج');
-}
+    const product = {
+        name: document.getElementById('productName').value,
+        category: document.getElementById('productCategory').value,
+        price: parseInt(document.getElementById('productPrice').value),
+        stock: parseInt(document.getElementById('productStock').value),
+        merchant: currentUser.storeName || currentUser.name,
+        image: document.getElementById('productImage').value || 'https://images.unsplash.com/photo-1542838132-92c53300491e'
+    };
 
-// 7. أزرار التحكم
-function addControls() {
-    const div = document.createElement('div');
-    div.style.cssText = `
-        position: fixed;
-        bottom: 30px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 9999;
-        display: flex;
-        gap: 15px;
-        background: #0a1a15;
-        padding: 15px;
-        border-radius: 60px;
-        border: 2px solid #d4af37;
-        box-shadow: 0 10px 40px rgba(212,175,55,0.3);
-    `;
-    
-    div.innerHTML = `
-        <button onclick="addNewProduct()" style="background: #d4af37; color: #0a1a15; padding: 15px 35px; border: none; border-radius: 50px; font-weight: bold; font-size: 16px; cursor: pointer; display: flex; align-items: center; gap: 10px;">
-            <i class="fas fa-plus-circle"></i> إضافة منتج
-        </button>
-        <button onclick="refreshProducts()" style="background: #2c5e4f; color: white; padding: 15px 35px; border: none; border-radius: 50px; font-weight: bold; font-size: 16px; cursor: pointer; display: flex; align-items: center; gap: 10px;">
-            <i class="fas fa-sync-alt"></i> تحديث
-        </button>
-    `;
-    
-    document.body.appendChild(div);
-}
+    const message = `منتج جديد
+الاسم: ${product.name}
+السعر: ${product.price} دج
+القسم: ${product.category}
+الكمية: ${product.stock}
+التاجر: ${product.merchant}`;
 
-// 8. دوال التشغيل
-async function addNewProduct() {
-    console.log('🚀 إضافة منتج جديد...');
-    const success = await addTestProduct();
-    if (success) {
-        alert('✅ تم إرسال المنتج مع الصورة إلى تلجرام');
-    } else {
-        alert('❌ فشل الإرسال');
+    try {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendPhoto`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                chat_id: TELEGRAM.channelId,
+                photo: product.image,
+                caption: message
+            })
+        });
+        alert('✅ تم إضافة المنتج');
+        document.getElementById('productModal').style.display = 'none';
+        setTimeout(loadProducts, 2000);
+    } catch (error) {
+        alert('❌ فشل الإضافة');
     }
 }
 
-async function refreshProducts() {
-    console.log('🔄 تحديث المنتجات...');
-    await getProducts();
-    showProducts();
-    alert(`✅ تم جلب ${products.length} منتج مع صور`);
+// نظام المستخدمين
+function openLoginModal() {
+    document.getElementById('loginModal').style.display = 'flex';
 }
 
-// 9. تشغيل النظام
+function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+}
+
+function switchAuthTab(tab) {
+    document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+    document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+}
+
+function toggleMerchantFields() {
+    document.getElementById('merchantFields').style.display = 
+        document.getElementById('isMerchant').checked ? 'block' : 'none';
+}
+
+function handleLogin() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const user = users.find(u => u.email === email && u.password === password);
+
+    if (user) {
+        currentUser = user;
+        closeModal('loginModal');
+        updateUI();
+        alert(`مرحباً ${user.name}`);
+    } else {
+        alert('بيانات غير صحيحة');
+    }
+}
+
+function handleRegister() {
+    const name = document.getElementById('regName').value;
+    const email = document.getElementById('regEmail').value;
+    const password = document.getElementById('regPassword').value;
+    const isMerchant = document.getElementById('isMerchant').checked;
+
+    const newUser = {
+        id: users.length + 1,
+        name, email, password,
+        role: isMerchant ? 'merchant_pending' : 'customer',
+        storeName: document.getElementById('storeName')?.value || name
+    };
+
+    users.push(newUser);
+    alert('تم التسجيل بنجاح');
+    switchAuthTab('login');
+}
+
+function updateUI() {
+    const userBtn = document.getElementById('userBtn');
+    const dashboardBtn = document.getElementById('dashboardBtn');
+    
+    if (currentUser) {
+        userBtn.innerHTML = currentUser.role === 'admin' ? '<i class="fas fa-crown"></i>' : 
+                           currentUser.role.includes('merchant') ? '<i class="fas fa-store"></i>' : 
+                           '<i class="fas fa-user"></i>';
+        
+        if (currentUser.role === 'admin') {
+            dashboardBtn.style.display = 'flex';
+        }
+        
+        if (currentUser.role === 'merchant_approved') {
+            showMerchantPanel();
+        }
+    }
+}
+
+function showMerchantPanel() {
+    const merchantProducts = products.filter(p => p.merchant === currentUser.storeName);
+    document.getElementById('merchantPanel').innerHTML = `
+        <div style="background:#9b59b6; border-radius:30px; padding:30px; margin:20px 0;">
+            <h3 style="color:white;">لوحة التاجر - ${currentUser.storeName}</h3>
+            <div style="display:flex; gap:20px; margin:20px 0;">
+                <div><span style="font-size:32px; color:#d4af37;">${merchantProducts.length}</span><br>منتجاتي</div>
+                <div><span style="font-size:32px; color:#d4af37;">${merchantProducts.filter(p => p.stock > 0).length}</span><br>متاح</div>
+            </div>
+            <button class="btn-gold" onclick="showAddProductModal()">إضافة منتج</button>
+        </div>
+    `;
+    document.getElementById('merchantPanel').style.display = 'block';
+}
+
+function showAddProductModal() {
+    if (!currentUser) {
+        alert('سجل دخول أولاً');
+        openLoginModal();
+        return;
+    }
+    document.getElementById('productModal').style.display = 'flex';
+}
+
+function openDashboard() {
+    if (currentUser?.role !== 'admin') return;
+    const section = document.getElementById('dashboardSection');
+    section.style.display = 'block';
+    section.innerHTML = `
+        <h2 style="color:#d4af37;">لوحة التحكم</h2>
+        <div style="background:#1a2f28; border-radius:30px; padding:30px; margin-top:20px;">
+            <p>إجمالي المنتجات: ${products.length}</p>
+            <p>إجمالي المستخدمين: ${users.length}</p>
+            <p>التجار المعلقين: ${users.filter(u => u.role === 'merchant_pending').length}</p>
+        </div>
+    `;
+}
+
+// دوال مساعدة
+function filterProducts(cat) {
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    event.target.classList.add('active');
+    // التصفية حسب القسم
+    loadProducts();
+}
+
+function searchProducts() {
+    // البحث
+    loadProducts();
+}
+
+function toggleCart() {
+    alert('السلة: ' + cart.length + ' منتجات');
+}
+
+function addToCart(id) {
+    cart.push(id);
+    document.getElementById('cartCounter').textContent = cart.length;
+    alert('✅ أضيف للسلة');
+}
+
+function toggleTheme() {
+    document.body.classList.toggle('light-mode');
+}
+
+// تشغيل النظام
 window.onload = function() {
-    // إضافة الأزرار
-    addControls();
-    
-    // جلب المنتجات أول مرة
-    setTimeout(async () => {
-        await getProducts();
-        showProducts();
-    }, 1000);
-    
-    // رسالة ترحيب
-    console.log('🎉 نظام ناردو جاهز للعمل');
+    loadProducts();
+    setInterval(loadProducts, 30000); // تحديث كل 30 ثانية
 };
