@@ -897,13 +897,14 @@ body {
 
 .telegram-badge i { font-size: 12px; }
 
-/* ===== 22. معرض الصور ===== */
+/* تحسين معرض الصور - دعم عدة صور */
 .product-gallery {
     position: relative;
     width: 100%;
     height: 240px;
     overflow: hidden;
     border-radius: 25px 25px 0 0;
+    cursor: pointer;
 }
 
 .product-gallery img {
@@ -913,18 +914,149 @@ body {
     transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.product-gallery::after {
-    content: '';
+/* مؤشر عدد الصور */
+.product-gallery .image-counter {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    background: linear-gradient(to top, var(--bg-card), transparent);
-    pointer-events: none;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: var(--gold);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 5;
+    backdrop-filter: blur(5px);
+    border: 1px solid var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
-/* ===== 23. معلومات المنتج ===== */
+.product-gallery .image-counter i {
+    font-size: 12px;
+}
+
+/* عند وجود عدة صور نضيف تأثير swirl بسيط */
+.product-gallery.multi-image::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(212,175,55,0.1) 50%, transparent 70%);
+    animation: shine 3s infinite;
+    pointer-events: none;
+    z-index: 2;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%); }
+    20% { transform: translateX(100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* شارة تلجرام على الصورة */
+.telegram-photo-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #0088cc;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    z-index: 10;
+    box-shadow: 0 2px 10px rgba(0,136,204,0.5);
+    border: 2px solid var(--gold);
+}
+
+/* عند فشل تحميل الصورة */
+.product-gallery img[onerror] {
+    object-fit: contain;
+    background: var(--nardoo);
+    padding: 20px;
+}
+
+/* ===== معرض تفاصيل المنتج (متعدد الصور) ===== */
+.product-detail-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.product-detail-main-image {
+    width: 100%;
+    height: 400px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 3px solid var(--gold);
+    box-shadow: var(--shadow-gold);
+}
+
+.product-detail-main-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.product-detail-main-image:hover img {
+    transform: scale(1.05);
+}
+
+.product-detail-thumbnails {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+
+.product-detail-thumbnail {
+    height: 80px;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: var(--transition);
+    opacity: 0.7;
+}
+
+.product-detail-thumbnail:hover,
+.product-detail-thumbnail.active {
+    border-color: var(--gold);
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.product-detail-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* مؤشر تحميل الصور */
+.image-loader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--glass) 25%, var(--gold-light) 50%, var(--glass) 75%);
+    background-size: 200% 100%;
+    animation: loadingShimmer 1.5s infinite;
+}
+
+@keyframes loadingShimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ===== 22. معلومات المنتج ===== */
 .product-info {
     padding: 20px;
     flex: 1;
@@ -932,7 +1064,7 @@ body {
     flex-direction: column;
 }
 
-/* ===== 24. قسم المنتج ===== */
+/* ===== 23. قسم المنتج ===== */
 .product-category {
     display: inline-block;
     background: linear-gradient(135deg, var(--gold), var(--gold-dark));
@@ -948,7 +1080,7 @@ body {
     width: fit-content;
 }
 
-/* ===== 25. عنوان المنتج ===== */
+/* ===== 24. عنوان المنتج ===== */
 .product-title {
     font-size: 18px;
     font-weight: 700;
@@ -967,7 +1099,7 @@ body {
     color: var(--gold);
 }
 
-/* ===== 26. معلومات التاجر ===== */
+/* ===== 25. معلومات التاجر ===== */
 .product-merchant-info {
     display: inline-flex;
     align-items: center;
@@ -997,7 +1129,7 @@ body {
     color: var(--bg-primary);
 }
 
-/* ===== 27. تقييم النجوم ===== */
+/* ===== 26. تقييم النجوم ===== */
 .product-rating {
     display: flex;
     align-items: center;
@@ -1046,7 +1178,7 @@ body {
     border: 1px solid rgba(212, 175, 55, 0.3);
 }
 
-/* ===== 28. السعر ===== */
+/* ===== 27. السعر ===== */
 .product-price {
     font-size: 26px;
     font-weight: 800;
@@ -1065,7 +1197,7 @@ body {
     margin-right: 5px;
 }
 
-/* ===== 29. المخزون ===== */
+/* ===== 28. المخزون ===== */
 .product-stock {
     font-size: 13px;
     margin-bottom: 15px;
@@ -1095,7 +1227,7 @@ body {
     border: 1px solid #f87171;
 }
 
-/* ===== 30. أزرار الإجراءات ===== */
+/* ===== 29. أزرار الإجراءات ===== */
 .product-actions {
     display: flex;
     gap: 12px;
@@ -1134,7 +1266,7 @@ body {
 
 .add-to-cart i { font-size: 16px; }
 
-/* ===== 31. خيارات الفرز ===== */
+/* ===== 30. خيارات الفرز ===== */
 .sort-options { display: flex; justify-content: flex-end; margin: 20px 0; }
 
 .sort-select {
@@ -1153,7 +1285,7 @@ body {
 .sort-select:hover { background: var(--gold); color: var(--bg-primary); }
 .sort-select option { background: var(--bg-secondary); color: var(--text-primary); }
 
-/* ===== 32. لوحة التحكم ===== */
+/* ===== 31. لوحة التحكم ===== */
 .dashboard-section { margin: 40px 0; }
 
 .dashboard-tabs {
@@ -1191,7 +1323,7 @@ body {
     overflow-x: auto;
 }
 
-/* ===== 33. الجداول ===== */
+/* ===== 32. الجداول ===== */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -1219,7 +1351,7 @@ tr:hover td {
     background: var(--glass);
 }
 
-/* ===== 34. نموذج إضافة منتج ===== */
+/* ===== 33. نموذج إضافة منتج ===== */
 .product-form { display: grid; gap: 20px; }
 .form-group { display: flex; flex-direction: column; gap: 8px; }
 .form-group label { font-weight: 600; color: var(--gold); font-size: 15px; }
@@ -1238,65 +1370,106 @@ tr:hover td {
 .form-control:focus { border-color: var(--gold); outline: none; }
 .form-control:disabled { opacity: 0.7; cursor: not-allowed; }
 
-/* ===== 35. رفع الصور ===== */
+/* ===== 34. رفع الصور المتقدم ===== */
 .image-upload-area {
     border: 2px dashed var(--gold);
     border-radius: 25px;
-    padding: 35px;
+    padding: 40px 20px;
     text-align: center;
     cursor: pointer;
     transition: var(--transition);
-}
-
-.image-upload-area:hover { background: var(--glass); }
-.image-upload-area i { font-size: 45px; color: var(--gold); margin-bottom: 12px; }
-
-.image-preview {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 20px;
-    justify-content: center;
-}
-
-.image-upload-item {
+    background: var(--glass);
     position: relative;
-    display: inline-block;
-    margin: 5px;
-    animation: fadeIn 0.3s ease;
+    overflow: hidden;
 }
 
-.preview-image {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-    border: 3px solid var(--gold);
-    border-radius: 15px;
-    transition: var(--transition);
+.image-upload-area:hover {
+    background: rgba(212, 175, 55, 0.1);
+    border-color: var(--gold-light);
 }
 
-.preview-image:hover {
-    transform: scale(1.1);
-    box-shadow: var(--shadow-gold);
-    z-index: 5;
+.image-upload-area i {
+    font-size: 48px;
+    color: var(--gold);
+    margin-bottom: 15px;
+    animation: float 3s ease-in-out infinite;
 }
 
-.upload-progress {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(0,0,0,0.8);
-    color: white;
-    text-align: center;
-    font-size: 11px;
-    padding: 4px;
-    border-radius: 0 0 15px 15px;
-    transition: var(--transition);
+.image-upload-area p {
+    font-size: 16px;
+    color: var(--gold);
     font-weight: 600;
 }
 
-/* ===== 36. حالة رفع الصور ===== */
+.image-upload-area small {
+    display: block;
+    margin-top: 10px;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+/* منطقة معاينة الصور */
+.image-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.image-preview-item {
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden;
+    border: 2px solid var(--gold);
+    aspect-ratio: 1;
+    animation: fadeInUp 0.3s ease;
+}
+
+.image-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-preview-item .remove-image {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 25px;
+    height: 25px;
+    background: var(--red);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    transition: var(--transition);
+    opacity: 0;
+}
+
+.image-preview-item:hover .remove-image {
+    opacity: 1;
+}
+
+.image-preview-item .image-order {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    background: var(--gold);
+    color: var(--bg-primary);
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+/* ===== 35. حالة رفع الصور ===== */
 .upload-status {
     margin-top: 15px;
     padding: 12px;
@@ -1335,7 +1508,7 @@ tr:hover td {
     border: 1px solid #1e3a8a;
 }
 
-/* ===== 37. النوافذ المنبثقة ===== */
+/* ===== 36. النوافذ المنبثقة ===== */
 .modal {
     display: none;
     position: fixed;
@@ -1365,7 +1538,7 @@ tr:hover td {
 
 .modal-lg { max-width: 1000px; }
 
-/* ===== 38. الفوتر ===== */
+/* ===== 37. الفوتر ===== */
 .footer {
     background: var(--bg-secondary);
     padding: 60px 0 30px;
@@ -1391,7 +1564,7 @@ tr:hover td {
     color: var(--text-secondary);
 }
 
-/* ===== 39. شارات الحالة ===== */
+/* ===== 38. شارات الحالة ===== */
 .status-badge {
     padding: 5px 15px;
     border-radius: 25px;
@@ -1420,7 +1593,7 @@ tr:hover td {
     border: 1px solid #f87171;
 }
 
-/* ===== 40. بطاقات التجار ===== */
+/* ===== 39. بطاقات التجار ===== */
 .merchant-card {
     background: var(--glass);
     border-radius: 20px;
@@ -1489,7 +1662,7 @@ tr:hover td {
     box-shadow: 0 5px 15px rgba(248, 113, 113, 0.4);
 }
 
-/* ===== 41. أزرار مخصصة ===== */
+/* ===== 40. أزرار مخصصة ===== */
 .btn-gold {
     background: linear-gradient(135deg, var(--gold), var(--gold-dark));
     color: var(--bg-primary);
@@ -1532,7 +1705,7 @@ tr:hover td {
     color: var(--bg-primary);
 }
 
-/* ===== 42. تأثيرات حركية ===== */
+/* ===== 41. تأثيرات حركية ===== */
 @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-8px); }
@@ -1585,7 +1758,7 @@ tr:hover td {
     }
 }
 
-/* ===== 43. تأثير Shimmer ===== */
+/* ===== 42. تأثير Shimmer ===== */
 @keyframes shimmer {
     0% { background-position: -1000px 0; }
     100% { background-position: 1000px 0; }
@@ -1597,7 +1770,7 @@ tr:hover td {
     animation: shimmer 2s infinite;
 }
 
-/* ===== 44. تأثير الماوس ===== */
+/* ===== 43. تأثير الماوس ===== */
 .mouse-effect {
     position: fixed;
     width: 25px;
@@ -1626,7 +1799,7 @@ tr:hover td {
     background: rgba(212, 175, 55, 0.1);
 }
 
-/* ===== 45. تحسينات للشاشات الصغيرة ===== */
+/* ===== 44. تحسينات للشاشات الصغيرة ===== */
 @media (max-width: 768px) {
     .fixed-cart {
         bottom: 80px;
@@ -1734,7 +1907,7 @@ tr:hover td {
     }
 }
 
-/* ===== 46. تأثيرات إضافية ===== */
+/* ===== 45. تأثيرات إضافية ===== */
 .glow-text { text-shadow: 0 0 10px var(--gold); }
 .admin-only { display: block; }
 .merchant-only { display: block; }
