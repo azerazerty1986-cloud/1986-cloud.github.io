@@ -324,7 +324,7 @@ function findProductById() {
 📱 تليجرام: ${product.merchantTelegram || 'غير محدد'}
 📊 المخزون: ${product.stock}
 ⭐ التقييم: ${product.rating || 4.5}
-📅 تاريخ الإضافة: ${new Date(product.createdAt).toLocaleDateString('ar-EG')}
+📅 التاريخ: ${new Date(product.createdAt).toLocaleDateString('ar-EG')}
 
 رابط المنتج: ${product.telegramLink || 'غير متوفر'}
         `);
@@ -810,7 +810,10 @@ function viewProductDetails(productId) {
     const telegramUsername = product.merchantTelegram || '@' + product.merchantName.replace(/\s+/g, '');
 
     content.innerHTML = `
-        <h2 style="text-align: center; margin-bottom: 20px; color: var(--gold);">${product.name}</h2>
+        <div style="position: relative;">
+            <button onclick="closeModal('productDetailModal')" style="position: absolute; left: 0; top: 0; background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
+            <h2 style="text-align: center; margin-bottom: 20px; color: var(--gold);">${product.name}</h2>
+        </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
             <div>
                 <img src="${imageUrl}" style="width: 100%; height: 300px; object-fit: cover; border-radius: 20px;">
@@ -851,9 +854,6 @@ function viewProductDetails(productId) {
                     <button class="btn-telegram" onclick="window.open('https://t.me/${telegramUsername.replace('@', '')}', '_blank')">
                         <i class="fab fa-telegram"></i> تواصل مع التاجر
                     </button>
-                    <button class="btn-outline-gold" onclick="closeModal('productDetailModal')">
-                        إغلاق
-                    </button>
                 </div>
             </div>
         </div>
@@ -893,11 +893,19 @@ function handleLogin() {
         closeModal('loginModal');
         updateUIBasedOnRole();
         updateNavigation();
+        
+        // التحقق من الإشعارات المعلقة
+        checkPendingNotifications();
+        
         showNotification(`👋 مرحباً ${user.name}`, 'success');
         console.log('✅ تم تسجيل الدخول:', user);
+        
+        // إذا كان التاجر معتمد، نعرض له رسالة
+        if (user.role === 'merchant_approved') {
+            showNotification('✨ يمكنك الآن إضافة منتجاتك من زر "إضافة منتج"', 'info');
+        }
     } else {
         showNotification('❌ بيانات غير صحيحة', 'error');
-        console.log('❌ فشل تسجيل الدخول:', { email, password });
     }
 }
 
@@ -914,35 +922,260 @@ function handleRegister() {
         return;
     }
 
+    if (!email.includes('@') || !email.includes('.')) {
+        showNotification('❌ البريد الإلكتروني غير صحيح', 'error');
+        return;
+    }
+
+    if (password.length < 3) {
+        showNotification('❌ كلمة المرور قصيرة جداً', 'error');
+        return;
+    }
+
     if (users.find(u => u.email === email)) {
         showNotification('❌ البريد مستخدم بالفعل', 'error');
         return;
     }
 
-    const newUser = {
-        id: users.length + 1,
-        name,
-        email,
-        password,
-        phone,
-        telegram: telegram || '@' + name.replace(/\s+/g, ''),
-        role: isMerchant ? 'merchant_pending' : 'customer',
-        createdAt: new Date().toISOString()
-    };
-
     if (isMerchant) {
-        newUser.storeName = document.getElementById('storeName').value || 'متجر ' + name;
-        newUser.merchantLevel = document.getElementById('merchantLevel').value;
-        newUser.merchantCategory = document.getElementById('merchantCategory').value;
-        newUser.status = 'pending';
+        const storeName = document.getElementById('storeName').value;
+        const merchantLevel = document.getElementById('merchantLevel').value;
+        const merchantCategory = document.getElementById('merchantCategory')?.value || 'other';
+        
+        if (!storeName) {
+            showNotification('❌ أدخل اسم المتجر', 'error');
+            return;
+        }
+        
+        if (!phone) {
+            showNotification('❌ أدخل رقم الهاتف للتواصل', 'error');
+            return;
+        }
+
+        const newUser = {
+            id: users.length + 1,
+            name,
+            email,
+            password,
+            phone,
+            telegram: telegram || '@' + name.replace(/\s+/g, ''),
+            role: 'merchant_pending',
+            storeName: storeName,
+            merchantLevel: merchantLevel,
+            merchantCategory: merchantCategory,
+            status: 'pending',
+            createdAt: new Date().toISOString()
+        };
+
+        users.push(newUser);
+        localStorage.setItem('nardoo_users', JSON.stringify(users));
+        
+        // إرسال إشعار للمدير
+        sendNewMerchantNotificationToAdmin(newUser);
+        
         showNotification('📋 تم إرسال طلب التسجيل، انتظر موافقة المدير', 'info');
+        switchAuthTab('login');
     } else {
+        // تسجيل كعميل عادي
+        const newUser = {
+            id: users.length + 1,
+            name,
+            email,
+            password,
+            phone,
+            telegram: telegram || '@' + name.replace(/\s+/g, ''),
+            role: 'customer',
+            createdAt: new Date().toISOString()
+        };
+
+        users.push(newUser);
+        localStorage.setItem('nardoo_users', JSON.stringify(users));
         showNotification('✅ تم التسجيل بنجاح', 'success');
+        switchAuthTab('login');
+    }
+}
+
+// ========== إرسال إشعار للمدير عند تسجيل تاجر جديد ==========
+async function sendNewMerchantNotificationToAdmin(merchant) {
+    try {
+        const message = `
+🆕 **تاجر جديد ينتظر الموافقة**
+━━━━━━━━━━━━━━━━
+👤 الاسم: ${merchant.name}
+🏪 المتجر: ${merchant.storeName}
+📧 البريد: ${merchant.email}
+📱 الهاتف: ${merchant.phone}
+📱 تليجرام: ${merchant.telegram}
+📊 المستوى: ${merchant.merchantLevel}
+🏷️ التخصص: ${getCategoryName(merchant.merchantCategory)}
+📅 التاريخ: ${new Date().toLocaleString('ar-EG')}
+
+🔗 رابط الموقع: ${window.location.origin}
+        `;
+
+        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: TELEGRAM.adminId,
+                text: message,
+                parse_mode: 'Markdown'
+            })
+        });
+
+        const data = await response.json();
+        if (data.ok) {
+            console.log('✅ تم إرسال إشعار للمدير عن تاجر جديد');
+        } else {
+            console.error('❌ فشل إرسال إشعار للمدير:', data);
+        }
+    } catch (error) {
+        console.error('❌ خطأ في إرسال الإشعار:', error);
+    }
+}
+
+// ========== موافقة المدير على التاجر مع إشعار فوري ==========
+function approveMerchant(merchantId) {
+    if (currentUser?.role !== 'admin') return;
+
+    const merchant = users.find(u => u.id == merchantId);
+    if (!merchant) return;
+
+    // تحديث صلاحيات التاجر
+    merchant.role = 'merchant_approved';
+    merchant.status = 'approved';
+    merchant.approvedBy = currentUser.id;
+    merchant.approvedAt = new Date().toISOString();
+
+    // حفظ التغييرات
+    localStorage.setItem('nardoo_users', JSON.stringify(users));
+
+    // إرسال إشعار فوري للتاجر إذا كان مسجل الدخول حالياً
+    const currentUserData = JSON.parse(localStorage.getItem('current_user'));
+    if (currentUserData && currentUserData.id == merchantId) {
+        showNotification('✅ تهانينا! تمت الموافقة على طلبك كتاجر', 'success');
+        
+        setTimeout(() => {
+            location.reload();
+        }, 3000);
     }
 
-    users.push(newUser);
+    // حفظ إشعار في localStorage ليظهر عندما يسجل دخول
+    const pendingNotifications = JSON.parse(localStorage.getItem('pending_notifications') || '[]');
+    pendingNotifications.push({
+        userId: merchantId,
+        message: '✅ تهانينا! تمت الموافقة على طلبك كتاجر. يمكنك الآن إضافة منتجاتك',
+        type: 'success',
+        date: new Date().toISOString()
+    });
+    localStorage.setItem('pending_notifications', JSON.stringify(pendingNotifications));
+
+    // إرسال إشعار في تليجرام للتاجر
+    sendApprovalNotificationToMerchant(merchant);
+
+    showNotification(`✅ تمت الموافقة على ${merchant.storeName}`, 'success');
+    
+    // تحديث عرض الطلبات
+    showPendingMerchants();
+}
+
+// ========== إرسال إشعار الموافقة للتاجر في تليجرام ==========
+async function sendApprovalNotificationToMerchant(merchant) {
+    try {
+        let chatId = merchant.telegram;
+        if (!chatId) {
+            console.log('❌ التاجر ليس لديه معرف تليجرام');
+            return;
+        }
+        
+        chatId = chatId.replace('@', '');
+        
+        const message = `
+🎉 **تهانينا! تمت الموافقة على طلبك كتاجر في ناردو برو**
+
+━━━━━━━━━━━━━━━━
+📌 **بيانات متجرك:**
+🏪 اسم المتجر: ${merchant.storeName || merchant.name}
+👤 اسم التاجر: ${merchant.name}
+📱 معرف تليجرام: @${chatId}
+📊 المستوى: ${merchant.merchantLevel || 'المستوى الثاني'}
+🏷️ التخصص: ${getCategoryName(merchant.merchantCategory)}
+
+━━━━━━━━━━━━━━━━
+✨ **الصلاحيات المتاحة لك:**
+✅ إضافة منتجات جديدة
+✅ إدارة المخزون
+✅ متابعة الطلبات
+✅ التواصل مع العملاء
+
+━━━━━━━━━━━━━━━━
+📋 **لبدء البيع:**
+1️⃣ سجل الدخول إلى حسابك
+2️⃣ اضغط على "إضافة منتج"
+3️⃣ أضف صور المنتج والبيانات
+4️⃣ المنتج سينشر تلقائياً في المتجر وتليجرام
+
+━━━━━━━━━━━━━━━━
+🔗 رابط المتجر: ${window.location.origin}
+📱 للدعم: @nardoo_support
+
+نتمنى لك تجارة موفقة ومربحة 🌟
+        `;
+
+        console.log(`📤 جاري إرسال إشعار الموافقة إلى ${chatId}...`);
+
+        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: message,
+                parse_mode: 'Markdown'
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.ok) {
+            console.log('✅ تم إرسال إشعار الموافقة للتاجر بنجاح');
+            showNotification(`✅ تم إرسال إشعار الموافقة للتاجر ${merchant.name}`, 'success');
+        } else {
+            console.error('❌ فشل إرسال الإشعار:', data);
+        }
+    } catch (error) {
+        console.error('❌ خطأ في إرسال الإشعار:', error);
+    }
+}
+
+// ========== التحقق من الإشعارات المعلقة عند تسجيل الدخول ==========
+function checkPendingNotifications() {
+    if (!currentUser) return;
+
+    const pendingNotifications = JSON.parse(localStorage.getItem('pending_notifications') || '[]');
+    const userNotifications = pendingNotifications.filter(n => n.userId == currentUser.id);
+
+    if (userNotifications.length > 0) {
+        userNotifications.forEach(notification => {
+            showNotification(notification.message, notification.type);
+        });
+
+        const remainingNotifications = pendingNotifications.filter(n => n.userId != currentUser.id);
+        localStorage.setItem('pending_notifications', JSON.stringify(remainingNotifications));
+    }
+}
+
+function rejectMerchant(merchantId) {
+    if (currentUser?.role !== 'admin') return;
+
+    const merchant = users.find(u => u.id == merchantId);
+    if (!merchant) return;
+
+    merchant.role = 'customer';
+    merchant.status = 'rejected';
+    
     localStorage.setItem('nardoo_users', JSON.stringify(users));
-    switchAuthTab('login');
+    showNotification('❌ تم رفض الطلب', 'info');
+    showPendingMerchants();
 }
 
 function updateUIBasedOnRole() {
@@ -1005,13 +1238,16 @@ function updateNavigation() {
             <i class="fas fa-home"></i><span>الرئيسية</span>
         </a>
         <a class="nav-link" onclick="filterProducts('promo')">
-            <i class="fas fa-tags"></i><span>برومسيون</span>
+            <i class="fas fa-fire"></i><span>برومسيون</span>
         </a>
         <a class="nav-link" onclick="filterProducts('spices')">
             <i class="fas fa-seedling"></i><span>توابل</span>
         </a>
         <a class="nav-link" onclick="filterProducts('cosmetic')">
             <i class="fas fa-spa"></i><span>كوسمتيك</span>
+        </a>
+        <a class="nav-link" onclick="filterProducts('other')">
+            <i class="fas fa-gem"></i><span>أخرى</span>
         </a>
     `;
 
@@ -1058,23 +1294,28 @@ function showMerchantPanel() {
     panel.innerHTML = `
         <div class="merchant-panel">
             <h3>👨‍💼 لوحة التاجر - ${currentUser.storeName || currentUser.name}</h3>
-            <div style="display: flex; gap: 20px; justify-content: center; margin: 20px 0;">
-                <div style="text-align: center;">
+            <div style="display: flex; gap: 20px; justify-content: center; margin: 20px 0; flex-wrap: wrap;">
+                <div style="text-align: center; background: var(--glass); padding: 20px; border-radius: 15px; min-width: 120px;">
                     <div style="font-size: 32px; color: var(--gold);">${merchantProducts.length}</div>
                     <div>📦 منتجاتي</div>
                 </div>
-                <div style="text-align: center;">
+                <div style="text-align: center; background: var(--glass); padding: 20px; border-radius: 15px; min-width: 120px;">
                     <div style="font-size: 32px; color: var(--gold);">${merchantProducts.filter(p => p.stock > 0).length}</div>
                     <div>✅ متاحة</div>
                 </div>
-                <div style="text-align: center;">
+                <div style="text-align: center; background: var(--glass); padding: 20px; border-radius: 15px; min-width: 120px;">
                     <div style="font-size: 32px; color: var(--gold);">${merchantProducts.reduce((sum, p) => sum + p.stock, 0)}</div>
                     <div>📊 إجمالي المخزون</div>
                 </div>
             </div>
-            <button class="btn-gold" onclick="showMerchantDashboard()">
-                <i class="fas fa-chart-line"></i> فتح لوحة التحكم الكاملة
-            </button>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button class="btn-gold" onclick="showMerchantDashboard()">
+                    <i class="fas fa-chart-line"></i> فتح لوحة التحكم
+                </button>
+                <button class="btn-gold" onclick="showAddProductModal()">
+                    <i class="fas fa-plus-circle"></i> إضافة منتج
+                </button>
+            </div>
         </div>
     `;
 }
@@ -1108,7 +1349,7 @@ function showMerchantDashboard() {
     const content = document.getElementById('merchantDashboardContent');
     content.innerHTML = `
         <div class="merchant-dashboard">
-            <div class="dashboard-header" style="display: flex; align-items: center; gap: 20px; margin-bottom: 30px;">
+            <div class="dashboard-header" style="display: flex; align-items: center; gap: 20px; margin-bottom: 30px; flex-wrap: wrap;">
                 <img src="${currentUser.storeLogo || 'https://via.placeholder.com/80/2c5e4f/ffffff?text=Store'}" 
                      style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--gold);">
                 <div>
@@ -1120,13 +1361,13 @@ function showMerchantDashboard() {
                     <p>📱 ${currentUser.phone}</p>
                 </div>
                 <div style="margin-right: auto;">
-                    <span class="merchant-badge approved">
+                    <span class="merchant-badge approved" style="background: var(--gold); color: black; padding: 5px 15px; border-radius: 20px;">
                         <i class="fas fa-check-circle"></i> تاجر معتمد
                     </span>
                 </div>
             </div>
 
-            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px;">
+            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
                 <div class="stat-card" style="background: var(--glass); padding: 20px; border-radius: 15px; text-align: center;">
                     <i class="fas fa-boxes" style="font-size: 30px; color: var(--gold);"></i>
                     <div style="font-size: 28px; font-weight: bold;">${totalProducts}</div>
@@ -1187,7 +1428,7 @@ function showMerchantDashboard() {
                                     <td style="padding: 12px;">${p.name}</td>
                                     <td style="padding: 12px;">${p.price} دج</td>
                                     <td style="padding: 12px;">
-                                        <span class="stock-badge ${p.stock < 5 ? 'low' : 'good'}">
+                                        <span style="padding: 3px 10px; border-radius: 15px; background: ${p.stock < 5 ? '#f44336' : '#4CAF50'}; color: white;">
                                             ${p.stock}
                                         </span>
                                     </td>
@@ -1197,13 +1438,13 @@ function showMerchantDashboard() {
                                         </a>
                                     </td>
                                     <td style="padding: 12px;">
-                                        <button class="action-btn" onclick="editProduct(${p.id})" title="تعديل">
+                                        <button class="action-btn" onclick="editProduct(${p.id})" title="تعديل" style="background: var(--glass); border: none; color: var(--text); width: 35px; height: 35px; border-radius: 8px; cursor: pointer;">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <button class="action-btn" onclick="viewProductTelegram(${p.id})" title="عرض في تليجرام">
+                                        <button class="action-btn" onclick="viewProductTelegram(${p.id})" title="عرض في تليجرام" style="background: var(--glass); border: none; color: var(--text); width: 35px; height: 35px; border-radius: 8px; cursor: pointer;">
                                             <i class="fab fa-telegram"></i>
                                         </button>
-                                        <button class="action-btn" onclick="deleteProduct(${p.id})" title="حذف">
+                                        <button class="action-btn" onclick="deleteProduct(${p.id})" title="حذف" style="background: var(--glass); border: none; color: #f44336; width: 35px; height: 35px; border-radius: 8px; cursor: pointer;">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
@@ -1234,10 +1475,10 @@ function showMerchantProducts() {
             <p style="color: var(--gold); font-weight: bold;">${p.price} دج</p>
             <p>📦 ${p.stock} قطعة</p>
             <div style="display: flex; gap: 10px;">
-                <button class="btn-gold" onclick="editProduct(${p.id})" style="flex: 1;">
+                <button class="btn-gold" onclick="editProduct(${p.id})" style="flex: 1; padding: 8px;">
                     <i class="fas fa-edit"></i> تعديل
                 </button>
-                <button class="btn-outline-gold" onclick="deleteProduct(${p.id})" style="flex: 1;">
+                <button class="btn-outline-gold" onclick="deleteProduct(${p.id})" style="flex: 1; padding: 8px;">
                     <i class="fas fa-trash"></i> حذف
                 </button>
             </div>
@@ -1253,7 +1494,7 @@ function showMerchantProducts() {
     content.innerHTML = `
         <h3 style="color: var(--gold); margin-bottom: 20px;">📦 منتجاتي (${merchantProducts.length})</h3>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
-            ${productsHtml}
+            ${productsHtml || '<p style="text-align: center;">لا توجد منتجات بعد</p>'}
         </div>
     `;
 
@@ -1278,9 +1519,9 @@ function showMerchantOrders() {
 
         return `
             <div class="order-card" style="background: var(--glass); border-radius: 10px; padding: 20px; margin-bottom: 15px;">
-                <div style="display: flex; justify-content: space-between;">
+                <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
                     <h4>🆔 طلب رقم: ${order.orderId}</h4>
-                    <span class="status-badge new">جديد</span>
+                    <span style="background: #2196F3; color: white; padding: 5px 15px; border-radius: 20px;">جديد</span>
                 </div>
                 <p>👤 الزبون: ${order.customerName}</p>
                 <p>📞 الهاتف: ${order.customerPhone}</p>
@@ -1300,10 +1541,10 @@ function showMerchantOrders() {
                     </div>
                 </div>
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button class="btn-gold" onclick="contactCustomer('${order.customerPhone}')">
+                    <button class="btn-gold" onclick="window.open('tel:${order.customerPhone}')" style="flex: 1;">
                         <i class="fas fa-phone"></i> اتصال
                     </button>
-                    <button class="btn-telegram" onclick="contactCustomerTelegram('${order.customerName}')">
+                    <button class="btn-telegram" onclick="window.open('https://t.me/nardoo_support')" style="flex: 1; background: #0088cc; color: white; border: none; padding: 10px; border-radius: 8px;">
                         <i class="fab fa-telegram"></i> تواصل
                     </button>
                 </div>
@@ -1340,7 +1581,7 @@ function showDashboardOverview() {
     
     content.innerHTML = `
         <h3 style="color: var(--gold);">📊 نظرة عامة</h3>
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 20px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
             <div style="background: var(--glass); padding: 20px; border-radius: 15px;">
                 <div style="font-size: 32px;">${totalProducts}</div>
                 <div>📦 إجمالي المنتجات</div>
@@ -1359,14 +1600,14 @@ function showDashboardOverview() {
             </div>
         </div>
         
-        <div style="margin-top: 30px;">
+        <div style="margin-top: 30px; display: flex; gap: 15px; flex-wrap: wrap;">
             <button class="btn-gold" onclick="showPendingMerchants()">
                 <i class="fas fa-user-clock"></i> عرض طلبات التجار
             </button>
-            <button class="btn-outline-gold" onclick="showApprovedMerchants()" style="margin-right: 10px;">
+            <button class="btn-outline-gold" onclick="showApprovedMerchants()">
                 <i class="fas fa-store"></i> التجار المعتمدين
             </button>
-            <button class="btn-outline-gold" onclick="showAllOrders()" style="margin-right: 10px;">
+            <button class="btn-outline-gold" onclick="showAllOrders()">
                 <i class="fas fa-shopping-bag"></i> جميع الطلبات
             </button>
         </div>
@@ -1394,14 +1635,14 @@ function showPendingMerchants() {
             </div>
         ` : pendingMerchants.map(m => `
             <div class="merchant-request-card" style="background: var(--glass); border: 2px solid var(--gold); border-radius: 15px; padding: 20px; margin-bottom: 20px;">
-                <div style="display: flex; gap: 20px;">
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
                     <img src="${m.storeLogo || 'https://via.placeholder.com/100'}" 
                          style="width: 100px; height: 100px; border-radius: 15px; object-fit: cover;">
                     
                     <div style="flex: 1;">
-                        <div style="display: flex; justify-content: space-between;">
+                        <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
                             <h4 style="color: var(--gold);">${m.storeName || m.name}</h4>
-                            <span class="status-badge pending">
+                            <span style="background: #FFC107; color: black; padding: 5px 15px; border-radius: 20px;">
                                 <i class="fas fa-hourglass-half"></i> في الانتظار
                             </span>
                         </div>
@@ -1413,7 +1654,7 @@ function showPendingMerchants() {
                         <p><i class="fas fa-tag"></i> التخصص: ${getCategoryName(m.merchantCategory)}</p>
                         <p><i class="fas fa-calendar"></i> ${new Date(m.createdAt).toLocaleDateString('ar-EG')}</p>
                         
-                        <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
                             <button class="btn-gold" onclick="approveMerchant(${m.id})">
                                 <i class="fas fa-check"></i> موافقة
                             </button>
@@ -1426,76 +1667,6 @@ function showPendingMerchants() {
             </div>
         `).join('')}
     `;
-}
-
-function approveMerchant(merchantId) {
-    if (currentUser?.role !== 'admin') return;
-
-    const merchant = users.find(u => u.id == merchantId);
-    if (!merchant) return;
-
-    merchant.role = 'merchant_approved';
-    merchant.status = 'approved';
-    merchant.approvedBy = currentUser.id;
-    merchant.approvedAt = new Date().toISOString();
-
-    localStorage.setItem('nardoo_users', JSON.stringify(users));
-    
-    sendApprovalNotification(merchant);
-    
-    showNotification(`✅ تمت الموافقة على ${merchant.storeName}`, 'success');
-    showPendingMerchants();
-}
-
-async function sendApprovalNotification(merchant) {
-    try {
-        const message = `
-🎉 تهانينا! تمت الموافقة على طلب انضمامك كتاجر في ناردو برو
-
-📌 متجرك: ${merchant.storeName}
-🆔 معرفك: ${merchant.telegram}
-📝 المستوى: ${merchant.merchantLevel}
-
-✨ يمكنك الآن:
-✅ إضافة منتجاتك
-✅ إدارة متجرك
-✅ التواصل مع العملاء
-✅ متابعة طلباتك
-
-🔗 رابط المتجر: ${window.location.origin}
-📱 للدعم: @nardoo_support
-
-نتمنى لك تجارة موفقة 🌟
-        `;
-
-        await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: merchant.telegram.replace('@', ''),
-                text: message,
-                parse_mode: 'HTML'
-            })
-        });
-
-        console.log('✅ تم إرسال إشعار الموافقة للتاجر');
-    } catch (error) {
-        console.error('❌ فشل إرسال الإشعار:', error);
-    }
-}
-
-function rejectMerchant(merchantId) {
-    if (currentUser?.role !== 'admin') return;
-
-    const merchant = users.find(u => u.id == merchantId);
-    if (!merchant) return;
-
-    merchant.role = 'customer';
-    merchant.status = 'rejected';
-    
-    localStorage.setItem('nardoo_users', JSON.stringify(users));
-    showNotification('❌ تم رفض الطلب', 'info');
-    showPendingMerchants();
 }
 
 function showApprovedMerchants() {
@@ -1533,7 +1704,7 @@ function showApprovedMerchants() {
                             <button class="btn-gold" onclick="viewMerchantProducts(${m.id})" style="flex: 1;">
                                 <i class="fas fa-box"></i> منتجاته
                             </button>
-                            <button class="btn-outline-gold" onclick="contactMerchant('${m.telegram}')" style="flex: 1;">
+                            <button class="btn-outline-gold" onclick="window.open('https://t.me/${m.telegram?.replace('@', '')}')" style="flex: 1;">
                                 <i class="fab fa-telegram"></i> تواصل
                             </button>
                         </div>
@@ -1597,9 +1768,9 @@ function showAllOrders() {
         <div style="max-height: 500px; overflow-y: auto;">
             ${orders.map(order => `
                 <div class="order-card" style="background: var(--glass); border-radius: 10px; padding: 20px; margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between;">
+                    <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
                         <h4>🆔 طلب رقم: ${order.orderId}</h4>
-                        <span class="status-badge new">جديد</span>
+                        <span style="background: #2196F3; color: white; padding: 5px 15px; border-radius: 20px;">جديد</span>
                     </div>
                     <p>👤 الزبون: ${order.customerName}</p>
                     <p>📞 الهاتف: ${order.customerPhone}</p>
@@ -1648,9 +1819,9 @@ function showAddProductModal() {
 
     modal.innerHTML = `
         <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header">
-                <h2>➕ إضافة منتج جديد</h2>
-                <button class="close-btn" onclick="closeModal('productModal')">&times;</button>
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color:var(--gold);">➕ إضافة منتج جديد</h2>
+                <button class="close-btn" onclick="closeModal('productModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="productForm" onsubmit="event.preventDefault(); saveProduct();">
@@ -1658,7 +1829,7 @@ function showAddProductModal() {
                     
                     <div class="form-group">
                         <label>📦 اسم المنتج</label>
-                        <input type="text" id="productName" class="form-control" required>
+                        <input type="text" id="productName" class="form-control" required placeholder="أدخل اسم المنتج">
                     </div>
                     
                     <div class="form-group">
@@ -1674,31 +1845,39 @@ function showAddProductModal() {
                     <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div class="form-group">
                             <label>💰 السعر (دج)</label>
-                            <input type="number" id="productPrice" class="form-control" required>
+                            <input type="number" id="productPrice" class="form-control" required min="0" placeholder="0">
                         </div>
                         
                         <div class="form-group">
                             <label>📊 الكمية</label>
-                            <input type="number" id="productStock" class="form-control" required>
+                            <input type="number" id="productStock" class="form-control" required min="0" placeholder="0">
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label>📝 وصف المنتج</label>
-                        <textarea id="productDescription" class="form-control" rows="3"></textarea>
+                        <textarea id="productDescription" class="form-control" rows="3" placeholder="أدخل وصف المنتج..."></textarea>
                     </div>
                     
                     <div class="form-group">
-                        <label>🖼️ صورة المنتج</label>
-                        <input type="file" id="productImages" class="form-control" accept="image/*" required>
-                        <div id="imagePreview" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
+                        <label>🔗 رابط الصورة (اختياري)</label>
+                        <input type="url" id="productImage" class="form-control" placeholder="https://example.com/image.jpg">
                     </div>
                     
-                    <div class="form-actions" style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 20px;">
-                        <button type="submit" class="btn-gold">
-                            <i class="fas fa-cloud-upload-alt"></i> رفع المنتج
+                    <div class="image-upload-area" onclick="document.getElementById('productImages').click()" style="border: 2px dashed var(--gold); border-radius: 25px; padding: 40px 20px; text-align: center; cursor: pointer; margin-top: 15px;">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: var(--gold);"></i>
+                        <p>أو اضغط لرفع صورة من جهازك</p>
+                    </div>
+                    
+                    <input type="file" id="productImages" accept="image/*" style="display:none;" onchange="handleImageUpload(event)" multiple>
+                    <div class="image-preview" id="imagePreview" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
+                    <input type="hidden" id="productImagesData">
+                    
+                    <div style="display: flex; gap: 15px; margin-top: 20px;">
+                        <button type="submit" class="btn-gold" style="flex: 2;">
+                            <i class="fas fa-cloud-upload-alt"></i> حفظ المنتج
                         </button>
-                        <button type="button" class="btn-outline-gold" onclick="closeModal('productModal')">
+                        <button type="button" class="btn-outline-gold" style="flex: 1;" onclick="closeModal('productModal')">
                             إلغاء
                         </button>
                     </div>
@@ -1738,9 +1917,7 @@ function editProduct(productId) {
         return;
     }
 
-    // فتح نافذة تعديل المنتج
     showAddProductModal();
-    // تعبئة البيانات
     setTimeout(() => {
         document.getElementById('productName').value = product.name;
         document.getElementById('productCategory').value = product.category;
@@ -1774,25 +1951,16 @@ function viewProductTelegram(productId) {
     }
 }
 
-function contactCustomer(phone) {
-    window.open(`tel:${phone}`);
-}
-
-function contactCustomerTelegram(customerName) {
-    // فتح محادثة تليجرام مع العميل (إذا كان لديه معرف)
-    window.open('https://t.me/nardoo_support');
-}
-
-// ========== 17. إنشاء المودالات ==========
+// ========== إنشاء المودالات ==========
 function createMerchantDashboardModal() {
     const modal = document.createElement('div');
     modal.id = 'merchantDashboardModal';
     modal.className = 'modal';
     modal.innerHTML = `
         <div class="modal-content" style="max-width: 1200px; width: 95%;">
-            <div class="modal-header">
-                <h2><i class="fas fa-store"></i> لوحة تحكم التاجر</h2>
-                <button class="close-btn" onclick="closeModal('merchantDashboardModal')">&times;</button>
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color:var(--gold);"><i class="fas fa-store"></i> لوحة تحكم التاجر</h2>
+                <button class="close-btn" onclick="closeModal('merchantDashboardModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
             </div>
             <div class="modal-body" id="merchantDashboardContent" style="max-height: 80vh; overflow-y: auto;">
             </div>
@@ -1807,9 +1975,9 @@ function createMerchantProductsModal() {
     modal.className = 'modal';
     modal.innerHTML = `
         <div class="modal-content" style="max-width: 1000px;">
-            <div class="modal-header">
-                <h2><i class="fas fa-boxes"></i> منتجات التاجر</h2>
-                <button class="close-btn" onclick="closeModal('merchantProductsModal')">&times;</button>
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color:var(--gold);"><i class="fas fa-boxes"></i> منتجات التاجر</h2>
+                <button class="close-btn" onclick="closeModal('merchantProductsModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
             </div>
             <div class="modal-body" id="merchantProductsContent" style="max-height: 80vh; overflow-y: auto;">
             </div>
@@ -1824,9 +1992,9 @@ function createMerchantOrdersModal() {
     modal.className = 'modal';
     modal.innerHTML = `
         <div class="modal-content" style="max-width: 800px;">
-            <div class="modal-header">
-                <h2><i class="fas fa-shopping-bag"></i> طلباتي</h2>
-                <button class="close-btn" onclick="closeModal('merchantOrdersModal')">&times;</button>
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color:var(--gold);"><i class="fas fa-shopping-bag"></i> طلباتي</h2>
+                <button class="close-btn" onclick="closeModal('merchantOrdersModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
             </div>
             <div class="modal-body" id="merchantOrdersContent" style="max-height: 80vh; overflow-y: auto;">
             </div>
@@ -1835,7 +2003,7 @@ function createMerchantOrdersModal() {
     document.body.appendChild(modal);
 }
 
-// ========== 18. تأثيرات الكتابة ==========
+// ========== تأثيرات الكتابة ==========
 class TypingAnimation {
     constructor(element, texts, speed = 100, delay = 2000) {
         this.element = element;
@@ -1877,129 +2045,22 @@ class TypingAnimation {
     }
 }
 
-// ========== 19. إضافة CSS ==========
-const styles = `
-    .btn-telegram {
-        background: #0088cc;
-        color: white;
-        border: none;
-        padding: 8px 15px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-telegram:hover {
-        background: #006699;
-        transform: translateY(-2px);
-    }
-    
-    .product-telegram a {
-        transition: color 0.3s ease;
-    }
-    
-    .product-telegram a:hover {
-        color: #006699 !important;
-        text-decoration: underline !important;
-    }
-    
-    .merchant-badge {
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-size: 14px;
-        font-weight: bold;
-    }
-    
-    .merchant-badge.approved {
-        background: linear-gradient(45deg, #4CAF50, #45a049);
-        color: white;
-    }
-    
-    .merchant-badge.pending {
-        background: linear-gradient(45deg, #FFC107, #FFB300);
-        color: black;
-    }
-    
-    .status-badge {
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-size: 12px;
-    }
-    
-    .status-badge.pending {
-        background: #FFC107;
-        color: black;
-    }
-    
-    .status-badge.approved {
-        background: #4CAF50;
-        color: white;
-    }
-    
-    .status-badge.new {
-        background: #2196F3;
-        color: white;
-    }
-    
-    .stock-badge {
-        padding: 3px 10px;
-        border-radius: 15px;
-        font-size: 12px;
-    }
-    
-    .stock-badge.good {
-        background: #4CAF50;
-        color: white;
-    }
-    
-    .stock-badge.low {
-        background: #f44336;
-        color: white;
-    }
-    
-    .action-btn {
-        background: var(--glass);
-        border: none;
-        color: var(--text);
-        width: 35px;
-        height: 35px;
-        border-radius: 8px;
-        cursor: pointer;
-        margin: 0 2px;
-        transition: all 0.3s ease;
-    }
-    
-    .action-btn:hover {
-        background: var(--gold);
-        color: black;
-        transform: translateY(-2px);
-    }
-    
-    .merchant-request-card {
-        animation: slideIn 0.3s ease;
-    }
-    
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
+// ========== استقبال الإشعارات من النوافذ الأخرى ==========
+try {
+    const channel = new BroadcastChannel('merchant_notifications');
+    channel.onmessage = function(event) {
+        if (event.data.type === 'approval' && currentUser && currentUser.id == event.data.merchantId) {
+            showNotification(event.data.message, 'success');
+            setTimeout(() => {
+                location.reload();
+            }, 3000);
         }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-`;
+    };
+} catch (e) {
+    console.log('Broadcast Channel غير مدعوم');
+}
 
-const styleSheet = document.createElement("style");
-styleSheet.textContent = styles;
-document.head.appendChild(styleSheet);
-
-// ========== 20. التهيئة ==========
+// ========== التهيئة ==========
 window.onload = async function() {
     await loadProducts();
     loadCart();
@@ -2009,6 +2070,9 @@ window.onload = async function() {
         currentUser = JSON.parse(savedUser);
         updateUIBasedOnRole();
         updateNavigation();
+        
+        // التحقق من الإشعارات المعلقة
+        checkPendingNotifications();
     }
 
     const savedTheme = localStorage.getItem('theme');
