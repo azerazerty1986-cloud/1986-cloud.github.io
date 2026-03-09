@@ -140,6 +140,16 @@
     <!-- ===== لوحة التاجر ===== -->
     <div class="container" id="merchantPanelContainer" style="display: none;"></div>
 
+    <!-- ===== خيارات الفرز ===== -->
+    <div class="container sort-options">
+        <select class="sort-select" onchange="changeSort(this.value)">
+            <option value="newest">🆕 الأحدث</option>
+            <option value="price_low">💰 السعر: من الأقل</option>
+            <option value="price_high">💰 السعر: من الأعلى</option>
+            <option value="rating">⭐ التقييم</option>
+        </select>
+    </div>
+
     <!-- ===== المنتجات ===== -->
     <div class="container">
         <div class="products-grid" id="productsContainer"></div>
@@ -291,10 +301,10 @@
             </div>
             
             <form id="productForm" onsubmit="event.preventDefault(); saveProduct();">
-                <!-- حقل معرف تليجرام (يظهر للتاجر) -->
+                <!-- حقل معرف تليجرام (يظهر للتاجر إذا لم يكن لديه) -->
                 <div class="form-group" id="merchantTelegramField" style="display: none;">
                     <label>📱 معرف تليجرام الخاص بك</label>
-                    <input type="text" class="form-control" id="merchantTelegram" placeholder="@username" value="">
+                    <input type="text" class="form-control" id="merchantTelegram" placeholder="@username">
                     <small style="color: #888;">أدخل معرفك في تليجرام ليصلك إشعار الطلبات</small>
                 </div>
                 
@@ -336,6 +346,7 @@
                 </div>
                 
                 <div class="image-preview" id="imagePreview" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
+                <input type="hidden" id="productImagesData">
 
                 <div style="display: flex; gap: 15px; margin-top: 20px;">
                     <button type="submit" class="btn-gold" style="flex: 2;">
@@ -355,13 +366,37 @@
     </div>
 
     <!-- ===== نافذة لوحة التاجر ===== -->
-    <div class="modal" id="merchantDashboardModal"></div>
+    <div class="modal" id="merchantDashboardModal">
+        <div class="modal-content" style="max-width: 1200px;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color:var(--gold);"><i class="fas fa-store"></i> لوحة تحكم التاجر</h2>
+                <button class="close-btn" onclick="closeModal('merchantDashboardModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-body" id="merchantDashboardContent" style="max-height: 80vh; overflow-y: auto;"></div>
+        </div>
+    </div>
     
     <!-- ===== نافذة منتجات التاجر ===== -->
-    <div class="modal" id="merchantProductsModal"></div>
+    <div class="modal" id="merchantProductsModal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color:var(--gold);"><i class="fas fa-boxes"></i> منتجاتي</h2>
+                <button class="close-btn" onclick="closeModal('merchantProductsModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-body" id="merchantProductsContent" style="max-height: 80vh; overflow-y: auto;"></div>
+        </div>
+    </div>
     
     <!-- ===== نافذة طلبات التاجر ===== -->
-    <div class="modal" id="merchantOrdersModal"></div>
+    <div class="modal" id="merchantOrdersModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color:var(--gold);"><i class="fas fa-shopping-bag"></i> طلباتي</h2>
+                <button class="close-btn" onclick="closeModal('merchantOrdersModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-body" id="merchantOrdersContent" style="max-height: 80vh; overflow-y: auto;"></div>
+        </div>
+    </div>
 
     <!-- ===== ربط ملف JavaScript ===== -->
     <script src="script.js"></script>
