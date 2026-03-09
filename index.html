@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -281,13 +280,11 @@
                     <h3>تابعنا</h3>
                     <p><i class="fab fa-facebook"></i> فيسبوك</p>
                     <p><i class="fab fa-instagram"></i> انستغرام</p>
-                    <p><i class="fab fa-tiktok"></i> تيك توك</p>
                 </div>
                 <div class="footer-col">
                     <h3>روابط سريعة</h3>
                     <p><i class="fas fa-question-circle"></i> عن المتجر</p>
                     <p><i class="fas fa-shield-alt"></i> سياسة الخصوصية</p>
-                    <p><i class="fas fa-truck"></i> الشحن والتوصيل</p>
                 </div>
             </div>
             <div class="copyright">
@@ -317,7 +314,7 @@
         <i class="fas fa-chevron-up"></i>
     </button>
 
-    <!-- ===== 24. نافذة تسجيل الدخول (معدلة مع إضافة storeName) ===== -->
+    <!-- ===== 24. نافذة تسجيل الدخول ===== -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <h2 style="text-align: center; margin-bottom: 30px;">
@@ -344,7 +341,7 @@
                 </button>
             </form>
 
-            <!-- نموذج التسجيل (معدل مع إضافة حقل اسم المتجر) -->
+            <!-- نموذج التسجيل -->
             <form id="registerForm" style="display: none;" onsubmit="event.preventDefault(); handleRegister();">
                 <div class="form-group">
                     <label>الاسم الكامل</label>
@@ -373,15 +370,13 @@
                     </label>
                 </div>
                 
-                <!-- ===== حقول التاجر (معدلة مع إضافة storeName) ===== -->
+                <!-- حقول التاجر -->
                 <div id="merchantFields" style="display: none; margin-top: 15px; padding: 15px; background: var(--glass); border-radius: 15px; border: 1px solid var(--gold);">
                     <h4 style="color: var(--gold); margin-bottom: 15px;">معلومات المتجر</h4>
                     
-                    <!-- ===== هذا الحقل كان مفقوداً وأضفناه ===== -->
                     <div class="form-group">
                         <label>اسم المتجر <span style="color: var(--gold);">*</span></label>
-                        <input type="text" class="form-control" id="storeName" placeholder="مثال: متجر العطار" required>
-                        <small style="color: var(--text-secondary);">سيظهر هذا الاسم على منتجاتك</small>
+                        <input type="text" class="form-control" id="storeName" placeholder="مثال: متجر العطار">
                     </div>
                     
                     <div class="form-group">
@@ -446,11 +441,10 @@
                     <input type="number" class="form-control" id="productStock" required min="0">
                 </div>
 
-                <div class="form-group" id="merchantSelectGroup">
-                    <label>التاجر</label>
-                    <select class="form-control" id="productMerchant">
-                        <option value="">منتج عام</option>
-                    </select>
+                <!-- حقل الوصف -->
+                <div class="form-group">
+                    <label>وصف المنتج</label>
+                    <textarea class="form-control" id="productDescription" rows="3" placeholder="اكتب وصفاً مفصلاً للمنتج..."></textarea>
                 </div>
 
                 <!-- رفع الصور -->
@@ -459,6 +453,7 @@
                     <div class="image-upload-area" onclick="document.getElementById('productImages').click()">
                         <i class="fas fa-cloud-upload-alt"></i>
                         <p>اضغط لرفع الصور أو اسحبها هنا</p>
+                        <small>يمكنك اختيار عدة صور</small>
                     </div>
                     <input type="file" id="productImages" multiple accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
                     <div class="image-preview" id="imagePreview"></div>
@@ -490,4 +485,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
