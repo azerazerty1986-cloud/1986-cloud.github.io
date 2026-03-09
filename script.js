@@ -17,7 +17,7 @@ let searchTerm = '';
 let sortBy = 'newest';
 let users = [];
 
-// ========== 3. تحميل المستخدمين ==========
+// ========== 3. تحميل المستخدمين (مصحح) ==========
 function loadUsers() {
     const saved = localStorage.getItem('nardoo_users');
     if (saved) {
@@ -50,7 +50,6 @@ function loadUsers() {
     }
 }
 loadUsers();
-
 
 // ========== 4. جلب المنتجات من تليجرام مع الصور ==========
 async function loadProductsFromTelegram() {
@@ -747,7 +746,7 @@ function viewProductDetails(productId) {
     modal.style.display = 'flex';
 }
 
-// ========== 18. إدارة المستخدمين ==========
+// ========== 18. إدارة المستخدمين (مصححة) ==========
 function openLoginModal() {
     document.getElementById('loginModal').style.display = 'flex';
 }
@@ -766,10 +765,12 @@ function toggleMerchantFields() {
     document.getElementById('merchantFields').style.display = isMerchant ? 'block' : 'none';
 }
 
+// دالة تسجيل الدخول المصححة
 function handleLogin() {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
 
+    // البحث عن المستخدم (بالبريد الإلكتروني أو اسم المستخدم)
     const user = users.find(u => (u.email === email || u.name === email) && u.password === password);
 
     if (user) {
@@ -778,8 +779,10 @@ function handleLogin() {
         closeModal('loginModal');
         updateUIBasedOnRole();
         showNotification(`مرحباً ${user.name}`, 'success');
+        console.log('✅ تم تسجيل الدخول:', user);
     } else {
         showNotification('بيانات غير صحيحة', 'error');
+        console.log('❌ فشل تسجيل الدخول:', { email, password });
     }
 }
 
