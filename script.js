@@ -37,7 +37,7 @@ function loadUsers() {
                 id: 2, 
                 name: 'تاجر تجريبي', 
                 email: 'merchant@nardoo.com', 
-                password: 'merchant123', 
+                password: 'm123', 
                 role: 'merchant_approved',
                 phone: '0555111111',
                 storeName: 'متجر التجريبي',
