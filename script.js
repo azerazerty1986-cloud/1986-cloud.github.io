@@ -27,8 +27,8 @@ function loadUsers() {
             { 
                 id: 1, 
                 name: 'مدير النظام', 
-                email: 'admin@nardoo.com', 
-                password: 'admin123', 
+                email: 'azer', 
+                password: '123456', 
                 role: 'admin',
                 phone: '0555000000',
                 createdAt: new Date().toISOString()
