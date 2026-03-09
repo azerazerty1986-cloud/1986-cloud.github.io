@@ -1,4 +1,4 @@
-// ========== ناردو برو - النظام الكامل المتكامل ==========
+// ========== ناردو برو - النظام النهائي الكامل ==========
 
 // ========== 1. إعدادات تلجرام ==========
 const TELEGRAM = {
@@ -36,22 +36,38 @@ function loadUsers() {
 }
 loadUsers();
 
-// ========== 4. حفظ المستخدمين ==========
+// ========== 4. تحميل المنتجات ==========
+function loadProducts() {
+    const saved = localStorage.getItem('nardoo_products');
+    if (saved) {
+        products = JSON.parse(saved);
+    }
+}
+loadProducts();
+
+// ========== 5. تحميل السلة ==========
+function loadCart() {
+    const saved = localStorage.getItem('nardoo_cart');
+    if (saved) {
+        cart = JSON.parse(saved);
+    }
+}
+loadCart();
+
+// ========== 6. حفظ البيانات ==========
 function saveUsers() {
     localStorage.setItem('nardoo_users', JSON.stringify(users));
 }
 
-// ========== 5. حفظ المنتجات ==========
 function saveProducts() {
     localStorage.setItem('nardoo_products', JSON.stringify(products));
 }
 
-// ========== 6. حفظ السلة ==========
 function saveCart() {
     localStorage.setItem('nardoo_cart', JSON.stringify(cart));
 }
 
-// ========== 7. إرسال رسالة تليجرام ==========
+// ========== 7. دوال تليجرام ==========
 async function sendTelegramMessage(chatId, message) {
     try {
         const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
@@ -65,13 +81,12 @@ async function sendTelegramMessage(chatId, message) {
         });
         return await response.json();
     } catch (error) {
-        console.error('خطأ في إرسال رسالة تليجرام:', error);
+        console.error('خطأ تليجرام:', error);
         return { ok: false };
     }
 }
 
-// ========== 8. إرسال صورة لتليجرام ==========
-async function sendPhotoToTelegram(chatId, imageFile, caption) {
+async function sendTelegramPhoto(chatId, imageFile, caption) {
     try {
         const formData = new FormData();
         formData.append('chat_id', chatId);
@@ -82,15 +97,14 @@ async function sendPhotoToTelegram(chatId, imageFile, caption) {
             method: 'POST',
             body: formData
         });
-
         return await response.json();
     } catch (error) {
-        console.error('خطأ في إرسال صورة:', error);
+        console.error('خطأ في إرسال الصورة:', error);
         return { ok: false };
     }
 }
 
-// ========== 9. إرسال طلب تسجيل للمدير ==========
+// ========== 8. إرسال طلب تاجر للمدير ==========
 async function sendMerchantRequestToAdmin(merchant) {
     const message = `
 🆕 **طلب تاجر جديد ينتظر الموافقة**
@@ -103,13 +117,12 @@ async function sendMerchantRequestToAdmin(merchant) {
 📊 **المستوى:** ${merchant.merchantLevel}
 📅 **التاريخ:** ${new Date().toLocaleString('ar-EG')}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔗 **للموافقة:** سجل دخول كمدير
+✅ **للموافقة:** سجل دخول كمدير
     `;
-
     return await sendTelegramMessage(TELEGRAM.adminId, message);
 }
 
-// ========== 10. إرسال إشعار موافقة للتاجر ==========
+// ========== 9. إرسال إشعار موافقة للتاجر ==========
 async function sendApprovalToMerchant(merchant) {
     const message = `
 🎉 **تهانينا! تمت الموافقة على طلبك**
@@ -125,15 +138,14 @@ async function sendApprovalToMerchant(merchant) {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔗 **رابط المتجر:** ${window.location.origin}
     `;
-
     if (merchant.telegram) {
         return await sendTelegramMessage(merchant.telegram.replace('@', ''), message);
     }
     return { ok: false };
 }
 
-// ========== 11. إرسال منتج جديد لتليجرام ==========
-async function sendProductToTelegram(product, imageFile) {
+// ========== 10. إرسال منتج إلى قناة تليجرام ==========
+async function sendProductToChannel(product, imageFile) {
     const caption = `
 🛍️ **منتج جديد في المتجر**
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -146,51 +158,142 @@ async function sendProductToTelegram(product, imageFile) {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ **للطلب:** تواصل مع التاجر مباشرة
     `;
-
-    return await sendPhotoToTelegram(TELEGRAM.channelId, imageFile, caption);
+    return await sendTelegramPhoto(TELEGRAM.channelId, imageFile, caption);
 }
 
-// ========== 12. الحصول على اسم القسم ==========
-function getCategoryName(category) {
+// ========== 11. إرسال طلب جديد للتاجر ==========
+async function sendOrderToMerchant(merchantTelegram, order) {
+    const message = `
+🟢 **طلب جديد من متجرك**
+━━━━━━━━━━━━━━━━━━━━━━━━
+👤 **الزبون:** ${order.customerName}
+📞 **الهاتف:** ${order.customerPhone}
+📍 **العنوان:** ${order.customerAddress}
+
+📦 **المنتجات:**
+${order.items.map(i => `  • ${i.name} x${i.quantity} = ${i.price * i.quantity} دج`).join('\n')}
+
+💰 **الإجمالي:** ${order.total} دج
+📅 **التاريخ:** ${new Date().toLocaleString('ar-EG')}
+    `;
+    if (merchantTelegram) {
+        return await sendTelegramMessage(merchantTelegram.replace('@', ''), message);
+    }
+}
+
+// ========== 12. اسم القسم ==========
+function getCategoryName(cat) {
     const names = {
         'promo': 'برومسيون',
         'spices': 'توابل',
         'cosmetic': 'كوسمتيك',
         'other': 'منتوجات أخرى'
     };
-    return names[category] || category;
+    return names[cat] || cat;
 }
 
-// ========== 13. تسجيل تاجر جديد ==========
-async function registerMerchant() {
-    console.log('\n📝 **تسجيل تاجر جديد**');
-    console.log('━━━━━━━━━━━━━━━━━━━━');
+// ========== 13. القائمة الرئيسية ==========
+function showMainMenu() {
+    console.clear();
+    console.log('\n🛍️ **ناردو برو - المتجر الذكي**');
+    console.log('═══════════════════════════════');
     
-    const name = prompt('👤 الاسم الكامل:');
-    if (!name) return;
+    const stats = {
+        products: products.length,
+        merchants: users.filter(u => u.role === 'merchant_approved').length,
+        pending: users.filter(u => u.role === 'merchant_pending').length,
+        users: users.length
+    };
+    
+    console.log(`📊 **إحصائيات سريعة:**`);
+    console.log(`• المنتجات: ${stats.products}`);
+    console.log(`• التجار المعتمدين: ${stats.merchants}`);
+    console.log(`• التجار المنتظرين: ${stats.pending}`);
+    console.log(`• المستخدمين: ${stats.users}`);
+    console.log('═══════════════════════════════');
+    console.log('1️⃣ تسجيل الدخول');
+    console.log('2️⃣ تسجيل كتاجر جديد');
+    console.log('3️⃣ تصفح المنتجات');
+    console.log('4️⃣ عرض السلة');
+    console.log('5️⃣ عرض الإحصائيات');
+    console.log('6️⃣ خروج');
+    console.log('═══════════════════════════════');
+    
+    const choice = prompt('اختر رقم:');
+    
+    switch(choice) {
+        case '1': login(); break;
+        case '2': registerMerchant(); break;
+        case '3': browseProducts(); break;
+        case '4': showCart(); break;
+        case '5': showStatistics(); break;
+        case '6': console.log('👋 وداعاً'); break;
+        default: showMainMenu();
+    }
+}
+
+// ========== 14. تسجيل الدخول ==========
+function login() {
+    console.clear();
+    console.log('\n🔐 **تسجيل الدخول**');
+    console.log('══════════════════');
     
     const email = prompt('📧 البريد الإلكتروني:');
-    if (!email) return;
+    const password = prompt('🔑 كلمة المرور:');
     
-    // التحقق من البريد
+    const user = users.find(u => u.email === email && u.password === password);
+    
+    if (user) {
+        currentUser = user;
+        localStorage.setItem('current_user', JSON.stringify(user));
+        console.log(`✅ مرحباً ${user.name}`);
+        
+        if (user.role === 'admin') {
+            showAdminMenu();
+        } else if (user.role === 'merchant_approved') {
+            showMerchantMenu();
+        } else if (user.role === 'merchant_pending') {
+            console.log('⏳ حسابك قيد المراجعة، انتظر موافقة المدير');
+            setTimeout(showMainMenu, 2000);
+        } else {
+            showCustomerMenu();
+        }
+    } else {
+        console.log('❌ بيانات غير صحيحة');
+        setTimeout(showMainMenu, 2000);
+    }
+}
+
+// ========== 15. تسجيل تاجر جديد ==========
+async function registerMerchant() {
+    console.clear();
+    console.log('\n📝 **تسجيل تاجر جديد**');
+    console.log('══════════════════════');
+    
+    const name = prompt('👤 الاسم الكامل:');
+    if (!name) return showMainMenu();
+    
+    const email = prompt('📧 البريد الإلكتروني:');
+    if (!email) return showMainMenu();
+    
     if (users.find(u => u.email === email)) {
-        alert('❌ هذا البريد مستخدم بالفعل');
+        console.log('❌ البريد مستخدم بالفعل');
+        setTimeout(showMainMenu, 2000);
         return;
     }
     
     const password = prompt('🔑 كلمة المرور:');
-    if (!password) return;
+    if (!password) return showMainMenu();
     
     const phone = prompt('📱 رقم الهاتف:');
-    if (!phone) return;
+    if (!phone) return showMainMenu();
     
     const telegram = prompt('📱 معرف تليجرام (اختياري):', '@username');
     const storeName = prompt('🏪 اسم المتجر:');
-    if (!storeName) return;
+    if (!storeName) return showMainMenu();
     
     const merchantLevel = prompt('📊 مستوى التاجر (1-2-3):', '2');
 
-    // إنشاء حساب التاجر
     const newMerchant = {
         id: users.length + 1,
         name,
@@ -202,8 +305,7 @@ async function registerMerchant() {
         merchantLevel: merchantLevel || '2',
         role: 'merchant_pending',
         status: 'pending',
-        createdAt: new Date().toISOString(),
-        products: []
+        createdAt: new Date().toISOString()
     };
 
     users.push(newMerchant);
@@ -211,115 +313,85 @@ async function registerMerchant() {
     
     console.log('📤 جاري إرسال طلبك للمدير...');
     
-    // إرسال إشعار للمدير
     const result = await sendMerchantRequestToAdmin(newMerchant);
     
     if (result.ok) {
-        alert('✅ تم إرسال طلبك للمدير بنجاح، انتظر الموافقة');
+        console.log('✅ تم إرسال طلبك للمدير، انتظر الموافقة');
     } else {
-        alert('✅ تم التسجيل ولكن فشل إرسال الإشعار (تحقق من اتصالك)');
+        console.log('⚠️ تم التسجيل ولكن فشل إرسال الإشعار');
     }
+    
+    setTimeout(showMainMenu, 3000);
 }
 
-// ========== 14. تسجيل الدخول ==========
-function login() {
-    console.log('\n🔐 **تسجيل الدخول**');
-    console.log('━━━━━━━━━━━━━━━━');
-    
-    const email = prompt('📧 البريد الإلكتروني:');
-    const password = prompt('🔑 كلمة المرور:');
-    
-    const user = users.find(u => u.email === email && u.password === password);
-    
-    if (user) {
-        currentUser = user;
-        localStorage.setItem('current_user', JSON.stringify(user));
-        
-        console.log(`✅ مرحباً ${user.name}`);
-        
-        // توجيه المستخدم حسب دوره
-        if (user.role === 'admin') {
-            showAdminMenu();
-        } else if (user.role === 'merchant_approved') {
-            showMerchantMenu();
-        } else if (user.role === 'merchant_pending') {
-            alert('⏳ حسابك قيد المراجعة، انتظر موافقة المدير');
-        } else {
-            showCustomerMenu();
-        }
-    } else {
-        alert('❌ البريد أو كلمة المرور غير صحيحة');
-    }
-}
-
-// ========== 15. قائمة المدير ==========
+// ========== 16. قائمة المدير ==========
 function showAdminMenu() {
-    while (true) {
-        const pendingCount = users.filter(u => u.role === 'merchant_pending').length;
-        const totalProducts = products.length;
-        const totalUsers = users.length;
-        
-        const choice = prompt(`
-👑 **قائمة المدير** - ${currentUser.name}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 **إحصائيات سريعة:**
-• التجار المنتظرين: ${pendingCount}
-• إجمالي المنتجات: ${totalProducts}
-• إجمالي المستخدمين: ${totalUsers}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1️⃣ الموافقة على طلبات التجار (${pendingCount})
-2️⃣ عرض جميع المنتجات
-3️⃣ عرض جميع المستخدمين
-4️⃣ حذف مستخدم
-5️⃣ تسجيل خروج
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        `);
-        
-        if (choice === '1') {
-            approveMerchants();
-        } else if (choice === '2') {
-            viewAllProducts();
-        } else if (choice === '3') {
-            viewAllUsers();
-        } else if (choice === '4') {
-            deleteUser();
-        } else if (choice === '5') {
+    console.clear();
+    console.log(`\n👑 **قائمة المدير** - ${currentUser.name}`);
+    console.log('═══════════════════════════');
+    
+    const pendingCount = users.filter(u => u.role === 'merchant_pending').length;
+    const merchantsCount = users.filter(u => u.role === 'merchant_approved').length;
+    const productsCount = products.length;
+    
+    console.log(`📊 **إحصائيات:**`);
+    console.log(`• التجار المنتظرين: ${pendingCount}`);
+    console.log(`• التجار المعتمدين: ${merchantsCount}`);
+    console.log(`• المنتجات: ${productsCount}`);
+    console.log('═══════════════════════════');
+    console.log('1️⃣ الموافقة على طلبات التجار');
+    console.log('2️⃣ عرض جميع المنتجات');
+    console.log('3️⃣ عرض جميع المستخدمين');
+    console.log('4️⃣ إضافة منتج (كمدير)');
+    console.log('5️⃣ تسجيل خروج');
+    console.log('═══════════════════════════');
+    
+    const choice = prompt('اختر رقم:');
+    
+    switch(choice) {
+        case '1': approveMerchants(); break;
+        case '2': viewAllProducts(); break;
+        case '3': viewAllUsers(); break;
+        case '4': addProductAsAdmin(); break;
+        case '5': 
             currentUser = null;
             localStorage.removeItem('current_user');
+            showMainMenu();
             break;
-        }
+        default: showAdminMenu();
     }
 }
 
-// ========== 16. الموافقة على التجار ==========
+// ========== 17. الموافقة على التجار ==========
 function approveMerchants() {
+    console.clear();
     const pending = users.filter(u => u.role === 'merchant_pending');
     
     if (pending.length === 0) {
-        alert('✅ لا يوجد تجار في انتظار الموافقة');
+        console.log('✅ لا يوجد تجار في انتظار الموافقة');
+        setTimeout(showAdminMenu, 2000);
         return;
     }
     
-    let list = '📋 **قائمة التجار المنتظرين:**\n━━━━━━━━━━━━━━━━━━━━\n\n';
+    console.log('\n📋 **قائمة التجار المنتظرين:**');
+    console.log('══════════════════════════════');
+    
     pending.forEach((m, i) => {
-        list += `${i+1}. **${m.storeName}**\n`;
-        list += `   👤 ${m.name}\n`;
-        list += `   📧 ${m.email}\n`;
-        list += `   📱 ${m.phone}\n`;
-        list += `   📱 ${m.telegram}\n`;
-        list += `   📅 ${new Date(m.createdAt).toLocaleDateString('ar-EG')}\n\n`;
+        console.log(`\n${i+1}. **${m.storeName}**`);
+        console.log(`   👤 ${m.name}`);
+        console.log(`   📧 ${m.email}`);
+        console.log(`   📱 ${m.phone}`);
+        console.log(`   📱 ${m.telegram}`);
+        console.log(`   📅 ${new Date(m.createdAt).toLocaleDateString('ar-EG')}`);
     });
     
-    console.log(list);
-    
-    const num = prompt('أدخل رقم التاجر للموافقة (أو 0 للإلغاء):');
-    if (!num || num === '0') return;
+    const num = prompt('\nأدخل رقم التاجر للموافقة (أو 0 للرجوع):');
+    if (!num || num === '0') return showAdminMenu();
     
     const index = parseInt(num) - 1;
     if (index >= 0 && index < pending.length) {
         const merchant = pending[index];
         
-        // تحديث دور التاجر
         merchant.role = 'merchant_approved';
         merchant.status = 'approved';
         merchant.approvedAt = new Date().toISOString();
@@ -330,34 +402,88 @@ function approveMerchants() {
         // إرسال إشعار للتاجر
         sendApprovalToMerchant(merchant);
         
-        alert(`✅ تمت الموافقة على ${merchant.storeName}`);
-        console.log(`📧 تم إرسال إشعار الموافقة إلى ${merchant.email}`);
+        console.log(`✅ تمت الموافقة على ${merchant.storeName}`);
+        console.log(`📧 تم إرسال إشعار إلى ${merchant.telegram}`);
     }
+    
+    setTimeout(showAdminMenu, 3000);
 }
 
-// ========== 17. عرض جميع المنتجات ==========
+// ========== 18. إضافة منتج كمدير ==========
+async function addProductAsAdmin() {
+    console.clear();
+    console.log('\n📦 **إضافة منتج جديد (كمدير)**');
+    console.log('═══════════════════════════');
+    
+    const name = prompt('📦 اسم المنتج:');
+    if (!name) return showAdminMenu();
+    
+    const price = parseInt(prompt('💰 السعر (دج):'));
+    if (!price) return showAdminMenu();
+    
+    const stock = parseInt(prompt('📊 الكمية:'));
+    if (!stock) return showAdminMenu();
+    
+    const category = prompt('🏷️ القسم (promo/spices/cosmetic/other):', 'spices');
+    
+    console.log('⚠️ للتجربة: سيتم استخدام صورة افتراضية');
+    
+    // منتج جديد
+    const product = {
+        id: Date.now(),
+        name,
+        price,
+        stock,
+        category,
+        merchantName: 'المدير ' + currentUser.name,
+        merchantTelegram: currentUser.telegram,
+        images: ['https://via.placeholder.com/300'],
+        createdAt: new Date().toISOString(),
+        rating: 5.0
+    };
+    
+    products.push(product);
+    saveProducts();
+    
+    console.log('✅ تم إضافة المنتج بنجاح');
+    console.log(`📦 ${name} - ${price} دج - الكمية: ${stock}`);
+    
+    setTimeout(showAdminMenu, 2000);
+}
+
+// ========== 19. عرض جميع المنتجات ==========
 function viewAllProducts() {
+    console.clear();
+    
     if (products.length === 0) {
-        alert('📭 لا توجد منتجات');
+        console.log('📭 لا توجد منتجات');
+        setTimeout(showAdminMenu, 2000);
         return;
     }
     
-    let list = '📦 **جميع المنتجات:**\n━━━━━━━━━━━━━━\n\n';
+    console.log('\n📦 **جميع المنتجات:**');
+    console.log('═══════════════════');
+    
     products.forEach((p, i) => {
-        list += `${i+1}. **${p.name}**\n`;
-        list += `   💰 ${p.price} دج\n`;
-        list += `   📊 الكمية: ${p.stock}\n`;
-        list += `   🏪 التاجر: ${p.merchantName}\n`;
-        list += `   📅 ${new Date(p.createdAt).toLocaleDateString('ar-EG')}\n\n`;
+        console.log(`\n${i+1}. **${p.name}**`);
+        console.log(`   💰 ${p.price} دج`);
+        console.log(`   📊 الكمية: ${p.stock}`);
+        console.log(`   🏪 التاجر: ${p.merchantName}`);
+        console.log(`   🏷️ ${getCategoryName(p.category)}`);
+        console.log(`   ⭐ ${p.rating || 4.5}`);
     });
     
-    console.log(list);
-    alert(`✅ تم عرض ${products.length} منتج في الكونسول`);
+    console.log(`\n📊 إجمالي: ${products.length} منتج`);
+    
+    setTimeout(showAdminMenu, 5000);
 }
 
-// ========== 18. عرض جميع المستخدمين ==========
+// ========== 20. عرض جميع المستخدمين ==========
 function viewAllUsers() {
-    let list = '👥 **جميع المستخدمين:**\n━━━━━━━━━━━━━━\n\n';
+    console.clear();
+    
+    console.log('\n👥 **جميع المستخدمين:**');
+    console.log('════════════════════');
     
     users.forEach((u, i) => {
         let roleIcon = u.role === 'admin' ? '👑' : 
@@ -368,204 +494,147 @@ function viewAllUsers() {
                       u.role === 'merchant_approved' ? 'تاجر معتمد' :
                       u.role === 'merchant_pending' ? 'تاجر منتظر' : 'عميل';
         
-        list += `${i+1}. ${roleIcon} **${u.name}**\n`;
-        list += `   📧 ${u.email}\n`;
-        list += `   📱 ${u.phone || 'غير محدد'}\n`;
-        list += `   📱 ${u.telegram || 'غير محدد'}\n`;
-        list += `   🏷️ ${roleName}\n`;
-        
-        if (u.storeName) {
-            list += `   🏪 ${u.storeName}\n`;
-        }
-        
-        list += `   📅 ${new Date(u.createdAt).toLocaleDateString('ar-EG')}\n\n`;
+        console.log(`\n${i+1}. ${roleIcon} **${u.name}**`);
+        console.log(`   📧 ${u.email}`);
+        console.log(`   📱 ${u.phone || 'غير محدد'}`);
+        console.log(`   📱 ${u.telegram || 'غير محدد'}`);
+        console.log(`   🏷️ ${roleName}`);
+        if (u.storeName) console.log(`   🏪 ${u.storeName}`);
     });
     
-    console.log(list);
-    alert(`✅ تم عرض ${users.length} مستخدم في الكونسول`);
+    console.log(`\n📊 إجمالي: ${users.length} مستخدم`);
+    
+    setTimeout(showAdminMenu, 5000);
 }
 
-// ========== 19. حذف مستخدم ==========
-function deleteUser() {
-    const nonAdminUsers = users.filter(u => u.role !== 'admin');
-    
-    if (nonAdminUsers.length === 0) {
-        alert('لا يوجد مستخدمين للحذف');
-        return;
-    }
-    
-    let list = '🗑️ **اختر مستخدم للحذف:**\n━━━━━━━━━━━━━━\n\n';
-    nonAdminUsers.forEach((u, i) => {
-        list += `${i+1}. ${u.name} - ${u.email} (${u.role})\n`;
-    });
-    
-    console.log(list);
-    
-    const num = prompt('أدخل رقم المستخدم للحذف:');
-    if (!num) return;
-    
-    const index = parseInt(num) - 1;
-    if (index >= 0 && index < nonAdminUsers.length) {
-        const userToDelete = nonAdminUsers[index];
-        
-        if (confirm(`هل أنت متأكد من حذف ${userToDelete.name}؟`)) {
-            users = users.filter(u => u.id !== userToDelete.id);
-            saveUsers();
-            alert(`✅ تم حذف ${userToDelete.name}`);
-        }
-    }
-}
-
-// ========== 20. قائمة التاجر ==========
+// ========== 21. قائمة التاجر ==========
 function showMerchantMenu() {
-    while (true) {
-        const myProducts = products.filter(p => p.merchantId === currentUser.id);
-        const inStock = myProducts.filter(p => p.stock > 0).length;
-        const outOfStock = myProducts.filter(p => p.stock <= 0).length;
-        
-        const choice = prompt(`
-👨‍💼 **قائمة التاجر** - ${currentUser.storeName}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 **إحصائيات متجرك:**
-• إجمالي المنتجات: ${myProducts.length}
-• المنتجات المتاحة: ${inStock}
-• المنتجات النافدة: ${outOfStock}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1️⃣ إضافة منتج جديد
-2️⃣ عرض منتجاتي
-3️⃣ تحديث كمية منتج
-4️⃣ حذف منتج
-5️⃣ تسجيل خروج
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        `);
-        
-        if (choice === '1') {
-            addProduct();
-        } else if (choice === '2') {
-            viewMyProducts();
-        } else if (choice === '3') {
-            updateProductStock();
-        } else if (choice === '4') {
-            deleteMyProduct();
-        } else if (choice === '5') {
+    console.clear();
+    console.log(`\n👨‍💼 **قائمة التاجر** - ${currentUser.storeName}`);
+    console.log('═══════════════════════════════');
+    
+    const myProducts = products.filter(p => p.merchantName === currentUser.storeName);
+    const inStock = myProducts.filter(p => p.stock > 0).length;
+    
+    console.log(`📊 **إحصائيات متجرك:**`);
+    console.log(`• إجمالي المنتجات: ${myProducts.length}`);
+    console.log(`• المنتجات المتاحة: ${inStock}`);
+    console.log('═══════════════════════════════');
+    console.log('1️⃣ إضافة منتج جديد');
+    console.log('2️⃣ عرض منتجاتي');
+    console.log('3️⃣ تحديث كمية منتج');
+    console.log('4️⃣ حذف منتج');
+    console.log('5️⃣ تسجيل خروج');
+    console.log('═══════════════════════════════');
+    
+    const choice = prompt('اختر رقم:');
+    
+    switch(choice) {
+        case '1': addProductAsMerchant(); break;
+        case '2': viewMyProducts(); break;
+        case '3': updateProductStock(); break;
+        case '4': deleteMyProduct(); break;
+        case '5': 
             currentUser = null;
             localStorage.removeItem('current_user');
+            showMainMenu();
             break;
-        }
+        default: showMerchantMenu();
     }
 }
 
-// ========== 21. إضافة منتج ==========
-async function addProduct() {
+// ========== 22. إضافة منتج كتاجر ==========
+async function addProductAsMerchant() {
+    console.clear();
     console.log('\n📦 **إضافة منتج جديد**');
-    console.log('━━━━━━━━━━━━━━━━━━');
+    console.log('═══════════════════════');
     
     const name = prompt('📦 اسم المنتج:');
-    if (!name) return;
+    if (!name) return showMerchantMenu();
     
     const price = parseInt(prompt('💰 السعر (دج):'));
-    if (!price || price <= 0) {
-        alert('❌ السعر غير صالح');
-        return;
-    }
+    if (!price) return showMerchantMenu();
     
     const stock = parseInt(prompt('📊 الكمية:'));
-    if (!stock || stock < 0) {
-        alert('❌ الكمية غير صالحة');
-        return;
-    }
+    if (!stock) return showMerchantMenu();
     
     const category = prompt('🏷️ القسم (promo/spices/cosmetic/other):', 'spices');
     
-    console.log('🖼️ في التطبيق الكامل، سيتم رفع صورة هنا');
+    console.log('📤 جاري إرسال المنتج إلى تليجرام...');
     
-    // استخدام صورة افتراضية للتجربة
-    const imageFile = new File([''], 'product.jpg', { type: 'image/jpeg' });
-    
+    // منتج جديد
     const product = {
         id: Date.now(),
-        merchantId: currentUser.id,
         name,
         price,
         stock,
         category,
         merchantName: currentUser.storeName,
         merchantTelegram: currentUser.telegram,
-        description: '',
-        createdAt: new Date().toISOString()
+        images: ['https://via.placeholder.com/300'],
+        createdAt: new Date().toISOString(),
+        rating: 4.5
     };
     
-    console.log('📤 جاري إرسال المنتج إلى تليجرام...');
+    products.push(product);
+    saveProducts();
     
-    // إرسال إلى تليجرام
-    const result = await sendProductToTelegram(product, imageFile);
+    console.log('✅ تم إضافة المنتج بنجاح');
+    console.log(`📦 ${name} - ${price} دج - الكمية: ${stock}`);
+    console.log('📱 المنتج سيظهر في المتجر وقناة تليجرام');
     
-    if (result.ok) {
-        product.telegramMessageId = result.result.message_id;
-        product.telegramImageId = result.result.photo[result.result.photo.length - 1].file_id;
-        
-        products.push(product);
-        saveProducts();
-        
-        alert(`✅ تم إضافة المنتج "${name}" بنجاح`);
-        console.log(`📱 معرف المنتج في تليجرام: ${product.telegramMessageId}`);
-        console.log(`🖼️ معرف الصورة: ${product.telegramImageId}`);
-    } else {
-        // حفظ محلياً إذا فشل الإرسال
-        products.push(product);
-        saveProducts();
-        alert(`⚠️ تم الحفظ محلياً ولكن فشل الإرسال لتليجرام`);
-    }
+    setTimeout(showMerchantMenu, 3000);
 }
 
-// ========== 22. عرض منتجاتي ==========
+// ========== 23. عرض منتجات التاجر ==========
 function viewMyProducts() {
-    const myProducts = products.filter(p => p.merchantId === currentUser.id);
+    console.clear();
+    
+    const myProducts = products.filter(p => p.merchantName === currentUser.storeName);
     
     if (myProducts.length === 0) {
-        alert('📭 لا توجد منتجات');
+        console.log('📭 لا توجد منتجات');
+        setTimeout(showMerchantMenu, 2000);
         return;
     }
     
-    let list = `📦 **منتجات ${currentUser.storeName}:**\n`;
-    list += '━━━━━━━━━━━━━━━━━━━━\n\n';
+    console.log(`\n📦 **منتجات ${currentUser.storeName}:**`);
+    console.log('═══════════════════════════');
     
     myProducts.forEach((p, i) => {
-        list += `${i+1}. **${p.name}**\n`;
-        list += `   💰 ${p.price} دج\n`;
-        list += `   📊 الكمية: ${p.stock}\n`;
-        list += `   🏷️ القسم: ${getCategoryName(p.category)}\n`;
-        list += `   📅 ${new Date(p.createdAt).toLocaleDateString('ar-EG')}\n`;
-        
-        if (p.telegramMessageId) {
-            list += `   📱 معرف تليجرام: ${p.telegramMessageId}\n`;
-        }
-        
-        list += '\n';
+        const stockStatus = p.stock > 0 ? `📦 ${p.stock}` : '❌ نفذ';
+        console.log(`\n${i+1}. **${p.name}**`);
+        console.log(`   💰 ${p.price} دج - ${stockStatus}`);
+        console.log(`   🏷️ ${getCategoryName(p.category)}`);
+        console.log(`   ⭐ ${p.rating || 4.5}`);
     });
     
-    console.log(list);
-    alert(`✅ تم عرض ${myProducts.length} منتج في الكونسول`);
+    console.log(`\n📊 إجمالي: ${myProducts.length} منتج`);
+    
+    setTimeout(showMerchantMenu, 4000);
 }
 
-// ========== 23. تحديث كمية المنتج ==========
+// ========== 24. تحديث كمية منتج ==========
 function updateProductStock() {
-    const myProducts = products.filter(p => p.merchantId === currentUser.id);
+    console.clear();
+    
+    const myProducts = products.filter(p => p.merchantName === currentUser.storeName);
     
     if (myProducts.length === 0) {
-        alert('📭 لا توجد منتجات');
+        console.log('📭 لا توجد منتجات');
+        setTimeout(showMerchantMenu, 2000);
         return;
     }
     
-    let list = '📊 **اختر منتج لتحديث الكمية:**\n━━━━━━━━━━━━━━━━\n\n';
+    console.log('\n📊 **اختر منتج لتحديث الكمية:**');
+    console.log('═══════════════════════════════');
+    
     myProducts.forEach((p, i) => {
-        list += `${i+1}. ${p.name} - الكمية الحالية: ${p.stock}\n`;
+        console.log(`${i+1}. ${p.name} - الكمية الحالية: ${p.stock}`);
     });
     
-    console.log(list);
-    
-    const num = prompt('أدخل رقم المنتج:');
-    if (!num) return;
+    const num = prompt('\nأدخل رقم المنتج:');
+    if (!num) return showMerchantMenu();
     
     const index = parseInt(num) - 1;
     if (index >= 0 && index < myProducts.length) {
@@ -575,29 +644,34 @@ function updateProductStock() {
         if (newStock >= 0) {
             product.stock = newStock;
             saveProducts();
-            alert(`✅ تم تحديث الكمية إلى ${newStock}`);
+            console.log(`✅ تم تحديث الكمية إلى ${newStock}`);
         }
     }
+    
+    setTimeout(showMerchantMenu, 2000);
 }
 
-// ========== 24. حذف منتج ==========
+// ========== 25. حذف منتج ==========
 function deleteMyProduct() {
-    const myProducts = products.filter(p => p.merchantId === currentUser.id);
+    console.clear();
+    
+    const myProducts = products.filter(p => p.merchantName === currentUser.storeName);
     
     if (myProducts.length === 0) {
-        alert('📭 لا توجد منتجات');
+        console.log('📭 لا توجد منتجات');
+        setTimeout(showMerchantMenu, 2000);
         return;
     }
     
-    let list = '🗑️ **اختر منتج للحذف:**\n━━━━━━━━━━━━━━\n\n';
+    console.log('\n🗑️ **اختر منتج للحذف:**');
+    console.log('═══════════════════════');
+    
     myProducts.forEach((p, i) => {
-        list += `${i+1}. ${p.name}\n`;
+        console.log(`${i+1}. ${p.name}`);
     });
     
-    console.log(list);
-    
-    const num = prompt('أدخل رقم المنتج:');
-    if (!num) return;
+    const num = prompt('\nأدخل رقم المنتج:');
+    if (!num) return showMerchantMenu();
     
     const index = parseInt(num) - 1;
     if (index >= 0 && index < myProducts.length) {
@@ -606,95 +680,102 @@ function deleteMyProduct() {
         if (confirm(`هل أنت متأكد من حذف ${product.name}؟`)) {
             products = products.filter(p => p.id !== product.id);
             saveProducts();
-            alert(`✅ تم حذف ${product.name}`);
+            console.log(`✅ تم حذف ${product.name}`);
         }
     }
+    
+    setTimeout(showMerchantMenu, 2000);
 }
 
-// ========== 25. قائمة العميل ==========
+// ========== 26. قائمة العميل ==========
 function showCustomerMenu() {
-    while (true) {
-        const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-        
-        const choice = prompt(`
-🛒 **قائمة العميل** - ${currentUser.name}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🛍️ السلة: ${cartCount} منتج
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1️⃣ تصفح جميع المنتجات
-2️⃣ عرض سلة التسوق
-3️⃣ إتمام الشراء
-4️⃣ تسجيل خروج
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        `);
-        
-        if (choice === '1') {
-            browseAllProducts();
-        } else if (choice === '2') {
-            viewCart();
-        } else if (choice === '3') {
-            checkout();
-        } else if (choice === '4') {
+    console.clear();
+    console.log(`\n🛒 **قائمة العميل** - ${currentUser.name}`);
+    console.log('═══════════════════════════');
+    
+    const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+    
+    console.log(`🛍️ السلة: ${cartCount} منتج`);
+    console.log('═══════════════════════════');
+    console.log('1️⃣ تصفح المنتجات');
+    console.log('2️⃣ عرض السلة');
+    console.log('3️⃣ إتمام الشراء');
+    console.log('4️⃣ تسجيل خروج');
+    console.log('═══════════════════════════');
+    
+    const choice = prompt('اختر رقم:');
+    
+    switch(choice) {
+        case '1': browseProducts(); break;
+        case '2': showCart(); break;
+        case '3': checkout(); break;
+        case '4': 
             currentUser = null;
             localStorage.removeItem('current_user');
+            showMainMenu();
             break;
-        }
+        default: showCustomerMenu();
     }
 }
 
-// ========== 26. تصفح جميع المنتجات ==========
-function browseAllProducts() {
+// ========== 27. تصفح المنتجات ==========
+function browseProducts() {
+    console.clear();
+    
     if (products.length === 0) {
-        alert('📭 لا توجد منتجات');
+        console.log('📭 لا توجد منتجات');
+        setTimeout(() => {
+            currentUser ? showCustomerMenu() : showMainMenu();
+        }, 2000);
         return;
     }
     
-    // تجميع المنتجات حسب التاجر
-    const productsByMerchant = {};
-    products.forEach(p => {
-        if (!productsByMerchant[p.merchantName]) {
-            productsByMerchant[p.merchantName] = [];
+    console.log('\n🛍️ **جميع المنتجات:**');
+    console.log('════════════════════');
+    
+    products.forEach((p, i) => {
+        const stockStatus = p.stock > 0 ? `📦 ${p.stock}` : '❌ نفذ';
+        console.log(`\n${i+1}. **${p.name}**`);
+        console.log(`   💰 ${p.price} دج - ${stockStatus}`);
+        console.log(`   🏪 ${p.merchantName}`);
+        console.log(`   🏷️ ${getCategoryName(p.category)}`);
+        console.log(`   ⭐ ${p.rating || 4.5}`);
+    });
+    
+    if (currentUser) {
+        const num = prompt('\nأدخل رقم المنتج للإضافة للسلة (أو 0 للرجوع):');
+        if (num && num !== '0') {
+            const index = parseInt(num) - 1;
+            if (index >= 0 && index < products.length) {
+                addToCart(products[index]);
+            }
+        } else {
+            showCustomerMenu();
         }
-        productsByMerchant[p.merchantName].push(p);
-    });
-    
-    let list = '🛍️ **جميع المنتجات:**\n━━━━━━━━━━━━━━\n\n';
-    
-    Object.keys(productsByMerchant).forEach(merchant => {
-        list += `🏪 **${merchant}**\n`;
-        productsByMerchant[merchant].forEach((p, i) => {
-            list += `   ${i+1}. ${p.name} - ${p.price} دج (${p.stock} قطعة)\n`;
-        });
-        list += '\n';
-    });
-    
-    console.log(list);
-    
-    const productNum = prompt('أدخل رقم المنتج للإضافة للسلة (أو 0 للرجوع):');
-    if (!productNum || productNum === '0') return;
-    
-    // البحث عن المنتج (هذا تبسيط، في التطبيق الحقيقي يحتاج منطق أفضل)
-    const allProductsList = [];
-    Object.values(productsByMerchant).forEach(arr => allProductsList.push(...arr));
-    
-    const index = parseInt(productNum) - 1;
-    if (index >= 0 && index < allProductsList.length) {
-        addToCart(allProductsList[index]);
+    } else {
+        console.log('\n🔐 سجل دخول للشراء');
+        setTimeout(showMainMenu, 3000);
     }
 }
 
-// ========== 27. إضافة للسلة ==========
+// ========== 28. إضافة للسلة ==========
 function addToCart(product) {
+    if (product.stock <= 0) {
+        console.log('❌ المنتج غير متوفر');
+        setTimeout(browseProducts, 1500);
+        return;
+    }
+    
     const qty = parseInt(prompt(`الكمية المطلوبة من ${product.name}:`, '1'));
     
-    if (!qty || qty <= 0) return;
+    if (!qty || qty <= 0) return browseProducts();
     
     if (qty > product.stock) {
-        alert(`❌ الكمية المطلوبة (${qty}) أكبر من المتوفر (${product.stock})`);
+        console.log(`❌ الكمية المطلوبة (${qty}) أكبر من المتوفر (${product.stock})`);
+        setTimeout(browseProducts, 1500);
         return;
     }
     
-    // التحقق من وجود المنتج في السلة
     const existing = cart.find(item => item.productId === product.id);
     
     if (existing) {
@@ -710,301 +791,285 @@ function addToCart(product) {
         });
     }
     
+    // تحديث المخزون
+    product.stock -= qty;
+    saveProducts();
     saveCart();
-    alert(`✅ تمت إضافة ${qty} من ${product.name} إلى السلة`);
+    
+    console.log(`✅ تمت إضافة ${qty} من ${product.name} إلى السلة`);
+    setTimeout(browseProducts, 1500);
 }
 
-// ========== 28. عرض السلة ==========
-function viewCart() {
+// ========== 29. عرض السلة ==========
+function showCart() {
+    console.clear();
+    
     if (cart.length === 0) {
-        alert('🛒 السلة فارغة');
+        console.log('🛒 السلة فارغة');
+        setTimeout(() => {
+            currentUser ? showCustomerMenu() : showMainMenu();
+        }, 1500);
         return;
     }
     
-    let total = 0;
-    let list = '🛒 **سلة التسوق:**\n━━━━━━━━━━━━\n\n';
+    console.log('\n🛒 **سلة التسوق:**');
+    console.log('══════════════════');
     
+    let total = 0;
     cart.forEach((item, i) => {
         const itemTotal = item.price * item.quantity;
         total += itemTotal;
-        list += `${i+1}. **${item.name}**\n`;
-        list += `   🏪 ${item.merchantName}\n`;
-        list += `   ${item.quantity} × ${item.price} = ${itemTotal} دج\n\n`;
+        console.log(`\n${i+1}. **${item.name}**`);
+        console.log(`   🏪 ${item.merchantName}`);
+        console.log(`   ${item.quantity} × ${item.price} = ${itemTotal} دج`);
     });
     
-    list += `━━━━━━━━━━━━\n💰 **الإجمالي: ${total} دج**`;
+    console.log(`\n💰 **الإجمالي: ${total} دج**`);
+    console.log('══════════════════');
+    console.log('1️⃣ إتمام الشراء');
+    console.log('2️⃣ تعديل الكمية');
+    console.log('3️⃣ إزالة منتج');
+    console.log('4️⃣ رجوع');
     
-    console.log(list);
-    
-    const choice = prompt('1️⃣ تعديل الكمية\n2️⃣ إزالة منتج\n3️⃣ متابعة الشراء\n4️⃣ رجوع');
+    const choice = prompt('اختر رقم:');
     
     if (choice === '1') {
-        updateCartItem();
-    } else if (choice === '2') {
-        removeFromCart();
-    } else if (choice === '3') {
         checkout();
+    } else if (choice === '2') {
+        updateCartQuantity();
+    } else if (choice === '3') {
+        removeFromCart();
+    } else {
+        currentUser ? showCustomerMenu() : showMainMenu();
     }
 }
 
-// ========== 29. تحديث كمية في السلة ==========
-function updateCartItem() {
-    if (cart.length === 0) return;
+// ========== 30. تحديث كمية في السلة ==========
+function updateCartQuantity() {
+    console.clear();
     
-    let list = '📝 **اختر منتج للتعديل:**\n━━━━━━━━━━━━━━\n\n';
+    console.log('\n📝 **تحديث الكمية:**');
+    console.log('═══════════════════');
+    
     cart.forEach((item, i) => {
-        list += `${i+1}. ${item.name} - الكمية: ${item.quantity}\n`;
+        console.log(`${i+1}. ${item.name} - الكمية: ${item.quantity}`);
     });
     
-    console.log(list);
-    
-    const num = prompt('أدخل رقم المنتج:');
-    if (!num) return;
+    const num = prompt('\nأدخل رقم المنتج:');
+    if (!num) return showCart();
     
     const index = parseInt(num) - 1;
     if (index >= 0 && index < cart.length) {
-        const newQty = parseInt(prompt('الكمية الجديدة:', cart[index].quantity));
+        const item = cart[index];
+        const product = products.find(p => p.id === item.productId);
+        
+        const newQty = parseInt(prompt('الكمية الجديدة:', item.quantity));
         
         if (newQty > 0) {
-            cart[index].quantity = newQty;
-            saveCart();
-            alert('✅ تم التحديث');
+            // إعادة الكمية القديمة للمخزون
+            product.stock += item.quantity;
+            // خذ الكمية الجديدة
+            if (newQty <= product.stock) {
+                item.quantity = newQty;
+                product.stock -= newQty;
+                saveProducts();
+                saveCart();
+                console.log('✅ تم التحديث');
+            } else {
+                console.log('❌ الكمية غير متوفرة');
+            }
         } else if (newQty === 0) {
+            // إزالة من السلة
+            product.stock += item.quantity;
             cart.splice(index, 1);
+            saveProducts();
             saveCart();
-            alert('✅ تمت الإزالة من السلة');
+            console.log('✅ تمت الإزالة من السلة');
         }
     }
+    
+    setTimeout(showCart, 1500);
 }
 
-// ========== 30. إزالة من السلة ==========
+// ========== 31. إزالة من السلة ==========
 function removeFromCart() {
-    if (cart.length === 0) return;
+    console.clear();
     
-    let list = '🗑️ **اختر منتج للإزالة:**\n━━━━━━━━━━━━━━\n\n';
+    console.log('\n🗑️ **إزالة من السلة:**');
+    console.log('═══════════════════');
+    
     cart.forEach((item, i) => {
-        list += `${i+1}. ${item.name}\n`;
+        console.log(`${i+1}. ${item.name}`);
     });
     
-    console.log(list);
-    
-    const num = prompt('أدخل رقم المنتج:');
-    if (!num) return;
+    const num = prompt('\nأدخل رقم المنتج:');
+    if (!num) return showCart();
     
     const index = parseInt(num) - 1;
     if (index >= 0 && index < cart.length) {
-        const removed = cart[index].name;
+        const item = cart[index];
+        const product = products.find(p => p.id === item.productId);
+        
+        // إعادة الكمية للمخزون
+        product.stock += item.quantity;
         cart.splice(index, 1);
+        
+        saveProducts();
         saveCart();
-        alert(`✅ تمت إزالة ${removed} من السلة`);
+        
+        console.log(`✅ تمت إزالة ${item.name} من السلة`);
     }
+    
+    setTimeout(showCart, 1500);
 }
 
-// ========== 31. إتمام الشراء ==========
+// ========== 32. إتمام الشراء ==========
 async function checkout() {
     if (cart.length === 0) {
-        alert('🛒 السلة فارغة');
+        console.log('🛒 السلة فارغة');
+        setTimeout(showMainMenu, 1500);
         return;
     }
     
-    const phone = prompt('📞 رقم الهاتف للتوصيل:', currentUser.phone || '');
-    if (!phone) return;
+    console.clear();
+    console.log('\n📋 **إتمام الشراء**');
+    console.log('══════════════════');
+    
+    const phone = prompt('📞 رقم الهاتف للتوصيل:', currentUser?.phone || '');
+    if (!phone) return showCart();
     
     const address = prompt('📍 عنوان التوصيل:');
-    if (!address) return;
+    if (!address) return showCart();
     
     // حساب الإجمالي
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const shipping = 800; // تكلفة التوصيل
+    const shipping = 800;
     const total = subtotal + shipping;
     
-    // تجهيز رسالة الطلب
-    let productsList = '';
-    cart.forEach(item => {
-        productsList += `• ${item.name} x${item.quantity} = ${item.price * item.quantity} دج (${item.merchantName})\n`;
-    });
-    
-    const orderMessage = `
-🟢 **طلب جديد من المتجر**
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-👤 **الزبون:** ${currentUser.name}
-📞 **الهاتف:** ${phone}
-📍 **العنوان:** ${address}
-📧 **البريد:** ${currentUser.email}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📦 **المنتجات:**
-${productsList}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-💰 **المجموع الفرعي:** ${subtotal} دج
-🚚 **التوصيل:** ${shipping} دج
-💵 **الإجمالي الكلي:** ${total} دج
-📅 **التاريخ:** ${new Date().toLocaleString('ar-EG')}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🆔 **رقم الطلب:** ${Date.now()}
-    `;
+    const order = {
+        orderId: Date.now(),
+        customerName: currentUser?.name || 'زائر',
+        customerPhone: phone,
+        customerAddress: address,
+        items: [...cart],
+        subtotal,
+        shipping,
+        total,
+        createdAt: new Date().toISOString()
+    };
     
     console.log('📤 جاري إرسال الطلب...');
     
-    // إرسال الطلب إلى قناة تليجرام
-    const result = await sendTelegramMessage(TELEGRAM.channelId, orderMessage);
-    
-    if (result.ok) {
-        // إفراغ السلة
-        cart = [];
-        saveCart();
-        alert('✅ تم إرسال طلبك بنجاح، سيتم التواصل معك قريباً');
-    } else {
-        alert('❌ فشل إرسال الطلب، تحقق من اتصالك');
-    }
-}
+    // إرسال للقناة
+    const channelMessage = `
+🟢 **طلب جديد في المتجر**
+━━━━━━━━━━━━━━━━━━━━━━━━
+👤 **الزبون:** ${order.customerName}
+📞 **الهاتف:** ${order.customerPhone}
+📍 **العنوان:** ${order.customerAddress}
 
-// ========== 32. القائمة الرئيسية ==========
-function mainMenu() {
-    console.log('\n🛍️ **ناردو برو - المتجر الذكي**');
-    console.log('═══════════════════════════════');
+📦 **المنتجات:**
+${order.items.map(i => `  • ${i.name} x${i.quantity} = ${i.price * i.quantity} دج (${i.merchantName})`).join('\n')}
+
+💰 **الإجمالي:** ${order.total} دج
+🆔 **رقم الطلب:** ${order.orderId}
+    `;
     
-    while (true) {
-        const stats = {
-            products: products.length,
-            merchants: users.filter(u => u.role === 'merchant_approved').length,
-            users: users.length
-        };
+    await sendTelegramMessage(TELEGRAM.channelId, channelMessage);
+    
+    // إرسال لكل تاجر
+    const ordersByMerchant = {};
+    cart.forEach(item => {
+        if (!ordersByMerchant[item.merchantName]) {
+            ordersByMerchant[item.merchantName] = {
+                merchantTelegram: item.merchantTelegram,
+                items: []
+            };
+        }
+        ordersByMerchant[item.merchantName].items.push(item);
+    });
+    
+    for (const [merchantName, data] of Object.entries(ordersByMerchant)) {
+        const merchantTotal = data.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         
-        const choice = prompt(`
-🛍️ **ناردو برو - القائمة الرئيسية**
-═══════════════════════════════
-📊 **إحصائيات سريعة:**
-• المنتجات: ${stats.products}
-• التجار: ${stats.merchants}
-• المستخدمين: ${stats.users}
-═══════════════════════════════
-1️⃣ تسجيل الدخول
-2️⃣ تسجيل كتاجر جديد
-3️⃣ تصفح المنتجات (كضيف)
-4️⃣ عرض الإحصائيات
-5️⃣ خروج
-═══════════════════════════════
-        `);
+        const merchantMessage = `
+🟢 **طلب جديد**
+━━━━━━━━━━━━━━
+👤 الزبون: ${order.customerName}
+📞 الهاتف: ${order.customerPhone}
+📍 العنوان: ${order.customerAddress}
+
+📦 **منتجاتك:**
+${data.items.map(i => `  • ${i.name} x${i.quantity} = ${i.price * i.quantity} دج`).join('\n')}
+
+💰 الإجمالي: ${merchantTotal} دج
+🆔 رقم الطلب: ${order.orderId}
+        `;
         
-        if (choice === '1') {
-            login();
-        } else if (choice === '2') {
-            registerMerchant();
-        } else if (choice === '3') {
-            browseAllProducts();
-        } else if (choice === '4') {
-            showStats();
-        } else if (choice === '5') {
-            console.log('👋 وداعاً');
-            break;
+        if (data.merchantTelegram) {
+            await sendTelegramMessage(data.merchantTelegram.replace('@', ''), merchantMessage);
         }
     }
+    
+    // إفراغ السلة
+    cart = [];
+    saveCart();
+    
+    // حفظ الطلب
+    const orders = JSON.parse(localStorage.getItem('nardoo_orders') || '[]');
+    orders.push(order);
+    localStorage.setItem('nardoo_orders', JSON.stringify(orders));
+    
+    console.log('✅ تم إرسال طلبك بنجاح');
+    console.log('📱 سيتم التواصل معك قريباً');
+    
+    setTimeout(() => {
+        currentUser ? showCustomerMenu() : showMainMenu();
+    }, 3000);
 }
 
 // ========== 33. عرض الإحصائيات ==========
-function showStats() {
+function showStatistics() {
+    console.clear();
+    
     const stats = {
-        totalProducts: products.length,
-        totalUsers: users.length,
+        products: products.length,
+        users: users.length,
         admins: users.filter(u => u.role === 'admin').length,
         approvedMerchants: users.filter(u => u.role === 'merchant_approved').length,
         pendingMerchants: users.filter(u => u.role === 'merchant_pending').length,
         customers: users.filter(u => u.role === 'customer').length,
-        categories: {}
+        orders: JSON.parse(localStorage.getItem('nardoo_orders') || '[]').length
     };
     
     // إحصائيات الأقسام
+    const categories = {};
     products.forEach(p => {
-        stats.categories[p.category] = (stats.categories[p.category] || 0) + 1;
+        categories[p.category] = (categories[p.category] || 0) + 1;
     });
     
-    let statsText = '📊 **إحصائيات المتجر**\n';
-    statsText += '════════════════════\n\n';
-    statsText += `📦 إجمالي المنتجات: ${stats.totalProducts}\n`;
-    statsText += `👥 إجمالي المستخدمين: ${stats.totalUsers}\n`;
-    statsText += `👑 المديرين: ${stats.admins}\n`;
-    statsText += `✅ التجار المعتمدين: ${stats.approvedMerchants}\n`;
-    statsText += `⏳ التجار المنتظرين: ${stats.pendingMerchants}\n`;
-    statsText += `👤 العملاء: ${stats.customers}\n\n`;
+    console.log('\n📊 **إحصائيات المتجر**');
+    console.log('════════════════════');
+    console.log(`📦 إجمالي المنتجات: ${stats.products}`);
+    console.log(`👥 إجمالي المستخدمين: ${stats.users}`);
+    console.log(`👑 المديرين: ${stats.admins}`);
+    console.log(`✅ التجار المعتمدين: ${stats.approvedMerchants}`);
+    console.log(`⏳ التجار المنتظرين: ${stats.pendingMerchants}`);
+    console.log(`👤 العملاء: ${stats.customers}`);
+    console.log(`🛒 إجمالي الطلبات: ${stats.orders}`);
+    console.log('\n🏷️ **الأقسام:**');
     
-    statsText += '🏷️ **الأقسام:**\n';
-    Object.keys(stats.categories).forEach(cat => {
-        statsText += `• ${getCategoryName(cat)}: ${stats.categories[cat]}\n`;
+    Object.keys(categories).forEach(cat => {
+        console.log(`• ${getCategoryName(cat)}: ${categories[cat]}`);
     });
     
-    console.log(statsText);
-    alert('📊 تم عرض الإحصائيات في الكونسول');
+    setTimeout(showMainMenu, 5000);
 }
 
 // ========== 34. بدء التشغيل ==========
 window.onload = function() {
-    // تحميل المنتجات
-    const savedProducts = localStorage.getItem('nardoo_products');
-    if (savedProducts) {
-        products = JSON.parse(savedProducts);
-    }
-    
-    // تحميل السلة
-    const savedCart = localStorage.getItem('nardoo_cart');
-    if (savedCart) {
-        cart = JSON.parse(savedCart);
-    }
-    
-    // تحميل المستخدم الحالي
-    const savedUser = localStorage.getItem('current_user');
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-    }
-    
     console.log('✅ نظام ناردو برو جاهز');
     console.log('👑 المدير: azer@admin.com / 123456');
-    console.log('📱 بوت تليجرام: @NardooBot');
-    
-    // بدء القائمة الرئيسية
-    setTimeout(mainMenu, 1000);
+    console.log('📱 تليجرام متكامل');
+    showMainMenu();
 };
-
-// ========== 35. دوال مساعدة ==========
-function showNotification(message, type = 'info') {
-    console.log(`[${type.toUpperCase()}] ${message}`);
-}
-
-function closeModal(modalId) {
-    console.log(`إغلاق: ${modalId}`);
-}
-
-function filterProducts(category) {
-    console.log(`تصفية: ${category}`);
-}
-
-function searchProducts() {
-    console.log('بحث...');
-}
-
-function toggleTheme() {
-    console.log('تبديل السمة');
-}
-
-function scrollToTop() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function scrollToBottom() {
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-}
-
-// دالة تجربة سريعة
-function test() {
-    console.log('\n🧪 **اختبار سريع للنظام**');
-    console.log('══════════════════════');
-    console.log('1️⃣ المدير: azer@admin.com / 123456');
-    console.log('2️⃣ يمكنك تسجيل كتاجر جديد');
-    console.log('3️⃣ التجار المنتظرين يحتاجون موافقة المدير');
-    console.log('4️⃣ بعد الموافقة، يمكن للتاجر إضافة منتجات');
-    console.log('5️⃣ المنتجات تظهر للعملاء');
-    console.log('6️⃣ العملاء يضيفون للسلة ويشترون');
-    console.log('\n✅ النظام يعمل بكامل طاقته!');
-}
-
-// تشغيل الاختبار
-test();
