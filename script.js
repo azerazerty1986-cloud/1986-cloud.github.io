@@ -1067,9 +1067,9 @@ function showStatistics() {
 }
 
 // ========== 34. بدء التشغيل ==========
-window.onload = function() {
-    console.log('✅ نظام ناردو برو جاهز');
-    console.log('👑 المدير: azer@admin.com / 123456');
-    console.log('📱 تليجرام متكامل');
-    showMainMenu();
+//window.onload = function() {
+    //console.log('✅ نظام ناردو برو جاهز');
+   // console.log('👑 المدير: azer@admin.com / 123456');
+   // console.log('📱 تليجرام متكامل');
+  //  showMainMenu();
 };
