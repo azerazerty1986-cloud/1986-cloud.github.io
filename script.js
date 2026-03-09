@@ -1,5 +1,4 @@
-// ========== تجربة ناردو - الفكرة 1 ==========
-// إضافة منتج ← يرسل لتلجرام ← يرجع يظهر في المتجر
+// ========== ناردو - تجربة مصححة ==========
 
 // 1. إعدادات تلجرام
 const TELEGRAM = {
@@ -10,160 +9,183 @@ const TELEGRAM = {
 // 2. المتغيرات
 let products = [];
 
-// 3. دالة إضافة منتج للتلجرام
-async function testAddProduct() {
-    const product = {
-        name: 'منتج تجريبي',
-        price: 999,
-        category: 'promo',
-        stock: 50,
-        merchantName: 'تاجر تجريبي',
-        imageUrl: 'https://via.placeholder.com/500/2c5e4f/ffffff?text=نكهة+وجمال'
-    };
-
-    const message = `
-🟣 *منتج جديد*
-📦 ${product.name}
-💰 ${product.price} دج
-🏷️ ${product.category}
-📊 ${product.stock}
-👤 ${product.merchantName}
-    `;
+// 3. دالة إضافة منتج (مبسطة)
+async function addTestProduct() {
+    const message = `🟣 منتج جديد
+📦 اسم: منتج تجريبي
+💰 سعر: 999 دج
+🏷️ قسم: promo
+📊 كمية: 50
+👤 تاجر: تاجر تجريبي`;
 
     try {
-        // إرسال الصورة
-        await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendPhoto`, {
+        // إرسال نص فقط (بدون صورة للتجربة)
+        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 chat_id: TELEGRAM.channelId,
-                photo: product.imageUrl,
-                caption: message.substring(0, 200)
+                text: message
             })
         });
-
-        // إرسال التفاصيل
-        await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                chat_id: TELEGRAM.channelId,
-                text: message + '\n✅ تمت الإضافة'
-            })
-        });
-
-        console.log('✅ تم الإرسال');
-        return true;
+        
+        const result = await response.json();
+        console.log('✅ إرسال:', result);
+        return result.ok;
     } catch (error) {
         console.error('❌ خطأ:', error);
         return false;
     }
 }
 
-// 4. دالة جلب المنتجات من تلجرام
-async function testLoadProducts() {
+// 4. دالة جلب المنتجات (مبسطة)
+async function getProducts() {
     try {
+        console.log('🔍 جلب من تلجرام...');
+        
         const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates`);
         const data = await response.json();
         
         products = [];
         
-        for (const update of data.result) {
-            const post = update.channel_post;
-            if (!post) continue;
+        if (data.ok && data.result) {
+            console.log(`📨 وجدنا ${data.result.length} تحديث`);
             
-            // البحث عن الصور
-            if (post.photo) {
-                const fileId = post.photo[post.photo.length - 1].file_id;
-                const file = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/getFile?file_id=${fileId}`);
-                const fileData = await file.json();
+            for (const update of data.result) {
+                const post = update.channel_post || update.message;
+                if (!post) continue;
                 
-                const imageUrl = `https://api.telegram.org/file/bot${TELEGRAM.botToken}/${fileData.result.file_path}`;
+                const text = post.text || post.caption || '';
                 
-                // استخراج البيانات من النص
-                const text = post.caption || '';
+                // البحث عن رسائل المنتج (🟣)
                 if (text.includes('🟣')) {
+                    console.log('✅ وجدنا منتج:', text.substring(0, 50));
+                    
+                    // استخراج اسم المنتج
+                    let name = 'منتج';
+                    const nameMatch = text.match(/اسم:?\s*([^\n]+)/i) || 
+                                     text.match(/منتج:?\s*([^\n]+)/i);
+                    if (nameMatch) name = nameMatch[1].trim();
+                    
+                    // استخراج السعر
+                    let price = 0;
+                    const priceMatch = text.match(/سعر:?\s*(\d+)/i);
+                    if (priceMatch) price = parseInt(priceMatch[1]);
+                    
                     products.push({
                         id: post.message_id,
-                        name: 'منتج تجريبي',
-                        price: 999,
-                        image: imageUrl,
-                        merchant: 'تاجر'
+                        name: name,
+                        price: price,
+                        merchant: 'تاجر',
+                        image: 'https://via.placeholder.com/300/d4af37/000000?text=منتج',
+                        date: new Date(post.date * 1000)
                     });
                 }
             }
         }
         
-        console.log(`✅ تم جلب ${products.length} منتج`);
+        console.log(`📦 تم جلب ${products.length} منتج`);
         return products;
+        
     } catch (error) {
         console.error('❌ خطأ في الجلب:', error);
         return [];
     }
 }
 
-// 5. دالة عرض المنتجات
-function testDisplayProducts() {
+// 5. عرض المنتجات
+function showProducts() {
     const container = document.getElementById('productsContainer');
     if (!container) return;
     
     if (products.length === 0) {
-        container.innerHTML = '<div style="text-align: center; padding: 50px;">لا توجد منتجات</div>';
+        container.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 50px;">
+                <h3 style="color: #d4af37;">لا توجد منتجات</h3>
+                <p style="color: white;">اضف منتج أولاً</p>
+            </div>
+        `;
         return;
     }
     
     container.innerHTML = products.map(p => `
-        <div style="background: #1a2f28; border: 2px solid #d4af37; border-radius: 20px; padding: 15px; margin: 10px;">
-            <img src="${p.image}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 15px;">
-            <h3 style="color: #d4af37;">${p.name}</h3>
-            <p style="color: white;">💰 ${p.price} دج</p>
-            <p style="color: #f4e3b1;">👤 ${p.merchant}</p>
-            <button style="background: #d4af37; border: none; padding: 10px; border-radius: 10px; cursor: pointer;">
-                أضف للسلة
-            </button>
+        <div style="background: #1a2f28; border: 2px solid #d4af37; border-radius: 20px; overflow: hidden;">
+            <img src="${p.image}" style="width: 100%; height: 200px; object-fit: cover;">
+            <div style="padding: 20px;">
+                <h3 style="color: #d4af37;">${p.name}</h3>
+                <p style="color: white; font-size: 24px;">💰 ${p.price} دج</p>
+                <p style="color: #f4e3b1;">👤 ${p.merchant}</p>
+                <button style="background: #d4af37; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer;">
+                    أضف للسلة
+                </button>
+            </div>
         </div>
     `).join('');
 }
 
 // 6. أزرار التحكم
-function addTestButtons() {
+function addControls() {
     const div = document.createElement('div');
-    div.style.cssText = 'position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; gap: 10px;';
+    div.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        display: flex;
+        gap: 10px;
+        background: #0a1a15;
+        padding: 10px;
+        border-radius: 50px;
+        border: 2px solid #d4af37;
+    `;
     
     div.innerHTML = `
-        <button onclick="runTest()" style="background: #d4af37; color: black; padding: 15px 30px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer;">
-            🧪 إضافة منتج تجريبي
+        <button onclick="testAdd()" style="background: #d4af37; color: black; padding: 15px 30px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer;">
+            ➕ إضافة منتج
         </button>
-        <button onclick="refreshTest()" style="background: #2c5e4f; color: white; padding: 15px 30px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer;">
-            🔄 تحديث المنتجات
+        <button onclick="testRefresh()" style="background: #2c5e4f; color: white; padding: 15px 30px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer;">
+            🔄 تحديث
+        </button>
+        <button onclick="testLog()" style="background: #3498db; color: white; padding: 15px 30px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer;">
+            📋 عرض الـ Log
         </button>
     `;
     
     document.body.appendChild(div);
 }
 
-// 7. دوال التشغيل
-async function runTest() {
-    console.log('🚀 بدء تجربة إضافة منتج...');
-    await testAddProduct();
-    alert('✅ تم إرسال المنتج لتلجرام');
+// 7. دوال الاختبار
+async function testAdd() {
+    console.log('🚀 إضافة منتج...');
+    const success = await addTestProduct();
+    if (success) {
+        alert('✅ تم إرسال المنتج لتلجرام');
+    } else {
+        alert('❌ فشل الإرسال');
+    }
 }
 
-async function refreshTest() {
-    console.log('🔄 جلب المنتجات من تلجرام...');
-    await testLoadProducts();
-    testDisplayProducts();
+async function testRefresh() {
+    console.log('🔄 تحديث...');
+    await getProducts();
+    showProducts();
     alert(`✅ تم جلب ${products.length} منتج`);
 }
 
-// 8. تشغيل التجربة
+async function testLog() {
+    console.log('📋 جميع التحديثات:');
+    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates`);
+    const data = await response.json();
+    console.log(data);
+    alert('شاهد الـ Console (F12)');
+}
+
+// 8. تشغيل
 window.onload = function() {
-    // إضافة الأزرار
-    addTestButtons();
-    
-    // جلب المنتجات أول مرة
+    addControls();
     setTimeout(async () => {
-        await testLoadProducts();
-        testDisplayProducts();
+        await getProducts();
+        showProducts();
     }, 1000);
 };
