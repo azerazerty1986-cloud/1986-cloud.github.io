@@ -1,5 +1,5 @@
 // ========== ناردو برو - نظام متكامل مع تلجرام ==========
-// ========== النسخة الكاملة - الجداول والصور + الموافقة على التجار ==========
+// ========== النسخة المصححة - الجداول والصور + الموافقة على التجار ==========
 
 // ========== 1. إعدادات تلجرام ==========
 const TELEGRAM = {
@@ -47,7 +47,10 @@ loadUsers();
 const ToastSystem = {
     show: function(message, type = 'info', duration = 3000) {
         const container = document.getElementById('toastContainer');
-        if (!container) return;
+        if (!container) {
+            console.warn('❌ عنصر toastContainer غير موجود');
+            return null;
+        }
         
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
@@ -70,7 +73,9 @@ const ToastSystem = {
         container.appendChild(toast);
         
         if (type !== 'loading') {
-            setTimeout(() => toast.remove(), duration);
+            setTimeout(() => {
+                if (toast.parentNode) toast.remove();
+            }, duration);
         }
         
         return toast;
@@ -557,7 +562,148 @@ async function sendMerchantRequestToTelegram(merchant) {
     }
 }
 
-// ========== 12. إضافة منتج إلى تليجرام مع جدول منسق ==========
+// ========== 12. رفع الصور إلى تلجرام ==========
+async function uploadImageToTelegram(imageFile) {
+    try {
+        const formData = new FormData();
+        formData.append('chat_id', TELEGRAM.channelId);
+        formData.append('photo', imageFile);
+
+        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendPhoto`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        
+        if (data.ok && data.result.photo) {
+            // الحصول على أكبر صورة
+            const photo = data.result.photo[data.result.photo.length - 1];
+            const fileId = photo.file_id;
+            
+            // الحصول على رابط الصورة
+            const fileResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/getFile?file_id=${fileId}`);
+            const fileData = await fileResponse.json();
+            
+            if (fileData.ok) {
+                const imageUrl = `https://api.telegram.org/file/bot${TELEGRAM.botToken}/${fileData.result.file_path}`;
+                console.log('✅ تم رفع الصورة بنجاح:', imageUrl);
+                return imageUrl;
+            }
+        }
+        
+        console.error('❌ فشل رفع الصورة:', data);
+        return null;
+        
+    } catch (error) {
+        console.error('❌ خطأ في رفع الصورة:', error);
+        return null;
+    }
+}
+
+// ========== 13. معالج رفع الصور ==========
+async function handleImageUpload(event) {
+    const files = event.target.files;
+    const preview = document.getElementById('imagePreview');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const imagesData = [];
+
+    if (!preview) {
+        console.error('❌ عنصر imagePreview غير موجود');
+        return;
+    }
+
+    preview.innerHTML = '';
+    
+    if (uploadStatus) {
+        uploadStatus.innerHTML = '🔄 جاري رفع الصور إلى تلجرام...';
+        uploadStatus.style.display = 'block';
+        uploadStatus.className = 'upload-status info';
+    }
+
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // عرض معاينة محلية
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML += `
+                <div class="image-upload-item" data-index="${i}" style="display: inline-block; margin: 5px; position: relative;">
+                    <img src="${e.target.result}" class="preview-image" style="width: 100px; height: 100px; object-fit: cover; border: 2px solid var(--gold); border-radius: 10px;">
+                    <div class="upload-progress" style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: white; text-align: center; font-size: 12px; padding: 2px; border-radius: 0 0 10px 10px;">⏳ جاري الرفع...</div>
+                </div>
+            `;
+        };
+        reader.readAsDataURL(file);
+        
+        // رفع الصورة إلى تلجرام
+        try {
+            const imageUrl = await uploadImageToTelegram(file);
+            
+            if (imageUrl) {
+                imagesData.push(imageUrl);
+                
+                // تحديث حالة الرفع
+                const progressDiv = document.querySelector(`.image-upload-item[data-index="${i}"] .upload-progress`);
+                if (progressDiv) {
+                    progressDiv.innerHTML = '✅ تم الرفع';
+                    progressDiv.style.background = '#4ade80';
+                    progressDiv.style.color = '#000';
+                }
+                
+                console.log(`✅ تم رفع الصورة ${i+1}: ${imageUrl}`);
+            } else {
+                // استخدام الصورة المحلية كاحتياطي
+                const localImageUrl = await new Promise((resolve) => {
+                    const fileReader = new FileReader();
+                    fileReader.onload = (e) => resolve(e.target.result);
+                    fileReader.readAsDataURL(file);
+                });
+                imagesData.push(localImageUrl);
+                
+                const progressDiv = document.querySelector(`.image-upload-item[data-index="${i}"] .upload-progress`);
+                if (progressDiv) {
+                    progressDiv.innerHTML = '⚠️ محلي';
+                    progressDiv.style.background = '#fbbf24';
+                    progressDiv.style.color = '#000';
+                }
+                
+                console.warn(`⚠️ تم حفظ الصورة ${i+1} محلياً`);
+            }
+        } catch (error) {
+            console.error('❌ خطأ في رفع الصورة:', error);
+            const progressDiv = document.querySelector(`.image-upload-item[data-index="${i}"] .upload-progress`);
+            if (progressDiv) {
+                progressDiv.innerHTML = '❌ فشل';
+                progressDiv.style.background = '#f87171';
+                progressDiv.style.color = '#000';
+            }
+        }
+    }
+
+    // حفظ روابط الصور
+    const imagesInput = document.getElementById('productImagesData');
+    if (imagesInput) {
+        imagesInput.value = JSON.stringify(imagesData);
+        console.log('📸 روابط الصور المحفوظة:', imagesData);
+    }
+    
+    if (uploadStatus) {
+        if (imagesData.length > 0) {
+            uploadStatus.innerHTML = `✅ تم رفع ${imagesData.length} صورة بنجاح`;
+            uploadStatus.className = 'upload-status success';
+        } else {
+            uploadStatus.innerHTML = '❌ فشل رفع جميع الصور';
+            uploadStatus.className = 'upload-status error';
+        }
+        
+        setTimeout(() => {
+            uploadStatus.style.display = 'none';
+        }, 3000);
+    }
+}
+
+// ========== 14. إضافة منتج إلى تليجرام مع جدول منسق ==========
 async function addProductToTelegram(product) {
     try {
         ToastSystem.show('🔄 جاري الإرسال إلى تلجرام...', 'loading', 0);
@@ -569,8 +715,10 @@ async function addProductToTelegram(product) {
             'other': '📦'
         }[product.category] || '📦';
         
-        const merchantTag = `👤 *معرف التاجر:* ||${product.merchantId}||`;
+        // إخفاء معرف التاجر في علامات سبويلر
+        const merchantTag = `||👤 معرف التاجر: ${product.merchantId}||`;
         
+        // تصميم الجدول بشكل صحيح
         const tableMessage = `
 🟣 *⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯*
 🟣         *منتج جديد في المتجر*         
@@ -587,36 +735,69 @@ async function addProductToTelegram(product) {
 ├──────────────────┼────────────────────┤
 │ 👤 *التاجر*      │ ${product.merchantName.padEnd(18)} │
 └──────────────────┴────────────────────┘
-🟣 *⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯*
+
 ${merchantTag}
-⏰ ${new Date().toLocaleDateString('ar-DZ')}
-🔗 *للطلب:* واتساب
+
+⏰ *تاريخ الإضافة:* ${new Date().toLocaleDateString('ar-DZ', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+})}
+
+🔗 *للطلب:* واتساب 213562243648
 🟣 *⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯*
         `;
 
-        // إرسال مع صورة
-        if (product.images && product.images.length > 0 && !product.images[0].startsWith('data:')) {
-            const photoResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendPhoto`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: TELEGRAM.channelId,
-                    photo: product.images[0],
-                    caption: tableMessage,
-                    parse_mode: 'Markdown'
-                })
-            });
+        // التحقق من وجود صورة حقيقية
+        if (product.images && product.images.length > 0) {
+            const firstImage = product.images[0];
             
-            const photoResult = await photoResponse.json();
-            
-            if (photoResult.ok) {
-                ToastSystem.hideAll();
-                ToastSystem.show('✅ تم إرسال المنتج مع الصورة', 'success');
-                return true;
+            // إذا كانت الصورة رابط حقيقي (وليس Base64)
+            if (!firstImage.startsWith('data:')) {
+                // إرسال الصورة مع التعليق
+                const photoResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendPhoto`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: TELEGRAM.channelId,
+                        photo: firstImage,
+                        caption: tableMessage,
+                        parse_mode: 'Markdown'
+                    })
+                });
+                
+                const photoResult = await photoResponse.json();
+                
+                if (photoResult.ok) {
+                    ToastSystem.hideAll();
+                    ToastSystem.show('✅ تم إرسال المنتج مع الصورة', 'success');
+                    
+                    // إرسال الصور الإضافية إن وجدت
+                    if (product.images.length > 1) {
+                        for (let i = 1; i < product.images.length; i++) {
+                            if (!product.images[i].startsWith('data:')) {
+                                await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendPhoto`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        chat_id: TELEGRAM.channelId,
+                                        photo: product.images[i],
+                                        caption: `📸 صورة إضافية ${i} لمنتج: ${product.name}`,
+                                        parse_mode: 'Markdown'
+                                    })
+                                });
+                            }
+                        }
+                    }
+                    
+                    return true;
+                }
             }
         }
         
-        // إرسال بدون صورة
+        // إذا لم توجد صورة أو فشل إرسالها، أرسل النص فقط
         const textResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -631,12 +812,12 @@ ${merchantTag}
         
         if (textResult.ok) {
             ToastSystem.hideAll();
-            ToastSystem.show('✅ تم إرسال المنتج', 'success');
+            ToastSystem.show('✅ تم إرسال المنتج (بدون صورة)', 'warning');
             return true;
         }
         
         ToastSystem.hideAll();
-        ToastSystem.show('❌ فشل الإرسال', 'error');
+        ToastSystem.show('❌ فشل إرسال المنتج', 'error');
         return false;
         
     } catch (error) {
@@ -647,7 +828,7 @@ ${merchantTag}
     }
 }
 
-// ========== 13. عرض المنتجات في المتجر ==========
+// ========== 15. عرض المنتجات في المتجر ==========
 function displayProducts() {
     const container = document.getElementById('productsContainer');
     if (!container) return;
@@ -748,7 +929,7 @@ function displayProducts() {
     }).join('');
 }
 
-// ========== 14. عرض تفاصيل المنتج ==========
+// ========== 16. عرض تفاصيل المنتج ==========
 function viewProductDetails(productId) {
     const product = products.find(p => p.id == productId);
     if (!product) return;
@@ -756,8 +937,13 @@ function viewProductDetails(productId) {
     const modal = document.getElementById('productDetailModal');
     const content = document.getElementById('productDetailContent');
 
+    if (!modal || !content) {
+        console.error('❌ عناصر modal غير موجودة');
+        return;
+    }
+
     const images = product.images?.map(img => `
-        <img src="${img}" style="width: 100%; height: 300px; object-fit: cover; border-radius: 20px; margin-bottom: 10px;">
+        <img src="${img}" style="width: 100%; height: 300px; object-fit: cover; border-radius: 20px; margin-bottom: 10px;" onerror="this.src='https://via.placeholder.com/300/2c5e4f/ffffff?text=نكهة+وجمال'">
     `).join('') || '<div style="height: 300px; background: var(--nardoo); display: flex; align-items: center; justify-content: center; border-radius: 20px;"><i class="fas fa-image" style="font-size: 80px; color: var(--gold);"></i></div>';
 
     let categoryIcon = 'fas fa-tag';
@@ -824,7 +1010,7 @@ function viewProductDetails(productId) {
     modal.style.display = 'flex';
 }
 
-// ========== 15. إرسال طلب شراء مع جدول السلة ==========
+// ========== 17. إرسال طلب شراء مع جدول السلة ==========
 async function sendOrderToTelegram(order) {
     try {
         let productsTable = `┌────┬────────────────────┬──────┬─────────┐\n`;
@@ -944,110 +1130,6 @@ ${merchantTable}
     }
 }
 
-// ========== 16. رفع الصور إلى تلجرام ==========
-async function uploadImageToTelegram(imageFile) {
-    try {
-        const formData = new FormData();
-        formData.append('chat_id', TELEGRAM.channelId);
-        formData.append('photo', imageFile);
-
-        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendPhoto`, {
-            method: 'POST',
-            body: formData
-        });
-
-        const data = await response.json();
-        
-        if (data.ok && data.result.photo) {
-            const fileId = data.result.photo[data.result.photo.length - 1].file_id;
-            
-            const fileResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/getFile?file_id=${fileId}`);
-            const fileData = await fileResponse.json();
-            
-            if (fileData.ok) {
-                return `https://api.telegram.org/file/bot${TELEGRAM.botToken}/${fileData.result.file_path}`;
-            }
-        }
-        return null;
-    } catch (error) {
-        console.error('❌ خطأ في رفع الصورة:', error);
-        return null;
-    }
-}
-
-// ========== 17. معالج رفع الصور ==========
-async function handleImageUpload(event) {
-    const files = event.target.files;
-    const preview = document.getElementById('imagePreview');
-    const uploadStatus = document.getElementById('uploadStatus');
-    const imagesData = [];
-
-    preview.innerHTML = '';
-    
-    if (uploadStatus) {
-        uploadStatus.innerHTML = '🔄 جاري رفع الصور...';
-        uploadStatus.style.display = 'block';
-    }
-
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            preview.innerHTML += `
-                <div class="image-upload-item" data-index="${i}" style="display: inline-block; margin: 5px; position: relative;">
-                    <img src="${e.target.result}" class="preview-image">
-                    <div class="upload-progress">⏳ جاري الرفع...</div>
-                </div>
-            `;
-        };
-        reader.readAsDataURL(file);
-        
-        try {
-            const imageUrl = await uploadImageToTelegram(file);
-            
-            if (imageUrl) {
-                imagesData.push(imageUrl);
-                
-                const progressDiv = document.querySelector(`.image-upload-item[data-index="${i}"] .upload-progress`);
-                if (progressDiv) {
-                    progressDiv.innerHTML = '✅ تم الرفع';
-                    progressDiv.style.background = '#4ade80';
-                }
-            } else {
-                const reader = new FileReader();
-                const localImageUrl = await new Promise((resolve) => {
-                    reader.onload = (e) => resolve(e.target.result);
-                    reader.readAsDataURL(file);
-                });
-                imagesData.push(localImageUrl);
-                
-                const progressDiv = document.querySelector(`.image-upload-item[data-index="${i}"] .upload-progress`);
-                if (progressDiv) {
-                    progressDiv.innerHTML = '⚠️ محلي';
-                    progressDiv.style.background = '#fbbf24';
-                }
-            }
-        } catch (error) {
-            console.error('خطأ في رفع الصورة:', error);
-            const progressDiv = document.querySelector(`.image-upload-item[data-index="${i}"] .upload-progress`);
-            if (progressDiv) {
-                progressDiv.innerHTML = '❌ فشل';
-                progressDiv.style.background = '#f87171';
-            }
-        }
-    }
-
-    document.getElementById('productImagesData').value = JSON.stringify(imagesData);
-    
-    if (uploadStatus) {
-        uploadStatus.innerHTML = `✅ تم رفع ${imagesData.length} صورة`;
-        setTimeout(() => {
-            uploadStatus.style.display = 'none';
-        }, 3000);
-    }
-}
-
 // ========== 18. دوال المساعدة ==========
 function getSimpleTimeAgo(dateString) {
     if (!dateString) return '';
@@ -1087,7 +1169,7 @@ function changeSort(value) {
 function filterProducts(category) {
     currentFilter = category;
     document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-    event.target.classList.add('active');
+    if (event && event.target) event.target.classList.add('active');
     displayProducts();
 }
 
@@ -1157,10 +1239,13 @@ function addToCart(productId) {
     updateCartCounter();
     updateCartDisplay();
     ToastSystem.show('تمت الإضافة', 'success');
+    
+    analyticsManager.trackEvent('addToCart', { productId });
 }
 
 function toggleCart() {
-    document.getElementById('cartSidebar').classList.toggle('open');
+    const cartSidebar = document.getElementById('cartSidebar');
+    if (cartSidebar) cartSidebar.classList.toggle('open');
     updateCartDisplay();
 }
 
@@ -1168,9 +1253,11 @@ function updateCartDisplay() {
     const itemsDiv = document.getElementById('cartItems');
     const totalSpan = document.getElementById('cartTotal');
 
+    if (!itemsDiv || !totalSpan) return;
+
     if (cart.length === 0) {
         itemsDiv.innerHTML = '<div style="text-align: center; padding: 40px;">السلة فارغة</div>';
-        if (totalSpan) totalSpan.textContent = '0 دج';
+        totalSpan.textContent = '0 دج';
         return;
     }
 
@@ -1196,12 +1283,14 @@ function updateCartDisplay() {
         `;
     }).join('');
 
-    if (totalSpan) totalSpan.textContent = `${total} دج`;
+    totalSpan.textContent = `${total} دج`;
 }
 
 function updateCartItem(productId, newQuantity) {
     const item = cart.find(i => i.productId == productId);
     const product = products.find(p => p.id == productId);
+
+    if (!item || !product) return;
 
     if (newQuantity <= 0) {
         removeFromCart(productId);
@@ -1254,7 +1343,7 @@ async function checkoutCart() {
         customerName: currentUser.name,
         customerPhone,
         customerAddress,
-        items: cart,
+        items: cart.map(item => ({...item})),
         subtotal,
         shipping,
         total,
@@ -1285,8 +1374,7 @@ async function checkoutCart() {
     window.open(`https://wa.me/${whatsappManager.storePhone}?text=${encodeURIComponent(storeMsg)}`, '_blank');
 
     // حفظ الطلب
-    const orderManager = new OrderManagementSystem();
-    orderManager.createOrder(order);
+    const savedOrder = orderManager.createOrder(order);
     
     // تحديث المخزون
     cart.forEach(item => {
@@ -1301,6 +1389,8 @@ async function checkoutCart() {
     
     ToastSystem.hideAll();
     ToastSystem.show(sent ? '✅ تم إرسال الطلب' : '⚠️ تم الطلب محلياً', sent ? 'success' : 'warning');
+    
+    analyticsManager.trackEvent('purchase', { total, orderId: savedOrder.id });
 }
 
 // ========== 21. نظام إدارة الطلبات ==========
@@ -1522,26 +1612,41 @@ const analyticsManager = new AnalyticsSystem();
 
 // ========== 25. إدارة المستخدمين ==========
 function openLoginModal() {
-    document.getElementById('loginModal').style.display = 'flex';
+    const modal = document.getElementById('loginModal');
+    if (modal) modal.style.display = 'flex';
 }
 
 function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
+    const modal = document.getElementById(modalId);
+    if (modal) modal.style.display = 'none';
 }
 
 function switchAuthTab(tab) {
-    document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
-    document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    
+    if (loginForm && registerForm) {
+        loginForm.style.display = tab === 'login' ? 'block' : 'none';
+        registerForm.style.display = tab === 'register' ? 'block' : 'none';
+    }
 }
 
 function toggleMerchantFields() {
-    const isMerchant = document.getElementById('isMerchant').checked;
-    document.getElementById('merchantFields').style.display = isMerchant ? 'block' : 'none';
+    const isMerchant = document.getElementById('isMerchant')?.checked || false;
+    const merchantFields = document.getElementById('merchantFields');
+    if (merchantFields) {
+        merchantFields.style.display = isMerchant ? 'block' : 'none';
+    }
 }
 
 function handleLogin() {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
+    const email = document.getElementById('loginEmail')?.value;
+    const password = document.getElementById('loginPassword')?.value;
+
+    if (!email || !password) {
+        ToastSystem.show('أدخل البريد وكلمة المرور', 'warning');
+        return;
+    }
 
     const user = users.find(u => (u.email === email || u.name === email) && u.password === password);
 
@@ -1558,11 +1663,11 @@ function handleLogin() {
 }
 
 function handleRegister() {
-    const name = document.getElementById('regName').value;
-    const email = document.getElementById('regEmail').value;
-    const password = document.getElementById('regPassword').value;
+    const name = document.getElementById('regName')?.value;
+    const email = document.getElementById('regEmail')?.value;
+    const password = document.getElementById('regPassword')?.value;
     const phone = document.getElementById('regPhone')?.value || '';
-    const isMerchant = document.getElementById('isMerchant').checked;
+    const isMerchant = document.getElementById('isMerchant')?.checked || false;
 
     if (!name || !email || !password) {
         ToastSystem.show('املأ جميع الحقول', 'error');
@@ -1586,9 +1691,9 @@ function handleRegister() {
     };
 
     if (isMerchant) {
-        newUser.merchantLevel = document.getElementById('merchantLevel').value;
-        newUser.merchantDesc = document.getElementById('merchantDesc').value;
-        newUser.storeName = document.getElementById('storeName').value || `متجر ${name}`;
+        newUser.merchantLevel = document.getElementById('merchantLevel')?.value || '1';
+        newUser.merchantDesc = document.getElementById('merchantDesc')?.value || '';
+        newUser.storeName = document.getElementById('storeName')?.value || `متجر ${name}`;
         sendMerchantRequestToTelegram(newUser);
         ToastSystem.show('📋 تم إرسال الطلب', 'info');
     } else {
@@ -1604,25 +1709,30 @@ function updateUIBasedOnRole() {
     if (!currentUser) return;
 
     document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-    document.getElementById('merchantPanelContainer').style.display = 'none';
+    
+    const merchantPanel = document.getElementById('merchantPanelContainer');
+    if (merchantPanel) merchantPanel.style.display = 'none';
     
     const myProductsBtn = document.getElementById('myProductsBtn');
     if (myProductsBtn) myProductsBtn.remove();
 
+    const userBtn = document.getElementById('userBtn');
+    const dashboardBtn = document.getElementById('dashboardBtn');
+
     if (currentUser.role === 'admin') {
-        document.getElementById('dashboardBtn').style.display = 'flex';
-        document.getElementById('userBtn').innerHTML = '<i class="fas fa-crown"></i>';
+        if (dashboardBtn) dashboardBtn.style.display = 'flex';
+        if (userBtn) userBtn.innerHTML = '<i class="fas fa-crown"></i>';
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
         ToastSystem.show('مرحباً أيها المدير', 'success');
     } else if (currentUser.role === 'merchant_approved') {
-        document.getElementById('dashboardBtn').style.display = 'none';
-        document.getElementById('userBtn').innerHTML = '<i class="fas fa-store"></i>';
+        if (dashboardBtn) dashboardBtn.style.display = 'none';
+        if (userBtn) userBtn.innerHTML = '<i class="fas fa-store"></i>';
         addMerchantMenuButton();
         showMerchantPanel();
         ToastSystem.show('مرحباً أيها التاجر', 'info');
     } else {
-        document.getElementById('dashboardBtn').style.display = 'none';
-        document.getElementById('userBtn').innerHTML = '<i class="fas fa-user"></i>';
+        if (dashboardBtn) dashboardBtn.style.display = 'none';
+        if (userBtn) userBtn.innerHTML = '<i class="fas fa-user"></i>';
     }
 }
 
@@ -1654,6 +1764,8 @@ function showMerchantPanel() {
     const totalSales = merchantProducts.reduce((sum, p) => sum + (p.price * (p.soldCount || 0)), 0);
     
     const panel = document.getElementById('merchantPanelContainer');
+    if (!panel) return;
+    
     panel.style.display = 'block';
     panel.innerHTML = `
         <div class="merchant-panel">
@@ -1684,23 +1796,31 @@ function showAddProductModal() {
         return;
     }
 
-    document.getElementById('productName').value = '';
-    document.getElementById('productCategory').value = '';
-    document.getElementById('productPrice').value = '';
-    document.getElementById('productStock').value = '';
-    document.getElementById('imagePreview').innerHTML = '';
-    document.getElementById('productImagesData').value = '';
-    document.getElementById('productModal').style.display = 'flex';
+    const nameInput = document.getElementById('productName');
+    const categorySelect = document.getElementById('productCategory');
+    const priceInput = document.getElementById('productPrice');
+    const stockInput = document.getElementById('productStock');
+    const preview = document.getElementById('imagePreview');
+    const imagesData = document.getElementById('productImagesData');
+    const modal = document.getElementById('productModal');
+
+    if (nameInput) nameInput.value = '';
+    if (categorySelect) categorySelect.value = '';
+    if (priceInput) priceInput.value = '';
+    if (stockInput) stockInput.value = '';
+    if (preview) preview.innerHTML = '';
+    if (imagesData) imagesData.value = '';
+    if (modal) modal.style.display = 'flex';
 }
 
 async function saveProduct() {
     if (!currentUser) return;
 
-    const name = document.getElementById('productName').value;
-    const category = document.getElementById('productCategory').value;
-    const price = parseInt(document.getElementById('productPrice').value);
-    const stock = parseInt(document.getElementById('productStock').value);
-    const imagesData = document.getElementById('productImagesData').value;
+    const name = document.getElementById('productName')?.value;
+    const category = document.getElementById('productCategory')?.value;
+    const price = parseInt(document.getElementById('productPrice')?.value);
+    const stock = parseInt(document.getElementById('productStock')?.value);
+    const imagesData = document.getElementById('productImagesData')?.value;
     const images = imagesData ? JSON.parse(imagesData) : [];
 
     if (!name || !category || !price || !stock) {
@@ -1729,9 +1849,13 @@ async function saveProduct() {
     products = existingProducts;
 
     // إرسال لتلجرام
+    ToastSystem.show('🔄 جاري الإرسال...', 'loading', 0);
     const sent = await addProductToTelegram(product);
     
-    if (!sent) {
+    ToastSystem.hideAll();
+    if (sent) {
+        ToastSystem.show('✅ تم إضافة المنتج ونشره', 'success');
+    } else {
         ToastSystem.show('⚠️ تم الحفظ محلياً فقط', 'warning');
     }
 
@@ -1750,17 +1874,21 @@ function openDashboard() {
         return;
     }
 
-    document.getElementById('dashboardSection').style.display = 'block';
-    document.getElementById('dashboardSection').scrollIntoView({ behavior: 'smooth' });
+    const dashboard = document.getElementById('dashboardSection');
+    if (dashboard) {
+        dashboard.style.display = 'block';
+        dashboard.scrollIntoView({ behavior: 'smooth' });
+    }
 }
 
 function switchDashboardTab(tab) {
     if (!currentUser || currentUser.role !== 'admin') return;
     
     document.querySelectorAll('.dashboard-tab').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
+    if (event && event.target) event.target.classList.add('active');
 
     const content = document.getElementById('dashboardContent');
+    if (!content) return;
     
     if (tab === 'overview') showDashboardOverview(content);
     else if (tab === 'orders') showDashboardOrders(content);
@@ -1854,7 +1982,7 @@ function showDashboardProducts(container) {
                 ${products.map((p, i) => `
                     <tr>
                         <td>${i+1}</td>
-                        <td><img src="${p.images[0]}" style="width:50px;height:50px;object-fit:cover;border-radius:5px;"></td>
+                        <td><img src="${p.images[0]}" style="width:50px;height:50px;object-fit:cover;border-radius:5px;" onerror="this.src='https://via.placeholder.com/50/2c5e4f/ffffff?text=خطأ'"></td>
                         <td>${p.name}</td>
                         <td>${p.price} دج</td>
                         <td>${p.stock}</td>
@@ -1873,7 +2001,7 @@ function showDashboardMerchants(container) {
     container.innerHTML = `
         <h3 style="margin-bottom: 20px;">طلبات التجار (${pending.length})</h3>
         ${pending.map(m => `
-            <div class="merchant-card" style="border-left-color: #fbbf24; margin-bottom: 15px;">
+            <div class="merchant-card" style="border-left-color: #fbbf24; margin-bottom: 15px; padding: 15px; background: var(--glass); border-radius: 10px;">
                 <h4>${m.storeName || m.name}</h4>
                 <p>👤 ${m.name} | 📧 ${m.email} | 📞 ${m.phone || '—'}</p>
                 <p>📊 المستوى ${m.merchantLevel || '1'}</p>
@@ -1946,6 +2074,8 @@ class TypingAnimation {
     }
     
     type() {
+        if (!this.element) return;
+        
         const current = this.texts[this.index];
         this.text = this.isDeleting 
             ? current.substring(0, this.text.length - 1)
@@ -2016,48 +2146,74 @@ function updateProgressBars() {
 
 // ========== 34. التهيئة ==========
 window.onload = async function() {
+    console.log('🚀 بدء تشغيل النظام...');
+    
     const loader = document.getElementById('loader');
     
+    // تحميل البيانات
     await loadProductsFromTelegram();
     await loadMerchantsFromTelegram();
     loadCart();
 
+    // إنشاء التأثيرات
     createParticles();
     createMouseEffect();
 
+    // استعادة المستخدم
     const savedUser = localStorage.getItem('current_user');
     if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        updateUIBasedOnRole();
+        try {
+            currentUser = JSON.parse(savedUser);
+            updateUIBasedOnRole();
+        } catch (e) {
+            console.error('خطأ في قراءة المستخدم:', e);
+        }
     }
 
+    // استعادة الثيم
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
         isDarkMode = savedTheme === 'dark';
         document.body.classList.toggle('light-mode', !isDarkMode);
         const toggle = document.getElementById('themeToggle');
-        if (toggle) toggle.innerHTML = isDarkMode ? '<i class="fas fa-moon"></i><span>ليلي</span>' : '<i class="fas fa-sun"></i><span>نهاري</span>';
+        if (toggle) {
+            toggle.innerHTML = isDarkMode ? 
+                '<i class="fas fa-moon"></i><span>ليلي</span>' : 
+                '<i class="fas fa-sun"></i><span>نهاري</span>';
+        }
     }
 
+    // إخفاء شاشة التحميل
     setTimeout(() => {
         if (loader) {
             loader.style.opacity = '0';
-            setTimeout(() => loader.style.display = 'none', 500);
+            setTimeout(() => {
+                loader.style.display = 'none';
+            }, 500);
         }
     }, 1000);
 
+    // إعدادات إضافية
     window.addEventListener('scroll', toggleQuickTopButton);
     updateCountdown();
     updateProgressBars();
     
     const typing = document.getElementById('typing-text');
-    if (typing) new TypingAnimation(typing, ['نكهة وجمال', 'تسوق آمن', 'جودة عالية', 'توصيل سريع']);
+    if (typing) {
+        new TypingAnimation(typing, ['نكهة وجمال', 'تسوق آمن', 'جودة عالية', 'توصيل سريع']);
+    }
     
     // تحديث مستمر
     setInterval(loadMerchantsFromTelegram, 10000);
     setInterval(loadProductsFromTelegram, 30000);
     
-    if (!currentUser) ToastSystem.show('👋 مرحباً بك', 'info', 5000);
+    if (!currentUser) {
+        setTimeout(() => {
+            ToastSystem.show('👋 مرحباً بك في نكهة وجمال', 'info', 5000);
+        }, 1500);
+    }
+    
+    console.log('✅ تم تهيئة النظام بنجاح');
 };
 
 // ========== إغلاق النوافذ ==========
