@@ -27,7 +27,7 @@ function loadUsers() {
             { 
                 id: 1, 
                 name: 'مدير النظام', 
-                email: 'azer', 
+                email: 'azer@gmail.com', 
                 password: '123456', 
                 role: 'admin',
                 phone: '0555000000',
