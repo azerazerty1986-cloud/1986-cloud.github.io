@@ -1,1 +1,1715 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نكهة وجمال | ناردو برو - المتجر الذكي المتكامل 2026</title>
+    
+    <!-- Google Fonts - Cairo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- الحد الأدنى من التنسيقات الأساسية -->
+    <style>
+        body { font-family: 'Cairo', sans-serif; margin: 0; padding: 20px; background: #1a2f28; color: white; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .product-card { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; cursor: pointer; }
+        .product-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 10px; }
+        .btn-gold { background: #ffd700; color: black; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; }
+        .modal-content { background: #1a2f28; padding: 30px; border-radius: 20px; max-width: 500px; width: 90%; }
+        .form-control { width: 100%; padding: 10px; margin: 10px 0; border-radius: 10px; border: 1px solid #ffd700; background: transparent; color: white; }
+        .cart-sidebar { position: fixed; left: -400px; top: 0; width: 400px; height: 100%; background: #0a1a15; transition: left 0.3s; padding: 20px; z-index: 1000; }
+        .cart-sidebar.open { left: 0; }
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+    </style>
+</head>
+<body>
+    <!-- شاشة التحميل -->
+    <div class="loader" id="loader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#1a2f28; display:flex; justify-content:center; align-items:center; z-index:9999;">
+        <div style="width:80px; height:80px; border:5px solid #ffd700; border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite;"></div>
+    </div>
 
+    <!-- نظام الإشعارات Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- سلة التسوق الجانبية -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #ffd700; padding-bottom:15px; margin-bottom:15px;">
+            <h3><i class="fas fa-shopping-cart"></i> سلة التسوق</h3>
+            <i class="fas fa-times" onclick="toggleCart()" style="cursor:pointer; color:#ffd700; font-size:24px;"></i>
+        </div>
+        <div id="cartItems" style="flex:1; overflow-y:auto; margin-bottom:15px;"></div>
+        <div style="border-top:2px solid #ffd700; padding-top:15px;">
+            <div style="display:flex; justify-content:space-between; color:#ffd700; font-size:20px; margin-bottom:15px;">
+                <span>المجموع:</span>
+                <span id="cartTotal">0 دج</span>
+            </div>
+            <button class="btn-gold" onclick="checkoutCart()" style="width:100%; padding:15px;">
+                <i class="fab fa-whatsapp"></i> إتمام الطلب
+            </button>
+        </div>
+    </div>
+
+    <!-- الشريط العلوي -->
+    <div style="background:#0a1a15; padding:10px 0; border-bottom:1px solid #ffd700; position:sticky; top:0; z-index:100;">
+        <div class="container" style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; gap:20px;">
+                <span><i class="fas fa-truck-fast" style="color:#ffd700;"></i> شحن مجاني</span>
+                <span><i class="fas fa-headset" style="color:#ffd700;"></i> دعم VIP</span>
+                <span><i class="fas fa-gem" style="color:#ffd700;"></i> منتجات أصلية</span>
+            </div>
+            <div onclick="toggleTheme()" id="themeToggle" style="cursor:pointer;">
+                <i class="fas fa-moon"></i> <span>ليلي</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- الهيدر الرئيسي -->
+    <header style="background:rgba(10,26,21,0.9); padding:20px 0; margin-bottom:20px;">
+        <div class="container" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px;">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <div style="width:65px; height:65px; background:#ffd700; border-radius:20px; display:flex; align-items:center; justify-content:center;">
+                    <i class="fas fa-leaf" style="font-size:35px; color:#1a2f28;"></i>
+                </div>
+                <div>
+                    <h1 style="color:#ffd700; font-size:32px;">نكهة وجمال</h1>
+                    <span style="color:#fff3b0;">ناردو برو 2026</span>
+                </div>
+            </div>
+            
+            <!-- البحث -->
+            <div style="flex:1; max-width:400px;">
+                <div style="display:flex; background:rgba(255,255,255,0.1); border-radius:50px; overflow:hidden;">
+                    <input type="text" id="searchInput" placeholder="ابحث عن منتج..." onkeyup="searchProducts()" style="flex:1; padding:12px; background:transparent; border:none; color:white;">
+                    <button onclick="searchProducts()" style="padding:0 20px; background:#ffd700; border:none; cursor:pointer;">🔍</button>
+                </div>
+            </div>
+            
+            <!-- الأزرار -->
+            <div style="display:flex; gap:10px;">
+                <button onclick="openLoginModal()" id="userBtn" style="width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.1); border:1px solid #ffd700; color:#ffd700; cursor:pointer;">
+                    <i class="far fa-user"></i>
+                </button>
+                <button onclick="toggleCart()" style="width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.1); border:1px solid #ffd700; color:#ffd700; cursor:pointer; position:relative;">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span id="cartCounter" style="position:absolute; top:-5px; right:-5px; background:#ffd700; color:#1a2f28; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center;">0</span>
+                </button>
+                <button id="dashboardBtn" onclick="openDashboard()" style="display:none; width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.1); border:1px solid #ffd700; color:#ffd700; cursor:pointer;">
+                    <i class="fas fa-chart-line"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- القائمة الرئيسية -->
+    <div class="container">
+        <nav style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin:20px 0;">
+            <a class="nav-link active" onclick="filterProducts('all')" style="padding:10px 20px; border-radius:40px; cursor:pointer; background:#ffd700; color:#1a2f28;">الرئيسية</a>
+            <a class="nav-link" onclick="filterProducts('promo')" style="padding:10px 20px; border-radius:40px; cursor:pointer;">برموسيو</a>
+            <a class="nav-link" onclick="filterProducts('spices')" style="padding:10px 20px; border-radius:40px; cursor:pointer;">توابل</a>
+            <a class="nav-link" onclick="filterProducts('cosmetic')" style="padding:10px 20px; border-radius:40px; cursor:pointer;">كوسمتيك</a>
+            <a class="nav-link" onclick="filterProducts('other')" style="padding:10px 20px; border-radius:40px; cursor:pointer;">منتوجات أخرى</a>
+        </nav>
+    </div>
+
+    <!-- الفرز -->
+    <div class="container">
+        <select id="sortSelect" onchange="changeSort(this.value)" style="padding:10px 20px; background:rgba(255,255,255,0.1); border:2px solid #ffd700; border-radius:35px; color:white; margin:20px 0;">
+            <option value="newest">🆕 الأحدث أولاً</option>
+            <option value="price_low">💰 السعر: من الأقل</option>
+            <option value="price_high">💰 السعر: من الأعلى</option>
+            <option value="rating">⭐ التقييم</option>
+        </select>
+    </div>
+
+    <!-- نص متحرك -->
+    <div class="container">
+        <div id="typing-text" style="text-align:center; font-size:26px; color:#ffd700; min-height:70px;"></div>
+    </div>
+
+    <!-- لوحة التاجر -->
+    <div class="container" id="merchantPanelContainer" style="display:none;"></div>
+
+    <!-- المنتجات -->
+    <div class="container">
+        <div class="products-grid" id="productsContainer"></div>
+    </div>
+
+    <!-- لوحة التحكم -->
+    <div class="container" id="dashboardSection" style="display:none; margin:40px 0;">
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <button class="dashboard-tab active" onclick="switchDashboardTab('overview')" style="padding:10px 20px; background:#ffd700; color:#1a2f28; border:none; border-radius:40px;">نظرة عامة</button>
+            <button class="dashboard-tab" onclick="switchDashboardTab('orders')" style="padding:10px 20px; background:rgba(255,255,255,0.1); border:none; border-radius:40px; color:white;">الطلبات</button>
+            <button class="dashboard-tab" onclick="switchDashboardTab('products')" style="padding:10px 20px; background:rgba(255,255,255,0.1); border:none; border-radius:40px; color:white;">المنتجات</button>
+            <button class="dashboard-tab" onclick="switchDashboardTab('merchants')" style="padding:10px 20px; background:rgba(255,255,255,0.1); border:none; border-radius:40px; color:white;">التجار</button>
+        </div>
+        <div id="dashboardContent" style="background:rgba(255,255,255,0.05); padding:20px; border-radius:20px;"></div>
+    </div>
+
+    <!-- الفوتر -->
+    <footer style="background:#0a1a15; padding:40px 0 20px; margin-top:40px; border-top:3px solid #ffd700;">
+        <div class="container">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:30px; margin-bottom:30px;">
+                <div>
+                    <h3 style="color:#ffd700;">نكهة وجمال</h3>
+                    <p><i class="fas fa-store" style="color:#ffd700;"></i> المتجر الذكي</p>
+                </div>
+                <div>
+                    <h3 style="color:#ffd700;">اتصل بنا</h3>
+                    <p><i class="fab fa-whatsapp" style="color:#ffd700;"></i> +213 562243648</p>
+                </div>
+            </div>
+            <div style="text-align:center; padding-top:20px; border-top:1px solid #b8860b;">
+                © 2026 نكهة وجمال | ناردو برو
+            </div>
+        </div>
+    </footer>
+
+    <!-- أيقونة السلة الثابتة -->
+    <div onclick="toggleCart()" style="position:fixed; bottom:100px; right:20px; width:65px; height:65px; background:#ffd700; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:999;">
+        <i class="fas fa-shopping-cart" style="font-size:28px; color:#1a2f28;"></i>
+        <span id="fixedCartCounter" style="position:absolute; top:-5px; right:-5px; background:#f44336; color:white; border-radius:50%; width:25px; height:25px; display:flex; align-items:center; justify-content:center;">0</span>
+    </div>
+
+    <!-- أزرار الصعود والهبوط -->
+    <div style="position:fixed; bottom:100px; left:20px; display:flex; flex-direction:column; gap:10px; z-index:999;">
+        <button onclick="scrollToTop()" style="width:55px; height:55px; border-radius:50%; background:rgba(255,255,255,0.1); border:2px solid #ffd700; color:#ffd700; cursor:pointer;">↑</button>
+        <button onclick="scrollToBottom()" style="width:55px; height:55px; border-radius:50%; background:rgba(255,255,255,0.1); border:2px solid #ffd700; color:#ffd700; cursor:pointer;">↓</button>
+    </div>
+
+    <!-- زر العودة للأعلى -->
+    <button onclick="scrollToTop()" id="quickTopBtn" style="position:fixed; bottom:30px; right:20px; width:50px; height:50px; border-radius:50%; background:#ffd700; border:none; color:#1a2f28; cursor:pointer; display:none; z-index:998;">↑</button>
+
+    <!-- نافذة تسجيل الدخول -->
+    <div class="modal" id="loginModal" style="display:none;">
+        <div class="modal-content">
+            <h2 style="text-align:center; color:#ffd700; margin-bottom:30px;">تسجيل الدخول</h2>
+            
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <button onclick="switchAuthTab('login')" style="flex:1; padding:10px; background:#ffd700; border:none; border-radius:25px;">تسجيل دخول</button>
+                <button onclick="switchAuthTab('register')" style="flex:1; padding:10px; background:transparent; border:2px solid #ffd700; color:#ffd700; border-radius:25px;">حساب جديد</button>
+            </div>
+
+            <!-- نموذج تسجيل الدخول -->
+            <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
+                <div style="margin-bottom:15px;">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="loginEmail" class="form-control" required>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="loginPassword" class="form-control" required>
+                </div>
+                <button type="submit" class="btn-gold" style="width:100%; padding:15px;">دخول</button>
+            </form>
+
+            <!-- نموذج التسجيل -->
+            <form id="registerForm" style="display:none;" onsubmit="event.preventDefault(); handleRegister();">
+                <div style="margin-bottom:15px;">
+                    <label>الاسم الكامل</label>
+                    <input type="text" id="regName" class="form-control" required>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="regEmail" class="form-control" required>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="regPassword" class="form-control" required>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label>رقم الهاتف</label>
+                    <input type="tel" id="regPhone" class="form-control">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label>
+                        <input type="checkbox" id="isMerchant" onchange="toggleMerchantFields()"> تسجيل كتاجر
+                    </label>
+                </div>
+                
+                <!-- حقول التاجر -->
+                <div id="merchantFields" style="display:none;">
+                    <div style="margin-bottom:15px;">
+                        <label>اسم المتجر</label>
+                        <input type="text" id="storeName" class="form-control">
+                    </div>
+                    <div style="margin-bottom:15px;">
+                        <label>مستوى التاجر</label>
+                        <select id="merchantLevel" class="form-control">
+                            <option value="1">المستوى الأول</option>
+                            <option value="2" selected>المستوى الثاني</option>
+                            <option value="3">المستوى الثالث</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom:15px;">
+                        <label>وصف المتجر</label>
+                        <textarea id="merchantDesc" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-gold" style="width:100%; padding:15px;">تسجيل</button>
+            </form>
+
+            <button onclick="closeModal('loginModal')" style="width:100%; padding:10px; margin-top:15px; background:transparent; border:2px solid #ffd700; color:#ffd700; border-radius:25px;">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة منتج -->
+    <div class="modal" id="productModal" style="display:none;">
+        <div class="modal-content">
+            <h2 style="color:#ffd700; margin-bottom:20px;">إضافة منتج جديد</h2>
+            
+            <div style="margin-bottom:15px;">
+                <label>اسم المنتج</label>
+                <input type="text" id="productName" class="form-control" required>
+            </div>
+
+            <div style="margin-bottom:15px;">
+                <label>القسم</label>
+                <select id="productCategory" class="form-control" required>
+                    <option value="">اختر القسم</option>
+                    <option value="promo">برموسيو</option>
+                    <option value="spices">توابل</option>
+                    <option value="cosmetic">كوسمتيك</option>
+                    <option value="other">منتوجات أخرى</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom:15px;">
+                <label>السعر (دج)</label>
+                <input type="number" id="productPrice" class="form-control" required>
+            </div>
+
+            <div style="margin-bottom:15px;">
+                <label>الكمية</label>
+                <input type="number" id="productStock" class="form-control" required>
+            </div>
+
+            <!-- رفع الصور -->
+            <div style="margin-bottom:15px;">
+                <label>صور المنتج</label>
+                <div onclick="document.getElementById('productImages').click()" style="border:2px dashed #ffd700; padding:20px; text-align:center; border-radius:15px; cursor:pointer;">
+                    <i class="fas fa-cloud-upload-alt" style="font-size:48px; color:#ffd700;"></i>
+                    <p>اضغط لرفع الصور</p>
+                </div>
+                <input type="file" id="productImages" accept="image/*" multiple style="display:none;" onchange="handleImageUpload(event)">
+                <div id="imagePreview" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:15px;"></div>
+                <div id="uploadStatus" style="display:none; padding:10px; border-radius:10px; margin-top:10px;"></div>
+                <input type="hidden" id="productImagesData" value="">
+            </div>
+
+            <div style="display:flex; gap:15px; margin-top:20px;">
+                <button onclick="saveProduct()" class="btn-gold" style="flex:2; padding:15px;">حفظ ونشر المنتج</button>
+                <button onclick="closeModal('productModal')" style="flex:1; padding:15px; background:transparent; border:2px solid #ffd700; color:#ffd700; border-radius:25px;">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تفاصيل المنتج -->
+    <div class="modal" id="productDetailModal" style="display:none;">
+        <div class="modal-content" id="productDetailContent"></div>
+    </div>
+
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:flex; justify-content:center; align-items:center; z-index:3000; }
+        .modal-content { background:#1a2f28; padding:30px; border-radius:20px; max-width:500px; width:90%; max-height:90vh; overflow-y:auto; border:2px solid #ffd700; }
+        .form-control { width:100%; padding:12px; margin-top:5px; background:rgba(255,255,255,0.1); border:2px solid #ffd700; border-radius:15px; color:white; }
+        .btn-gold { background:#ffd700; color:#1a2f28; border:none; border-radius:25px; cursor:pointer; font-weight:bold; }
+        .nav-link { padding:10px 20px; border-radius:40px; cursor:pointer; color:white; }
+        .nav-link.active { background:#ffd700; color:#1a2f28; }
+        .products-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+        @media (max-width:768px) { .products-grid { grid-template-columns:repeat(2,1fr); } }
+        @media (max-width:576px) { .products-grid { grid-template-columns:1fr; } }
+        .product-card { background:rgba(255,255,255,0.1); border-radius:15px; overflow:hidden; cursor:pointer; }
+        .product-card img { width:100%; height:200px; object-fit:cover; }
+        .product-info { padding:15px; }
+        .product-title { font-size:18px; font-weight:bold; margin-bottom:10px; }
+        .product-price { color:#ffd700; font-size:24px; font-weight:bold; }
+        .add-to-cart { background:#ffd700; color:#1a2f28; border:none; padding:10px; border-radius:25px; width:100%; cursor:pointer; font-weight:bold; }
+        .cart-item { display:flex; gap:15px; padding:15px; background:rgba(255,255,255,0.1); border-radius:15px; margin-bottom:15px; }
+        .quantity-btn { width:30px; height:30px; border-radius:8px; background:transparent; border:1px solid #ffd700; color:#ffd700; cursor:pointer; }
+        .toast { background:#1a2f28; border:2px solid #ffd700; border-radius:15px; padding:15px; margin-bottom:10px; animation:slideIn 0.3s; }
+        @keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+    </style>
+
+    <script>
+        // ========== إعدادات تلجرام ==========
+        const TELEGRAM = {
+            botToken: '8576673096:AAEFKd-YSJcW_0d_wAHZBt-5nPg_VOjDX_0',
+            channelId: '-1003822964890',
+            adminId: '7461896689'
+        };
+
+        // ========== المتغيرات العامة ==========
+        let products = [];
+        let merchants = [];
+        let currentUser = null;
+        let cart = [];
+        let isDarkMode = true;
+        let currentFilter = 'all';
+        let searchTerm = '';
+        let sortBy = 'newest';
+        let users = [];
+        let lastUpdateId = 0;
+
+        // ========== تحميل المستخدمين ==========
+        function loadUsers() {
+            const saved = localStorage.getItem('nardoo_users');
+            if (saved) {
+                users = JSON.parse(saved);
+            } else {
+                users = [
+                    { 
+                        id: 1, 
+                        name: 'مدير', 
+                        email: 'admin@nardoo.com', 
+                        password: '123456', 
+                        role: 'admin',
+                        phone: '0555000000',
+                        telegramId: TELEGRAM.adminId,
+                        createdAt: new Date().toISOString()
+                    }
+                ];
+                localStorage.setItem('nardoo_users', JSON.stringify(users));
+            }
+        }
+        loadUsers();
+
+        // ========== نظام الإشعارات Toast ==========
+        const ToastSystem = {
+            show: function(message, type = 'info', duration = 3000) {
+                const container = document.getElementById('toastContainer');
+                if (!container) return null;
+                
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}" style="color:${type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#2196f3'};"></i>
+                        <div>${message}</div>
+                    </div>
+                `;
+                
+                container.appendChild(toast);
+                
+                setTimeout(() => {
+                    if (toast.parentNode) toast.remove();
+                }, duration);
+                
+                return toast;
+            },
+            
+            hideAll: function() {
+                const container = document.getElementById('toastContainer');
+                if (container) container.innerHTML = '';
+            }
+        };
+
+        // ========== دالة استخراج بيانات المنتج ==========
+        function extractProductData(text) {
+            let productData = {
+                name: 'منتج جديد',
+                price: 0,
+                category: 'other',
+                stock: 0,
+                merchantName: 'المتجر',
+                merchantId: null,
+                rating: 4.5
+            };
+            
+            try {
+                const lines = text.split('\n');
+                
+                lines.forEach(line => {
+                    const cleanLine = line.replace(/[🟣*🔵✅❌]/g, '').trim();
+                    
+                    if (cleanLine.includes('المنتج:') || cleanLine.includes('📦')) {
+                        const match = cleanLine.match(/[📦]*(المنتج:|📦)\s*([^│]+)/);
+                        if (match) productData.name = match[2].trim();
+                    }
+                    
+                    if (cleanLine.includes('السعر:') || cleanLine.includes('💰')) {
+                        const match = cleanLine.match(/(\d+[\d,]*)\s*دج/);
+                        if (match) productData.price = parseInt(match[1].replace(/,/g, ''));
+                    }
+                    
+                    if (cleanLine.includes('القسم:') || cleanLine.includes('🔥') || cleanLine.includes('🧂') || cleanLine.includes('💄')) {
+                        if (cleanLine.includes('برموسيو') || cleanLine.includes('🔥')) productData.category = 'promo';
+                        else if (cleanLine.includes('توابل') || cleanLine.includes('🧂')) productData.category = 'spices';
+                        else if (cleanLine.includes('كوسمتيك') || cleanLine.includes('💄')) productData.category = 'cosmetic';
+                    }
+                    
+                    if (cleanLine.includes('الكمية:') || cleanLine.includes('📊')) {
+                        const match = cleanLine.match(/(\d+)/);
+                        if (match) productData.stock = parseInt(match[1]);
+                    }
+                    
+                    if (cleanLine.includes('التاجر:') || cleanLine.includes('👤')) {
+                        const match = cleanLine.match(/[👤]*(التاجر:|👤)\s*([^│]+)/);
+                        if (match) productData.merchantName = match[2].trim();
+                    }
+                });
+                
+            } catch (error) {
+                console.error('خطأ في استخراج البيانات:', error);
+            }
+            
+            return productData;
+        }
+
+        // ========== الحصول على اسم القسم ==========
+        function getCategoryName(category) {
+            const names = {
+                'promo': 'برموسيو',
+                'spices': 'توابل',
+                'cosmetic': 'كوسمتيك',
+                'other': 'منتوجات أخرى'
+            };
+            return names[category] || 'أخرى';
+        }
+
+        // ========== توليد النجوم ==========
+        function generateStars(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            let stars = '';
+            
+            for (let i = 0; i < fullStars; i++) stars += '★';
+            if (hasHalfStar) stars += '½';
+            for (let i = 0; i < 5 - fullStars - (hasHalfStar ? 1 : 0); i++) stars += '☆';
+            
+            return stars;
+        }
+
+        // ========== الوقت المنقضي ==========
+        function getSimpleTimeAgo(dateString) {
+            if (!dateString) return '';
+            
+            const now = new Date();
+            const productDate = new Date(dateString);
+            const diffInSeconds = Math.floor((now - productDate) / 1000);
+            
+            if (diffInSeconds < 60) return 'الآن';
+            if (diffInSeconds < 3600) return `منذ ${Math.floor(diffInSeconds / 60)} دقيقة`;
+            if (diffInSeconds < 86400) return `منذ ${Math.floor(diffInSeconds / 3600)} ساعة`;
+            return `منذ ${Math.floor(diffInSeconds / 86400)} يوم`;
+        }
+
+        // ========== ترتيب المنتجات ==========
+        function sortProducts(productsArray) {
+            switch(sortBy) {
+                case 'newest':
+                    return [...productsArray].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+                case 'price_low':
+                    return [...productsArray].sort((a, b) => a.price - b.price);
+                case 'price_high':
+                    return [...productsArray].sort((a, b) => b.price - a.price);
+                case 'rating':
+                    return [...productsArray].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                default:
+                    return productsArray;
+            }
+        }
+
+        function changeSort(value) {
+            sortBy = value;
+            displayProducts();
+        }
+
+        // ========== إرسال رسالة تلجرام ==========
+        async function sendTelegramMessage(message, chatId = TELEGRAM.channelId) {
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                });
+                
+                const data = await response.json();
+                return data.ok;
+            } catch (error) {
+                console.error('فشل إرسال الرسالة:', error);
+                return false;
+            }
+        }
+
+        // ========== إرسال صورة تلجرام ==========
+        async function sendTelegramPhoto(imageUrl, caption, chatId = TELEGRAM.channelId) {
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendPhoto`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        photo: imageUrl,
+                        caption: caption,
+                        parse_mode: 'Markdown'
+                    })
+                });
+                
+                const data = await response.json();
+                return data.ok;
+            } catch (error) {
+                console.error('فشل إرسال الصورة:', error);
+                return false;
+            }
+        }
+
+        // ========== رفع صورة إلى تلجرام ==========
+        async function uploadImageToTelegram(imageFile) {
+            try {
+                const formData = new FormData();
+                formData.append('chat_id', TELEGRAM.channelId);
+                formData.append('photo', imageFile);
+
+                const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (data.ok && data.result.photo) {
+                    const fileId = data.result.photo[data.result.photo.length - 1].file_id;
+                    
+                    const fileResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/getFile?file_id=${fileId}`);
+                    const fileData = await fileResponse.json();
+                    
+                    if (fileData.ok) {
+                        const imageUrl = `https://api.telegram.org/file/bot${TELEGRAM.botToken}/${fileData.result.file_path}`;
+                        return imageUrl;
+                    }
+                }
+                return null;
+            } catch (error) {
+                console.error('خطأ في رفع الصورة:', error);
+                return null;
+            }
+        }
+
+        // ========== جلب التحديثات من تلجرام ==========
+        async function getTelegramUpdates() {
+            try {
+                const response = await fetch(
+                    `https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates?offset=${lastUpdateId}`
+                );
+                
+                const data = await response.json();
+                
+                if (data.ok && data.result) {
+                    for (const update of data.result) {
+                        lastUpdateId = update.update_id + 1;
+                    }
+                    return data.result;
+                }
+                return [];
+            } catch (error) {
+                console.error('فشل جلب التحديثات:', error);
+                return [];
+            }
+        }
+
+        // ========== جلب المنتجات من تلجرام ==========
+        async function fetchProductsFromTelegram() {
+            try {
+                console.log('جاري البحث عن المنتجات...');
+                
+                const updates = await getTelegramUpdates();
+                const foundProducts = [];
+                
+                for (const update of updates) {
+                    if (update.channel_post) {
+                        const post = update.channel_post;
+                        const postText = post.caption || post.text || '';
+                        
+                        if (postText.includes('🟣') || postText.includes('منتج جديد')) {
+                            console.log('وجدنا منتج:', post.message_id);
+                            
+                            const productData = extractProductData(postText);
+                            
+                            let imageUrl = "https://via.placeholder.com/300/2c5e4f/ffffff?text=نكهة+وجمال";
+                            
+                            if (post.photo && post.photo.length > 0) {
+                                try {
+                                    const photo = post.photo[post.photo.length - 1];
+                                    const fileId = photo.file_id;
+                                    
+                                    const fileResponse = await fetch(
+                                        `https://api.telegram.org/bot${TELEGRAM.botToken}/getFile?file_id=${fileId}`
+                                    );
+                                    const fileData = await fileResponse.json();
+                                    
+                                    if (fileData.ok) {
+                                        imageUrl = `https://api.telegram.org/file/bot${TELEGRAM.botToken}/${fileData.result.file_path}`;
+                                    }
+                                } catch (e) {
+                                    console.error('خطأ في جلب الصورة:', e);
+                                }
+                            }
+                            
+                            foundProducts.push({
+                                id: post.message_id,
+                                name: productData.name,
+                                price: productData.price,
+                                category: productData.category,
+                                stock: productData.stock,
+                                merchantName: productData.merchantName,
+                                merchantId: productData.merchantId,
+                                images: [imageUrl],
+                                rating: 4.5,
+                                createdAt: new Date(post.date * 1000).toISOString()
+                            });
+                        }
+                    }
+                }
+                
+                console.log(`تم العثور على ${foundProducts.length} منتج`);
+                return foundProducts;
+                
+            } catch (error) {
+                console.error('خطأ في البحث عن المنتجات:', error);
+                return [];
+            }
+        }
+
+        // ========== دمج المنتجات ==========
+        function mergeProducts(telegramProducts) {
+            const localProducts = JSON.parse(localStorage.getItem('nardoo_products') || '[]');
+            const allProducts = [...telegramProducts];
+            
+            localProducts.forEach(localProduct => {
+                const exists = allProducts.find(p => p.id === localProduct.id);
+                if (!exists) {
+                    allProducts.push(localProduct);
+                }
+            });
+            
+            localStorage.setItem('nardoo_products', JSON.stringify(allProducts));
+            return allProducts;
+        }
+
+        // ========== تحميل المنتجات ==========
+        async function loadProducts() {
+            ToastSystem.show('جاري تحميل المنتجات...', 'info', 0);
+            
+            const telegramProducts = await fetchProductsFromTelegram();
+            products = mergeProducts(telegramProducts);
+            
+            ToastSystem.hideAll();
+            ToastSystem.show(`تم تحميل ${products.length} منتج`, 'success');
+            
+            displayProducts();
+            return products;
+        }
+
+        // ========== إضافة منتج إلى تلجرام ==========
+        async function addProductToTelegram(product) {
+            try {
+                ToastSystem.show('جاري النشر إلى تلجرام...', 'info', 0);
+                
+                const categoryName = getCategoryName(product.category);
+                
+                const message = `
+🟣 *منتج جديد*
+━━━━━━━━━━━━━━━━━━
+📦 *المنتج:* ${product.name}
+💰 *السعر:* ${product.price} دج
+🏷️ *القسم:* ${categoryName}
+📊 *الكمية:* ${product.stock} قطعة
+👤 *التاجر:* ${product.merchantName}
+⏰ ${new Date().toLocaleString('ar-DZ')}
+                `;
+
+                if (product.images && product.images.length > 0 && !product.images[0].includes('placeholder')) {
+                    const success = await sendTelegramPhoto(product.images[0], message);
+                    if (success) {
+                        ToastSystem.hideAll();
+                        ToastSystem.show('تم نشر المنتج مع الصورة', 'success');
+                        return true;
+                    }
+                }
+                
+                const success = await sendTelegramMessage(message);
+                
+                if (success) {
+                    ToastSystem.hideAll();
+                    ToastSystem.show('تم نشر المنتج', 'success');
+                    return true;
+                }
+                
+                ToastSystem.hideAll();
+                ToastSystem.show('فشل النشر', 'error');
+                return false;
+                
+            } catch (error) {
+                console.error('خطأ:', error);
+                ToastSystem.hideAll();
+                ToastSystem.show('خطأ في الاتصال', 'error');
+                return false;
+            }
+        }
+
+        // ========== معالج رفع الصور ==========
+        async function handleImageUpload(event) {
+            const files = event.target.files;
+            const preview = document.getElementById('imagePreview');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const imagesData = [];
+
+            if (!preview) return;
+            preview.innerHTML = '';
+            
+            if (uploadStatus) {
+                uploadStatus.innerHTML = 'جاري رفع الصور...';
+                uploadStatus.style.display = 'block';
+                uploadStatus.style.background = '#2196f3';
+            }
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML += `
+                        <div style="position:relative; display:inline-block;">
+                            <img src="${e.target.result}" style="width:100px; height:100px; object-fit:cover; border:3px solid #ffd700; border-radius:15px;">
+                        </div>
+                    `;
+                };
+                reader.readAsDataURL(file);
+                
+                const imageUrl = await uploadImageToTelegram(file);
+                if (imageUrl) {
+                    imagesData.push(imageUrl);
+                }
+            }
+
+            document.getElementById('productImagesData').value = JSON.stringify(imagesData);
+            
+            if (uploadStatus) {
+                uploadStatus.innerHTML = `تم رفع ${imagesData.length} صورة`;
+                uploadStatus.style.background = '#4caf50';
+                setTimeout(() => {
+                    uploadStatus.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // ========== عرض المنتجات ==========
+        function displayProducts() {
+            const container = document.getElementById('productsContainer');
+            if (!container) return;
+
+            if (!products || products.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column:1/-1; text-align:center; padding:80px 20px;">
+                        <i class="fas fa-box-open" style="font-size:80px; color:#ffd700;"></i>
+                        <h3 style="color:#ffd700;">لا توجد منتجات</h3>
+                        ${currentUser?.role === 'merchant_approved' || currentUser?.role === 'admin' ? `
+                            <button class="btn-gold" onclick="showAddProductModal()" style="margin-top:20px; padding:15px 30px;">
+                                إضافة منتج جديد
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+                return;
+            }
+
+            let filtered = products.filter(p => p.stock > 0);
+            
+            if (currentFilter !== 'all' && currentFilter !== 'my_products') {
+                filtered = filtered.filter(p => p.category === currentFilter);
+            } else if (currentFilter === 'my_products' && currentUser?.role === 'merchant_approved') {
+                filtered = filtered.filter(p => 
+                    p.merchantName === currentUser.storeName || 
+                    p.merchantName === currentUser.name ||
+                    p.merchantId == currentUser.id
+                );
+            }
+
+            if (searchTerm) {
+                filtered = filtered.filter(p => 
+                    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+
+            filtered = sortProducts(filtered);
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:80px 20px;">لا توجد نتائج</div>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(product => {
+                const images = product.images && product.images.length > 0 
+                    ? product.images 
+                    : ["https://via.placeholder.com/300/2c5e4f/ffffff?text=نكهة+وجمال"];
+                
+                const timeAgo = getSimpleTimeAgo(product.createdAt);
+
+                return `
+                    <div class="product-card" onclick="viewProductDetails(${product.id})">
+                        <div style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.8); color:#ffd700; padding:5px 10px; border-radius:20px; font-size:12px;">
+                            <i class="far fa-clock"></i> ${timeAgo}
+                        </div>
+                        <img src="${images[0]}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300/2c5e4f/ffffff?text=نكهة+وجمال'">
+                        <div class="product-info">
+                            <div style="color:#ffd700; font-size:14px; margin-bottom:5px;">
+                                <i class="fas ${product.category === 'promo' ? 'fa-fire' : product.category === 'spices' ? 'fa-mortar-pestle' : product.category === 'cosmetic' ? 'fa-spa' : 'fa-tag'}"></i>
+                                ${getCategoryName(product.category)}
+                            </div>
+                            <div class="product-title">${product.name}</div>
+                            <div style="color:#ffd700; margin:5px 0;">
+                                <i class="fas fa-store"></i> ${product.merchantName}
+                            </div>
+                            <div style="color:#ffd700; font-size:14px; margin:5px 0;">
+                                ${generateStars(product.rating || 4.5)} (${product.rating || 4.5})
+                            </div>
+                            <div class="product-price">${product.price.toLocaleString()} دج</div>
+                            <div style="margin:10px 0; padding:5px; border-radius:20px; font-size:13px; background:${product.stock <= 0 ? '#f44336' : product.stock < 5 ? '#ff9800' : '#4caf50'}; color:white;">
+                                ${product.stock <= 0 ? 'غير متوفر' : product.stock < 5 ? `كمية محدودة (${product.stock})` : `متوفر (${product.stock})`}
+                            </div>
+                            <button class="add-to-cart" onclick="event.stopPropagation(); addToCart(${product.id})" ${product.stock <= 0 ? 'disabled' : ''}>
+                                <i class="fas fa-shopping-cart"></i> أضف للسلة
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ========== عرض تفاصيل المنتج ==========
+        function viewProductDetails(productId) {
+            const product = products.find(p => p.id == productId);
+            if (!product) return;
+
+            const modal = document.getElementById('productDetailModal');
+            const content = document.getElementById('productDetailContent');
+
+            const images = product.images?.map(img => `
+                <img src="${img}" style="width:100%; height:300px; object-fit:cover; border-radius:20px; margin-bottom:10px;" onerror="this.src='https://via.placeholder.com/300/2c5e4f/ffffff?text=نكهة+وجمال'">
+            `).join('') || '<div style="height:300px; background:#2c5e4f; display:flex; align-items:center; justify-content:center; border-radius:20px;"><i class="fas fa-image" style="font-size:80px; color:#ffd700;"></i></div>';
+
+            content.innerHTML = `
+                <div style="position:relative;">
+                    <span style="position:absolute; top:10px; right:10px; background:#ffd700; color:#000; padding:5px 15px; border-radius:20px;">
+                        ${getSimpleTimeAgo(product.createdAt)}
+                    </span>
+                    <h2 style="color:#ffd700; margin-bottom:30px;">${product.name}</h2>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px;">
+                        <div>${images}</div>
+                        <div>
+                            <div style="margin-bottom:20px;">
+                                <span style="background:#ffd700; padding:5px 15px; border-radius:20px; color:#000;">
+                                    <i class="fas ${product.category === 'promo' ? 'fa-fire' : product.category === 'spices' ? 'fa-mortar-pestle' : product.category === 'cosmetic' ? 'fa-spa' : 'fa-tag'}"></i>
+                                    ${getCategoryName(product.category)}
+                                </span>
+                            </div>
+                            
+                            <p style="margin-bottom:20px;"><i class="fas fa-store" style="color:#ffd700;"></i> ${product.merchantName}</p>
+                            
+                            <div style="margin-bottom:20px;">
+                                ${generateStars(product.rating || 4.5)} (${product.rating || 4.5})
+                            </div>
+                            
+                            <div style="font-size:32px; color:#ffd700; margin-bottom:20px;">
+                                ${product.price.toLocaleString()} دج
+                            </div>
+                            
+                            <div style="margin-bottom:20px; padding:10px; border-radius:20px; background:${product.stock <= 0 ? '#f44336' : product.stock < 5 ? '#ff9800' : '#4caf50'}; color:white;">
+                                ${product.stock <= 0 ? 'غير متوفر' : product.stock < 5 ? `كمية محدودة (${product.stock})` : `متوفر (${product.stock})`}
+                            </div>
+                            
+                            <div style="display:flex; gap:15px;">
+                                <button class="btn-gold" onclick="addToCart(${product.id}); closeModal('productDetailModal')" style="padding:15px 30px;">
+                                    <i class="fas fa-shopping-cart"></i> أضف للسلة
+                                </button>
+                                <button onclick="closeModal('productDetailModal')" style="padding:15px 30px; background:transparent; border:2px solid #ffd700; color:#ffd700; border-radius:25px;">
+                                    إغلاق
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            modal.style.display = 'flex';
+        }
+
+        // ========== فلترة المنتجات ==========
+        function filterProducts(category) {
+            currentFilter = category;
+            document.querySelectorAll('.nav-link').forEach(el => {
+                el.classList.remove('active');
+                el.style.background = 'transparent';
+                el.style.color = 'white';
+            });
+            if (event && event.target) {
+                event.target.classList.add('active');
+                event.target.style.background = '#ffd700';
+                event.target.style.color = '#1a2f28';
+            }
+            displayProducts();
+        }
+
+        // ========== البحث عن المنتجات ==========
+        function searchProducts() {
+            searchTerm = document.getElementById('searchInput').value;
+            displayProducts();
+        }
+
+        // ========== إدارة السلة ==========
+        function loadCart() {
+            const saved = localStorage.getItem('nardoo_cart');
+            cart = saved ? JSON.parse(saved) : [];
+            updateCartCounter();
+        }
+
+        function saveCart() {
+            localStorage.setItem('nardoo_cart', JSON.stringify(cart));
+        }
+
+        function updateCartCounter() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const counter = document.getElementById('cartCounter');
+            const fixedCounter = document.getElementById('fixedCartCounter');
+            
+            if (counter) counter.textContent = count;
+            if (fixedCounter) fixedCounter.textContent = count;
+        }
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id == productId);
+            if (!product || product.stock <= 0) {
+                ToastSystem.show('المنتج غير متوفر', 'error');
+                return;
+            }
+
+            const existing = cart.find(item => item.productId == productId);
+            if (existing) {
+                if (existing.quantity < product.stock) {
+                    existing.quantity++;
+                } else {
+                    ToastSystem.show('الكمية غير كافية', 'warning');
+                    return;
+                }
+            } else {
+                cart.push({
+                    productId,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    merchantName: product.merchantName
+                });
+            }
+
+            saveCart();
+            updateCartCounter();
+            updateCartDisplay();
+            ToastSystem.show('تمت الإضافة', 'success');
+        }
+
+        function toggleCart() {
+            document.getElementById('cartSidebar').classList.toggle('open');
+            updateCartDisplay();
+        }
+
+        function updateCartDisplay() {
+            const itemsDiv = document.getElementById('cartItems');
+            const totalSpan = document.getElementById('cartTotal');
+
+            if (!itemsDiv || !totalSpan) return;
+
+            if (cart.length === 0) {
+                itemsDiv.innerHTML = '<div style="text-align:center; padding:40px;">السلة فارغة</div>';
+                totalSpan.textContent = '0 دج';
+                return;
+            }
+
+            let total = 0;
+            itemsDiv.innerHTML = cart.map(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                return `
+                    <div class="cart-item">
+                        <div style="width:60px; height:60px; background:#2c5e4f; border-radius:12px; display:flex; align-items:center; justify-content:center;">
+                            <i class="fas fa-box" style="font-size:30px; color:#ffd700;"></i>
+                        </div>
+                        <div style="flex:1;">
+                            <div style="font-weight:bold;">${item.name}</div>
+                            <div style="color:#ffd700;">${item.price} دج</div>
+                            <div style="font-size:12px;">${item.merchantName || 'المتجر'}</div>
+                            <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+                                <button class="quantity-btn" onclick="updateCartItem(${item.productId}, ${item.quantity - 1})">-</button>
+                                <span>${item.quantity}</span>
+                                <button class="quantity-btn" onclick="updateCartItem(${item.productId}, ${item.quantity + 1})">+</button>
+                                <button class="quantity-btn" onclick="removeFromCart(${item.productId})" style="background:#f44336;">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            totalSpan.textContent = `${total} دج`;
+        }
+
+        function updateCartItem(productId, newQuantity) {
+            const item = cart.find(i => i.productId == productId);
+            const product = products.find(p => p.id == productId);
+
+            if (!item || !product) return;
+
+            if (newQuantity <= 0) {
+                removeFromCart(productId);
+                return;
+            }
+
+            if (newQuantity > product.stock) {
+                ToastSystem.show('الكمية غير متوفرة', 'warning');
+                return;
+            }
+
+            item.quantity = newQuantity;
+            saveCart();
+            updateCartCounter();
+            updateCartDisplay();
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(i => i.productId != productId);
+            saveCart();
+            updateCartCounter();
+            updateCartDisplay();
+            ToastSystem.show('تمت الإزالة', 'info');
+        }
+
+        // ========== إرسال طلب شراء ==========
+        async function sendOrderToTelegram(order) {
+            try {
+                const productsList = order.items.map(item => 
+                    `• ${item.name} - ${item.quantity} قطعة - ${item.price * item.quantity} دج`
+                ).join('\n');
+
+                const subtotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const shipping = 800;
+                const total = subtotal + shipping;
+
+                const message = `
+🟢 *طلب شراء جديد*
+━━━━━━━━━━━━━━━━━━
+👤 *الزبون:* ${order.customerName}
+📞 *الهاتف:* ${order.customerPhone}
+📍 *العنوان:* ${order.customerAddress}
+
+📦 *المنتجات:*
+${productsList}
+
+💰 *المجموع:* ${subtotal} دج
+🚚 *الشحن:* ${shipping} دج
+💵 *الإجمالي:* ${total} دج
+🔔 *رقم الطلب:* #${order.orderId}
+                `;
+
+                await sendTelegramMessage(message);
+                await sendTelegramMessage(message, TELEGRAM.adminId);
+
+                // إرسال لكل تاجر
+                const merchantGroups = {};
+                order.items.forEach(item => {
+                    const merchantName = item.merchantName || 'المتجر';
+                    if (!merchantGroups[merchantName]) merchantGroups[merchantName] = [];
+                    merchantGroups[merchantName].push(item);
+                });
+
+                for (const [merchantName, items] of Object.entries(merchantGroups)) {
+                    const merchant = users.find(u => u.storeName === merchantName || u.name === merchantName);
+                    
+                    if (merchant?.telegramId) {
+                        const merchantMessage = `
+🟢 *طلب جديد - ${merchantName}*
+━━━━━━━━━━━━━━━━━━
+👤 *العميل:* ${order.customerName}
+📞 *الهاتف:* ${order.customerPhone}
+
+📦 *منتجاتك:*
+${items.map(i => `• ${i.name} - ${i.quantity} قطعة - ${i.price * i.quantity} دج`).join('\n')}
+
+💰 *الإجمالي:* ${items.reduce((s, i) => s + (i.price * i.quantity), 0)} دج
+🔔 *رقم الطلب:* #${order.orderId}
+                        `;
+
+                        await sendTelegramMessage(merchantMessage, merchant.telegramId);
+                    }
+                }
+
+                return true;
+
+            } catch (error) {
+                console.error('خطأ في إرسال الطلب:', error);
+                return false;
+            }
+        }
+
+        // ========== إتمام الشراء ==========
+        async function checkoutCart() {
+            if (cart.length === 0) {
+                ToastSystem.show('السلة فارغة', 'warning');
+                return;
+            }
+
+            if (!currentUser) {
+                ToastSystem.show('سجل دخول أولاً', 'warning');
+                openLoginModal();
+                return;
+            }
+
+            const customerPhone = prompt('رقم الهاتف:', currentUser.phone || '');
+            if (!customerPhone) return;
+            
+            const customerAddress = prompt('العنوان:', '');
+            if (!customerAddress) return;
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const shipping = 800;
+            const total = subtotal + shipping;
+
+            const order = {
+                customerName: currentUser.name,
+                customerPhone,
+                customerAddress,
+                items: cart.map(item => ({...item})),
+                subtotal,
+                shipping,
+                total,
+                orderId: `ORD${Date.now()}`
+            };
+
+            ToastSystem.show('جاري إرسال الطلب...', 'info', 0);
+            
+            await sendOrderToTelegram(order);
+
+            // واتساب
+            cart.forEach(item => {
+                const msg = `طلب جديد:\n${item.name} - ${item.quantity} قطعة`;
+                window.open(`https://wa.me/213562243648?text=${encodeURIComponent(msg)}`, '_blank');
+            });
+
+            // تحديث المخزون
+            cart.forEach(item => {
+                const product = products.find(p => p.id == item.productId);
+                if (product) product.stock -= item.quantity;
+            });
+
+            cart = [];
+            saveCart();
+            updateCartCounter();
+            toggleCart();
+            
+            ToastSystem.hideAll();
+            ToastSystem.show('تم إرسال الطلب', 'success');
+        }
+
+        // ========== إدارة المستخدمين ==========
+        function openLoginModal() {
+            document.getElementById('loginModal').style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function switchAuthTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            
+            if (loginForm && registerForm) {
+                loginForm.style.display = tab === 'login' ? 'block' : 'none';
+                registerForm.style.display = tab === 'register' ? 'block' : 'none';
+            }
+        }
+
+        function toggleMerchantFields() {
+            const isMerchant = document.getElementById('isMerchant')?.checked || false;
+            const merchantFields = document.getElementById('merchantFields');
+            if (merchantFields) {
+                merchantFields.style.display = isMerchant ? 'block' : 'none';
+            }
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('loginEmail')?.value;
+            const password = document.getElementById('loginPassword')?.value;
+
+            if (!email || !password) {
+                ToastSystem.show('أدخل البريد وكلمة المرور', 'warning');
+                return;
+            }
+
+            const user = users.find(u => (u.email === email || u.name === email) && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('current_user', JSON.stringify(user));
+                closeModal('loginModal');
+                updateUIBasedOnRole();
+                ToastSystem.show(`مرحباً ${user.name}`, 'success');
+            } else {
+                ToastSystem.show('بيانات غير صحيحة', 'error');
+            }
+        }
+
+        function handleRegister() {
+            const name = document.getElementById('regName')?.value;
+            const email = document.getElementById('regEmail')?.value;
+            const password = document.getElementById('regPassword')?.value;
+            const phone = document.getElementById('regPhone')?.value || '';
+            const isMerchant = document.getElementById('isMerchant')?.checked || false;
+
+            if (!name || !email || !password) {
+                ToastSystem.show('املأ جميع الحقول', 'error');
+                return;
+            }
+
+            if (users.find(u => u.email === email)) {
+                ToastSystem.show('البريد مستخدم', 'error');
+                return;
+            }
+
+            const newUser = {
+                id: users.length + 1,
+                name,
+                email,
+                password,
+                phone,
+                role: isMerchant ? 'merchant_pending' : 'customer',
+                status: isMerchant ? 'pending' : 'active',
+                createdAt: new Date().toISOString()
+            };
+
+            if (isMerchant) {
+                newUser.merchantLevel = document.getElementById('merchantLevel')?.value || '1';
+                newUser.merchantDesc = document.getElementById('merchantDesc')?.value || '';
+                newUser.storeName = document.getElementById('storeName')?.value || `متجر ${name}`;
+                sendMerchantRequestToTelegram(newUser);
+                ToastSystem.show('تم إرسال الطلب', 'info');
+            } else {
+                ToastSystem.show('تم التسجيل', 'success');
+            }
+
+            users.push(newUser);
+            localStorage.setItem('nardoo_users', JSON.stringify(users));
+            switchAuthTab('login');
+        }
+
+        // ========== إرسال طلب تاجر ==========
+        async function sendMerchantRequestToTelegram(merchant) {
+            const message = `
+🔵 *طلب انضمام تاجر جديد*
+━━━━━━━━━━━━━━━━━━
+🏪 *المتجر:* ${merchant.storeName}
+👤 *التاجر:* ${merchant.name}
+📧 *البريد:* ${merchant.email}
+📞 *الهاتف:* ${merchant.phone || 'غير متوفر'}
+📊 *المستوى:* ${merchant.merchantLevel || '1'}
+
+📝 *الوصف:* ${merchant.merchantDesc || 'تاجر جديد'}
+
+✅ للموافقة: /approve_${merchant.id}
+❌ للرفض: /reject_${merchant.id}
+            `;
+
+            await sendTelegramMessage(message);
+        }
+
+        // ========== الموافقة على تاجر ==========
+        async function approveMerchant(merchantId) {
+            const merchantIndex = users.findIndex(u => u.id == merchantId);
+            
+            if (merchantIndex === -1) return;
+            
+            const merchant = users[merchantIndex];
+            merchant.role = 'merchant_approved';
+            merchant.status = 'approved';
+            
+            localStorage.setItem('nardoo_users', JSON.stringify(users));
+            
+            const message = `
+✅ *تمت الموافقة على تاجر*
+━━━━━━━━━━━━━━━━━━
+🏪 *المتجر:* ${merchant.storeName}
+👤 *التاجر:* ${merchant.name}
+
+🎉 يمكنك الآن إضافة منتجاتك
+            `;
+            
+            await sendTelegramMessage(message);
+            ToastSystem.show(`تمت الموافقة على ${merchant.name}`, 'success');
+        }
+
+        // ========== تحديث الواجهة حسب الصلاحية ==========
+        function updateUIBasedOnRole() {
+            if (!currentUser) return;
+
+            const dashboardBtn = document.getElementById('dashboardBtn');
+            const userBtn = document.getElementById('userBtn');
+
+            if (currentUser.role === 'admin') {
+                if (dashboardBtn) dashboardBtn.style.display = 'flex';
+                if (userBtn) userBtn.innerHTML = '<i class="fas fa-crown"></i>';
+            } else if (currentUser.role === 'merchant_approved') {
+                if (dashboardBtn) dashboardBtn.style.display = 'none';
+                if (userBtn) userBtn.innerHTML = '<i class="fas fa-store"></i>';
+                showMerchantPanel();
+            } else {
+                if (dashboardBtn) dashboardBtn.style.display = 'none';
+                if (userBtn) userBtn.innerHTML = '<i class="fas fa-user"></i>';
+            }
+        }
+
+        function showMerchantPanel() {
+            if (!currentUser || currentUser.role !== 'merchant_approved') return;
+            
+            const merchantProducts = products.filter(p => p.merchantName === currentUser.storeName || p.merchantName === currentUser.name);
+            
+            const panel = document.getElementById('merchantPanelContainer');
+            if (!panel) return;
+            
+            panel.style.display = 'block';
+            panel.innerHTML = `
+                <div style="background: linear-gradient(135deg, #9b59b6, #8e44ad); border-radius:30px; padding:30px; margin:20px 0; border:2px solid #ffd700;">
+                    <h3 style="color:white;"><i class="fas fa-store"></i> ${currentUser.storeName || currentUser.name}</h3>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:20px; margin-top:20px;">
+                        <div style="background:rgba(255,255,255,0.1); border-radius:20px; padding:20px; text-align:center;">
+                            <div style="font-size:32px; color:#ffd700;">${merchantProducts.length}</div>
+                            <div>منتجاتك</div>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.1); border-radius:20px; padding:20px; text-align:center;">
+                            <div style="font-size:32px; color:#ffd700;">${merchantProducts.filter(p => p.stock > 0).length}</div>
+                            <div>متاح</div>
+                        </div>
+                    </div>
+                    <button class="btn-gold" onclick="showAddProductModal()" style="margin-top:20px; padding:15px 30px;">➕ إضافة منتج</button>
+                </div>
+            `;
+        }
+
+        // ========== إضافة منتج ==========
+        function showAddProductModal() {
+            if (!currentUser) {
+                ToastSystem.show('سجل دخول أولاً', 'warning');
+                openLoginModal();
+                return;
+            }
+
+            if (currentUser.role !== 'merchant_approved' && currentUser.role !== 'admin') {
+                ToastSystem.show('غير مصرح', 'error');
+                return;
+            }
+
+            document.getElementById('productName').value = '';
+            document.getElementById('productCategory').value = '';
+            document.getElementById('productPrice').value = '';
+            document.getElementById('productStock').value = '';
+            document.getElementById('imagePreview').innerHTML = '';
+            document.getElementById('productImagesData').value = '';
+            document.getElementById('productModal').style.display = 'flex';
+        }
+
+        // ========== حفظ المنتج ==========
+        async function saveProduct() {
+            if (!currentUser) {
+                ToastSystem.show('يجب تسجيل الدخول أولاً', 'error');
+                return;
+            }
+
+            if (currentUser.role !== 'merchant_approved' && currentUser.role !== 'admin') {
+                ToastSystem.show('فقط التجار والمدير يمكنهم إضافة منتجات', 'error');
+                return;
+            }
+
+            const name = document.getElementById('productName')?.value;
+            const category = document.getElementById('productCategory')?.value;
+            const price = parseInt(document.getElementById('productPrice')?.value);
+            const stock = parseInt(document.getElementById('productStock')?.value);
+            const imagesData = document.getElementById('productImagesData')?.value;
+            const images = imagesData ? JSON.parse(imagesData) : [];
+
+            if (!name || !category || !price || !stock) {
+                ToastSystem.show('املأ جميع الحقول', 'error');
+                return;
+            }
+
+            const product = {
+                id: Date.now(),
+                name,
+                price,
+                category,
+                stock,
+                merchantName: currentUser.storeName || currentUser.name,
+                merchantId: currentUser.id,
+                images: images.length ? images : ["https://via.placeholder.com/300/2c5e4f/ffffff?text=نكهة+وجمال"],
+                rating: 4.5,
+                createdAt: new Date().toISOString()
+            };
+
+            // حفظ محلياً
+            const existingProducts = JSON.parse(localStorage.getItem('nardoo_products') || '[]');
+            existingProducts.push(product);
+            localStorage.setItem('nardoo_products', JSON.stringify(existingProducts));
+            products = existingProducts;
+
+            // إرسال إلى تلجرام
+            const sent = await addProductToTelegram(product);
+            
+            if (!sent) {
+                ToastSystem.show('تم الحفظ محلياً فقط', 'warning');
+            }
+
+            closeModal('productModal');
+            displayProducts();
+            
+            if (currentUser.role === 'merchant_approved') {
+                showMerchantPanel();
+            }
+        }
+
+        // ========== لوحة التحكم ==========
+        function openDashboard() {
+            if (!currentUser || currentUser.role !== 'admin') {
+                ToastSystem.show('غير مصرح', 'error');
+                return;
+            }
+
+            document.getElementById('dashboardSection').style.display = 'block';
+            switchDashboardTab('overview');
+        }
+
+        function switchDashboardTab(tab) {
+            document.querySelectorAll('.dashboard-tab').forEach(t => {
+                t.style.background = 'rgba(255,255,255,0.1)';
+                t.style.color = 'white';
+            });
+            if (event && event.target) {
+                event.target.style.background = '#ffd700';
+                event.target.style.color = '#1a2f28';
+            }
+
+            const content = document.getElementById('dashboardContent');
+            
+            if (tab === 'overview') {
+                content.innerHTML = `
+                    <h3 style="color:#ffd700; margin-bottom:20px;">نظرة عامة</h3>
+                    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:20px;">
+                        <div style="background:rgba(255,255,255,0.1); padding:20px; border-radius:15px; text-align:center;">
+                            <i class="fas fa-shopping-cart" style="font-size:40px; color:#ffd700;"></i>
+                            <div style="font-size:32px;">${products.length}</div>
+                            <div>إجمالي المنتجات</div>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.1); padding:20px; border-radius:15px; text-align:center;">
+                            <i class="fas fa-users" style="font-size:40px; color:#ffd700;"></i>
+                            <div style="font-size:32px;">${users.length}</div>
+                            <div>المستخدمين</div>
+                        </div>
+                    </div>
+                `;
+            } else if (tab === 'merchants') {
+                const pending = users.filter(u => u.role === 'merchant_pending');
+                const approved = users.filter(u => u.role === 'merchant_approved');
+
+                content.innerHTML = `
+                    <h3 style="color:#ffd700; margin-bottom:20px;">طلبات التجار (${pending.length})</h3>
+                    ${pending.map(m => `
+                        <div style="background:rgba(255,255,255,0.1); border-radius:20px; padding:20px; margin-bottom:15px; border-right:5px solid #ffd700;">
+                            <h4>${m.storeName || m.name}</h4>
+                            <p>👤 ${m.name} | 📧 ${m.email} | 📞 ${m.phone || '—'}</p>
+                            <div style="display:flex; gap:10px; margin-top:10px;">
+                                <button onclick="approveMerchant(${m.id})" style="padding:10px 20px; background:#4caf50; color:white; border:none; border-radius:25px;">✅ موافقة</button>
+                                <button onclick="rejectMerchant(${m.id})" style="padding:10px 20px; background:#f44336; color:white; border:none; border-radius:25px;">❌ رفض</button>
+                            </div>
+                        </div>
+                    `).join('') || '<p>لا توجد طلبات</p>'}
+
+                    <h3 style="color:#ffd700; margin:40px 0 20px;">التجار المعتمدون (${approved.length})</h3>
+                    ${approved.map(m => `
+                        <div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:10px; margin-bottom:10px;">
+                            🏪 ${m.storeName} - 👤 ${m.name}
+                        </div>
+                    `).join('')}
+                `;
+            }
+        }
+
+        // ========== رفض تاجر ==========
+        async function rejectMerchant(merchantId) {
+            const merchantIndex = users.findIndex(u => u.id == merchantId);
+            if (merchantIndex === -1) return;
+            
+            const merchant = users[merchantIndex];
+            merchant.role = 'customer';
+            merchant.status = 'rejected';
+            
+            localStorage.setItem('nardoo_users', JSON.stringify(users));
+            
+            const message = `
+❌ *تم رفض طلب تاجر*
+━━━━━━━━━━━━━━━━━━
+🏪 *المتجر:* ${merchant.storeName}
+👤 *التاجر:* ${merchant.name}
+
+😞 نأسف، لم تتم الموافقة على طلبك
+            `;
+            
+            await sendTelegramMessage(message);
+            ToastSystem.show(`تم رفض ${merchant.name}`, 'error');
+        }
+
+        // ========== دوال التمرير ==========
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function scrollToBottom() {
+            window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+        }
+
+        function toggleQuickTopButton() {
+            const btn = document.getElementById('quickTopBtn');
+            if (btn) {
+                if (window.scrollY > 300) {
+                    btn.style.display = 'flex';
+                } else {
+                    btn.style.display = 'none';
+                }
+            }
+        }
+
+        // ========== تأثير الكتابة ==========
+        class TypingAnimation {
+            constructor(element, texts, speed = 100) {
+                this.element = element;
+                this.texts = texts;
+                this.speed = speed;
+                this.index = 0;
+                this.text = '';
+                this.isDeleting = false;
+                this.type();
+            }
+            
+            type() {
+                if (!this.element) return;
+                
+                const current = this.texts[this.index];
+                this.text = this.isDeleting 
+                    ? current.substring(0, this.text.length - 1)
+                    : current.substring(0, this.text.length + 1);
+                    
+                this.element.innerHTML = this.text + '<span style="animation:blink 1s infinite;">|</span>';
+                
+                let speed = this.speed;
+                if (this.isDeleting) speed /= 2;
+                
+                if (!this.isDeleting && this.text === current) {
+                    speed = 2000;
+                    this.isDeleting = true;
+                } else if (this.isDeleting && this.text === '') {
+                    this.isDeleting = false;
+                    this.index = (this.index + 1) % this.texts.length;
+                }
+                
+                setTimeout(() => this.type(), speed);
+            }
+        }
+
+        // ========== تبديل الثيم ==========
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.body.style.background = isDarkMode ? '#1a2f28' : '#f5f5f5';
+            document.body.style.color = isDarkMode ? 'white' : '#333';
+            const toggle = document.getElementById('themeToggle');
+            if (toggle) {
+                toggle.innerHTML = isDarkMode ? 
+                    '<i class="fas fa-moon"></i> ليلي' : 
+                    '<i class="fas fa-sun"></i> نهاري';
+            }
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+        }
+
+        // ========== التهيئة ==========
+        window.onload = async function() {
+            console.log('بدء تشغيل ناردو برو...');
+            
+            await loadProducts();
+            loadCart();
+
+            const savedUser = localStorage.getItem('current_user');
+            if (savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                    updateUIBasedOnRole();
+                } catch (e) {
+                    console.error('خطأ في قراءة المستخدم:', e);
+                }
+            }
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                isDarkMode = savedTheme === 'dark';
+                document.body.style.background = isDarkMode ? '#1a2f28' : '#f5f5f5';
+                document.body.style.color = isDarkMode ? 'white' : '#333';
+                const toggle = document.getElementById('themeToggle');
+                if (toggle) {
+                    toggle.innerHTML = isDarkMode ? 
+                        '<i class="fas fa-moon"></i> ليلي' : 
+                        '<i class="fas fa-sun"></i> نهاري';
+                }
+            }
+
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                if (loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => {
+                        loader.style.display = 'none';
+                    }, 500);
+                }
+            }, 1000);
+
+            window.addEventListener('scroll', toggleQuickTopButton);
+            
+            const typing = document.getElementById('typing-text');
+            if (typing) {
+                new TypingAnimation(typing, ['نكهة وجمال', 'تسوق آمن', 'جودة عالية', 'توصيل سريع']);
+            }
+            
+            setInterval(loadProducts, 30000);
+            
+            console.log('نظام ناردو برو جاهز للعمل');
+        };
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        };
+
+        // إضافة الأنماط الديناميكية
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes blink { 0%,50% { opacity:1; } 51%,100% { opacity:0; } }
+            .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:flex; justify-content:center; align-items:center; z-index:3000; }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
