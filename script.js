@@ -28,7 +28,7 @@ function loadUsers() {
                 id: 1, 
                 name: 'azer', 
                 email: 'azer@admin.com', 
-                password: '123456', 
+                password: 'azer123', 
                 role: 'admin',
                 phone: '',
                 createdAt: new Date().toISOString()
