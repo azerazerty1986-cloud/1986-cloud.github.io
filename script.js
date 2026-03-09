@@ -26,7 +26,7 @@ function loadUsers() {
         users = [
             { 
                 id: 1, 
-                name: 'مدير النظام', 
+                name: 'azer', 
                 email: 'azer@gmail.com', 
                 password: '123456', 
                 role: 'admin',
@@ -50,6 +50,7 @@ function loadUsers() {
     }
 }
 loadUsers();
+
 
 // ========== 4. جلب المنتجات من تليجرام مع الصور ==========
 async function loadProductsFromTelegram() {
