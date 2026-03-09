@@ -31,7 +31,7 @@ function loadUsers() {
             { 
                 id: 1, 
                 name: 'مدير', 
-                email: 'admin@nardoo.com', 
+                email: 'azer', 
                 password: '123456', 
                 role: 'admin',
                 phone: '0555000000',
