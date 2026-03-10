@@ -2246,6 +2246,541 @@ const styles = `
 const styleSheet = document.createElement("style");
 styleSheet.textContent = styles;
 document.head.appendChild(styleSheet);
+// ========== 22. نظام عرض فيديوهات تلغرام في الأعلى ==========
+
+const TELEGRAM_VIDEOS = {
+    token: '8576673096:AAEFKd-YSJcW_0d_wAHZBt-5nPg_VOjDX_0',
+    channelId: '-1003822964890',
+    maxVideos: 10,          // عدد الفيديوهات المعروضة
+    autoPlay: true,         // تشغيل تلقائي للفيديو
+    muteVideos: true,       // كتم الصوت عند التمرير
+    slideInterval: 5000      // التبديل كل 5 ثواني
+};
+
+// قاعدة بيانات الفيديوهات
+let telegramVideos = JSON.parse(localStorage.getItem('telegram_videos') || '[]');
+
+// ========== 1. جلب الفيديوهات من قناة تلغرام ==========
+async function fetchTelegramVideos(limit = 10) {
+    try {
+        console.log('🔄 جاري جلب الفيديوهات من قناة تلغرام...');
+        
+        const response = await fetch(
+            `https://api.telegram.org/bot${TELEGRAM_VIDEOS.token}/getUpdates`
+        );
+        
+        const data = await response.json();
+        const videos = [];
+        
+        if (data.ok && data.result) {
+            const updates = [...data.result].reverse();
+            
+            for (const update of updates) {
+                const post = update.channel_post || update.message;
+                if (!post) continue;
+                
+                // التحقق من وجود فيديو
+                if (post.video) {
+                    const videoId = post.message_id;
+                    const caption = post.caption || 'فيديو جديد';
+                    
+                    // الحصول على رابط الفيديو
+                    const fileResponse = await fetch(
+                        `https://api.telegram.org/bot${TELEGRAM_VIDEOS.token}/getFile?file_id=${post.video.file_id}`
+                    );
+                    const fileData = await fileResponse.json();
+                    
+                    if (fileData.ok) {
+                        const videoUrl = `https://api.telegram.org/file/bot${TELEGRAM_VIDEOS.token}/${fileData.result.file_path}`;
+                        
+                        // محاولة الحصول على صورة مصغرة
+                        let thumbnail = '';
+                        if (post.video.thumb) {
+                            const thumbResponse = await fetch(
+                                `https://api.telegram.org/bot${TELEGRAM_VIDEOS.token}/getFile?file_id=${post.video.thumb.file_id}`
+                            );
+                            const thumbData = await thumbResponse.json();
+                            if (thumbData.ok) {
+                                thumbnail = `https://api.telegram.org/file/bot${TELEGRAM_VIDEOS.token}/${thumbData.result.file_path}`;
+                            }
+                        }
+                        
+                        videos.push({
+                            id: videoId,
+                            messageId: videoId,
+                            caption: caption,
+                            videoUrl: videoUrl,
+                            thumbnail: thumbnail || `https://via.placeholder.com/640x360/2c5e4f/ffffff?text=فيديو+${videoId}`,
+                            duration: post.video.duration,
+                            fileSize: post.video.file_size,
+                            mimeType: post.video.mime_type,
+                            date: new Date(post.date * 1000).toISOString(),
+                            telegramLink: `https://t.me/c/${TELEGRAM_VIDEOS.channelId.replace('-100', '')}/${videoId}`
+                        });
+                    }
+                }
+                
+                if (videos.length >= limit) break;
+            }
+        }
+        
+        if (videos.length > 0) {
+            telegramVideos = videos;
+            localStorage.setItem('telegram_videos', JSON.stringify(videos));
+            displayVideoCarousel();
+            console.log(`✅ تم تحميل ${videos.length} فيديو من تلغرام`);
+        }
+        
+        return videos;
+        
+    } catch (error) {
+        console.error('❌ خطأ في جلب الفيديوهات:', error);
+        return [];
+    }
+}
+
+// ========== 2. عرض الفيديوهات في كاروسيل أعلى الصفحة ==========
+function displayVideoCarousel() {
+    const container = document.getElementById('videoCarouselContainer');
+    if (!container) return;
+    
+    if (telegramVideos.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+    
+    container.style.display = 'block';
+    
+    let slidesHtml = '';
+    let indicatorsHtml = '';
+    
+    telegramVideos.slice(0, TELEGRAM_VIDEOS.maxVideos).forEach((video, index) => {
+        const isActive = index === 0 ? 'active' : '';
+        
+        slidesHtml += `
+            <div class="carousel-slide ${isActive}" data-index="${index}">
+                <div class="video-container">
+                    <video 
+                        ${TELEGRAM_VIDEOS.autoPlay ? 'autoplay' : ''} 
+                        muted="${TELEGRAM_VIDEOS.muteVideos}"
+                        loop 
+                        playsinline
+                        poster="${video.thumbnail}"
+                        onclick="event.stopPropagation()"
+                        class="carousel-video"
+                        id="video-${video.id}"
+                    >
+                        <source src="${video.videoUrl}" type="${video.mimeType || 'video/mp4'}">
+                        متصفحك لا يدعم تشغيل الفيديو
+                    </video>
+                    
+                    <div class="video-overlay">
+                        <div class="video-caption">
+                            ${video.caption.length > 50 ? video.caption.substring(0, 50) + '...' : video.caption}
+                        </div>
+                        
+                        <div class="video-actions">
+                            <button class="video-btn" onclick="toggleVideoPlay(${video.id})" title="تشغيل/إيقاف">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            
+                            <button class="video-btn" onclick="toggleVideoMute(${video.id})" title="كتم/تشغيل الصوت">
+                                <i class="fas fa-volume-mute"></i>
+                            </button>
+                            
+                            <button class="video-btn" onclick="window.open('${video.telegramLink}', '_blank')" title="فتح في تلغرام">
+                                <i class="fab fa-telegram"></i>
+                            </button>
+                        </div>
+                        
+                        ${video.duration ? `
+                            <div class="video-duration">
+                                ${formatDuration(video.duration)}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        indicatorsHtml += `
+            <button class="carousel-indicator ${isActive}" onclick="goToSlide(${index})"></button>
+        `;
+    });
+    
+    container.innerHTML = `
+        <div class="videos-section">
+            <div class="videos-header">
+                <h3><i class="fab fa-telegram" style="color: #0088cc;"></i> أحدث الفيديوهات من قناتنا</h3>
+                <div class="videos-controls">
+                    <button class="control-btn" onclick="refreshVideos()" title="تحديث">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="control-btn" onclick="toggleAutoPlay()" title="تشغيل تلقائي">
+                        <i class="fas fa-play-circle"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="carousel-container">
+                <button class="carousel-arrow prev" onclick="changeSlide(-1)">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                
+                <div class="carousel-slides">
+                    ${slidesHtml}
+                </div>
+                
+                <button class="carousel-arrow next" onclick="changeSlide(1)">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                
+                <div class="carousel-indicators">
+                    ${indicatorsHtml}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // بدء التمرير التلقائي
+    startAutoSlide();
+}
+
+// ========== 3. التحكم في الكاروسيل ==========
+let currentSlideIndex = 0;
+let autoSlideInterval;
+
+function startAutoSlide() {
+    if (autoSlideInterval) clearInterval(autoSlideInterval);
+    
+    autoSlideInterval = setInterval(() => {
+        changeSlide(1);
+    }, TELEGRAM_VIDEOS.slideInterval);
+}
+
+function changeSlide(direction) {
+    const slides = document.querySelectorAll('.carousel-slide');
+    if (slides.length === 0) return;
+    
+    slides[currentSlideIndex].classList.remove('active');
+    
+    currentSlideIndex = (currentSlideIndex + direction + slides.length) % slides.length;
+    
+    slides[currentSlideIndex].classList.add('active');
+    
+    // تحديث المؤشرات
+    document.querySelectorAll('.carousel-indicator').forEach((indicator, index) => {
+        indicator.classList.toggle('active', index === currentSlideIndex);
+    });
+}
+
+function goToSlide(index) {
+    const slides = document.querySelectorAll('.carousel-slide');
+    if (slides.length === 0) return;
+    
+    slides[currentSlideIndex].classList.remove('active');
+    currentSlideIndex = index;
+    slides[currentSlideIndex].classList.add('active');
+    
+    document.querySelectorAll('.carousel-indicator').forEach((indicator, i) => {
+        indicator.classList.toggle('active', i === index);
+    });
+}
+
+// ========== 4. التحكم في الفيديو ==========
+function toggleVideoPlay(videoId) {
+    const video = document.getElementById(`video-${videoId}`);
+    if (!video) return;
+    
+    if (video.paused) {
+        video.play();
+        video.closest('.video-container').querySelector('.video-btn i').className = 'fas fa-pause';
+    } else {
+        video.pause();
+        video.closest('.video-container').querySelector('.video-btn i').className = 'fas fa-play';
+    }
+}
+
+function toggleVideoMute(videoId) {
+    const video = document.getElementById(`video-${videoId}`);
+    if (!video) return;
+    
+    video.muted = !video.muted;
+    
+    const icon = video.closest('.video-container').querySelectorAll('.video-btn')[1].querySelector('i');
+    icon.className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+}
+
+function refreshVideos() {
+    fetchTelegramVideos(TELEGRAM_VIDEOS.maxVideos);
+}
+
+function toggleAutoPlay() {
+    TELEGRAM_VIDEOS.autoPlay = !TELEGRAM_VIDEOS.autoPlay;
+    showNotification(`التشغيل التلقائي: ${TELEGRAM_VIDEOS.autoPlay ? 'مفعل' : 'معطل'}`, 'info');
+}
+
+function formatDuration(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+// ========== 5. إضافة CSS للفيديوهات ==========
+const videoStyles = `
+    .videos-section {
+        margin: 20px 0;
+        padding: 20px;
+        background: var(--glass);
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    
+    .videos-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding: 0 10px;
+    }
+    
+    .videos-header h3 {
+        color: var(--gold);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .videos-controls {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .control-btn {
+        background: var(--glass-hover);
+        border: none;
+        color: var(--text);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .control-btn:hover {
+        background: var(--gold);
+        color: black;
+        transform: rotate(180deg);
+    }
+    
+    .carousel-container {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+        border-radius: 15px;
+    }
+    
+    .carousel-slides {
+        display: flex;
+        transition: transform 0.5s ease;
+    }
+    
+    .carousel-slide {
+        min-width: 100%;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+    
+    .carousel-slide.active {
+        opacity: 1;
+        position: relative;
+    }
+    
+    .video-container {
+        position: relative;
+        width: 100%;
+        padding-top: 56.25%; /* نسبة 16:9 */
+        background: #000;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .carousel-video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        cursor: pointer;
+    }
+    
+    .video-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 60px 20px 20px;
+        background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        color: white;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .video-container:hover .video-overlay {
+        opacity: 1;
+    }
+    
+    .video-caption {
+        font-size: 16px;
+        margin-bottom: 10px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    .video-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .video-btn {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        backdrop-filter: blur(5px);
+        transition: all 0.3s ease;
+    }
+    
+    .video-btn:hover {
+        background: var(--gold);
+        color: black;
+        transform: scale(1.1);
+    }
+    
+    .video-duration {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.6);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        backdrop-filter: blur(5px);
+    }
+    
+    .carousel-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0,0,0,0.5);
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 10;
+        transition: all 0.3s ease;
+    }
+    
+    .carousel-arrow.prev {
+        right: 20px;
+    }
+    
+    .carousel-arrow.next {
+        left: 20px;
+    }
+    
+    .carousel-arrow:hover {
+        background: var(--gold);
+        color: black;
+    }
+    
+    .carousel-indicators {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 10;
+    }
+    
+    .carousel-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.5);
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        padding: 0;
+    }
+    
+    .carousel-indicator.active {
+        background: var(--gold);
+        width: 30px;
+        border-radius: 10px;
+    }
+    
+    @media (max-width: 768px) {
+        .carousel-arrow {
+            display: none;
+        }
+        
+        .video-overlay {
+            opacity: 1;
+            padding: 40px 10px 10px;
+        }
+        
+        .video-caption {
+            font-size: 14px;
+        }
+        
+        .video-btn {
+            width: 35px;
+            height: 35px;
+        }
+    }
+`;
+
+// إضافة CSS
+const videoStyleSheet = document.createElement("style");
+videoStyleSheet.textContent = videoStyles;
+document.head.appendChild(videoStyleSheet);
+
+// ========== 6. إضافة عنصر الكاروسيل للصفحة ==========
+function addVideoCarouselToPage() {
+    const mainContainer = document.querySelector('.container');
+    if (!mainContainer) return;
+    
+    const carouselDiv = document.createElement('div');
+    carouselDiv.id = 'videoCarouselContainer';
+    carouselDiv.className = 'video-carousel-wrapper';
+    
+    // إضافة قبل المنتجات
+    mainContainer.insertBefore(carouselDiv, mainContainer.firstChild);
+    
+    // جلب الفيديوهات
+    fetchTelegramVideos(TELEGRAM_VIDEOS.maxVideos);
+}
+
+// ========== 7. جلب الفيديوهات بشكل دوري ==========
+// تحديث كل ساعة
+setInterval(() => {
+    fetchTelegramVideos(TELEGRAM_VIDEOS.maxVideos);
+}, 60 * 60 * 1000);
+
+// تشغيل بعد تحميل الصفحة
+setTimeout(addVideoCarouselToPage, 1500);
 // ========== 21. النظام المتكامل لجلب بصمات Reels من جميع المنصات ==========
 
 const MULTI_PLATFORM = {
