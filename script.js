@@ -1,4 +1,3 @@
-
 // ========== ناردو برو - النظام النهائي المتكامل ==========
 
 // ========== 1. إعدادات تلجرام ==========
@@ -902,7 +901,8 @@ function handleLogin() {
     }
 }
 
-function handleRegister() {
+// ========== تسجيل مستخدم جديد (معدل لحل مشكلة التليجرام) ==========
+async function handleRegister() {
     const name = document.getElementById('regName').value;
     const email = document.getElementById('regEmail').value;
     const password = document.getElementById('regPassword').value;
@@ -936,13 +936,53 @@ function handleRegister() {
         newUser.merchantLevel = document.getElementById('merchantLevel').value;
         newUser.merchantCategory = document.getElementById('merchantCategory').value;
         newUser.status = 'pending';
-        showNotification('📋 تم إرسال طلب التسجيل، انتظر موافقة المدير', 'info');
+        
+        showNotification('🔄 جاري إرسال طلب التسجيل...', 'info');
+        
+        // ✅ إرسال إشعار إلى التليجرام - بنفس طريقة إضافة المنتج
+        const message = `🆕 طلب تاجر جديد
+        
+👤 الاسم: ${newUser.name}
+📧 البريد: ${newUser.email}
+📱 الهاتف: ${newUser.phone || 'غير محدد'}
+🏪 المتجر: ${newUser.storeName}
+🏷️ القسم: ${getCategoryName(newUser.merchantCategory)}
+📊 المستوى: ${newUser.merchantLevel}`;
+
+        try {
+            const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: TELEGRAM.channelId,
+                    text: message
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.ok) {
+                showNotification('✅ تم إرسال طلب التسجيل للمدير', 'success');
+                console.log('✅ تم إرسال إشعار التاجر:', data);
+            } else {
+                showNotification('⚠️ تم التسجيل لكن فشل إرسال الإشعار', 'warning');
+                console.log('❌ فشل إرسال الإشعار:', data);
+            }
+        } catch (error) {
+            console.log('خطأ في الإرسال:', error);
+            showNotification('⚠️ تم التسجيل لكن فشل الاتصال', 'warning');
+        }
     } else {
         showNotification('✅ تم التسجيل بنجاح', 'success');
     }
 
     users.push(newUser);
     localStorage.setItem('nardoo_users', JSON.stringify(users));
+    
+    // إعادة تعيين النموذج
+    document.getElementById('registerForm').reset();
+    
+    // التبديل إلى نموذج تسجيل الدخول
     switchAuthTab('login');
 }
 
@@ -2049,4 +2089,3 @@ window.onclick = function(event) {
         event.target.style.display = 'none';
     }
 };
-
