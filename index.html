@@ -162,6 +162,61 @@
         </div>
     </div>
 
+    <!-- ===== شريط Reels من تلجرام ===== -->
+    <div class="reels-promo-bar">
+        <div class="container">
+            <div class="reels-header-brand">
+                <span class="brand-realme">realme</span>
+                <span class="brand-protection">حماية معايير السلكية</span>
+            </div>
+            
+            <div class="reels-product-showcase">
+                <div class="product-info">
+                    <h2 class="product-title">realme C71</h2>
+                    <div class="product-battery">
+                        <span class="battery-value">6000mAh</span>
+                        <span class="battery-label">بطارية ضخمة</span>
+                    </div>
+                </div>
+                
+                <div class="product-charging">
+                    <div class="charging-speed">
+                        <span class="speed-value">45W</span>
+                        <span class="speed-label">شحن سريع</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="charging-tagline">
+                <span class="tagline-charge">شحن لساعة</span>
+                <span class="tagline-usage">و استعمال اليومين</span>
+            </div>
+            
+            <div class="reels-divider">
+                <span class="divider-text">reels حصرية</span>
+                <span class="divider-line"></span>
+                <span class="divider-icon">🎬</span>
+            </div>
+            
+            <div class="reels-scroll-container">
+                <button class="reels-scroll-btn left" onclick="scrollReels('left')" id="scrollLeftBtn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                
+                <div class="reels-track" id="reelsTrack">
+                    <div class="reels-loader">
+                        <div class="loader-spinner-small"></div>
+                        <span>جاري تحميل الريلز...</span>
+                    </div>
+                </div>
+                
+                <button class="reels-scroll-btn right" onclick="scrollReels('right')" id="scrollRightBtn">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== الهيدر الرئيسي ===== -->
     <header class="main-header">
         <div class="container header-content">
@@ -500,6 +555,17 @@
                 <button class="close-btn" onclick="closeModal('merchantOrdersModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
             </div>
             <div class="modal-body" id="merchantOrdersContent" style="max-height: 80vh; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <!-- ===== نافذة عرض Reel ===== -->
+    <div class="modal" id="reelViewModal" onclick="if(event.target===this) closeModal('reelViewModal')">
+        <div class="modal-content reel-modal-content">
+            <div class="reel-modal-header">
+                <h3><i class="fas fa-film" style="color: var(--gold);"></i> reel</h3>
+                <button class="close-btn" onclick="closeModal('reelViewModal')">&times;</button>
+            </div>
+            <div class="reel-modal-body" id="reelViewContent"></div>
         </div>
     </div>
 
