@@ -2766,7 +2766,300 @@ window.onload = async function() {
     console.log('✅ نظام ناردو برو جاهز');
     console.log('👑 المدير: azer | كلمة المرور: 123456');
 };
+// ========== نظام Reels من قناة Telegram ==========
 
+// متغيرات Reels
+let reels = [];
+let currentReelFilter = 'all';
+
+// ========== جلب Reels من قناة Telegram ==========
+async function loadReelsFromTelegram() {
+    try {
+        console.log('🔄 جاري جلب الـ Reels من تلجرام...');
+        
+        const response = await fetch(
+            `https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates`
+        );
+        
+        const data = await response.json();
+        const reelsList = [];
+        
+        if (data.ok && data.result) {
+            const updates = [...data.result].reverse();
+            
+            for (const update of updates) {
+                const post = update.channel_post || update.message;
+                
+                // التحقق من وجود فيديو (Reel)
+                if (!post || !post.video) continue;
+                
+                const reelId = post.message_id;
+                const caption = post.caption || '';
+                
+                // استخراج البيانات من الكابشن
+                let title = 'Reel';
+                let duration = post.video.duration || 0;
+                let views = 0;
+                
+                const lines = caption.split('\n');
+                lines.forEach(line => {
+                    if (line.includes('العنوان:') || line.includes('📌')) {
+                        title = line.replace('العنوان:', '').replace('📌', '').trim();
+                    }
+                    if (line.includes('مشاهدات:') || line.includes('👁️')) {
+                        const match = line.match(/\d+/);
+                        if (match) views = parseInt(match[0]);
+                    }
+                });
+                
+                // الحصول على معلومات الفيديو
+                const fileId = post.video.file_id;
+                const fileResponse = await fetch(
+                    `https://api.telegram.org/bot${TELEGRAM.botToken}/getFile?file_id=${fileId}`
+                );
+                const fileData = await fileResponse.json();
+                
+                if (fileData.ok) {
+                    // رابط الصورة المصغرة (Thumbnail)
+                    let thumbnailUrl = '';
+                    if (post.video.thumb) {
+                        const thumbResponse = await fetch(
+                            `https://api.telegram.org/bot${TELEGRAM.botToken}/getFile?file_id=${post.video.thumb.file_id}`
+                        );
+                        const thumbData = await thumbResponse.json();
+                        if (thumbData.ok) {
+                            thumbnailUrl = `https://api.telegram.org/file/bot${TELEGRAM.botToken}/${thumbData.result.file_path}`;
+                        }
+                    }
+                    
+                    // رابط الفيديو
+                    const videoUrl = `https://api.telegram.org/file/bot${TELEGRAM.botToken}/${fileData.result.file_path}`;
+                    
+                    // توليد بصمة فريدة
+                    const thumbprint = generateReelThumbprint(reelId);
+                    
+                    reelsList.push({
+                        id: reelId,
+                        messageId: reelId,
+                        title: title,
+                        duration: duration,
+                        views: views,
+                        thumbnail: thumbnailUrl || 'https://via.placeholder.com/300x500/2c5e4f/ffffff?text=Reel',
+                        videoUrl: videoUrl,
+                        telegramLink: `https://t.me/nardoo_channel/${reelId}`,
+                        thumbprint: thumbprint,
+                        createdAt: new Date(post.date * 1000).toISOString(),
+                        date: new Date(post.date * 1000)
+                    });
+                }
+            }
+        }
+        
+        // ترتيب من الأحدث للأقدم
+        reelsList.sort((a, b) => b.date - a.date);
+        
+        console.log(`✅ تم تحميل ${reelsList.length} Reel من تلجرام`);
+        
+        // حفظ في localStorage
+        localStorage.setItem('nardoo_reels', JSON.stringify(reelsList));
+        
+        return reelsList;
+        
+    } catch (error) {
+        console.error('❌ خطأ في جلب الـ Reels:', error);
+        const saved = localStorage.getItem('nardoo_reels');
+        return saved ? JSON.parse(saved) : [];
+    }
+}
+
+// ========== توليد بصمة Reel ==========
+function generateReelThumbprint(reelId) {
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const idPart = reelId.toString().slice(-4);
+    
+    return `RL_${idPart}_${random}_${timestamp.slice(-4)}`;
+}
+
+// ========== عرض Reels في المتجر ==========
+function displayReels() {
+    const container = document.getElementById('reelsTrack');
+    if (!container) return;
+
+    if (reels.length === 0) {
+        container.innerHTML = `
+            <div class="reels-empty">
+                <i class="fas fa-film"></i>
+                <span>لا توجد Reels بعد</span>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = reels.map(reel => {
+        const durationMinutes = Math.floor(reel.duration / 60);
+        const durationSeconds = reel.duration % 60;
+        const durationText = durationMinutes > 0 
+            ? `${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}`
+            : `${durationSeconds} ث`;
+
+        return `
+            <div class="reel-card" onclick="viewReelDetails('${reel.thumbprint}')">
+                <div class="reel-thumbnail">
+                    <img src="${reel.thumbnail}" alt="${reel.title}" loading="lazy">
+                    <div class="reel-duration">⏱️ ${durationText}</div>
+                    <div class="reel-views">👁️ ${reel.views.toLocaleString()}</div>
+                    <div class="reel-play-overlay">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
+                </div>
+                <div class="reel-info">
+                    <h4 class="reel-title">${reel.title}</h4>
+                    <div class="reel-thumbprint" title="البصمة الفريدة">
+                        <i class="fas fa-fingerprint" style="color: var(--gold);"></i>
+                        <span>${reel.thumbprint}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // تفعيل أزرار التمرير
+    setTimeout(updateScrollButtons, 100);
+}
+
+// ========== عرض تفاصيل Reel ==========
+function viewReelDetails(thumbprint) {
+    const reel = reels.find(r => r.thumbprint === thumbprint);
+    if (!reel) return;
+
+    const modal = document.getElementById('reelViewModal');
+    const content = document.getElementById('reelViewContent');
+
+    content.innerHTML = `
+        <div class="reel-view-container">
+            <div class="reel-video-container">
+                <video controls autoplay loop poster="${reel.thumbnail}">
+                    <source src="${reel.videoUrl}" type="video/mp4">
+                    متصفحك لا يدعم تشغيل الفيديو
+                </video>
+            </div>
+            
+            <div class="reel-details">
+                <div class="reel-detail-header">
+                    <h3>${reel.title}</h3>
+                    <span class="reel-thumbprint-badge">
+                        <i class="fas fa-fingerprint"></i> ${reel.thumbprint}
+                    </span>
+                </div>
+                
+                <div class="reel-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-eye"></i>
+                        <span>${reel.views.toLocaleString()} مشاهدة</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-clock"></i>
+                        <span>${Math.floor(reel.duration / 60)}:${(reel.duration % 60).toString().padStart(2, '0')} دقيقة</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-calendar"></i>
+                        <span>${new Date(reel.createdAt).toLocaleDateString('ar-EG')}</span>
+                    </div>
+                </div>
+                
+                <div class="reel-actions">
+                    <a href="${reel.videoUrl}" download class="btn-gold" style="flex: 1;">
+                        <i class="fas fa-download"></i> تحميل
+                    </a>
+                    <a href="${reel.telegramLink}" target="_blank" class="btn-telegram" style="flex: 1;">
+                        <i class="fab fa-telegram"></i> عرض في تلجرام
+                    </a>
+                </div>
+                
+                <div class="reel-share">
+                    <h4>مشاركة البصمة:</h4>
+                    <div class="share-box">
+                        <input type="text" value="${reel.thumbprint}" readonly id="thumbprintCopy">
+                        <button onclick="copyThumbprint('${reel.thumbprint}')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    modal.style.display = 'flex';
+}
+
+// ========== نسخ البصمة ==========
+function copyThumbprint(thumbprint) {
+    navigator.clipboard.writeText(thumbprint);
+    showNotification('✅ تم نسخ البصمة', 'success');
+}
+
+// ========== التمرير في شريط Reels ==========
+function scrollReels(direction) {
+    const container = document.getElementById('reelsTrack');
+    const scrollAmount = 300;
+    
+    if (direction === 'left') {
+        container.scrollLeft -= scrollAmount;
+    } else {
+        container.scrollLeft += scrollAmount;
+    }
+    
+    setTimeout(updateScrollButtons, 100);
+}
+
+function updateScrollButtons() {
+    const container = document.getElementById('reelsTrack');
+    const leftBtn = document.getElementById('scrollLeftBtn');
+    const rightBtn = document.getElementById('scrollRightBtn');
+    
+    if (!container || !leftBtn || !rightBtn) return;
+    
+    leftBtn.disabled = container.scrollLeft <= 0;
+    rightBtn.disabled = container.scrollLeft >= (container.scrollWidth - container.clientWidth - 10);
+}
+
+// ========== إضافة زر Reels في القائمة ==========
+function addReelsNavButton() {
+    const nav = document.getElementById('mainNav');
+    if (!nav) return;
+    
+    // التحقق إذا كان الزر موجود مسبقاً
+    if (document.querySelector('[onclick="scrollToReels()"]')) return;
+    
+    const reelsBtn = document.createElement('a');
+    reelsBtn.className = 'nav-link';
+    reelsBtn.setAttribute('onclick', 'scrollToReels()');
+    reelsBtn.innerHTML = '<i class="fas fa-film" style="color: var(--gold);"></i><span>Reels</span>';
+    nav.appendChild(reelsBtn);
+}
+
+function scrollToReels() {
+    const reelsBar = document.querySelector('.reels-promo-bar');
+    if (reelsBar) {
+        reelsBar.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+// ========== تهيئة Reels ==========
+async function initReels() {
+    reels = await loadReelsFromTelegram();
+    displayReels();
+    addReelsNavButton();
+}
+
+// ========== تحديث أزرار التمرير عند تغيير حجم النافذة ==========
+window.addEventListener('resize', () => {
+    setTimeout(updateScrollButtons, 100);
+});
+
+// ========== تحديث دوري كل 30 ثانية ==========
+setInterval(updateScrollButtons, 30000);
 // ========== إغلاق النوافذ ==========
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
