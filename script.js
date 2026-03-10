@@ -1147,7 +1147,394 @@ window.onload = async function() {
     console.log('✅ نظام ناردو برو جاهز');
     console.log('👑 المدير: azer | كلمة المرور: 123456');
 };
+// ========== 14. نظام Reels المتطور مع التشغيل التلقائي ==========
 
+// متغيرات التحكم في Reels
+let currentPlayingReel = null;
+let reelsObserver = null;
+
+// تهيئة مراقبة التمرير للـ Reels
+function initReelsObserver() {
+    reelsObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // الفيديو ظهر في الشاشة - شغله
+                const reelCard = entry.target;
+                const videoContainer = reelCard.querySelector('.reel-video-preview');
+                if (videoContainer) {
+                    playReel(reelCard);
+                }
+            } else {
+                // الفيديو اختفى من الشاشة - أوقفه
+                const reelCard = entry.target;
+                stopReel(reelCard);
+            }
+        });
+    }, {
+        threshold: 0.7, // الفيديو يشغل عندما يظهر 70% منه
+        rootMargin: '0px'
+    });
+
+    // مراقبة جميع بطاقات Reels
+    document.querySelectorAll('.reel-card').forEach(card => {
+        reelsObserver.observe(card);
+    });
+}
+
+// تشغيل Reel
+function playReel(reelCard) {
+    const video = reelCard.querySelector('video');
+    const playIcon = reelCard.querySelector('.reel-play-icon');
+    const isMuted = document.getElementById('reelsMuteToggle')?.classList.contains('muted');
+    
+    if (video) {
+        // إيقاف أي فيديو آخر يشغل
+        if (currentPlayingReel && currentPlayingReel !== video) {
+            stopReel(currentPlayingReel.closest('.reel-card'));
+        }
+        
+        video.muted = isMuted || false;
+        video.play().then(() => {
+            currentPlayingReel = video;
+            if (playIcon) playIcon.style.display = 'none';
+            
+            // إضافة تأثير تموج عند التشغيل
+            reelCard.classList.add('reel-playing');
+        }).catch(e => console.log('لا يمكن تشغيل الفيديو تلقائياً:', e));
+    }
+}
+
+// إيقاف Reel
+function stopReel(reelCard) {
+    const video = reelCard.querySelector('video');
+    const playIcon = reelCard.querySelector('.reel-play-icon');
+    
+    if (video) {
+        video.pause();
+        video.currentTime = 0;
+        if (playIcon) playIcon.style.display = 'flex';
+        reelCard.classList.remove('reel-playing');
+        
+        if (currentPlayingReel === video) {
+            currentPlayingReel = null;
+        }
+    }
+}
+
+// ========== 15. تطوير بطاقة Reel مع فيديو مباشر ==========
+
+// تحديث دالة عرض Reels لاستخدام فيديوهات حقيقية
+function displayReels() {
+    const container = document.getElementById('reelsTrack');
+    if (!container) {
+        console.log('❌ حاوية Reels غير موجودة');
+        return;
+    }
+
+    console.log(`📊 عرض ${reels.length} Reel`);
+
+    if (reels.length === 0) {
+        container.innerHTML = `
+            <div class="reels-empty">
+                <i class="fas fa-film"></i>
+                <span>لا توجد Reels بعد</span>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = reels.map((reel, index) => {
+        const durationMinutes = Math.floor(reel.duration / 60);
+        const durationSeconds = reel.duration % 60;
+        const durationText = durationMinutes > 0 
+            ? `${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}`
+            : `${durationSeconds} ث`;
+
+        // استخدام فيديو حقيقي إذا كان متاحاً، وإلا استخدم الصورة مع أيقونة تشغيل
+        const hasVideo = reel.videoUrl && reel.videoUrl.includes('telegram');
+        
+        return `
+            <div class="reel-card" data-reel-id="${reel.id}" data-index="${index}" onclick="expandReel('${reel.thumbprint}')">
+                <div class="reel-thumbnail ${hasVideo ? 'has-video' : ''}">
+                    ${hasVideo ? `
+                        <video class="reel-video-preview" loop muted playsinline preload="metadata">
+                            <source src="${reel.videoUrl}" type="video/mp4">
+                        </video>
+                    ` : `
+                        <img src="${reel.thumbnail}" alt="${reel.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x500/2c5e4f/ffffff?text=Reel'">
+                    `}
+                    
+                    <!-- أيقونة التشغيل -->
+                    <div class="reel-play-icon" style="display: ${hasVideo ? 'none' : 'flex'};">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    
+                    <!-- معلومات إضافية -->
+                    <div class="reel-duration">⏱️ ${durationText}</div>
+                    <div class="reel-views">👁️ ${(reel.views / 1000000).toFixed(1)}M</div>
+                    
+                    <!-- عنوان الفيديو -->
+                    <div class="reel-title-overlay">
+                        <h4>${reel.title.substring(0, 30)}${reel.title.length > 30 ? '...' : ''}</h4>
+                    </div>
+                    
+                    <!-- زر كتم الصوت -->
+                    <div class="reel-volume-control" onclick="event.stopPropagation(); toggleReelVolume(this)">
+                        <i class="fas fa-volume-mute"></i>
+                    </div>
+                </div>
+                
+                <div class="reel-info">
+                    <div class="reel-thumbprint" title="البصمة الفريدة">
+                        <i class="fas fa-fingerprint" style="color: var(--gold);"></i>
+                        <span>${reel.thumbprint}</span>
+                    </div>
+                    
+                    <div class="reel-actions-mini">
+                        <button class="reel-action-btn" onclick="event.stopPropagation(); likeReel('${reel.thumbprint}')">
+                            <i class="far fa-heart"></i>
+                        </button>
+                        <button class="reel-action-btn" onclick="event.stopPropagation(); shareReel('${reel.thumbprint}')">
+                            <i class="far fa-share-square"></i>
+                        </button>
+                        <button class="reel-action-btn" onclick="event.stopPropagation(); downloadReel('${reel.thumbprint}')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // إضافة حدث التمرير للتشغيل التلقائي
+    setTimeout(() => {
+        initReelsObserver();
+        addReelsScrollListener();
+    }, 500);
+
+    // تفعيل أزرار التمرير
+    updateScrollButtons();
+}
+
+// ========== 16. تكبير Reel إلى وضع ملء الشاشة ==========
+
+function expandReel(thumbprint) {
+    const reel = reels.find(r => r.thumbprint === thumbprint);
+    if (!reel) return;
+
+    // إنشاء نافذة منبثقة كبيرة
+    const modal = document.createElement('div');
+    modal.className = 'reels-fullscreen-modal';
+    modal.onclick = function(e) {
+        if (e.target === modal) closeFullscreenReel();
+    };
+
+    const durationMinutes = Math.floor(reel.duration / 60);
+    const durationSeconds = reel.duration % 60;
+    const durationText = durationMinutes > 0 
+        ? `${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}`
+        : `${durationSeconds} ث`;
+
+    modal.innerHTML = `
+        <div class="reels-fullscreen-content">
+            <button class="reels-fullscreen-close" onclick="closeFullscreenReel()">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="reels-fullscreen-video-container">
+                <video class="reels-fullscreen-video" controls autoplay loop poster="${reel.thumbnail}">
+                    <source src="${reel.videoUrl}" type="video/mp4">
+                    <source src="https://www.youtube.com/watch?v=${reel.id}" type="video/mp4">
+                    متصفحك لا يدعم تشغيل الفيديو
+                </video>
+                
+                <div class="reels-fullscreen-overlay">
+                    <div class="reels-fullscreen-header">
+                        <h2>${reel.title}</h2>
+                        <span class="reels-fullscreen-badge">
+                            <i class="fas fa-fingerprint"></i> ${reel.thumbprint}
+                        </span>
+                    </div>
+                    
+                    <div class="reels-fullscreen-stats">
+                        <div class="stat">
+                            <i class="fas fa-eye"></i>
+                            <span>${(reel.views / 1000000).toFixed(1)}M</span>
+                        </div>
+                        <div class="stat">
+                            <i class="fas fa-clock"></i>
+                            <span>${durationText}</span>
+                        </div>
+                        <div class="stat">
+                            <i class="fas fa-calendar"></i>
+                            <span>${new Date(reel.createdAt).toLocaleDateString('ar-EG')}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="reels-fullscreen-actions">
+                        <button class="reels-fullscreen-btn like" onclick="likeReel('${reel.thumbprint}')">
+                            <i class="far fa-heart"></i> إعجاب
+                        </button>
+                        <button class="reels-fullscreen-btn share" onclick="shareReel('${reel.thumbprint}')">
+                            <i class="far fa-share-square"></i> مشاركة
+                        </button>
+                        <button class="reels-fullscreen-btn download" onclick="downloadReel('${reel.thumbprint}')">
+                            <i class="fas fa-download"></i> تحميل
+                        </button>
+                    </div>
+                    
+                    <div class="reels-fullscreen-share">
+                        <input type="text" value="${reel.thumbprint}" readonly>
+                        <button onclick="copyThumbprint('${reel.thumbprint}')">
+                            <i class="fas fa-copy"></i> نسخ البصمة
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden'; // منع التمرير خلف النافذة
+}
+
+function closeFullscreenReel() {
+    const modal = document.querySelector('.reels-fullscreen-modal');
+    if (modal) {
+        modal.remove();
+        document.body.style.overflow = ''; // إعادة التمرير
+    }
+}
+
+// ========== 17. تفاعلات Reels ==========
+
+// تبديل كتم الصوت
+function toggleReelVolume(btn) {
+    const video = btn.closest('.reel-card')?.querySelector('video');
+    const icon = btn.querySelector('i');
+    
+    if (video) {
+        video.muted = !video.muted;
+        if (video.muted) {
+            icon.className = 'fas fa-volume-mute';
+            btn.classList.add('muted');
+        } else {
+            icon.className = 'fas fa-volume-up';
+            btn.classList.remove('muted');
+        }
+    }
+}
+
+// إعجاب بـ Reel
+function likeReel(thumbprint) {
+    const reel = reels.find(r => r.thumbprint === thumbprint);
+    if (reel) {
+        reel.liked = !reel.liked;
+        const btn = document.querySelector(`[onclick="likeReel('${thumbprint}')"] i`);
+        if (btn) {
+            btn.className = reel.liked ? 'fas fa-heart' : 'far fa-heart';
+            btn.style.color = reel.liked ? 'var(--gold)' : '';
+        }
+        showNotification(reel.liked ? '👍 تم الإعجاب' : '👎 تم إلغاء الإعجاب', 'success');
+    }
+}
+
+// مشاركة Reel
+function shareReel(thumbprint) {
+    const reel = reels.find(r => r.thumbprint === thumbprint);
+    if (reel) {
+        if (navigator.share) {
+            navigator.share({
+                title: reel.title,
+                text: `شاهد هذا Reel: ${reel.title}`,
+                url: reel.videoUrl
+            });
+        } else {
+            copyThumbprint(reel.thumbprint);
+            showNotification('✅ تم نسخ البصمة للمشاركة', 'success');
+        }
+    }
+}
+
+// تحميل Reel
+function downloadReel(thumbprint) {
+    const reel = reels.find(r => r.thumbprint === thumbprint);
+    if (reel && reel.videoUrl) {
+        const a = document.createElement('a');
+        a.href = reel.videoUrl;
+        a.download = `reel_${reel.thumbprint}.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showNotification('📥 جاري التحميل...', 'info');
+    } else {
+        showNotification('❌ رابط التحميل غير متوفر', 'error');
+    }
+}
+
+// ========== 18. إضافة مستمعي التمرير ==========
+
+function addReelsScrollListener() {
+    const reelsTrack = document.getElementById('reelsTrack');
+    if (reelsTrack) {
+        reelsTrack.addEventListener('scroll', () => {
+            // تحديث حالة التشغيل عند التمرير
+            document.querySelectorAll('.reel-card').forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const isVisible = rect.left >= 0 && rect.right <= window.innerWidth;
+                
+                if (isVisible) {
+                    const video = card.querySelector('video');
+                    if (video && video.paused && !video.muted) {
+                        video.play().catch(() => {});
+                    }
+                }
+            });
+        });
+    }
+}
+
+// ========== 19. تحديث دالة التهيئة ==========
+
+// تعديل دالة initReels
+async function initReels() {
+    console.log('🎬 تهيئة نظام Reels المتطور...');
+    reels = await loadReelsFromTelegram();
+    displayReels();
+    addReelsNavButton();
+    
+    // إضافة زر التحكم في كتم الصوت العام
+    addGlobalVolumeControl();
+}
+
+// إضافة زر كتم الصوت العام
+function addGlobalVolumeControl() {
+    const reelsBar = document.querySelector('.reels-promo-bar');
+    if (!reelsBar) return;
+    
+    const volumeBtn = document.createElement('button');
+    volumeBtn.id = 'reelsMuteToggle';
+    volumeBtn.className = 'reels-volume-global';
+    volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+    volumeBtn.onclick = function() {
+        const videos = document.querySelectorAll('.reel-card video');
+        const isMuted = this.classList.contains('muted');
+        
+        videos.forEach(video => {
+            video.muted = !isMuted;
+        });
+        
+        if (isMuted) {
+            this.innerHTML = '<i class="fas fa-volume-up"></i>';
+            this.classList.remove('muted');
+        } else {
+            this.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            this.classList.add('muted');
+        }
+    };
+    
+    reelsBar.querySelector('.reels-controls').appendChild(volumeBtn);
+}
 // ========== إغلاق النوافذ ==========
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
