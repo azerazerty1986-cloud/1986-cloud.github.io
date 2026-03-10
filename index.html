@@ -1,3 +1,4 @@
+H المدير يعمل جيد
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -140,16 +141,6 @@
     <!-- ===== لوحة التاجر ===== -->
     <div class="container" id="merchantPanelContainer" style="display: none;"></div>
 
-    <!-- ===== خيارات الفرز ===== -->
-    <div class="container sort-options">
-        <select class="sort-select" onchange="changeSort(this.value)">
-            <option value="newest">🆕 الأحدث</option>
-            <option value="price_low">💰 السعر: من الأقل</option>
-            <option value="price_high">💰 السعر: من الأعلى</option>
-            <option value="rating">⭐ التقييم</option>
-        </select>
-    </div>
-
     <!-- ===== المنتجات ===== -->
     <div class="container">
         <div class="products-grid" id="productsContainer"></div>
@@ -199,74 +190,72 @@
 
     <button class="quick-top-btn" onclick="scrollToTop()" id="quickTopBtn"><i class="fas fa-chevron-up"></i></button>
 
-    <!-- ===== نافذة تسجيل الدخول والتسجيل ===== -->
+    <!-- ===== نافذة تسجيل الدخول ===== -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color:var(--gold);">مرحباً بك في ناردو برو</h2>
-                <button class="close-btn" onclick="closeModal('loginModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
-            </div>
-            
-            <div class="auth-tabs" style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button class="btn-gold" style="flex: 1;" onclick="switchAuthTab('login')">تسجيل الدخول</button>
-                <button class="btn-outline-gold" style="flex: 1;" onclick="switchAuthTab('register')">إنشاء حساب</button>
+            <h2 style="text-align:center; margin-bottom:30px; color:var(--gold);">تسجيل الدخول</h2>
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <button class="btn-gold" style="flex:1;" onclick="switchAuthTab('login')">دخول</button>
+                <button class="btn-outline-gold" style="flex:1;" onclick="switchAuthTab('register')">تسجيل</button>
             </div>
 
-            <!-- نموذج تسجيل الدخول -->
+            <!-- ===== نموذج تسجيل الدخول ===== -->
             <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
                 <div class="form-group">
-                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                    <label>📧 البريد الإلكتروني</label>
                     <input type="email" class="form-control" id="loginEmail" required placeholder="example@email.com">
                 </div>
                 <div class="form-group">
-                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
-                    <input type="password" class="form-control" id="loginPassword" required placeholder="********">
+                    <label>🔑 كلمة المرور</label>
+                    <input type="password" class="form-control" id="loginPassword" required placeholder="أدخل كلمة المرور">
                 </div>
-                <button type="submit" class="btn-gold" style="width: 100%; margin-top: 10px;">دخول</button>
+                <button type="submit" class="btn-gold" style="width:100%;">دخول</button>
             </form>
 
-            <!-- نموذج التسجيل -->
-            <form id="registerForm" style="display: none;" onsubmit="event.preventDefault(); handleRegister();">
+            <!-- ===== نموذج التسجيل الجديد مع جميع الحقول ===== -->
+            <form id="registerForm" style="display:none;" onsubmit="event.preventDefault(); handleRegister();">
                 <div class="form-group">
-                    <label><i class="fas fa-user"></i> الاسم الكامل</label>
-                    <input type="text" class="form-control" id="regName" required placeholder="أدخل اسمك">
+                    <label>👤 الاسم الكامل</label>
+                    <input type="text" class="form-control" id="regName" required placeholder="أدخل اسمك الكامل">
                 </div>
                 
                 <div class="form-group">
-                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                    <label>📧 البريد الإلكتروني</label>
                     <input type="email" class="form-control" id="regEmail" required placeholder="example@email.com">
                 </div>
                 
                 <div class="form-group">
-                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
-                    <input type="password" class="form-control" id="regPassword" required placeholder="********">
+                    <label>🔑 كلمة المرور</label>
+                    <input type="password" class="form-control" id="regPassword" required placeholder="أدخل كلمة المرور">
                 </div>
                 
                 <div class="form-group">
-                    <label><i class="fas fa-phone"></i> رقم الهاتف</label>
-                    <input type="tel" class="form-control" id="regPhone" placeholder="05XXXXXXXX">
+                    <label>📱 رقم الهاتف</label>
+                    <input type="tel" class="form-control" id="regPhone" required placeholder="05XXXXXXXX">
                 </div>
                 
                 <div class="form-group">
-                    <label><i class="fab fa-telegram"></i> معرف تليجرام (اختياري)</label>
+                    <label>📱 معرف تليجرام (اختياري)</label>
                     <input type="text" class="form-control" id="regTelegram" placeholder="@username">
+                    <small style="color: #888; display: block; margin-top: 5px;">أدخل معرفك في تليجرام ليتواصل معك العملاء</small>
                 </div>
                 
-                <div class="form-group" style="margin: 15px 0;">
-                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                <div class="form-group">
+                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
                         <input type="checkbox" id="isMerchant" onchange="toggleMerchantFields()">
                         <span>تسجيل كتاجر</span>
                     </label>
                 </div>
                 
-                <div id="merchantFields" style="display: none;">
+                <!-- ===== حقول التاجر (تظهر عند اختيار تسجيل كتاجر) ===== -->
+                <div id="merchantFields" style="display:none;">
                     <div class="form-group">
-                        <label><i class="fas fa-store"></i> اسم المتجر</label>
-                        <input type="text" class="form-control" id="storeName" placeholder="اسم متجرك">
+                        <label>🏪 اسم المتجر</label>
+                        <input type="text" class="form-control" id="storeName" placeholder="أدخل اسم متجرك">
                     </div>
                     
                     <div class="form-group">
-                        <label><i class="fas fa-tag"></i> تخصص المتجر</label>
+                        <label>🏷️ تخصص المتجر</label>
                         <select class="form-control" id="merchantCategory">
                             <option value="spices">توابل</option>
                             <option value="cosmetic">كوسمتيك</option>
@@ -276,7 +265,7 @@
                     </div>
                     
                     <div class="form-group">
-                        <label><i class="fas fa-level-up-alt"></i> مستوى التاجر</label>
+                        <label>📊 مستوى التاجر</label>
                         <select class="form-control" id="merchantLevel">
                             <option value="1">المستوى الأول</option>
                             <option value="2" selected>المستوى الثاني</option>
@@ -285,10 +274,10 @@
                     </div>
                 </div>
                 
-                <button type="submit" class="btn-gold" style="width: 100%; margin-top: 20px;">تسجيل</button>
+                <button type="submit" class="btn-gold" style="width:100%; margin-top:20px;">تسجيل</button>
             </form>
-            
-            <button class="btn-outline-gold" style="width: 100%; margin-top: 15px;" onclick="closeModal('loginModal')">إلغاء</button>
+
+            <button class="btn-outline-gold" style="width:100%; margin-top:15px;" onclick="closeModal('loginModal')">إلغاء</button>
         </div>
     </div>
 
@@ -296,25 +285,27 @@
     <div class="modal" id="productModal">
         <div class="modal-content modal-lg">
             <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color:var(--gold);">إضافة منتج جديد</h2>
+                <h2 style="color:var(--gold);">➕ إضافة منتج جديد</h2>
                 <button class="close-btn" onclick="closeModal('productModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
             </div>
             
-            <form id="productForm" onsubmit="event.preventDefault(); saveProduct();">
+            <form id="productForm" class="product-form" onsubmit="event.preventDefault(); saveProduct();">
+                <!-- حقل معرف تليجرام (يظهر إذا كان المستخدم تاجر وليس لديه معرف) -->
                 <div class="form-group" id="merchantTelegramField" style="display: none;">
-                    <label><i class="fab fa-telegram"></i> معرف تليجرام (اختياري)</label>
+                    <label>📱 معرف تليجرام الخاص بك</label>
                     <input type="text" class="form-control" id="merchantTelegram" placeholder="@username">
+                    <small style="color: #888;">أدخل معرفك في تليجرام ليتمكن العملاء من التواصل</small>
                 </div>
                 
                 <div class="form-group">
-                    <label><i class="fas fa-box"></i> اسم المنتج</label>
+                    <label>📦 اسم المنتج</label>
                     <input type="text" class="form-control" id="productName" required placeholder="أدخل اسم المنتج">
                 </div>
                 
                 <div class="form-group">
-                    <label><i class="fas fa-tags"></i> القسم</label>
+                    <label>🏷️ القسم</label>
                     <select class="form-control" id="productCategory" required>
-                        <option value="promo">برومسيون</option>
+                        <option value="promo">برموسيو</option>
                         <option value="spices">توابل</option>
                         <option value="cosmetic">كوسمتيك</option>
                         <option value="other">منتوجات أخرى</option>
@@ -323,32 +314,42 @@
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="form-group">
-                        <label><i class="fas fa-coins"></i> السعر (دج)</label>
+                        <label>💰 السعر (دج)</label>
                         <input type="number" class="form-control" id="productPrice" required min="0" placeholder="0">
                     </div>
                     
                     <div class="form-group">
-                        <label><i class="fas fa-cubes"></i> الكمية</label>
+                        <label>📊 الكمية</label>
                         <input type="number" class="form-control" id="productStock" required min="0" placeholder="0">
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label><i class="fas fa-align-left"></i> وصف المنتج</label>
+                    <label>📝 وصف المنتج</label>
                     <textarea class="form-control" id="productDescription" rows="3" placeholder="أدخل وصف المنتج..."></textarea>
                 </div>
                 
                 <div class="form-group">
-                    <label><i class="fas fa-image"></i> صورة المنتج</label>
-                    <input type="file" class="form-control" id="productImages" accept="image/*" onchange="handleImageUpload(event)" required>
+                    <label>🔗 رابط الصورة (اختياري)</label>
+                    <input type="url" class="form-control" id="productImage" placeholder="https://example.com/image.jpg">
                 </div>
                 
-                <div class="image-preview" id="imagePreview" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
+                <div class="image-upload-area" onclick="document.getElementById('productImages').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>أو اضغط لرفع صورة من جهازك</p>
+                </div>
+                
+                <input type="file" id="productImages" accept="image/*" style="display:none;" onchange="handleImageUpload(event)" multiple>
+                <div class="image-preview" id="imagePreview"></div>
                 <input type="hidden" id="productImagesData">
 
                 <div style="display: flex; gap: 15px; margin-top: 20px;">
-                    <button type="submit" class="btn-gold" style="flex: 2;">حفظ المنتج</button>
-                    <button type="button" class="btn-outline-gold" style="flex: 1;" onclick="closeModal('productModal')">إلغاء</button>
+                    <button type="submit" class="btn-gold" style="flex: 2;">
+                        <i class="fas fa-cloud-upload-alt"></i> حفظ المنتج
+                    </button>
+                    <button type="button" class="btn-outline-gold" style="flex: 1;" onclick="closeModal('productModal')">
+                        إلغاء
+                    </button>
                 </div>
             </form>
         </div>
@@ -360,15 +361,40 @@
     </div>
 
     <!-- ===== نافذة لوحة التاجر ===== -->
-    <div class="modal" id="merchantDashboardModal"></div>
+    <div class="modal" id="merchantDashboardModal">
+        <div class="modal-content" style="max-width: 1200px;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color:var(--gold);"><i class="fas fa-store"></i> لوحة تحكم التاجر</h2>
+                <button class="close-btn" onclick="closeModal('merchantDashboardModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-body" id="merchantDashboardContent" style="max-height: 80vh; overflow-y: auto;"></div>
+        </div>
+    </div>
     
     <!-- ===== نافذة منتجات التاجر ===== -->
-    <div class="modal" id="merchantProductsModal"></div>
+    <div class="modal" id="merchantProductsModal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color:var(--gold);"><i class="fas fa-boxes"></i> منتجاتي</h2>
+                <button class="close-btn" onclick="closeModal('merchantProductsModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-body" id="merchantProductsContent" style="max-height: 80vh; overflow-y: auto;"></div>
+        </div>
+    </div>
     
     <!-- ===== نافذة طلبات التاجر ===== -->
-    <div class="modal" id="merchantOrdersModal"></div>
+    <div class="modal" id="merchantOrdersModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color:var(--gold);"><i class="fas fa-shopping-bag"></i> طلباتي</h2>
+                <button class="close-btn" onclick="closeModal('merchantOrdersModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-body" id="merchantOrdersContent" style="max-height: 80vh; overflow-y: auto;"></div>
+        </div>
+    </div>
 
     <!-- ===== ربط ملف JavaScript ===== -->
     <script src="script.js"></script>
 </body>
 </html>
+
