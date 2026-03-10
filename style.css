@@ -420,7 +420,530 @@ body::before {
     transform: translateY(-3px); 
     box-shadow: var(--shadow-nardoo-gold);
 }
+/* ===== أنماط Reels ===== */
+.reels-promo-bar {
+    background: linear-gradient(145deg, #0a0f1e 0%, #1a1f2e 100%);
+    padding: 20px 0;
+    margin: 20px 0;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
 
+.reels-promo-bar::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(212,175,55,0.1) 0%, transparent 70%);
+    animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* الهيدر مع realme */
+.reels-header-brand {
+    display: flex;
+    align-items: baseline;
+    gap: 15px;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 2;
+}
+
+.brand-realme {
+    font-size: 28px;
+    font-weight: 900;
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.brand-protection {
+    font-size: 14px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* عرض المنتج */
+.reels-product-showcase {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 2;
+}
+
+.product-title {
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--gold);
+    margin: 0;
+    line-height: 1;
+    text-shadow: 0 0 20px rgba(212,175,55,0.3);
+}
+
+.product-battery {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.battery-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: white;
+}
+
+.battery-label {
+    font-size: 16px;
+    color: #888;
+}
+
+/* الشحن السريع */
+.charging-speed {
+    text-align: left;
+}
+
+.speed-value {
+    font-size: 48px;
+    font-weight: 800;
+    color: #FFD700;
+    display: block;
+    line-height: 1;
+}
+
+.speed-label {
+    font-size: 14px;
+    color: #888;
+    text-transform: uppercase;
+}
+
+/* شعار الشحن */
+.charging-tagline {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: 50px;
+    position: relative;
+    z-index: 2;
+}
+
+.tagline-charge, .tagline-usage {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    position: relative;
+}
+
+.tagline-charge::after {
+    content: '⚡';
+    margin-right: 5px;
+}
+
+.tagline-usage::before {
+    content: '✓';
+    margin-left: 5px;
+    color: #4CAF50;
+}
+
+/* الخط الفاصل */
+.reels-divider {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 20px 0 15px;
+    position: relative;
+    z-index: 2;
+}
+
+.divider-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gold);
+    white-space: nowrap;
+}
+
+.divider-line {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.divider-icon {
+    font-size: 24px;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+/* ===== أنماط بطاقات Reels ===== */
+.reel-card {
+    min-width: 250px;
+    width: 250px;
+    background: var(--glass);
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    position: relative;
+}
+
+.reel-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--gold);
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+}
+
+.reel-thumbnail {
+    position: relative;
+    width: 100%;
+    height: 350px;
+    overflow: hidden;
+}
+
+.reel-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.reel-card:hover .reel-thumbnail img {
+    transform: scale(1.1);
+}
+
+.reel-duration {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    z-index: 2;
+}
+
+.reel-views {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(212, 175, 55, 0.9);
+    color: black;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 2;
+}
+
+.reel-play-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.reel-card:hover .reel-play-overlay {
+    opacity: 1;
+}
+
+.reel-play-overlay i {
+    font-size: 60px;
+    color: var(--gold);
+    filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.5));
+}
+
+.reel-info {
+    padding: 12px;
+    background: var(--glass-dark);
+}
+
+.reel-title {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.reel-thumbprint {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-family: monospace;
+    color: #888;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px 8px;
+    border-radius: 5px;
+}
+
+.reel-thumbprint span {
+    direction: ltr;
+    display: inline-block;
+}
+
+/* ===== نافذة عرض Reel ===== */
+.reel-modal-content {
+    max-width: 600px;
+    background: var(--bg-dark);
+}
+
+.reel-view-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.reel-video-container {
+    width: 100%;
+    border-radius: 15px;
+    overflow: hidden;
+    background: black;
+}
+
+.reel-video-container video {
+    width: 100%;
+    max-height: 500px;
+    object-fit: contain;
+}
+
+.reel-details {
+    padding: 20px;
+    background: var(--glass);
+    border-radius: 15px;
+}
+
+.reel-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.reel-detail-header h3 {
+    margin: 0;
+    color: var(--gold);
+}
+
+.reel-thumbprint-badge {
+    background: rgba(212, 175, 55, 0.2);
+    color: var(--gold);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-family: monospace;
+    font-size: 14px;
+    border: 1px solid var(--gold);
+}
+
+.reel-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #888;
+}
+
+.stat-item i {
+    color: var(--gold);
+}
+
+.reel-actions {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.reel-share h4 {
+    margin-bottom: 10px;
+    color: #888;
+}
+
+.share-box {
+    display: flex;
+    gap: 10px;
+}
+
+.share-box input {
+    flex: 1;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--gold);
+    border-radius: 8px;
+    color: white;
+    font-family: monospace;
+    direction: ltr;
+}
+
+.share-box button {
+    width: 45px;
+    background: var(--gold);
+    border: none;
+    border-radius: 8px;
+    color: black;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.share-box button:hover {
+    background: #b8960c;
+    transform: scale(1.05);
+}
+
+/* ===== شريط التمرير ===== */
+.reels-scroll-container {
+    position: relative;
+    margin-top: 20px;
+}
+
+.reels-track {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 10px 5px;
+    scrollbar-width: none;
+}
+
+.reels-track::-webkit-scrollbar {
+    display: none;
+}
+
+.reels-scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--glass);
+    border: 2px solid var(--gold);
+    color: var(--gold);
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reels-scroll-btn.left {
+    left: -20px;
+}
+
+.reels-scroll-btn.right {
+    right: -20px;
+}
+
+.reels-scroll-btn:hover:not(:disabled) {
+    background: var(--gold);
+    color: black;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.reels-scroll-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.reels-loader {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 50px;
+    margin: 0 auto;
+}
+
+.loader-spinner-small {
+    width: 30px;
+    height: 30px;
+    border: 3px solid var(--gold);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.reels-empty {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 50px;
+    color: #888;
+}
+
+.reels-empty i {
+    font-size: 40px;
+    color: var(--gold);
+}
+
+/* ===== تجاوب مع الشاشات الصغيرة ===== */
+@media (max-width: 768px) {
+    .reels-scroll-btn {
+        display: none;
+    }
+    
+    .reel-card {
+        min-width: 180px;
+        width: 180px;
+    }
+    
+    .reel-thumbnail {
+        height: 280px;
+    }
+    
+    .reel-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .product-title {
+        font-size: 28px;
+    }
+    
+    .battery-value {
+        font-size: 24px;
+    }
+    
+    .speed-value {
+        font-size: 32px;
+    }
+}
 /* ===== 7. الشريط العلوي ===== */
 .top-bar {
     background: var(--bg-secondary);
