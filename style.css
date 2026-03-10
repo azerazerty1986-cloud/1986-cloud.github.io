@@ -1,19 +1,35 @@
 /* ========== ناردو برو - ملف الأنماط الرئيسي ========== */
-/* ========== النسخة النهائية مع جميع التعديلات ========== */
+/* ========== النسخة النهائية مع ألوان ناردو والذهبي ========== */
 
 /* ===== 1. المتغيرات العامة ===== */
 :root {
-    --bg-primary: #0a1a15;
-    --bg-secondary: #1a2f28;
-    --bg-card: rgba(26, 47, 40, 0.95);
-    --text-primary: #ffffff;
-    --text-secondary: #e0e0e0;
+    /* ألوان ناردو الرئيسية */
+    --nardoo-green: #2c5e4f;
+    --nardoo-green-dark: #1a3a32;
+    --nardoo-green-light: #3e826b;
+    --nardoo-green-soft: #4a7a6a;
+    --nardoo-green-pale: #e8f3ef;
+    
+    /* الألوان الذهبية */
     --gold: #d4af37;
     --gold-dark: #b38f2c;
     --gold-light: #f4e3b1;
-    --nardoo: #2c5e4f;
-    --nardoo-dark: #1a3a32;
-    --nardoo-light: #3e826b;
+    --gold-soft: #e6d5a8;
+    
+    /* ألوان الخلفية */
+    --bg-primary: #0a1a15;
+    --bg-secondary: #1a2f28;
+    --bg-card: rgba(26, 47, 40, 0.95);
+    --bg-nardoo: linear-gradient(135deg, #2c5e4f, #1a3a32);
+    --bg-nardoo-gold: linear-gradient(135deg, #2c5e4f, #d4af37);
+    
+    /* ألوان النصوص */
+    --text-primary: #ffffff;
+    --text-secondary: #e0e0e0;
+    --text-nardoo: #2c5e4f;
+    --text-gold: #d4af37;
+    
+    /* ألوان إضافية */
     --purple: #9b59b6;
     --purple-dark: #8e44ad;
     --blue: #3498db;
@@ -22,24 +38,36 @@
     --red-dark: #c0392b;
     --green: #25D366;
     --green-dark: #128C7E;
+    
+    /* تأثيرات */
     --glass: rgba(255, 255, 255, 0.08);
     --glass-border: rgba(255, 255, 255, 0.15);
+    --glass-nardoo: rgba(44, 94, 79, 0.2);
+    --glass-gold: rgba(212, 175, 55, 0.2);
+    
+    /* الظلال */
     --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --shadow-nardoo: 0 10px 30px rgba(44, 94, 79, 0.3);
     --shadow-gold: 0 10px 30px rgba(212, 175, 55, 0.3);
+    --shadow-nardoo-gold: 0 15px 40px rgba(44, 94, 79, 0.4), 0 0 20px rgba(212, 175, 55, 0.3);
+    
+    /* الانتقالات */
     --transition: all 0.3s ease;
 }
 
+/* ===== 2. الوضع النهاري ===== */
 body.light-mode {
     --bg-primary: #f8f9fa;
     --bg-secondary: #ffffff;
     --bg-card: rgba(255, 255, 255, 0.95);
     --text-primary: #2c3e50;
     --text-secondary: #34495e;
-    --glass: rgba(0, 0, 0, 0.03);
-    --glass-border: rgba(0, 0, 0, 0.1);
+    --glass: rgba(44, 94, 79, 0.05);
+    --glass-border: rgba(44, 94, 79, 0.15);
     --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
+/* ===== 3. الإعدادات الأساسية ===== */
 * {
     margin: 0;
     padding: 0;
@@ -63,7 +91,7 @@ body {
     padding: 0 15px;
 }
 
-/* ===== 2. شاشة التحميل ===== */
+/* ===== 4. شاشة التحميل ===== */
 .loader {
     position: fixed;
     top: 0;
@@ -83,6 +111,7 @@ body {
     height: 80px;
     border: 5px solid var(--gold);
     border-top-color: transparent;
+    border-bottom-color: var(--nardoo-green);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -91,7 +120,7 @@ body {
     to { transform: rotate(360deg); }
 }
 
-/* ===== 3. نظام الإشعارات Toast ===== */
+/* ===== 5. نظام الإشعارات Toast ===== */
 .toast-container {
     position: fixed;
     top: 20px;
@@ -125,7 +154,7 @@ body {
     left: 0;
     height: 3px;
     width: 100%;
-    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    background: linear-gradient(90deg, var(--nardoo-green), var(--gold), var(--nardoo-green-light));
     animation: progress 3s linear;
 }
 
@@ -134,10 +163,10 @@ body {
     to { width: 0%; }
 }
 
-.toast.success { border-right: 5px solid #4ade80; }
-.toast.error { border-right: 5px solid #f87171; }
+.toast.success { border-right: 5px solid var(--nardoo-green); }
+.toast.error { border-right: 5px solid var(--red); }
 .toast.warning { border-right: 5px solid #fbbf24; }
-.toast.info { border-right: 5px solid #60a5fa; }
+.toast.info { border-right: 5px solid var(--blue); }
 
 .toast-content { flex: 1; }
 .toast-message { font-size: 14px; color: var(--text-secondary); }
@@ -147,7 +176,7 @@ body {
     to { transform: translateX(0); opacity: 1; }
 }
 
-/* ===== 4. سلة التسوق الجانبية ===== */
+/* ===== 6. سلة التسوق الجانبية ===== */
 .cart-sidebar {
     position: fixed;
     top: 0;
@@ -176,9 +205,27 @@ body {
     margin-bottom: 20px;
 }
 
-.cart-header h3 { color: var(--gold); font-size: 24px; }
-.close-cart { color: var(--gold); font-size: 24px; cursor: pointer; transition: var(--transition); }
-.close-cart:hover { transform: scale(1.2); color: var(--gold-light); }
+.cart-header h3 { 
+    color: var(--gold); 
+    font-size: 24px; 
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cart-header h3 i { color: var(--nardoo-green); }
+
+.close-cart { 
+    color: var(--gold); 
+    font-size: 24px; 
+    cursor: pointer; 
+    transition: var(--transition); 
+}
+
+.close-cart:hover { 
+    transform: scale(1.2); 
+    color: var(--nardoo-green); 
+}
 
 .cart-items { flex: 1; overflow-y: auto; margin-bottom: 20px; }
 
@@ -196,6 +243,7 @@ body {
 .cart-item:hover {
     transform: translateX(-5px);
     border-color: var(--gold);
+    background: var(--glass-nardoo);
 }
 
 .cart-item-details { flex: 1; }
@@ -221,7 +269,11 @@ body {
     font-weight: 700;
 }
 
-.quantity-btn:hover { background: var(--gold); color: var(--bg-primary); }
+.quantity-btn:hover { 
+    background: var(--nardoo-green); 
+    color: white; 
+    border-color: var(--nardoo-green);
+}
 
 .cart-footer {
     border-top: 2px solid var(--gold);
@@ -240,7 +292,7 @@ body {
 .checkout-btn {
     width: 100%;
     padding: 15px;
-    background: linear-gradient(135deg, var(--green), var(--green-dark));
+    background: linear-gradient(135deg, var(--nardoo-green), var(--gold-dark));
     color: white;
     border: none;
     border-radius: 25px;
@@ -254,29 +306,37 @@ body {
     gap: 10px;
 }
 
-.checkout-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px var(--green); }
+.checkout-btn:hover { 
+    transform: translateY(-3px); 
+    box-shadow: var(--shadow-nardoo-gold);
+}
 
-/* ===== 5. أيقونة السلة الثابتة ===== */
+/* ===== 7. أيقونة السلة الثابتة ===== */
 .fixed-cart {
     position: fixed;
     bottom: 100px;
     right: 20px;
     width: 65px;
     height: 65px;
-    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    background: linear-gradient(135deg, var(--nardoo-green), var(--gold));
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: var(--shadow-gold);
+    box-shadow: var(--shadow-nardoo-gold);
     z-index: 999;
     transition: var(--transition);
     animation: pulse 2s infinite;
 }
 
-.fixed-cart:hover { transform: scale(1.15); animation: none; }
-.fixed-cart i { font-size: 28px; color: var(--bg-primary); }
+.fixed-cart:hover { 
+    transform: scale(1.15); 
+    animation: none; 
+    background: linear-gradient(135deg, var(--gold), var(--nardoo-green));
+}
+
+.fixed-cart i { font-size: 28px; color: white; }
 
 .fixed-cart-count {
     position: absolute;
@@ -292,10 +352,10 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--bg-primary);
+    border: 2px solid white;
 }
 
-/* ===== 6. أزرار الصعود والهبوط ===== */
+/* ===== 8. أزرار الصعود والهبوط ===== */
 .navigation-buttons {
     position: fixed;
     bottom: 100px;
@@ -324,16 +384,17 @@ body {
 }
 
 .nav-btn:hover {
-    background: var(--gold);
-    color: var(--bg-primary);
+    background: var(--nardoo-green);
+    color: white;
+    border-color: var(--nardoo-green);
     transform: scale(1.1);
-    box-shadow: var(--shadow-gold);
+    box-shadow: var(--shadow-nardoo);
 }
 
 .up-btn { animation: float 2s ease-in-out infinite; }
 .down-btn { animation: float 2s ease-in-out infinite reverse; }
 
-/* ===== 7. زر العودة للأعلى ===== */
+/* ===== 9. زر العودة للأعلى ===== */
 .quick-top-btn {
     position: fixed;
     bottom: 30px;
@@ -341,28 +402,33 @@ body {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: var(--gold);
+    background: var(--nardoo-green);
     border: none;
-    color: var(--bg-primary);
+    color: white;
     cursor: pointer;
     display: none;
     align-items: center;
     justify-content: center;
     font-size: 20px;
-    box-shadow: var(--shadow-gold);
+    box-shadow: var(--shadow-nardoo);
     transition: var(--transition);
     z-index: 998;
     animation: bounce 2s infinite;
 }
 
-.quick-top-btn:hover { transform: scale(1.1); animation: none; }
+.quick-top-btn:hover { 
+    transform: scale(1.1); 
+    animation: none; 
+    background: var(--gold);
+}
+
 .quick-top-btn.show { display: flex; }
 
-/* ===== 8. الشريط العلوي ===== */
+/* ===== 10. الشريط العلوي ===== */
 .top-bar {
     background: var(--bg-secondary);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--gold);
+    border-bottom: 2px solid var(--gold);
     padding: 12px 0;
     position: sticky;
     top: 0;
@@ -385,7 +451,10 @@ body {
     font-size: 14px;
 }
 
-.top-bar-item i { color: var(--gold); }
+.top-bar-item i { 
+    color: var(--gold); 
+    text-shadow: 0 0 5px var(--gold);
+}
 
 .theme-toggle {
     background: var(--glass);
@@ -400,11 +469,15 @@ body {
     transition: var(--transition);
 }
 
-.theme-toggle:hover { background: var(--gold); color: var(--bg-primary); }
+.theme-toggle:hover { 
+    background: var(--nardoo-green); 
+    color: white; 
+    border-color: var(--nardoo-green);
+}
 
-/* ===== 9. شريط المميزات المتحرك ===== */
+/* ===== 11. شريط المميزات المتحرك ===== */
 .marquee-bar {
-    background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-dark));
+    background: linear-gradient(90deg, var(--nardoo-green-dark), var(--gold-dark), var(--nardoo-green));
     padding: 12px 0;
     overflow: hidden;
     position: relative;
@@ -430,25 +503,29 @@ body {
     align-items: center;
     gap: 12px;
     padding: 0 30px;
-    color: var(--bg-primary);
+    color: white;
     font-weight: 700;
     white-space: nowrap;
-    border-left: 2px solid rgba(0,0,0,0.2);
+    border-left: 2px solid rgba(255,255,255,0.2);
 }
 
-.marquee-item i { font-size: 20px; color: var(--bg-primary); }
+.marquee-item i { 
+    font-size: 20px; 
+    color: white;
+    text-shadow: 0 0 5px var(--gold);
+}
 
 .marquee-progress {
     width: 70px;
     height: 5px;
-    background: rgba(0,0,0,0.2);
+    background: rgba(255,255,255,0.2);
     border-radius: 3px;
     overflow: hidden;
 }
 
 .marquee-progress-fill {
     height: 100%;
-    background: var(--bg-primary);
+    background: linear-gradient(90deg, var(--gold), white);
     border-radius: 3px;
     transition: width 0.3s;
 }
@@ -458,13 +535,15 @@ body {
 .pulse-item { animation: pulse 2s ease-in-out infinite; }
 .rotate-item i { animation: rotate 4s linear infinite; }
 
-/* ===== 10. الهيدر الرئيسي ===== */
+/* ===== 12. الهيدر الرئيسي ===== */
 .main-header {
     background: var(--bg-card);
     backdrop-filter: blur(20px);
     padding: 20px 0;
     margin-bottom: 30px;
-    border-bottom: 2px solid var(--gold);
+    border-bottom: 3px solid transparent;
+    border-image: linear-gradient(90deg, var(--nardoo-green), var(--gold), var(--nardoo-green));
+    border-image-slice: 1;
 }
 
 .header-content {
@@ -484,31 +563,36 @@ body {
 .logo-icon {
     width: 65px;
     height: 65px;
-    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    background: linear-gradient(135deg, var(--nardoo-green), var(--gold));
     border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     transform: rotate(-5deg);
     transition: var(--transition);
-    box-shadow: var(--shadow-gold);
+    box-shadow: var(--shadow-nardoo-gold);
 }
 
 .logo:hover .logo-icon { transform: rotate(0deg) scale(1.1); }
-.logo-icon i { font-size: 35px; color: var(--bg-primary); }
+.logo-icon i { font-size: 35px; color: white; }
 
 .logo-text h1 {
     font-size: 32px;
     font-weight: 900;
-    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
+    background: linear-gradient(135deg, var(--gold) 0%, var(--nardoo-green) 50%, var(--gold) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     line-height: 1.2;
 }
 
-.logo-text span { color: var(--gold-light); font-size: 14px; font-weight: 600; }
+.logo-text span { 
+    color: var(--gold-light); 
+    font-size: 14px; 
+    font-weight: 600; 
+    display: block;
+}
 
-/* ===== 11. البحث ===== */
+/* ===== 13. البحث ===== */
 .search-wrapper { flex: 0 1 400px; position: relative; }
 
 .search-box {
@@ -521,7 +605,10 @@ body {
     transition: var(--transition);
 }
 
-.search-box:focus-within { border-color: var(--gold); box-shadow: 0 0 20px var(--gold); }
+.search-box:focus-within { 
+    border-color: var(--gold); 
+    box-shadow: 0 0 20px var(--gold);
+}
 
 .search-box input {
     flex: 1;
@@ -540,17 +627,20 @@ body {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: var(--gold);
+    background: linear-gradient(135deg, var(--nardoo-green), var(--gold));
     border: none;
-    color: var(--bg-primary);
+    color: white;
     cursor: pointer;
     transition: var(--transition);
     font-size: 20px;
 }
 
-.search-box button:hover { transform: scale(1.1); box-shadow: 0 0 20px var(--gold); }
+.search-box button:hover { 
+    transform: scale(1.1); 
+    box-shadow: 0 0 20px var(--gold);
+}
 
-/* ===== 12. أزرار الإجراءات ===== */
+/* ===== 14. أزرار الإجراءات ===== */
 .header-actions { display: flex; align-items: center; gap: 12px; }
 
 .action-btn {
@@ -570,8 +660,8 @@ body {
 }
 
 .action-btn:hover {
-    background: var(--gold);
-    color: var(--bg-primary);
+    background: var(--nardoo-green);
+    color: white;
     transform: translateY(-3px);
     border-color: var(--gold);
 }
@@ -592,15 +682,17 @@ body {
     justify-content: center;
 }
 
-/* ===== 13. القائمة الرئيسية ===== */
+/* ===== 15. القائمة الرئيسية ===== */
 .nav-menu {
     background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
     backdrop-filter: blur(10px);
     border-radius: 60px;
     padding: 15px 25px;
     margin: 20px 0;
-    border: 2px solid var(--gold);
-    box-shadow: var(--shadow-gold);
+    border: 2px solid transparent;
+    border-image: linear-gradient(135deg, var(--nardoo-green), var(--gold), var(--nardoo-green));
+    border-image-slice: 1;
+    box-shadow: var(--shadow-nardoo-gold);
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -630,26 +722,26 @@ body {
     right: 0;
     width: 100%;
     height: 100%;
-    background: var(--gold);
+    background: linear-gradient(135deg, var(--nardoo-green), var(--gold));
     transform: translateX(100%);
     transition: transform 0.3s ease;
     z-index: -1;
 }
 
 .nav-link:hover::before { transform: translateX(0); }
-.nav-link:hover { color: var(--bg-primary); }
-.nav-link:hover i { color: var(--bg-primary); transform: scale(1.1); }
+.nav-link:hover { color: white; }
+.nav-link:hover i { color: white; transform: scale(1.1); }
 
 .nav-link.active {
-    background: var(--gold);
-    color: var(--bg-primary);
+    background: linear-gradient(135deg, var(--nardoo-green), var(--gold));
+    color: white;
     box-shadow: 0 0 20px var(--gold);
 }
 
-.nav-link.active i { color: var(--bg-primary); }
+.nav-link.active i { color: white; }
 .nav-link i { color: var(--gold); transition: var(--transition); font-size: 16px; }
 
-/* ===== 14. نص متحرك ===== */
+/* ===== 16. نص متحرك ===== */
 .typing-container {
     text-align: center;
     margin: 20px 0;
@@ -657,26 +749,47 @@ body {
     font-weight: 700;
     color: var(--gold);
     min-height: 70px;
+    text-shadow: 0 0 10px var(--gold);
 }
 
-.typing-cursor { animation: blink 1s infinite; }
-@keyframes blink { 0%,50% { opacity: 1; } 51%,100% { opacity: 0; } }
+.typing-cursor { 
+    animation: blink 1s infinite; 
+    color: var(--nardoo-green);
+}
 
-/* ===== 15. لوحة التاجر ===== */
+@keyframes blink { 
+    0%,50% { opacity: 1; } 
+    51%,100% { opacity: 0; } 
+}
+
+/* ===== 17. لوحة التاجر (بتصميم ناردو المدمج مع الذهبي) ===== */
 .merchant-panel {
-    background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+    background: linear-gradient(135deg, var(--nardoo-green), var(--gold-dark));
     border-radius: 30px;
     padding: 30px;
     margin: 20px 0;
     color: white;
-    box-shadow: 0 10px 30px rgba(155, 89, 182, 0.3);
+    box-shadow: var(--shadow-nardoo-gold);
     border: 2px solid var(--gold);
     transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.merchant-panel::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: rotate 20s linear infinite;
 }
 
 .merchant-panel:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(155, 89, 182, 0.5);
+    box-shadow: 0 15px 40px rgba(44, 94, 79, 0.5), 0 0 30px rgba(212, 175, 55, 0.5);
 }
 
 .merchant-panel h3 {
@@ -686,9 +799,16 @@ body {
     align-items: center;
     gap: 10px;
     font-size: 24px;
+    position: relative;
+    z-index: 1;
 }
 
-/* ===== 16. شبكة المنتجات ===== */
+.merchant-panel h3 i {
+    color: var(--gold-light);
+    text-shadow: 0 0 10px var(--gold);
+}
+
+/* ===== 18. شبكة المنتجات ===== */
 .products-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -700,7 +820,7 @@ body {
 @media (max-width: 992px) { .products-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 576px) { .products-grid { grid-template-columns: 1fr; } }
 
-/* ===== 17. بطاقة المنتج ===== */
+/* ===== 19. بطاقة المنتج ===== */
 .product-card {
     background: var(--bg-card);
     backdrop-filter: blur(10px);
@@ -719,21 +839,21 @@ body {
 .product-card:hover {
     transform: translateY(-8px) scale(1.02);
     border-color: var(--gold);
-    box-shadow: 0 15px 40px rgba(212, 175, 55, 0.3);
+    box-shadow: var(--shadow-nardoo-gold);
 }
 
 .product-card:hover .product-gallery img {
     transform: scale(1.1);
 }
 
-/* ===== 18. شارة الوقت ===== */
+/* ===== 20. شارة الوقت ===== */
 .product-time-badge {
     position: absolute;
     top: 15px;
     right: 15px;
-    background: rgba(0, 0, 0, 0.8);
+    background: linear-gradient(135deg, var(--nardoo-green), var(--gold-dark));
     backdrop-filter: blur(5px);
-    color: var(--gold);
+    color: white;
     padding: 6px 15px;
     border-radius: 25px;
     font-size: 12px;
@@ -751,7 +871,7 @@ body {
     color: var(--gold-light);
 }
 
-/* ===== 19. معرض الصور ===== */
+/* ===== 21. معرض الصور ===== */
 .product-gallery {
     position: relative;
     width: 100%;
@@ -779,13 +899,13 @@ body {
     pointer-events: none;
 }
 
-/* ===== 20. مؤشر عدد الصور ===== */
+/* ===== 22. مؤشر عدد الصور ===== */
 .product-gallery .image-counter {
     position: absolute;
     bottom: 10px;
     right: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    color: var(--gold);
+    background: linear-gradient(135deg, var(--nardoo-green), var(--gold-dark));
+    color: white;
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 12px;
@@ -798,7 +918,7 @@ body {
     gap: 5px;
 }
 
-/* ===== 21. معلومات المنتج ===== */
+/* ===== 23. معلومات المنتج ===== */
 .product-info {
     padding: 20px;
     flex: 1;
@@ -806,11 +926,11 @@ body {
     flex-direction: column;
 }
 
-/* ===== 22. قسم المنتج ===== */
+/* ===== 24. قسم المنتج ===== */
 .product-category {
     display: inline-block;
-    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-    color: var(--bg-primary);
+    background: linear-gradient(135deg, var(--nardoo-green), var(--gold-dark));
+    color: white;
     padding: 5px 18px;
     border-radius: 25px;
     font-size: 12px;
@@ -818,11 +938,11 @@ body {
     margin-bottom: 12px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    box-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
+    box-shadow: var(--shadow-nardoo);
     width: fit-content;
 }
 
-/* ===== 23. عنوان المنتج ===== */
+/* ===== 25. عنوان المنتج ===== */
 .product-title {
     font-size: 18px;
     font-weight: 700;
@@ -841,7 +961,7 @@ body {
     color: var(--gold);
 }
 
-/* ===== 24. معلومات التاجر ===== */
+/* ===== 26. معلومات التاجر ===== */
 .product-merchant-info {
     display: inline-flex;
     align-items: center;
@@ -849,11 +969,11 @@ body {
     font-size: 13px;
     margin-bottom: 12px;
     padding: 5px 15px;
-    background: var(--glass);
+    background: var(--glass-nardoo);
     border-radius: 25px;
     width: fit-content;
     transition: var(--transition);
-    border: 1px solid var(--glass-border);
+    border: 1px solid var(--gold);
 }
 
 .product-merchant-info i {
@@ -862,12 +982,39 @@ body {
 }
 
 .product-merchant-info:hover {
-    background: var(--gold);
-    color: var(--bg-primary);
+    background: var(--nardoo-green);
+    color: white;
     transform: translateX(-3px);
 }
 
-/* ===== 25. تقييم النجوم ===== */
+.product-merchant-info:hover i { color: white; }
+
+/* ===== 27. رابط التليجرام ===== */
+.product-telegram {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    background: rgba(0, 136, 204, 0.1);
+    border-radius: 20px;
+    width: fit-content;
+}
+
+.product-telegram i { color: #0088cc; }
+.product-telegram a { 
+    color: #0088cc; 
+    text-decoration: none; 
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.product-telegram a:hover { 
+    text-decoration: underline; 
+    color: var(--gold);
+}
+
+/* ===== 28. تقييم النجوم ===== */
 .product-rating {
     display: flex;
     align-items: center;
@@ -916,7 +1063,7 @@ body {
     border: 1px solid rgba(212, 175, 55, 0.3);
 }
 
-/* ===== 26. السعر ===== */
+/* ===== 29. السعر ===== */
 .product-price {
     font-size: 26px;
     font-weight: 800;
@@ -935,7 +1082,7 @@ body {
     margin-right: 5px;
 }
 
-/* ===== 27. المخزون ===== */
+/* ===== 30. المخزون ===== */
 .product-stock {
     font-size: 13px;
     margin-bottom: 15px;
@@ -947,25 +1094,25 @@ body {
 }
 
 .in-stock {
-    background: rgba(74, 222, 128, 0.15);
-    color: #4ade80;
-    border: 1px solid #4ade80;
+    background: rgba(44, 94, 79, 0.2);
+    color: var(--nardoo-green-light);
+    border: 1px solid var(--nardoo-green);
 }
 
 .low-stock {
-    background: rgba(251, 191, 36, 0.15);
-    color: #fbbf24;
-    border: 1px solid #fbbf24;
+    background: rgba(212, 175, 55, 0.2);
+    color: var(--gold);
+    border: 1px solid var(--gold);
     animation: pulse 2s infinite;
 }
 
 .out-of-stock {
-    background: rgba(248, 113, 113, 0.15);
-    color: #f87171;
-    border: 1px solid #f87171;
+    background: rgba(231, 76, 60, 0.2);
+    color: var(--red);
+    border: 1px solid var(--red);
 }
 
-/* ===== 28. أزرار الإجراءات ===== */
+/* ===== 31. أزرار الإجراءات ===== */
 .product-actions {
     display: flex;
     gap: 12px;
@@ -975,10 +1122,10 @@ body {
 .add-to-cart {
     flex: 2;
     padding: 12px 15px;
-    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    background: linear-gradient(135deg, var(--nardoo-green), var(--gold-dark));
     border: none;
     border-radius: 30px;
-    color: var(--bg-primary);
+    color: white;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -992,8 +1139,8 @@ body {
 
 .add-to-cart:hover:not(:disabled) {
     transform: translateY(-3px);
-    box-shadow: 0 10px 25px var(--gold);
-    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    box-shadow: var(--shadow-nardoo-gold);
+    background: linear-gradient(135deg, var(--gold), var(--nardoo-green));
 }
 
 .add-to-cart:disabled {
@@ -1004,8 +1151,31 @@ body {
 
 .add-to-cart i { font-size: 16px; }
 
-/* ===== 29. خيارات الفرز ===== */
-.sort-options { display: flex; justify-content: flex-end; margin: 20px 0; }
+.btn-telegram {
+    background: #0088cc;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: var(--transition);
+}
+
+.btn-telegram:hover {
+    background: #006699;
+    transform: translateY(-2px);
+}
+
+/* ===== 32. خيارات الفرز ===== */
+.sort-options { 
+    display: flex; 
+    justify-content: flex-end; 
+    margin: 20px 0; 
+}
 
 .sort-select {
     background: var(--glass);
@@ -1020,10 +1190,17 @@ body {
     transition: var(--transition);
 }
 
-.sort-select:hover { background: var(--gold); color: var(--bg-primary); }
-.sort-select option { background: var(--bg-secondary); color: var(--text-primary); }
+.sort-select:hover { 
+    background: linear-gradient(135deg, var(--nardoo-green), var(--gold-dark));
+    color: white; 
+}
 
-/* ===== 30. لوحة التحكم ===== */
+.sort-select option { 
+    background: var(--bg-secondary); 
+    color: var(--text-primary); 
+}
+
+/* ===== 33. لوحة التحكم ===== */
 .dashboard-section { margin: 40px 0; }
 
 .dashboard-tabs {
@@ -1047,8 +1224,8 @@ body {
 
 .dashboard-tab:hover,
 .dashboard-tab.active {
-    background: var(--gold);
-    color: var(--bg-primary);
+    background: linear-gradient(135deg, var(--nardoo-green), var(--gold));
+    color: white;
     border-color: var(--gold);
 }
 
@@ -1061,7 +1238,7 @@ body {
     overflow-x: auto;
 }
 
-/* ===== 31. الجداول ===== */
+/* ===== 34. الجداول ===== */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -1073,8 +1250,8 @@ table {
 th {
     padding: 15px 12px;
     text-align: right;
-    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-    color: var(--bg-primary);
+    background: linear-gradient(135deg, var(--nardoo-green), var(--gold-dark));
+    color: white;
     font-weight: 700;
     font-size: 15px;
 }
@@ -1086,13 +1263,22 @@ td {
 }
 
 tr:hover td {
-    background: var(--glass);
+    background: var(--glass-nardoo);
 }
 
-/* ===== 32. نموذج إضافة منتج ===== */
+/* ===== 35. نموذج إضافة منتج ===== */
 .product-form { display: grid; gap: 20px; }
 .form-group { display: flex; flex-direction: column; gap: 8px; }
-.form-group label { font-weight: 600; color: var(--gold); font-size: 15px; }
+.form-group label { 
+    font-weight: 600; 
+    color: var(--gold); 
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.form-group label i { color: var(--nardoo-green); }
 
 .form-control {
     padding: 15px;
@@ -1105,9 +1291,13 @@ tr:hover td {
     transition: var(--transition);
 }
 
-.form-control:focus { border-color: var(--gold); outline: none; }
+.form-control:focus { 
+    border-color: var(--gold); 
+    outline: none;
+    box-shadow: 0 0 15px var(--gold);
+}
 
-/* ===== 33. رفع الصور ===== */
+/* ===== 36. رفع الصور ===== */
 .image-upload-area {
     border: 2px dashed var(--gold);
     border-radius: 25px;
@@ -1119,8 +1309,8 @@ tr:hover td {
 }
 
 .image-upload-area:hover {
-    background: rgba(212, 175, 55, 0.1);
-    border-color: var(--gold-light);
+    background: var(--glass-nardoo);
+    border-color: var(--nardoo-green);
 }
 
 .image-upload-area i {
@@ -1158,7 +1348,7 @@ tr:hover td {
     box-shadow: var(--shadow-gold);
 }
 
-/* ===== 34. النوافذ المنبثقة ===== */
+/* ===== 37. النوافذ المنبثقة ===== */
 .modal {
     display: none;
     position: fixed;
@@ -1175,25 +1365,49 @@ tr:hover td {
 
 .modal-content {
     background: var(--bg-secondary);
-    border: 2px solid var(--gold);
+    border: 2px solid transparent;
+    border-image: linear-gradient(135deg, var(--nardoo-green), var(--gold), var(--nardoo-green));
+    border-image-slice: 1;
     border-radius: 35px;
     padding: 35px;
     width: 90%;
     max-width: 600px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-nardoo-gold);
     animation: fadeInUp 0.3s ease;
 }
 
 .modal-lg { max-width: 1000px; }
 
-/* ===== 35. الفوتر ===== */
+.modal-header {
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--gold);
+    font-size: 28px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.close-btn:hover {
+    color: var(--nardoo-green);
+    transform: scale(1.2);
+}
+
+/* ===== 38. الفوتر ===== */
 .footer {
     background: var(--bg-secondary);
     padding: 60px 0 30px;
     margin-top: 60px;
-    border-top: 3px solid var(--gold);
+    border-top: 3px solid transparent;
+    border-image: linear-gradient(90deg, var(--nardoo-green), var(--gold), var(--nardoo-green));
+    border-image-slice: 1;
 }
 
 .footer-content {
@@ -1203,9 +1417,29 @@ tr:hover td {
     margin-bottom: 40px;
 }
 
-.footer-col h3 { color: var(--gold); font-size: 20px; margin-bottom: 20px; }
-.footer-col p { margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
-.footer-col i { color: var(--gold); width: 22px; font-size: 16px; }
+.footer-col h3 { 
+    color: var(--gold); 
+    font-size: 20px; 
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-col h3 i { color: var(--nardoo-green); }
+
+.footer-col p { 
+    margin-bottom: 12px; 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+}
+
+.footer-col i { 
+    color: var(--gold); 
+    width: 22px; 
+    font-size: 16px; 
+}
 
 .copyright {
     text-align: center;
@@ -1214,7 +1448,7 @@ tr:hover td {
     color: var(--text-secondary);
 }
 
-/* ===== 36. شارات الحالة ===== */
+/* ===== 39. شارات الحالة ===== */
 .status-badge {
     padding: 5px 15px;
     border-radius: 25px;
@@ -1226,24 +1460,57 @@ tr:hover td {
 }
 
 .status-pending {
-    background: rgba(251, 191, 36, 0.2);
-    color: #fbbf24;
-    border: 1px solid #fbbf24;
+    background: rgba(212, 175, 55, 0.2);
+    color: var(--gold);
+    border: 1px solid var(--gold);
 }
 
 .status-approved {
-    background: rgba(74, 222, 128, 0.2);
-    color: #4ade80;
-    border: 1px solid #4ade80;
+    background: rgba(44, 94, 79, 0.2);
+    color: var(--nardoo-green-light);
+    border: 1px solid var(--nardoo-green);
 }
 
 .status-rejected {
-    background: rgba(248, 113, 113, 0.2);
-    color: #f87171;
-    border: 1px solid #f87171;
+    background: rgba(231, 76, 60, 0.2);
+    color: var(--red);
+    border: 1px solid var(--red);
 }
 
-/* ===== 37. أزرار مخصصة ===== */
+.merchant-badge {
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.merchant-badge.approved {
+    background: linear-gradient(135deg, var(--nardoo-green), var(--gold-dark));
+    color: white;
+}
+
+.merchant-badge.pending {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+}
+
+.stock-badge {
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+}
+
+.stock-badge.good {
+    background: var(--nardoo-green);
+    color: white;
+}
+
+.stock-badge.low {
+    background: var(--gold);
+    color: var(--bg-primary);
+}
+
+/* ===== 40. أزرار مخصصة ===== */
 .btn-gold {
     background: linear-gradient(135deg, var(--gold), var(--gold-dark));
     color: var(--bg-primary);
@@ -1282,11 +1549,33 @@ tr:hover td {
 }
 
 .btn-outline-gold:hover {
-    background: var(--gold);
-    color: var(--bg-primary);
+    background: linear-gradient(135deg, var(--nardoo-green), var(--gold));
+    color: white;
+    border-color: transparent;
 }
 
-/* ===== 38. تأثيرات حركية ===== */
+.btn-nardoo {
+    background: linear-gradient(135deg, var(--nardoo-green), var(--nardoo-green-dark));
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 40px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-nardoo:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-nardoo);
+}
+
+/* ===== 41. تأثيرات حركية ===== */
 @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-8px); }
@@ -1329,7 +1618,12 @@ tr:hover td {
     }
 }
 
-/* ===== 39. تحسينات للشاشات الصغيرة ===== */
+@keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+}
+
+/* ===== 42. تحسينات للشاشات الصغيرة ===== */
 @media (max-width: 768px) {
     .fixed-cart {
         bottom: 80px;
@@ -1410,10 +1704,92 @@ tr:hover td {
     .modal-content {
         padding: 20px;
     }
+    
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .logo {
+        justify-content: center;
+    }
+    
+    .search-wrapper {
+        width: 100%;
+    }
 }
 
-/* ===== 40. تأثيرات إضافية ===== */
-.glow-text { text-shadow: 0 0 10px var(--gold); }
+/* ===== 43. تأثيرات إضافية ===== */
+.glow-text { 
+    text-shadow: 0 0 10px var(--gold); 
+}
+
+.glow-nardoo {
+    text-shadow: 0 0 10px var(--nardoo-green);
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, var(--gold), var(--nardoo-green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 .admin-only { display: block; }
 .merchant-only { display: block; }
 .fade-in-up { animation: fadeInUp 0.5s ease forwards; }
+
+.action-btn {
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+/* ===== 44. تأثير التحميل ===== */
+.shimmer {
+    background: linear-gradient(90deg, var(--glass) 0%, var(--glass-gold) 50%, var(--glass) 100%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+}
+
+/* ===== 45. تأثيرات hover متقدمة ===== */
+.hover-scale {
+    transition: var(--transition);
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
+}
+
+.hover-lift {
+    transition: var(--transition);
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-nardoo-gold);
+}
+
+.hover-glow {
+    transition: var(--transition);
+}
+
+.hover-glow:hover {
+    box-shadow: 0 0 20px var(--gold);
+}
+
+/* ===== 46. تخصيص شريط التمرير ===== */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--nardoo-green), var(--gold));
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--gold), var(--nardoo-green));
+}
