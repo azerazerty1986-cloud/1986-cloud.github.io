@@ -2242,10 +2242,53 @@ const styles = `
         }
     }
 `;
-
+// ========== 20. التهيئة ==========
 const styleSheet = document.createElement("style");
 styleSheet.textContent = styles;
 document.head.appendChild(styleSheet);
+
+window.onload = async function() {
+    await loadProducts();
+    loadCart();
+
+    const savedUser = localStorage.getItem('current_user');
+    if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        updateUIBasedOnRole();
+        updateNavigation();
+    }
+
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        isDarkMode = savedTheme === 'dark';
+        document.body.classList.toggle('light-mode', !isDarkMode);
+        const toggle = document.getElementById('themeToggle');
+        if (toggle) {
+            toggle.innerHTML = isDarkMode ? 
+                '<i class="fas fa-moon"></i><span>ليلي</span>' : 
+                '<i class="fas fa-sun"></i><span>نهاري</span>';
+        }
+    }
+
+    setTimeout(() => {
+        const loader = document.getElementById('loader');
+        if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.display = 'none', 500);
+        }
+    }, 1000);
+    
+    window.addEventListener('scroll', toggleQuickTopButton);
+    
+    const typingElement = document.getElementById('typing-text');
+    if (typingElement) {
+        new TypingAnimation(typingElement, ['ناردو برو', 'تسوق آمن', 'جودة عالية'], 100, 2000).start();
+    }
+    
+    console.log('✅ نظام ناردو برو جاهز');
+    console.log('👑 المدير: azer | كلمة المرور: 123456');
+};
+
 
 
 // ========== 21. نظام Reels الكامل - بحث في المنصات + تخزين في تلجرام + عرض في المتجر ==========
@@ -3238,48 +3281,11 @@ window.shareReel = shareReel;
 window.searchReelByThumbprint = searchReelByThumbprint;
 window.backToProducts = backToProducts;
 window.copyToClipboard = copyToClipboard;
-// ========== 20. التهيئة ==========
 window.onload = async function() {
     await loadProducts();
     loadCart();
 
-    const savedUser = localStorage.getItem('current_user');
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        updateUIBasedOnRole();
-        updateNavigation();
-    }
 
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-        isDarkMode = savedTheme === 'dark';
-        document.body.classList.toggle('light-mode', !isDarkMode);
-        const toggle = document.getElementById('themeToggle');
-        if (toggle) {
-            toggle.innerHTML = isDarkMode ? 
-                '<i class="fas fa-moon"></i><span>ليلي</span>' : 
-                '<i class="fas fa-sun"></i><span>نهاري</span>';
-        }
-    }
-
-    setTimeout(() => {
-        const loader = document.getElementById('loader');
-        if (loader) {
-            loader.style.opacity = '0';
-            setTimeout(() => loader.style.display = 'none', 500);
-        }
-    }, 1000);
-    
-    window.addEventListener('scroll', toggleQuickTopButton);
-    
-    const typingElement = document.getElementById('typing-text');
-    if (typingElement) {
-        new TypingAnimation(typingElement, ['ناردو برو', 'تسوق آمن', 'جودة عالية'], 100, 2000).start();
-    }
-    
-    console.log('✅ نظام ناردو برو جاهز');
-    console.log('👑 المدير: azer | كلمة المرور: 123456');
-};
 
 // ========== إغلاق النوافذ ==========
 window.onclick = function(event) {
