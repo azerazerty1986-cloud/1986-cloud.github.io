@@ -3281,6 +3281,657 @@ window.searchReelByThumbprint = searchReelByThumbprint;
 window.backToProducts = backToProducts;
 window.copyToClipboard = copyToClipboard;
 
+// ========== 22. عرض Reels من النقطة 21 في الأعلى مع إضافة جديدة ==========
+
+// ========== إعدادات عرض Reels في الأعلى ==========
+const TOP_REELS_CONFIG = {
+    maxDisplay: 8,              // عدد Reels في الصف العلوي
+    autoRefresh: 30000,         // تحديث كل 30 ثانية
+    showAddButton: true,        // ظهور زر الإضافة
+    allowedRoles: ['admin', 'merchant_approved', 'customer'] // الكل يضيف
+};
+
+// ========== 1. إنشاء قسم Reels في أعلى الصفحة ==========
+function createTopReelsSection() {
+    // البحث عن الحاوية الرئيسية
+    const container = document.querySelector('.container');
+    if (!container) {
+        console.log('❌ لم يتم العثور على container');
+        return;
+    }
+    
+    // حذف القسم القديم إذا وجد
+    const oldSection = document.getElementById('topReelsSection');
+    if (oldSection) oldSection.remove();
+    
+    // إنشاء قسم جديد
+    const topSection = document.createElement('div');
+    topSection.id = 'topReelsSection';
+    topSection.style.margin = '0 0 30px 0';
+    topSection.style.padding = '20px';
+    topSection.style.background = 'linear-gradient(135deg, var(--glass), rgba(255,215,0,0.1))';
+    topSection.style.borderRadius = '20px';
+    topSection.style.border = '2px solid var(--gold)';
+    topSection.style.boxShadow = '0 10px 30px rgba(255,215,0,0.2)';
+    topSection.style.animation = 'slideDown 0.5s ease';
+    
+    // إضافة CSS
+    addTopReelsStyles();
+    
+    // تعبئة المحتوى
+    updateTopReelsContent(topSection);
+    
+    // إضافة في بداية container
+    if (container.firstChild) {
+        container.insertBefore(topSection, container.firstChild);
+    } else {
+        container.appendChild(topSection);
+    }
+    
+    console.log('✅ تم إنشاء قسم Reels في الأعلى');
+}
+
+// ========== 2. تحديث محتوى Reels في الأعلى ==========
+function updateTopReelsContent(section) {
+    if (!section) section = document.getElementById('topReelsSection');
+    if (!section) return;
+    
+    // استخدام reelsDatabase من النقطة 21
+    const latestReels = reelsDatabase.slice(0, TOP_REELS_CONFIG.maxDisplay);
+    
+    // إنشاء HTML للـ Reels
+    let reelsHTML = '';
+    
+    if (latestReels.length === 0) {
+        reelsHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px; background: var(--glass); border-radius: 15px;">
+                <i class="fas fa-film" style="font-size: 50px; color: var(--gold); opacity: 0.5;"></i>
+                <p style="color: #888; margin: 10px 0;">لا توجد Reels بعد</p>
+                <button class="btn-gold" onclick="searchAllPlatforms()" style="padding: 10px 20px;">
+                    <i class="fas fa-search"></i> بحث في المنصات
+                </button>
+            </div>
+        `;
+    } else {
+        reelsHTML = latestReels.map(reel => {
+            // تحديد لون وأيقونة المنصة
+            const platformInfo = getPlatformInfo(reel.platform);
+            
+            // التحقق إذا كان من مستخدم
+            const isUserReel = reel.addedBy ? true : false;
+            const userBadge = isUserReel ? 
+                `<div style="position: absolute; bottom: 30px; left: 5px; background: rgba(255,215,0,0.9); color: black; padding: 2px 5px; border-radius: 10px; font-size: 8px;">
+                    <i class="fas fa-user"></i>
+                </div>` : '';
+            
+            return `
+                <div class="top-reel-card" onclick="openReelModal('${reel.thumbprint}')">
+                    <!-- الصورة -->
+                    <img src="${reel.thumbnail || reel.customThumbnail || 'https://via.placeholder.com/200x350'}" 
+                         class="top-reel-image"
+                         onerror="this.src='https://via.placeholder.com/200x350/2c5e4f/ffffff?text=Reel';">
+                    
+                    <!-- شارة المنصة -->
+                    <div class="top-reel-platform" style="background: ${platformInfo.color};">
+                        <i class="${platformInfo.icon}"></i>
+                    </div>
+                    
+                    <!-- بصمة مختصرة -->
+                    <div class="top-reel-thumbprint" title="${reel.thumbprint || 'TP_...'}">
+                        ${reel.thumbprint ? reel.thumbprint.substring(0, 8) + '...' : 'TP_...'}
+                    </div>
+                    
+                    <!-- معلومات -->
+                    <div class="top-reel-info">
+                        <div class="top-reel-title">${reel.title?.substring(0, 20) || 'Reel'}</div>
+                        <div class="top-reel-stats">
+                            <span><i class="fas fa-eye"></i> ${formatNumber(reel.views)}</span>
+                            <span><i class="fas fa-clock"></i> ${getTimeAgo(reel.addedAt || reel.publishedAt)}</span>
+                        </div>
+                    </div>
+                    
+                    ${userBadge}
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // تحديث المحتوى
+    section.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <h2 style="color: var(--gold); margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-film" style="font-size: 28px;"></i>
+                    Reels حصريّة
+                </h2>
+                <span style="background: var(--gold); color: black; padding: 5px 15px; border-radius: 25px; font-size: 14px; font-weight: bold;">
+                    ${reelsDatabase.length} Reel
+                </span>
+            </div>
+            
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                ${currentUser ? `
+                    <button class="top-reels-add-btn" onclick="showAddReelModal()">
+                        <i class="fas fa-plus-circle"></i>
+                        إضافة Reel
+                    </button>
+                ` : `
+                    <button class="top-reels-add-btn" onclick="openLoginModal()">
+                        <i class="fas fa-sign-in-alt"></i>
+                        سجل دخول للإضافة
+                    </button>
+                `}
+                <button class="btn-outline-gold" onclick="showReelsSection()" style="padding: 10px 20px;">
+                    <i class="fas fa-expand"></i>
+                    عرض الكل
+                </button>
+                <button class="btn-outline-gold" onclick="searchAllPlatforms()" style="padding: 10px 20px;">
+                    <i class="fas fa-sync-alt"></i>
+                    تحديث
+                </button>
+            </div>
+        </div>
+        
+        <div class="top-reels-grid">
+            ${reelsHTML}
+        </div>
+    `;
+}
+
+// ========== 3. الحصول على معلومات المنصة ==========
+function getPlatformInfo(platform) {
+    switch(platform) {
+        case 'youtube':
+            return { color: '#FF0000', icon: 'fab fa-youtube' };
+        case 'instagram':
+            return { color: '#E4405F', icon: 'fab fa-instagram' };
+        case 'tiktok':
+            return { color: '#000000', icon: 'fab fa-tiktok' };
+        case 'telegram':
+            return { color: '#0088cc', icon: 'fab fa-telegram' };
+        default:
+            return { color: '#888', icon: 'fas fa-link' };
+    }
+}
+
+// ========== 4. تنسيق الأرقام ==========
+function formatNumber(num) {
+    if (!num) return '0';
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num.toString();
+}
+
+// ========== 5. إضافة CSS ==========
+function addTopReelsStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .top-reels-grid {
+            display: grid;
+            grid-template-columns: repeat(${TOP_REELS_CONFIG.maxDisplay}, 1fr);
+            gap: 15px;
+        }
+        
+        .top-reel-card {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            aspect-ratio: 9/16;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .top-reel-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: var(--gold);
+            box-shadow: 0 15px 30px rgba(255,215,0,0.3);
+        }
+        
+        .top-reel-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .top-reel-card:hover .top-reel-image {
+            transform: scale(1.1);
+        }
+        
+        .top-reel-platform {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            z-index: 2;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .top-reel-thumbprint {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(0,0,0,0.7);
+            color: #FFD700;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 8px;
+            font-family: monospace;
+            backdrop-filter: blur(5px);
+            border: 1px solid #FFD700;
+            z-index: 2;
+        }
+        
+        .top-reel-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 30px 8px 8px 8px;
+            color: white;
+            z-index: 2;
+        }
+        
+        .top-reel-title {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .top-reel-stats {
+            display: flex;
+            gap: 8px;
+            font-size: 8px;
+            color: #ccc;
+        }
+        
+        .top-reel-stats span {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        
+        .top-reels-add-btn {
+            background: linear-gradient(135deg, var(--gold), #ffd700);
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .top-reels-add-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255,215,0,0.4);
+        }
+        
+        @media (max-width: 1200px) {
+            .top-reels-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .top-reels-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .top-reels-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .top-reels-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// ========== 6. فتح نافذة إضافة Reel ==========
+function showAddReelModal() {
+    if (!currentUser) {
+        showNotification('يجب تسجيل الدخول أولاً', 'warning');
+        openLoginModal();
+        return;
+    }
+
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'addReelModal';
+    modal.style.display = 'flex';
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 550px; background: var(--bg); border: 2px solid var(--gold);">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--gold), #ffd700); color: black; padding: 15px; border-radius: 15px 15px 0 0;">
+                <h2 style="margin: 0;"><i class="fas fa-plus-circle"></i> إضافة Reel جديد</h2>
+                <button class="close-btn" onclick="this.closest('.modal').remove()" style="color: black;">&times;</button>
+            </div>
+            
+            <div class="modal-body" style="padding: 20px;">
+                <div style="background: var(--glass); padding: 12px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--gold);">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-user-circle" style="font-size: 30px; color: var(--gold);"></i>
+                        <div>
+                            <div style="font-weight: bold; color: var(--gold);">${currentUser.name}</div>
+                            <div style="font-size: 12px; color: #888;">
+                                ${currentUser.role === 'admin' ? '👑 مدير' : 
+                                  currentUser.role === 'merchant_approved' ? '🏪 تاجر' : '🛒 مشتري'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <form id="addReelForm" onsubmit="event.preventDefault(); saveUserReel();">
+                    <!-- رابط Reel -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; color: var(--gold);">
+                            <i class="fas fa-link"></i> رابط Reel
+                        </label>
+                        <input type="url" id="reelUrl" class="form-control" 
+                               placeholder="https://youtube.com/shorts/... أو https://instagram.com/reel/..." 
+                               required
+                               style="width: 100%; padding: 12px; border-radius: 10px; background: var(--glass); color: var(--text); border: 1px solid var(--border);">
+                    </div>
+                    
+                    <!-- المنصة -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; color: var(--gold);">
+                            <i class="fas fa-globe"></i> المنصة
+                        </label>
+                        <select id="reelPlatform" class="form-control" required style="width: 100%; padding: 12px; border-radius: 10px; background: var(--glass); color: var(--text); border: 1px solid var(--border);">
+                            <option value="youtube">▶️ يوتيوب</option>
+                            <option value="instagram">📷 إنستغرام</option>
+                            <option value="tiktok">🎵 تيك توك</option>
+                            <option value="telegram">📱 تلجرام</option>
+                        </select>
+                    </div>
+                    
+                    <!-- عنوان -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; color: var(--gold);">
+                            <i class="fas fa-heading"></i> عنوان (اختياري)
+                        </label>
+                        <input type="text" id="reelTitle" class="form-control" 
+                               placeholder="أدخل عنواناً للـ Reel"
+                               style="width: 100%; padding: 12px; border-radius: 10px; background: var(--glass); color: var(--text); border: 1px solid var(--border);">
+                    </div>
+                    
+                    <!-- صورة -->
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 5px; color: var(--gold);">
+                            <i class="fas fa-image"></i> صورة (اختياري)
+                        </label>
+                        <input type="file" id="reelThumbnail" class="form-control" accept="image/*"
+                               style="width: 100%; padding: 12px; border-radius: 10px; background: var(--glass); color: var(--text); border: 1px solid var(--border);">
+                        <div id="thumbnailPreview" style="margin-top: 10px; display: flex; justify-content: center;"></div>
+                    </div>
+                    
+                    <!-- أزرار -->
+                    <div style="display: flex; gap: 15px;">
+                        <button type="submit" class="btn-gold" style="flex: 2; padding: 12px; font-size: 16px;">
+                            <i class="fas fa-plus-circle"></i> إضافة Reel
+                        </button>
+                        <button type="button" class="btn-outline-gold" style="flex: 1; padding: 12px;" 
+                                onclick="this.closest('.modal').remove()">
+                            إلغاء
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // معاينة الصورة
+    document.getElementById('reelThumbnail').addEventListener('change', function(e) {
+        const preview = document.getElementById('thumbnailPreview');
+        if (e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                preview.innerHTML = `<img src="${ev.target.result}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 10px; border: 3px solid var(--gold);">`;
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        } else {
+            preview.innerHTML = '';
+        }
+    });
+}
+
+// ========== 7. حفظ Reel من مستخدم ==========
+async function saveUserReel() {
+    if (!currentUser) {
+        showNotification('يجب تسجيل الدخول', 'error');
+        return;
+    }
+    
+    const url = document.getElementById('reelUrl').value;
+    const platform = document.getElementById('reelPlatform').value;
+    const customTitle = document.getElementById('reelTitle').value;
+    const thumbnailFile = document.getElementById('reelThumbnail').files[0];
+    
+    if (!url) {
+        showNotification('الرجاء إدخال رابط Reel', 'error');
+        return;
+    }
+    
+    showNotification('جاري إضافة Reel...', 'info');
+    
+    // استخراج بيانات Reel
+    let reelData = await extractReelDataFromUrl(url, platform);
+    
+    if (!reelData) {
+        // بيانات افتراضية
+        reelData = {
+            id: 'user_' + Date.now() + '_' + Math.random().toString(36).substring(7),
+            platform: platform,
+            platformCode: platform.substring(0, 2).toUpperCase(),
+            title: customTitle || 'Reel من مستخدم',
+            channel: currentUser.name,
+            thumbnail: 'https://via.placeholder.com/320x480/2c5e4f/ffffff?text=Reel',
+            url: url,
+            views: 0,
+            addedBy: currentUser.id,
+            addedByName: currentUser.name,
+            addedByRole: currentUser.role,
+            addedAt: new Date().toISOString()
+        };
+    }
+    
+    // إضافة بيانات المستخدم
+    reelData.addedBy = currentUser.id;
+    reelData.addedByName = currentUser.name;
+    reelData.addedByRole = currentUser.role;
+    reelData.addedAt = new Date().toISOString();
+    
+    // توليد بصمة
+    reelData.thumbprint = generateUserThumbprint(reelData);
+    
+    // حفظ الصورة إذا وجدت
+    if (thumbnailFile) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            reelData.customThumbnail = e.target.result;
+            finalizeSaveUserReel(reelData);
+        };
+        reader.readAsDataURL(thumbnailFile);
+    } else {
+        finalizeSaveUserReel(reelData);
+    }
+}
+
+// ========== 8. استخراج بيانات Reel من الرابط ==========
+async function extractReelDataFromUrl(url, platform) {
+    try {
+        // يوتيوب
+        if (url.includes('youtube.com/shorts/') || url.includes('youtu.be/')) {
+            const videoId = url.includes('shorts/') 
+                ? url.split('shorts/')[1].split('?')[0].split('/')[0]
+                : url.split('youtu.be/')[1].split('?')[0];
+                
+            return {
+                id: videoId,
+                platform: 'youtube',
+                platformCode: 'YO',
+                title: 'يوتيوب Shorts',
+                channel: 'يوتيوب',
+                thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+                thumbnailFallback: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+                url: `https://youtube.com/shorts/${videoId}`,
+                embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1`,
+                views: 0
+            };
+        }
+        
+        // إنستغرام
+        else if (url.includes('instagram.com/reel/')) {
+            const code = url.split('/reel/')[1].split('/')[0].split('?')[0];
+            return {
+                id: code,
+                platform: 'instagram',
+                platformCode: 'IN',
+                title: 'إنستغرام Reel',
+                channel: 'instagram_user',
+                thumbnail: `https://via.placeholder.com/320x480/E4405F/ffffff?text=Instagram`,
+                url: url,
+                views: 0
+            };
+        }
+        
+        // تيك توك
+        else if (url.includes('tiktok.com/')) {
+            return {
+                id: 'tt_' + Date.now(),
+                platform: 'tiktok',
+                platformCode: 'TK',
+                title: 'تيك توك فيديو',
+                channel: 'tiktok_user',
+                thumbnail: `https://via.placeholder.com/320x480/000000/ffffff?text=TikTok`,
+                url: url,
+                views: 0
+            };
+        }
+        
+        return null;
+    } catch (error) {
+        console.error('خطأ في استخراج البيانات:', error);
+        return null;
+    }
+}
+
+// ========== 9. توليد بصمة للمستخدم ==========
+function generateUserThumbprint(reel) {
+    const platform = reel.platformCode || reel.platform.substring(0, 2).toUpperCase();
+    const userPart = currentUser.id.toString().substring(0, 4);
+    const date = new Date().toISOString().split('T')[0].replace(/-/g, '').substring(2);
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    
+    return `USR_${platform}_${userPart}_${date}_${random}`;
+}
+
+// ========== 10. إكمال حفظ Reel ==========
+function finalizeSaveUserReel(reelData) {
+    // إضافة للنظام العام (reelsDatabase من النقطة 21)
+    reelsDatabase.unshift(reelData);
+    localStorage.setItem('nardoo_reels', JSON.stringify(reelsDatabase));
+    
+    // حفظ في قاعدة بيانات المستخدمين
+    let userReels = JSON.parse(localStorage.getItem('nardoo_user_reels') || '[]');
+    userReels.unshift(reelData);
+    localStorage.setItem('nardoo_user_reels', JSON.stringify(userReels));
+    
+    // إرسال إلى تلجرام
+    sendReelToTelegramChannel(reelData);
+    
+    // إغلاق المودال
+    document.getElementById('addReelModal').remove();
+    
+    // رسالة نجاح
+    showNotification('✅ تم إضافة Reel بنجاح', 'success');
+    
+    // تحديث العرض في الأعلى
+    updateTopReelsContent();
+    
+    // تحديث العرض في صفحة Reels إذا كانت مفتوحة
+    if (document.getElementById('reelsSection')?.style.display === 'block') {
+        displayReels();
+    }
+}
+
+// ========== 11. تشغيل التحديث التلقائي ==========
+function initTopReels() {
+    // إنشاء القسم بعد تحميل الصفحة
+    setTimeout(() => {
+        createTopReelsSection();
+    }, 1500);
+    
+    // تحديث كل 30 ثانية
+    setInterval(() => {
+        updateTopReelsContent();
+    }, TOP_REELS_CONFIG.autoRefresh);
+    
+    // مراقبة تغييرات currentUser
+    const originalLogin = handleLogin;
+    window.handleLogin = function() {
+        originalLogin();
+        setTimeout(() => {
+            createTopReelsSection();
+        }, 500);
+    };
+    
+    const originalLogout = logout;
+    window.logout = function() {
+        originalLogout();
+        setTimeout(() => {
+            createTopReelsSection();
+        }, 500);
+    };
+}
+
+// ========== 12. دالة تسجيل الخروج ==========
+function logout() {
+    currentUser = null;
+    localStorage.removeItem('current_user');
+    showNotification('👋 تم تسجيل الخروج', 'info');
+    updateUIBasedOnRole();
+    updateNavigation();
+}
+
+// تشغيل النظام
+initTopReels();
+
+// ========== دوال عامة ==========
+window.showAddReelModal = showAddReelModal;
+window.updateTopReelsContent = updateTopReelsContent;
+window.createTopReelsSection = createTopReelsSection;
 
 // ========== إغلاق النوافذ ==========
 window.onclick = function(event) {
