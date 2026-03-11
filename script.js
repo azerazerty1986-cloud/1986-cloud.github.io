@@ -2242,11 +2242,12 @@ const styles = `
         }
     }
 `;
-// ========== 20. التهيئة ==========
+
 const styleSheet = document.createElement("style");
 styleSheet.textContent = styles;
 document.head.appendChild(styleSheet);
 
+// ========== 20. التهيئة ==========
 window.onload = async function() {
     await loadProducts();
     loadCart();
@@ -2288,8 +2289,6 @@ window.onload = async function() {
     console.log('✅ نظام ناردو برو جاهز');
     console.log('👑 المدير: azer | كلمة المرور: 123456');
 };
-
-
 
 // ========== 21. نظام Reels الكامل - بحث في المنصات + تخزين في تلجرام + عرض في المتجر ==========
 
@@ -3281,10 +3280,6 @@ window.shareReel = shareReel;
 window.searchReelByThumbprint = searchReelByThumbprint;
 window.backToProducts = backToProducts;
 window.copyToClipboard = copyToClipboard;
-window.onload = async function() {
-    await loadProducts();
-    loadCart();
-
 
 
 // ========== إغلاق النوافذ ==========
