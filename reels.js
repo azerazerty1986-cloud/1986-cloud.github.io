@@ -1,630 +1,676 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>نكهة وجمال | ناردو برو - المتجر الذكي المتكامل 2026</title>
-    
-    <!-- تحسينات SEO -->
-    <meta name="description" content="ناردو برو - منصة التجارة الإلكترونية المتكاملة للتوابل والكوسمتيك والعروض">
-    <meta name="keywords" content="ناردو, توابل, كوسمتيك, عروض, تسوق, جزائر">
-    <meta name="author" content="ناردو برو">
-    
-    <!-- فتح Graph للتواصل الاجتماعي -->
-    <meta property="og:title" content="نكهة وجمال | ناردو برو">
-    <meta property="og:description" content="منصة التجارة الإلكترونية المتكاملة">
-    <meta property="og:type" content="website">
-    
-    <!-- ===== الخطوط ===== -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- ===== Font Awesome 6 ===== -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
-    <!-- ===== AOS Library للتمرير المتحرك ===== -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    
-    <style>
-        /* ===== أنماط أساسية مؤقتة لحين تحميل CSS ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Cairo', sans-serif;
-            background: #0a1a15;
-            color: #ffffff;
-            line-height: 1.6;
-            transition: all 0.3s ease;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        .loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0a1a15;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s;
-        }
-        .loader-spinner {
-            width: 80px;
-            height: 80px;
-            border: 5px solid #d4af37;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        .loader-spinner-small {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #d4af37;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .container {
-            width: 95%;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-        .reels-loader {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            color: #888;
-            min-width: 200px;
-        }
-    </style>
-    
-    <!-- ===== ربط ملف CSS الرئيسي ===== -->
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <!-- ===== شاشة التحميل ===== -->
-    <div class="loader" id="loader">
-        <div class="loader-spinner"></div>
-    </div>
+/**
+ * ==============================================
+ * reels.js - نظام الريلز (استخدام داخلي فقط)
+ * ناردو برو - نكهة وجمال 2026
+ * ==============================================
+ */
 
-    <!-- ===== نظام الإشعارات ===== -->
-    <div class="toast-container" id="toastContainer"></div>
+// =================== إعدادات القناة ===================
+const TELEGRAM_CONFIG = {
+    botToken: '8576673096:AAEFKd-YSJcW_0d_wAHZBt-5nPg_VOjDX_0',
+    channelId: '-1003822964890',
+    adminId: '7461896689',
+    channelLink: 'https://t.me/c/1003822964890',
+    apiUrl: 'https://api.telegram.org/bot',
+    fileUrl: 'https://api.telegram.org/file/bot'
+};
 
-    <!-- ===== سلة التسوق الجانبية ===== -->
-    <div class="cart-sidebar" id="cartSidebar">
-        <div class="cart-header">
-            <h3><i class="fas fa-shopping-cart"></i> سلة التسوق</h3>
-            <i class="fas fa-times close-cart" onclick="toggleCart()"></i>
-        </div>
-        <div class="cart-items" id="cartItems">
-            <div style="text-align: center; padding: 40px; color: #888;">
-                <i class="fas fa-shopping-basket" style="font-size: 60px; margin-bottom: 20px;"></i>
-                <p>سلة التسوق فارغة</p>
-            </div>
-        </div>
-        <div class="cart-footer">
-            <div class="cart-total">
-                <span>المجموع:</span>
-                <span id="cartTotal">0 دج</span>
-            </div>
-            <button class="checkout-btn" onclick="checkoutCart()">
-                <i class="fab fa-whatsapp"></i> إتمام الطلب
-            </button>
-        </div>
-    </div>
+// =================== إعدادات التخزين ===================
+const STORAGE_CONFIG = {
+    maxVideoSize: 50 * 1024 * 1024,
+    maxDuration: 60,
+    supportedFormats: ['video/mp4', 'video/quicktime', 'video/x-msvideo']
+};
 
-    <!-- ===== الشريط العلوي ===== -->
-    <div class="top-bar">
-        <div class="container">
-            <div class="top-bar-item" data-aos="fade-left" data-aos-delay="100">
-                <i class="fas fa-truck-fast"></i>
-                <span>شحن مجاني للطلبات فوق 5000 دج</span>
-            </div>
-            <div class="top-bar-item" data-aos="fade-left" data-aos-delay="200">
-                <i class="fas fa-headset"></i>
-                <span>دعم VIP 24/7</span>
-            </div>
-            <div class="top-bar-item" data-aos="fade-left" data-aos-delay="300">
-                <i class="fas fa-gem"></i>
-                <span>منتجات أصلية 100%</span>
-            </div>
-            <div class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
-                <i class="fas fa-moon"></i>
-                <span>ليلي</span>
-            </div>
-        </div>
-    </div>
+// =================== متغيرات عامة ===================
+let allReels = [];
+let currentFilter = 'all';
+let currentUser = null;
+let lastUpdateId = 0;
 
-    <!-- ===== شريط العروض المتحرك ===== -->
-    <div class="marquee-bar">
-        <div class="marquee-content" id="marqueeContent">
-            <div class="marquee-item float-item">
-                <i class="fas fa-fire"></i>
-                <span>تخفيضات تصل 50%</span>
-                <div class="marquee-progress"><div class="marquee-progress-fill" style="width:50%"></div></div>
-            </div>
-            <div class="marquee-item bounce-item">
-                <i class="fas fa-gem"></i>
-                <span>عروض حصرية</span>
-                <div class="marquee-progress"><div class="marquee-progress-fill" style="width:75%"></div></div>
-            </div>
-            <div class="marquee-item pulse-item">
-                <i class="fas fa-clock"></i>
-                <span>الوقت: <span id="marqueeHours">12</span>:<span id="marqueeMinutes">30</span>:<span id="marqueeSeconds">45</span></span>
-                <div class="marquee-progress"><div class="marquee-progress-fill" style="width:60%"></div></div>
-            </div>
-            <div class="marquee-item rotate-item">
-                <i class="fas fa-star"></i>
-                <span>عرض خاص: 1+1 مجاناً</span>
-                <div class="marquee-progress"><div class="marquee-progress-fill" style="width:30%"></div></div>
-            </div>
-            <div class="marquee-item">
-                <i class="fas fa-gift"></i>
-                <span>هدية مع كل طلب</span>
-                <div class="marquee-progress"><div class="marquee-progress-fill" style="width:90%"></div></div>
-            </div>
-        </div>
-    </div>
+// =================== تهيئة الصفحة ===================
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🚀 نظام الريلز يبدأ العمل...');
+    console.log('✅ البوت:', 'azer1986_bot (مشرف على القناة)');
+    console.log('✅ القناة:', '-1003822964890');
+    
+    await testSystemConnection();
+    await loadReelsFromChannel();
+    setupReelsUI();
+    setInterval(loadReelsFromChannel, 60 * 1000);
+    setTimeout(hideLoader, 2000);
+});
 
-    <!-- ===== شريط Reels من تلجرام ===== -->
-    <div class="reels-promo-bar">
-        <div class="container">
-            <div class="reels-header-brand">
-                <span class="brand-realme">realme</span>
-                <span class="brand-protection">حماية معايير السلكية</span>
+// =================== اختبار اتصال النظام ===================
+async function testSystemConnection() {
+    try {
+        // اختبار البوت
+        const botResponse = await fetch(
+            `${TELEGRAM_CONFIG.apiUrl}${TELEGRAM_CONFIG.botToken}/getMe`
+        );
+        const botData = await botResponse.json();
+        
+        if (botData.ok) {
+            console.log('✅ البوت متصل:', botData.result.username);
+        }
+        
+        // اختبار القناة
+        const channelResponse = await fetch(
+            `${TELEGRAM_CONFIG.apiUrl}${TELEGRAM_CONFIG.botToken}/getChat?chat_id=${TELEGRAM_CONFIG.channelId}`
+        );
+        const channelData = await channelResponse.json();
+        
+        if (channelData.ok) {
+            console.log('✅ القناة متصلة:', channelData.result.title);
+        }
+        
+    } catch (error) {
+        console.error('❌ خطأ في الاتصال:', error.message);
+    }
+}
+
+// =================== تحميل الريلز من القناة ===================
+async function loadReelsFromChannel() {
+    const track = document.getElementById('reelsTrack');
+    if (!track) return;
+    
+    track.innerHTML = `
+        <div class="reels-loader">
+            <div class="loader-spinner-small"></div>
+            <span>جاري تحميل الريلز من القناة...</span>
+        </div>
+    `;
+    
+    try {
+        const response = await fetch(
+            `${TELEGRAM_CONFIG.apiUrl}${TELEGRAM_CONFIG.botToken}/getUpdates?offset=${lastUpdateId}&limit=100`
+        );
+        
+        const data = await response.json();
+        
+        if (!data.ok) {
+            throw new Error(data.description);
+        }
+        
+        const reels = [];
+        
+        for (const update of data.result) {
+            if (update.update_id > lastUpdateId) {
+                lastUpdateId = update.update_id;
+            }
+            
+            const message = update.channel_post;
+            if (message && message.video) {
+                const reel = await processVideoMessage(message);
+                reels.push(reel);
+            }
+        }
+        
+        reels.sort((a, b) => b.messageId - a.messageId);
+        
+        if (reels.length > 0) {
+            allReels = reels;
+            localStorage.setItem('cachedReels', JSON.stringify(reels));
+            console.log(`✅ تم تحميل ${reels.length} ريل من القناة`);
+        } else {
+            const cached = localStorage.getItem('cachedReels');
+            if (cached) {
+                allReels = JSON.parse(cached);
+            } else {
+                allReels = getMockReels();
+            }
+        }
+        
+        displayReels();
+        
+    } catch (error) {
+        console.error('❌ خطأ في تحميل الريلز:', error.message);
+        
+        const cached = localStorage.getItem('cachedReels');
+        if (cached) {
+            allReels = JSON.parse(cached);
+        } else {
+            allReels = getMockReels();
+        }
+        
+        displayReels();
+    }
+}
+
+// =================== معالجة رسالة فيديو ===================
+async function processVideoMessage(message) {
+    const video = message.video;
+    const caption = message.caption || '';
+    
+    const titleMatch = caption.match(/🎬 (.*?)(?:\n|$)/);
+    const descMatch = caption.match(/📝 (.*?)(?:\n|$)/);
+    const categoryMatch = caption.match(/🏷️ الفئة: (.*?)(?:\n|$)/);
+    
+    let thumbnail = '';
+    if (video.thumbnail) {
+        try {
+            const fileResponse = await fetch(
+                `${TELEGRAM_CONFIG.apiUrl}${TELEGRAM_CONFIG.botToken}/getFile?file_id=${video.thumbnail.file_id}`
+            );
+            const fileData = await fileResponse.json();
+            if (fileData.ok) {
+                thumbnail = `${TELEGRAM_CONFIG.fileUrl}${TELEGRAM_CONFIG.botToken}/${fileData.result.file_path}`;
+            }
+        } catch (error) {
+            console.error('خطأ في جلب الصورة المصغرة:', error);
+        }
+    }
+    
+    return {
+        id: `reel_${message.message_id}`,
+        messageId: message.message_id,
+        fingerprint: `${video.file_id}_${video.file_unique_id}`,
+        title: titleMatch ? titleMatch[1].trim() : 'ريل بدون عنوان',
+        description: descMatch ? descMatch[1].trim() : '',
+        thumbnail: thumbnail || `https://via.placeholder.com/300x500/0a1a15/d4af37?text=ناردو`,
+        videoFileId: video.file_id,
+        views: message.views || 0,
+        date: new Date(message.date * 1000).toISOString().split('T')[0],
+        duration: video.duration || 30,
+        category: extractCategory(categoryMatch, caption),
+        tags: extractTags(caption),
+        link: `${TELEGRAM_CONFIG.channelLink}/${message.message_id}`,
+        source: 'telegram',
+        sourceIcon: 'fab fa-telegram',
+        sourceColor: '#0088cc'
+    };
+}
+
+// =================== عرض الريلز ===================
+function displayReels() {
+    const track = document.getElementById('reelsTrack');
+    if (!track) return;
+    
+    let reelsToShow = allReels;
+    
+    if (currentFilter !== 'all') {
+        reelsToShow = allReels.filter(r => r.category === currentFilter);
+    }
+    
+    if (reelsToShow.length === 0) {
+        track.innerHTML = `
+            <div class="no-reels-message">
+                <i class="fas fa-film" style="font-size: 60px; color: var(--gold);"></i>
+                <p>لا توجد ريلز في هذه الفئة</p>
+                <button class="btn-gold" onclick="showUploadReelModal()">
+                    <i class="fas fa-plus"></i> أضف أول ريل
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    reelsToShow.forEach((reel, index) => {
+        html += `
+            <div class="reel-item" onclick="showReelModal(${index})">
+                <div class="reel-thumbnail">
+                    <img src="${reel.thumbnail}" alt="${reel.title}" loading="lazy">
+                    <span class="reel-duration">${formatDuration(reel.duration)}</span>
+                    <span class="reel-source" style="background: ${reel.sourceColor}">
+                        <i class="${reel.sourceIcon}"></i>
+                    </span>
+                    ${reel.views > 0 ? `<span class="reel-views"><i class="fas fa-eye"></i> ${formatNumber(reel.views)}</span>` : ''}
+                </div>
+                <div class="reel-info">
+                    <h4>${reel.title}</h4>
+                    <div class="reel-meta">
+                        <span><i class="fas fa-calendar"></i> ${reel.date}</span>
+                        <span class="reel-category">${getCategoryIcon(reel.category)}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    track.innerHTML = html;
+}
+
+// =================== فتح نافذة الريل ===================
+function showReelModal(index) {
+    const reel = allReels[index];
+    if (!reel) return;
+    
+    currentReelIndex = index;
+    
+    const modalContent = document.getElementById('reelViewContent');
+    if (!modalContent) return;
+    
+    reel.views += 1;
+    
+    modalContent.innerHTML = `
+        <div class="reel-viewer">
+            <div class="reel-video-container">
+                <video controls autoplay poster="${reel.thumbnail}">
+                    <source src="https://api.telegram.org/file/bot${TELEGRAM_CONFIG.botToken}/${reel.videoFileId}" type="video/mp4">
+                </video>
             </div>
             
-            <div class="reels-product-showcase">
-                <div class="product-info">
-                    <h2 class="product-title">realme C71</h2>
-                    <div class="product-battery">
-                        <span class="battery-value">6000mAh</span>
-                        <span class="battery-label">بطارية ضخمة</span>
+            <div class="reel-details">
+                <div class="reel-header">
+                    <h2>${reel.title}</h2>
+                    <div class="reel-stats">
+                        <span><i class="fas fa-eye"></i> ${formatNumber(reel.views)}</span>
+                        <span><i class="fas fa-calendar"></i> ${reel.date}</span>
+                        <span class="reel-category-badge">${getCategoryName(reel.category)}</span>
                     </div>
                 </div>
                 
-                <div class="product-charging">
-                    <div class="charging-speed">
-                        <span class="speed-value">45W</span>
-                        <span class="speed-label">شحن سريع</span>
+                <div class="reel-description">
+                    <p>${reel.description || 'لا يوجد وصف'}</p>
+                </div>
+                
+                <div class="reel-tags">
+                    ${reel.tags ? reel.tags.map(tag => `<span class="tag">#${tag}</span>`).join('') : ''}
+                </div>
+                
+                <div class="reel-actions">
+                    <a href="${reel.link}" target="_blank" class="btn-telegram">
+                        <i class="fab fa-telegram"></i> مشاهدة على تلجرام
+                    </a>
+                    <button class="btn-share" onclick="copyLink('${reel.link}')">
+                        <i class="fas fa-share-alt"></i> مشاركة
+                    </button>
+                </div>
+            </div>
+            
+            <div class="reel-navigation">
+                <button class="nav-reel prev" onclick="navigateReel('prev')" ${currentReelIndex === 0 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-right"></i> السابق
+                </button>
+                <button class="nav-reel next" onclick="navigateReel('next')" ${currentReelIndex === allReels.length - 1 ? 'disabled' : ''}>
+                    التالي <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('reelViewModal').style.display = 'flex';
+}
+
+// =================== التنقل بين الريلز ===================
+function navigateReel(direction) {
+    if (direction === 'prev' && currentReelIndex > 0) {
+        currentReelIndex--;
+    } else if (direction === 'next' && currentReelIndex < allReels.length - 1) {
+        currentReelIndex++;
+    } else {
+        return;
+    }
+    
+    showReelModal(currentReelIndex);
+}
+
+// =================== رفع ريل جديد إلى القناة ===================
+async function uploadReelToChannel(videoFile, reelData) {
+    const duration = await getVideoDuration(videoFile);
+    
+    if (duration > STORAGE_CONFIG.maxDuration) {
+        alert(`المدة ${Math.round(duration)} ثانية. يجب أن لا تتجاوز دقيقة واحدة`);
+        return false;
+    }
+    
+    if (videoFile.size > STORAGE_CONFIG.maxVideoSize) {
+        alert('حجم الفيديو كبير جداً (الحد الأقصى 50MB)');
+        return false;
+    }
+    
+    const formData = new FormData();
+    formData.append('chat_id', TELEGRAM_CONFIG.channelId);
+    formData.append('video', videoFile);
+    formData.append('caption', generateVideoCaption(reelData, duration));
+    formData.append('parse_mode', 'HTML');
+    formData.append('supports_streaming', 'true');
+    
+    try {
+        const response = await fetch(
+            `${TELEGRAM_CONFIG.apiUrl}${TELEGRAM_CONFIG.botToken}/sendVideo`,
+            { method: 'POST', body: formData }
+        );
+        
+        const result = await response.json();
+        
+        if (!result.ok) {
+            throw new Error(result.description);
+        }
+        
+        alert('✅ تم رفع الريل بنجاح إلى القناة!');
+        await loadReelsFromChannel();
+        return true;
+        
+    } catch (error) {
+        console.error('❌ خطأ في الرفع:', error.message);
+        alert('❌ فشل في رفع الريل: ' + error.message);
+        return false;
+    }
+}
+
+// =================== إنشاء كابشن الفيديو ===================
+function generateVideoCaption(reelData, duration) {
+    const tags = reelData.tags ? reelData.tags.split(',').map(t => `#${t.trim()}`).join(' ') : '';
+    
+    return `
+🎬 <b>${reelData.title}</b>
+
+📝 ${reelData.description || 'لا يوجد وصف'}
+
+🏷️ الفئة: ${getCategoryEmoji(reelData.category)} ${getCategoryName(reelData.category)}
+⏱️ المدة: ${Math.round(duration)} ثانية
+📅 التاريخ: ${new Date().toLocaleDateString('ar-DZ')}
+
+🔖 ${tags}
+
+🛒 <b>ناردو برو - نكهة وجمال</b>
+    `;
+}
+
+// =================== عرض نافذة رفع ريل ===================
+function showUploadReelModal() {
+    // هذه الدالة ستستدعى من onclick في HTML
+    // لذلك يجب أن تكون معرفة على window أو في النطاق العام
+    
+    const modalHtml = `
+        <div class="modal" id="uploadReelModal" onclick="if(event.target===this) closeModal('uploadReelModal')">
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3><i class="fas fa-cloud-upload-alt" style="color: var(--gold);"></i> رفع ريل جديد</h3>
+                    <button class="close-btn" onclick="closeModal('uploadReelModal')">&times;</button>
+                </div>
+                
+                <div class="channel-info" style="background: #1a2a25; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                    <i class="fab fa-telegram" style="color: #0088cc; font-size: 24px;"></i>
+                    <span style="margin-right: 10px;">قناة: <strong>ناردو برو - ريلز</strong></span>
+                </div>
+                
+                <div class="upload-area" id="uploadArea" 
+                     ondragover="event.preventDefault()" 
+                     ondrop="handleDrop(event)"
+                     style="border: 2px dashed var(--gold); padding: 40px; text-align: center; border-radius: 10px; cursor: pointer;">
+                    
+                    <i class="fas fa-video" style="font-size: 60px; color: var(--gold);"></i>
+                    <p style="margin: 20px 0;">اسحب وأفلت الفيديو هنا أو</p>
+                    
+                    <input type="file" id="videoFile" accept="video/*" style="display: none;" onchange="handleFileSelect(event)">
+                    <button class="btn-gold" onclick="document.getElementById('videoFile').click()" type="button">
+                        <i class="fas fa-upload"></i> اختر فيديو
+                    </button>
+                    
+                    <div class="upload-hint" style="margin-top: 20px; color: #888; font-size: 14px;">
+                        <p><i class="fas fa-clock"></i> المدة: دقيقة واحدة كحد أقصى</p>
+                        <p><i class="fas fa-weight"></i> الحجم: 50MB كحد أقصى</p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="charging-tagline">
-                <span class="tagline-charge">شحن لساعة</span>
-                <span class="tagline-usage">و استعمال اليومين</span>
-            </div>
-            
-            <div class="reels-divider">
-                <span class="divider-text">reels حصرية</span>
-                <span class="divider-line"></span>
-                <span class="divider-icon">🎬</span>
-            </div>
-            
-            <div class="reels-scroll-container">
-                <button class="reels-scroll-btn left" onclick="scrollReels('left')" id="scrollLeftBtn">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
                 
-                <div class="reels-track" id="reelsTrack">
-                    <div class="reels-loader">
-                        <div class="loader-spinner-small"></div>
-                        <span>جاري تحميل الريلز...</span>
-                    </div>
-                </div>
-                
-                <button class="reels-scroll-btn right" onclick="scrollReels('right')" id="scrollRightBtn">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== الهيدر الرئيسي ===== -->
-    <header class="main-header">
-        <div class="container header-content">
-            <div class="logo" data-aos="fade-right">
-                <div class="logo-icon"><i class="fas fa-leaf"></i></div>
-                <div class="logo-text">
-                    <h1>نكهة وجمال</h1>
-                    <span>ناردو برو 2026</span>
-                </div>
-            </div>
-            
-            <div class="search-wrapper" data-aos="zoom-in">
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="ابحث عن منتج..." onkeyup="searchProducts()">
-                    <button onclick="searchProducts()"><i class="fas fa-search"></i></button>
-                </div>
-            </div>
-            
-            <div class="header-actions" data-aos="fade-left">
-                <button class="action-btn" onclick="openLoginModal()" id="userBtn" title="حسابي">
-                    <i class="far fa-user"></i>
-                </button>
-                <button class="action-btn" onclick="toggleCart()" title="سلة التسوق">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span class="cart-count" id="cartCounter">0</span>
-                </button>
-                <button class="action-btn" onclick="openDashboard()" id="dashboardBtn" style="display: none;" title="لوحة التحكم">
-                    <i class="fas fa-chart-line"></i>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- ===== القائمة الرئيسية ===== -->
-    <div class="container">
-        <nav class="nav-menu" id="mainNav" data-aos="fade-up">
-            <a class="nav-link active" onclick="filterProducts('all')"><i class="fas fa-home"></i><span>الرئيسية</span></a>
-            <a class="nav-link" onclick="filterProducts('promo')"><i class="fas fa-fire"></i><span>برموسيو</span></a>
-            <a class="nav-link" onclick="filterProducts('spices')"><i class="fas fa-mortar-pestle"></i><span>توابل</span></a>
-            <a class="nav-link" onclick="filterProducts('cosmetic')"><i class="fas fa-spa"></i><span>كوسمتيك</span></a>
-            <a class="nav-link" onclick="filterProducts('other')"><i class="fas fa-gem"></i><span>منتوجات أخرى</span></a>
-            <a class="nav-link" onclick="findProductById()"><i class="fas fa-search"></i><span>بحث بالمعرف</span></a>
-        </nav>
-    </div>
-
-    <!-- ===== خيارات الفرز ===== -->
-    <div class="container">
-        <div class="sort-options" data-aos="fade-up">
-            <select class="sort-select" id="sortSelect" onchange="changeSort(this.value)">
-                <option value="newest">📅 الأحدث أولاً</option>
-                <option value="price_low">💰 السعر: من الأقل للأعلى</option>
-                <option value="price_high">💰 السعر: من الأعلى للأقل</option>
-                <option value="rating">⭐ التقييم: الأعلى أولاً</option>
-            </select>
-        </div>
-    </div>
-
-    <!-- ===== نص متحرك ===== -->
-    <div class="container">
-        <div class="typing-container" data-aos="fade-up">
-            <span id="typing-text"></span>
-        </div>
-    </div>
-
-    <!-- ===== لوحة التاجر ===== -->
-    <div class="container" id="merchantPanelContainer" style="display: none;"></div>
-
-    <!-- ===== المنتجات ===== -->
-    <div class="container">
-        <div class="products-grid" id="productsContainer">
-            <!-- سيتم تعبئتها ديناميكياً من JavaScript -->
-        </div>
-    </div>
-
-    <!-- ===== لوحة التحكم (للمدير) ===== -->
-    <div class="container dashboard-section" id="dashboardSection" style="display: none;">
-        <div class="dashboard-tabs" id="dashboardTabs">
-            <button class="dashboard-tab active" onclick="switchDashboardTab('overview')">📊 نظرة عامة</button>
-            <button class="dashboard-tab" onclick="switchDashboardTab('orders')">🛒 الطلبات</button>
-            <button class="dashboard-tab" onclick="switchDashboardTab('products')">📦 المنتجات</button>
-            <button class="dashboard-tab" onclick="switchDashboardTab('merchants')">👨‍💼 التجار</button>
-            <button class="dashboard-tab" onclick="switchDashboardTab('users')">👥 المستخدمين</button>
-        </div>
-        <div class="dashboard-content" id="dashboardContent"></div>
-    </div>
-
-    <!-- ===== الفوتر ===== -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-col" data-aos="fade-up" data-aos-delay="100">
-                    <h3>نكهة وجمال</h3>
-                    <p><i class="fas fa-store"></i> المتجر الذكي المتكامل</p>
-                    <p><i class="fas fa-star"></i> التقييم: 4.8/5</p>
-                    <p><i class="fas fa-users"></i> +5000 عميل</p>
-                </div>
-                <div class="footer-col" data-aos="fade-up" data-aos-delay="200">
-                    <h3>اتصل بنا</h3>
-                    <p><i class="fab fa-whatsapp"></i> +213 562243648</p>
-                    <p><i class="fas fa-envelope"></i> info@nardoo.com</p>
-                    <p><i class="fab fa-telegram"></i> @nardoo_support</p>
-                </div>
-                <div class="footer-col" data-aos="fade-up" data-aos-delay="300">
-                    <h3>روابط سريعة</h3>
-                    <p><i class="fas fa-chevron-left"></i> سياسة الخصوصية</p>
-                    <p><i class="fas fa-chevron-left"></i> شروط الاستخدام</p>
-                    <p><i class="fas fa-chevron-left"></i> طرق الدفع</p>
-                </div>
-            </div>
-            <div class="copyright">© 2026 نكهة وجمال | جميع الحقوق محفوظة</div>
-        </div>
-    </footer>
-
-    <!-- ===== أيقونات ثابتة ===== -->
-    <div class="fixed-cart" onclick="toggleCart()" id="fixedCart" title="سلة التسوق">
-        <i class="fas fa-shopping-cart"></i>
-        <span class="fixed-cart-count" id="fixedCartCounter">0</span>
-    </div>
-
-    <div class="navigation-buttons">
-        <button class="nav-btn up-btn" onclick="scrollToTop()" title="الانتقال للأعلى">
-            <i class="fas fa-arrow-up"></i>
-        </button>
-        <button class="nav-btn down-btn" onclick="scrollToBottom()" title="الانتقال للأسفل">
-            <i class="fas fa-arrow-down"></i>
-        </button>
-    </div>
-
-    <button class="quick-top-btn" onclick="scrollToTop()" id="quickTopBtn" title="العودة للأعلى">
-        <i class="fas fa-chevron-up"></i>
-    </button>
-
-    <!-- ===== نافذة تسجيل الدخول ===== -->
-    <div class="modal" id="loginModal" onclick="if(event.target===this) closeModal('loginModal')">
-        <div class="modal-content">
-            <div style="text-align:center; margin-bottom:30px;">
-                <div style="font-size: 60px; color: var(--gold); margin-bottom: 10px;">
-                    <i class="fas fa-user-circle"></i>
-                </div>
-                <h2 style="color:var(--gold);">تسجيل الدخول</h2>
-            </div>
-            
-            <div style="display:flex; gap:10px; margin-bottom:20px;">
-                <button class="btn-gold" style="flex:1;" onclick="switchAuthTab('login')">دخول</button>
-                <button class="btn-outline-gold" style="flex:1;" onclick="switchAuthTab('register')">تسجيل</button>
-            </div>
-
-            <!-- ===== نموذج تسجيل الدخول ===== -->
-            <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
-                <div class="form-group">
-                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
-                    <input type="email" class="form-control" id="loginEmail" required placeholder="example@email.com">
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
-                    <input type="password" class="form-control" id="loginPassword" required placeholder="أدخل كلمة المرور">
-                </div>
-                <button type="submit" class="btn-gold" style="width:100%;">دخول</button>
-            </form>
-
-            <!-- ===== نموذج التسجيل الجديد مع جميع الحقول ===== -->
-            <form id="registerForm" style="display:none;" onsubmit="event.preventDefault(); handleRegister();">
-                <div class="form-group">
-                    <label><i class="fas fa-user"></i> الاسم الكامل</label>
-                    <input type="text" class="form-control" id="regName" required placeholder="أدخل اسمك الكامل">
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
-                    <input type="email" class="form-control" id="regEmail" required placeholder="example@email.com">
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
-                    <input type="password" class="form-control" id="regPassword" required placeholder="أدخل كلمة المرور">
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-phone"></i> رقم الهاتف</label>
-                    <input type="tel" class="form-control" id="regPhone" required placeholder="05XXXXXXXX">
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fab fa-telegram"></i> معرف تليجرام (اختياري)</label>
-                    <input type="text" class="form-control" id="regTelegram" placeholder="@username">
-                    <small style="color: #888; display: block; margin-top: 5px;">أدخل معرفك في تليجرام ليتواصل معك العملاء</small>
-                </div>
-                
-                <div class="form-group">
-                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-                        <input type="checkbox" id="isMerchant" onchange="toggleMerchantFields()">
-                        <span><i class="fas fa-store"></i> تسجيل كتاجر</span>
-                    </label>
-                </div>
-                
-                <!-- ===== حقول التاجر (تظهر عند اختيار تسجيل كتاجر) ===== -->
-                <div id="merchantFields" style="display:none;">
+                <div id="uploadForm" style="display: none; margin-top: 20px;">
+                    <div class="video-preview" id="videoPreview" style="margin-bottom: 20px;"></div>
+                    
                     <div class="form-group">
-                        <label><i class="fas fa-store-alt"></i> اسم المتجر</label>
-                        <input type="text" class="form-control" id="storeName" placeholder="أدخل اسم متجرك">
+                        <label><i class="fas fa-heading"></i> عنوان الريل</label>
+                        <input type="text" id="reelTitle" class="form-control" maxlength="100" required>
                     </div>
                     
                     <div class="form-group">
-                        <label><i class="fas fa-tag"></i> تخصص المتجر</label>
-                        <select class="form-control" id="merchantCategory">
-                            <option value="spices">توابل</option>
-                            <option value="cosmetic">كوسمتيك</option>
-                            <option value="promo">برومسيون</option>
-                            <option value="other">أخرى</option>
+                        <label><i class="fas fa-align-left"></i> وصف الريل</label>
+                        <textarea id="reelDescription" class="form-control" rows="3" maxlength="500"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-tags"></i> الفئة</label>
+                        <select id="reelCategory" class="form-control" required>
+                            <option value="promo">🔥 برومسيون</option>
+                            <option value="spices">🧂 توابل</option>
+                            <option value="cosmetic">💄 كوسمتيك</option>
+                            <option value="other">🎁 منتوجات أخرى</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label><i class="fas fa-chart-line"></i> مستوى التاجر</label>
-                        <select class="form-control" id="merchantLevel">
-                            <option value="1">المستوى الأول</option>
-                            <option value="2" selected>المستوى الثاني</option>
-                            <option value="3">المستوى الثالث</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <button type="submit" class="btn-gold" style="width:100%; margin-top:20px;">تسجيل</button>
-            </form>
-
-            <button class="btn-outline-gold" style="width:100%; margin-top:15px;" onclick="closeModal('loginModal')">إلغاء</button>
-        </div>
-    </div>
-
-    <!-- ===== نافذة إضافة منتج ===== -->
-    <div class="modal" id="productModal" onclick="if(event.target===this) closeModal('productModal')">
-        <div class="modal-content modal-lg">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color:var(--gold);"><i class="fas fa-plus-circle"></i> إضافة منتج جديد</h2>
-                <button class="close-btn" onclick="closeModal('productModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
-            </div>
-            
-            <form id="productForm" class="product-form" onsubmit="event.preventDefault(); saveProduct();">
-                <!-- حقل معرف تليجرام (يظهر إذا كان المستخدم تاجر وليس لديه معرف) -->
-                <div class="form-group" id="merchantTelegramField" style="display: none;">
-                    <label><i class="fab fa-telegram"></i> معرف تليجرام الخاص بك</label>
-                    <input type="text" class="form-control" id="merchantTelegram" placeholder="@username">
-                    <small style="color: #888;">أدخل معرفك في تليجرام ليتمكن العملاء من التواصل</small>
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-box"></i> اسم المنتج</label>
-                    <input type="text" class="form-control" id="productName" required placeholder="أدخل اسم المنتج">
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-tags"></i> القسم</label>
-                    <select class="form-control" id="productCategory" required>
-                        <option value="promo">برموسيو</option>
-                        <option value="spices">توابل</option>
-                        <option value="cosmetic">كوسمتيك</option>
-                        <option value="other">منتوجات أخرى</option>
-                    </select>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div class="form-group">
-                        <label><i class="fas fa-coins"></i> السعر (دج)</label>
-                        <input type="number" class="form-control" id="productPrice" required min="0" placeholder="0">
+                        <label><i class="fas fa-hashtag"></i> الوسوم</label>
+                        <input type="text" id="reelTags" class="form-control" placeholder="بهارات, عروض, جديد">
                     </div>
                     
-                    <div class="form-group">
-                        <label><i class="fas fa-cubes"></i> الكمية</label>
-                        <input type="number" class="form-control" id="productStock" required min="0" placeholder="0">
+                    <div class="form-actions" style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button class="btn-gold" onclick="submitReelUpload()" style="flex: 2;">
+                            <i class="fas fa-cloud-upload-alt"></i> رفع إلى القناة
+                        </button>
+                        <button class="btn-outline-gold" onclick="closeModal('uploadReelModal')" style="flex: 1;">
+                            إلغاء
+                        </button>
                     </div>
                 </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-align-left"></i> وصف المنتج</label>
-                    <textarea class="form-control" id="productDescription" rows="3" placeholder="أدخل وصف المنتج..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-link"></i> رابط الصورة (اختياري)</label>
-                    <input type="url" class="form-control" id="productImage" placeholder="https://example.com/image.jpg">
-                </div>
-                
-                <div class="image-upload-area" onclick="document.getElementById('productImages').click()">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <p>أو اضغط لرفع صورة من جهازك</p>
-                </div>
-                
-                <input type="file" id="productImages" accept="image/*" style="display:none;" onchange="handleImageUpload(event)" multiple>
-                <div class="image-preview" id="imagePreview"></div>
-                <input type="hidden" id="productImagesData">
-
-                <div style="display: flex; gap: 15px; margin-top: 20px;">
-                    <button type="submit" class="btn-gold" style="flex: 2;">
-                        <i class="fas fa-cloud-upload-alt"></i> حفظ المنتج
-                    </button>
-                    <button type="button" class="btn-outline-gold" style="flex: 1;" onclick="closeModal('productModal')">
-                        إلغاء
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ===== نافذة تفاصيل المنتج ===== -->
-    <div class="modal" id="productDetailModal" onclick="if(event.target===this) closeModal('productDetailModal')">
-        <div class="modal-content modal-lg" id="productDetailContent"></div>
-    </div>
-
-    <!-- ===== نافذة لوحة التاجر ===== -->
-    <div class="modal" id="merchantDashboardModal" onclick="if(event.target===this) closeModal('merchantDashboardModal')">
-        <div class="modal-content" style="max-width: 1200px;">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color:var(--gold);"><i class="fas fa-store"></i> لوحة تحكم التاجر</h2>
-                <button class="close-btn" onclick="closeModal('merchantDashboardModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
             </div>
-            <div class="modal-body" id="merchantDashboardContent" style="max-height: 80vh; overflow-y: auto;"></div>
         </div>
-    </div>
+    `;
     
-    <!-- ===== نافذة منتجات التاجر ===== -->
-    <div class="modal" id="merchantProductsModal" onclick="if(event.target===this) closeModal('merchantProductsModal')">
-        <div class="modal-content" style="max-width: 1000px;">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color:var(--gold);"><i class="fas fa-boxes"></i> منتجاتي</h2>
-                <button class="close-btn" onclick="closeModal('merchantProductsModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
-            </div>
-            <div class="modal-body" id="merchantProductsContent" style="max-height: 80vh; overflow-y: auto;"></div>
-        </div>
-    </div>
+    const modalContainer = document.createElement('div');
+    modalContainer.innerHTML = modalHtml;
+    document.body.appendChild(modalContainer.firstElementChild);
+}
+
+// =================== معالجة اختيار ملف ===================
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) processSelectedFile(file);
+}
+
+function handleDrop(event) {
+    event.preventDefault();
+    const file = event.dataTransfer.files[0];
+    if (file && file.type.startsWith('video/')) {
+        processSelectedFile(file);
+    } else {
+        alert('الرجاء اختيار ملف فيديو صالح');
+    }
+}
+
+async function processSelectedFile(file) {
+    if (!STORAGE_CONFIG.supportedFormats.includes(file.type)) {
+        alert('صيغة الفيديو غير مدعومة');
+        return;
+    }
     
-    <!-- ===== نافذة طلبات التاجر ===== -->
-    <div class="modal" id="merchantOrdersModal" onclick="if(event.target===this) closeModal('merchantOrdersModal')">
-        <div class="modal-content" style="max-width: 800px;">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color:var(--gold);"><i class="fas fa-shopping-bag"></i> طلباتي</h2>
-                <button class="close-btn" onclick="closeModal('merchantOrdersModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
-            </div>
-            <div class="modal-body" id="merchantOrdersContent" style="max-height: 80vh; overflow-y: auto;"></div>
-        </div>
-    </div>
-
-    <!-- ===== نافذة عرض Reel ===== -->
-    <div class="modal" id="reelViewModal" onclick="if(event.target===this) closeModal('reelViewModal')">
-        <div class="modal-content reel-modal-content">
-            <div class="reel-modal-header">
-                <h3><i class="fas fa-film" style="color: var(--gold);"></i> reel</h3>
-                <button class="close-btn" onclick="closeModal('reelViewModal')">&times;</button>
-            </div>
-            <div class="reel-modal-body" id="reelViewContent"></div>
-        </div>
-    </div>
-
-    <!-- ===== إحصائيات الموقع (مخفية) ===== -->
-    <div style="display: none;" id="siteStats">
-        <span id="visitorCount">0</span>
-    </div>
-
-    <!-- ===== مكتبات خارجية ===== -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    if (file.size > STORAGE_CONFIG.maxVideoSize) {
+        alert('حجم الفيديو كبير جداً (الحد الأقصى 50MB)');
+        return;
+    }
     
-    <script>
-        // تهيئة AOS للتمرير المتحرك
-        document.addEventListener('DOMContentLoaded', function() {
-            AOS.init({
-                duration: 800,
-                once: true,
-                offset: 100
-            });
-        });
-        
-        // دالة وهمية لفتح لوحة التحكم (سيتم استبدالها من الملف الرئيسي)
-        function openDashboard() {
-            if (typeof showAdminDashboard === 'function') {
-                showAdminDashboard();
-            }
+    const duration = await getVideoDuration(file);
+    if (duration > STORAGE_CONFIG.maxDuration) {
+        alert(`المدة ${Math.round(duration)} ثانية. يجب أن لا تتجاوز دقيقة واحدة`);
+        return;
+    }
+    
+    document.getElementById('uploadArea').style.display = 'none';
+    document.getElementById('uploadForm').style.display = 'block';
+    
+    const preview = document.getElementById('videoPreview');
+    const videoUrl = URL.createObjectURL(file);
+    
+    preview.innerHTML = `
+        <video controls style="width: 100%; max-height: 300px; border-radius: 10px;">
+            <source src="${videoUrl}" type="${file.type}">
+        </video>
+        <div style="display: flex; justify-content: space-between; margin-top: 10px; padding: 10px; background: #1a2a25; border-radius: 5px;">
+            <span><i class="fas fa-clock"></i> المدة: ${formatDuration(duration)}</span>
+            <span><i class="fas fa-weight"></i> الحجم: ${(file.size / (1024 * 1024)).toFixed(2)} MB</span>
+        </div>
+    `;
+    
+    window.selectedVideoFile = file;
+    window.videoDuration = duration;
+}
+
+async function submitReelUpload() {
+    const title = document.getElementById('reelTitle').value;
+    if (!title) {
+        alert('الرجاء إدخال عنوان الريل');
+        return;
+    }
+    
+    const reelData = {
+        title: title,
+        description: document.getElementById('reelDescription').value,
+        category: document.getElementById('reelCategory').value,
+        tags: document.getElementById('reelTags').value,
+        uploadedBy: 'مستخدم'
+    };
+    
+    const success = await uploadReelToChannel(window.selectedVideoFile, reelData);
+    
+    if (success) {
+        closeModal('uploadReelModal');
+    }
+}
+
+// =================== دوال مساعدة ===================
+function getVideoDuration(file) {
+    return new Promise((resolve) => {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.onloadedmetadata = () => {
+            URL.revokeObjectURL(video.src);
+            resolve(video.duration);
+        };
+        video.onerror = () => resolve(60);
+        video.src = URL.createObjectURL(file);
+    });
+}
+
+function formatDuration(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+function formatNumber(num) {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num.toString();
+}
+
+function getCategoryEmoji(category) {
+    const emojis = { 'promo': '🔥', 'spices': '🧂', 'cosmetic': '💄', 'other': '🎁' };
+    return emojis[category] || '📹';
+}
+
+function getCategoryName(category) {
+    const names = { 'promo': 'برومسيون', 'spices': 'توابل', 'cosmetic': 'كوسمتيك', 'other': 'أخرى' };
+    return names[category] || category;
+}
+
+function getCategoryIcon(category) {
+    const icons = { 'promo': '🔥', 'spices': '🧂', 'cosmetic': '💄', 'other': '🎁' };
+    return icons[category] || '📹';
+}
+
+function extractCategory(categoryMatch, caption) {
+    if (categoryMatch) {
+        const cat = categoryMatch[1].trim();
+        if (cat.includes('برومسيون')) return 'promo';
+        if (cat.includes('توابل')) return 'spices';
+        if (cat.includes('كوسمتيك')) return 'cosmetic';
+    }
+    
+    if (caption.includes('#promo') || caption.includes('#برومسيون')) return 'promo';
+    if (caption.includes('#spices') || caption.includes('#توابل')) return 'spices';
+    if (caption.includes('#cosmetic') || caption.includes('#كوسمتيك')) return 'cosmetic';
+    
+    return 'other';
+}
+
+function extractTags(caption) {
+    const hashtagRegex = /#(\w+)/g;
+    const matches = caption.match(hashtagRegex);
+    return matches ? matches.map(tag => tag.replace('#', '')) : [];
+}
+
+function getMockReels() {
+    return [
+        {
+            id: 'reel_1',
+            messageId: 1,
+            title: 'عرض خاص على البهارات',
+            description: 'تخفيضات تصل إلى 40% على جميع أنواع البهارات',
+            thumbnail: 'https://via.placeholder.com/300x500/0a1a15/d4af37?text=بهارات',
+            views: 15420,
+            date: '2026-03-10',
+            duration: 45,
+            category: 'spices',
+            source: 'telegram',
+            sourceIcon: 'fab fa-telegram',
+            sourceColor: '#0088cc'
+        },
+        {
+            id: 'reel_2',
+            messageId: 2,
+            title: 'كريمات طبيعية للبشرة',
+            description: 'مجموعة الكوسمتيك العضوية الطبيعية',
+            thumbnail: 'https://via.placeholder.com/300x500/0a1a15/d4af37?text=كريمات',
+            views: 23200,
+            date: '2026-03-09',
+            duration: 58,
+            category: 'cosmetic',
+            source: 'telegram',
+            sourceIcon: 'fab fa-telegram',
+            sourceColor: '#0088cc'
         }
-        
-        // دالة وهمية لتبديل تبويبات لوحة التحكم
-        function switchDashboardTab(tab) {
-            if (tab === 'overview' && typeof showDashboardOverview === 'function') {
-                showDashboardOverview();
-            } else if (tab === 'orders' && typeof showAllOrders === 'function') {
-                showAllOrders();
-            } else if (tab === 'merchants' && typeof showApprovedMerchants === 'function') {
-                showApprovedMerchants();
-            }
-        }
-    </script>
+    ];
+}
 
-    <!-- ===== ربط ملفات JavaScript بالترتيب الصحيح ===== -->
-    <!-- أولاً: الملف الرئيسي -->
-    <script src="nardoo-pro.js"></script>
-    <!-- ثانياً: ملف Reels -->
-    <script src="reels.js"></script>
-</body>
-</html>
+function hideLoader() {
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.style.opacity = '0';
+        setTimeout(() => { loader.style.display = 'none'; }, 500);
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+        modal.remove();
+    }
+}
+
+function copyLink(link) {
+    navigator.clipboard.writeText(link);
+    alert('تم نسخ الرابط');
+}
+
+function setupReelsUI() {
+    // إضافة أزرار التصفية إذا لم تكن موجودة
+    if (!document.querySelector('.reels-filter')) {
+        const filterDiv = document.createElement('div');
+        filterDiv.className = 'reels-filter';
+        filterDiv.style.cssText = 'display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;';
+        filterDiv.innerHTML = `
+            <button class="btn-filter active" onclick="filterReels('all')">الكل</button>
+            <button class="btn-filter" onclick="filterReels('promo')">🔥 برومسيون</button>
+            <button class="btn-filter" onclick="filterReels('spices')">🧂 توابل</button>
+            <button class="btn-filter" onclick="filterReels('cosmetic')">💄 كوسمتيك</button>
+            <button class="btn-filter" onclick="filterReels('other')">🎁 أخرى</button>
+        `;
+        
+        const container = document.querySelector('.reels-promo-bar .container');
+        if (container) {
+            container.insertBefore(filterDiv, container.querySelector('.reels-divider'));
+        }
+    }
+}
+
+function filterReels(category) {
+    currentFilter = category;
+    
+    document.querySelectorAll('.btn-filter').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    displayReels();
+}
