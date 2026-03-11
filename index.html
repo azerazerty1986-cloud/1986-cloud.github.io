@@ -1,1736 +1,23 @@
+كمل قاع h
+
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نكهة وجمال | ناردو برو - المتجر الذكي المتكامل 2026</title>
-    
-    <!-- تحسينات SEO -->
-    <meta name="description" content="ناردو برو - منصة التجارة الإلكترونية المتكاملة للتوابل والكوسمتيك والعروض">
-    <meta name="keywords" content="ناردو, توابل, كوسمتيك, عروض, تسوق, جزائر">
-    <meta name="author" content="ناردو برو">
-    
-    <!-- فتح Graph للتواصل الاجتماعي -->
-    <meta property="og:title" content="نكهة وجمال | ناردو برو">
-    <meta property="og:description" content="منصة التجارة الإلكترونية المتكاملة">
-    <meta property="og:type" content="website">
     
     <!-- ===== الخطوط ===== -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- ===== Font Awesome 6 ===== -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- ===== Font Awesome ===== -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- ===== AOS Library للتمرير المتحرك ===== -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    
-    <style>
-        /* ===== أنماط أساسية ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Cairo', sans-serif;
-            background: #0a1a15;
-            color: #ffffff;
-            line-height: 1.6;
-            transition: all 0.3s ease;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        
-        .container {
-            width: 95%;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-        
-        /* ===== شاشة التحميل ===== */
-        .loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0a1a15;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s;
-        }
-        
-        .loader-spinner {
-            width: 80px;
-            height: 80px;
-            border: 5px solid #d4af37;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        .loader-spinner-small {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #d4af37;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* ===== أنماط أيقونة الريلز الثابتة ===== */
-        .fixed-reels {
-            position: fixed;
-            bottom: 180px;
-            right: 20px;
-            width: 65px;
-            height: 65px;
-            background: linear-gradient(135deg, #d4af37, #2c5e4f);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.5);
-            z-index: 999;
-            transition: all 0.3s ease;
-            animation: pulse 2s infinite;
-            border: 2px solid #d4af37;
-        }
-
-        .fixed-reels:hover {
-            transform: scale(1.15);
-            animation: none;
-            background: linear-gradient(135deg, #2c5e4f, #d4af37);
-        }
-
-        .fixed-reels i { 
-            font-size: 28px; 
-            color: white; 
-        }
-
-        .fixed-reels-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #e74c3c;
-            color: white;
-            font-size: 14px;
-            font-weight: 700;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid white;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.9; }
-        }
-
-        /* ===== أنماط واجهة الريلز المنبثقة ===== */
-        .reels-interface-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 26, 21, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 10000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .reels-interface-content {
-            width: 95%;
-            max-width: 1400px;
-            height: 95vh;
-            background: #1a2f28;
-            border-radius: 30px;
-            border: 2px solid #d4af37;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            animation: zoomIn 0.3s ease;
-        }
-
-        @keyframes zoomIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        /* الهيدر */
-        .reels-interface-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 30px;
-            border-bottom: 2px solid #d4af37;
-        }
-
-        .reels-interface-title {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .reels-interface-title i {
-            font-size: 30px;
-            color: #d4af37;
-        }
-
-        .reels-interface-title h2 {
-            color: #d4af37;
-            font-size: 28px;
-            margin: 0;
-        }
-
-        .reels-interface-close {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid #d4af37;
-            color: #d4af37;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .reels-interface-close:hover {
-            background: #d4af37;
-            color: black;
-            transform: rotate(90deg);
-        }
-
-        /* شريط البحث */
-        .reels-interface-search {
-            padding: 20px 30px;
-            border-bottom: 1px solid #b38f2c;
-        }
-
-        .reels-interface-search .search-box {
-            display: flex;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid #d4af37;
-            border-radius: 50px;
-            padding: 5px 20px;
-            margin-bottom: 15px;
-        }
-
-        .reels-interface-search .search-box i {
-            color: #d4af37;
-            font-size: 18px;
-            margin-left: 10px;
-        }
-
-        .reels-interface-search .search-box input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            padding: 12px 0;
-            color: white;
-            font-family: 'Cairo', sans-serif;
-            font-size: 15px;
-            outline: none;
-        }
-
-        .reels-interface-search .search-box input::placeholder {
-            color: #888;
-        }
-
-        /* أزرار التصفية */
-        .reels-interface-filters {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid #d4af37;
-            color: white;
-            padding: 8px 20px;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-
-        .filter-btn.active,
-        .filter-btn:hover {
-            background: #d4af37;
-            color: #0a1a15;
-            border-color: #d4af37;
-        }
-
-        /* شبكة الريلز */
-        .reels-interface-grid {
-            flex: 1;
-            overflow-y: auto;
-            padding: 30px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 25px;
-        }
-
-        .reels-interface-grid::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .reels-interface-grid::-webkit-scrollbar-track {
-            background: #1a2a25;
-            border-radius: 10px;
-        }
-
-        .reels-interface-grid::-webkit-scrollbar-thumb {
-            background: #d4af37;
-            border-radius: 10px;
-        }
-
-        /* بطاقة الريل */
-        .reel-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            position: relative;
-        }
-
-        .reel-card:hover {
-            transform: translateY(-5px);
-            border-color: #d4af37;
-            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
-        }
-
-        .reel-thumbnail {
-            position: relative;
-            width: 100%;
-            height: 350px;
-            overflow: hidden;
-        }
-
-        .reel-thumbnail img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-
-        .reel-card:hover .reel-thumbnail img {
-            transform: scale(1.1);
-        }
-
-        .reel-duration {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 12px;
-            z-index: 2;
-        }
-
-        .reel-views {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(212, 175, 55, 0.9);
-            color: black;
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 12px;
-            font-weight: bold;
-            z-index: 2;
-        }
-
-        .reel-play-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .reel-card:hover .reel-play-overlay {
-            opacity: 1;
-        }
-
-        .reel-play-overlay i {
-            font-size: 60px;
-            color: #d4af37;
-            filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.5));
-        }
-
-        .reel-info {
-            padding: 12px;
-        }
-
-        .reel-title {
-            margin: 0 0 5px 0;
-            font-size: 14px;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: #d4af37;
-        }
-
-        .reel-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            color: #888;
-        }
-
-        .reel-category {
-            font-size: 16px;
-        }
-
-        /* ===== أنماط الشريط العلوي ===== */
-        .top-bar {
-            background: #1a2f28;
-            border-bottom: 2px solid #d4af37;
-            padding: 12px 0;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .top-bar .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .top-bar-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-
-        .top-bar-item i { 
-            color: #d4af37; 
-        }
-
-        .theme-toggle {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid #d4af37;
-            border-radius: 50px;
-            padding: 5px 15px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: white;
-            transition: all 0.3s ease;
-        }
-
-        .theme-toggle:hover { 
-            background: #2c5e4f; 
-            color: white; 
-            border-color: #2c5e4f;
-        }
-
-        /* شريط المميزات المتحرك */
-        .marquee-bar {
-            background: linear-gradient(90deg, #1a3a32, #b38f2c, #1a3a32);
-            padding: 12px 0;
-            overflow: hidden;
-            position: relative;
-            border-bottom: 2px solid #d4af37;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .marquee-content {
-            display: flex;
-            animation: marquee 30s linear infinite;
-            width: fit-content;
-        }
-
-        .marquee-bar:hover .marquee-content { 
-            animation-play-state: paused; 
-        }
-
-        @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-
-        .marquee-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 0 30px;
-            color: white;
-            font-weight: 700;
-            white-space: nowrap;
-            border-left: 2px solid rgba(255,255,255,0.2);
-        }
-
-        .marquee-item i { 
-            font-size: 20px; 
-            color: white;
-        }
-
-        .marquee-progress {
-            width: 70px;
-            height: 5px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50px;
-            overflow: hidden;
-        }
-
-        .marquee-progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #d4af37, white);
-            border-radius: 50px;
-        }
-
-        /* شريط Reels */
-        .reels-promo-bar {
-            background: linear-gradient(145deg, #0a1a15 0%, #1a2f28 100%);
-            padding: 20px 0;
-            margin: 20px 0;
-            border-radius: 20px;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .reels-promo-bar::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(212,175,55,0.1) 0%, transparent 70%);
-            animation: rotate 20s linear infinite;
-        }
-
-        .reels-header-brand {
-            display: flex;
-            align-items: baseline;
-            gap: 15px;
-            margin-bottom: 15px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .brand-realme {
-            font-size: 28px;
-            font-weight: 900;
-            background: linear-gradient(45deg, #FFD700, #FFA500);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .brand-protection {
-            font-size: 14px;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .reels-product-showcase {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .product-title {
-            font-size: 42px;
-            font-weight: 800;
-            color: #d4af37;
-            margin: 0;
-            line-height: 1;
-            text-shadow: 0 0 20px rgba(212,175,55,0.3);
-        }
-
-        .product-battery {
-            display: flex;
-            align-items: baseline;
-            gap: 10px;
-            margin-top: 5px;
-        }
-
-        .battery-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: white;
-        }
-
-        .battery-label {
-            font-size: 16px;
-            color: #888;
-        }
-
-        .charging-speed {
-            text-align: left;
-        }
-
-        .speed-value {
-            font-size: 48px;
-            font-weight: 800;
-            color: #FFD700;
-            display: block;
-            line-height: 1;
-        }
-
-        .speed-label {
-            font-size: 14px;
-            color: #888;
-            text-transform: uppercase;
-        }
-
-        .charging-tagline {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin: 15px 0;
-            padding: 10px;
-            background: rgba(255, 215, 0, 0.1);
-            border-radius: 50px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .tagline-charge, .tagline-usage {
-            font-size: 18px;
-            font-weight: 600;
-            color: white;
-            position: relative;
-        }
-
-        .tagline-charge::after {
-            content: '⚡';
-            margin-right: 5px;
-        }
-
-        .tagline-usage::before {
-            content: '✓';
-            margin-left: 5px;
-            color: #4CAF50;
-        }
-
-        .reels-divider {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin: 20px 0 15px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .divider-text {
-            font-size: 18px;
-            font-weight: 600;
-            color: #d4af37;
-            white-space: nowrap;
-        }
-
-        .divider-line {
-            flex: 1;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #d4af37, transparent);
-        }
-
-        .divider-icon {
-            font-size: 24px;
-            animation: bounce 2s infinite;
-        }
-
-        .reels-scroll-container {
-            position: relative;
-            margin-top: 20px;
-        }
-
-        .reels-track {
-            display: flex;
-            gap: 15px;
-            overflow-x: auto;
-            scroll-behavior: smooth;
-            padding: 10px 5px;
-            scrollbar-width: none;
-        }
-
-        .reels-track::-webkit-scrollbar {
-            display: none;
-        }
-
-        .reels-scroll-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid #d4af37;
-            color: #d4af37;
-            cursor: pointer;
-            z-index: 10;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .reels-scroll-btn.left {
-            left: -20px;
-        }
-
-        .reels-scroll-btn.right {
-            right: -20px;
-        }
-
-        .reels-scroll-btn:hover:not(:disabled) {
-            background: #d4af37;
-            color: black;
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        .reels-scroll-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        /* الهيدر الرئيسي */
-        .main-header {
-            background: rgba(26, 47, 40, 0.95);
-            backdrop-filter: blur(20px);
-            padding: 20px 0;
-            margin-bottom: 30px;
-            border-bottom: 3px solid transparent;
-            border-image: linear-gradient(90deg, #2c5e4f, #d4af37, #2c5e4f);
-            border-image-slice: 1;
-        }
-
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logo-icon {
-            width: 65px;
-            height: 65px;
-            background: linear-gradient(135deg, #2c5e4f, #d4af37);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transform: rotate(-5deg);
-            transition: all 0.3s ease;
-            box-shadow: 0 15px 40px rgba(44, 94, 79, 0.4), 0 0 20px rgba(212, 175, 55, 0.3);
-        }
-
-        .logo:hover .logo-icon { 
-            transform: rotate(0deg) scale(1.1); 
-        }
-
-        .logo-icon i { 
-            font-size: 35px; 
-            color: white; 
-        }
-
-        .logo-text h1 {
-            font-size: 32px;
-            font-weight: 900;
-            background: linear-gradient(135deg, #d4af37 0%, #2c5e4f 50%, #d4af37 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            line-height: 1.2;
-        }
-
-        .logo-text span { 
-            color: #e6d5a8; 
-            font-size: 14px; 
-            font-weight: 600; 
-            display: block;
-        }
-
-        .search-wrapper { 
-            flex: 0 1 400px; 
-            position: relative; 
-        }
-
-        .search-box {
-            display: flex;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            border-radius: 50px;
-            padding: 5px 5px 5px 20px;
-            transition: all 0.3s ease;
-        }
-
-        .search-box:focus-within { 
-            border-color: #d4af37; 
-            box-shadow: 0 0 20px #d4af37;
-        }
-
-        .search-box input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            padding: 12px 0;
-            color: white;
-            font-family: 'Cairo', sans-serif;
-            font-size: 15px;
-            outline: none;
-        }
-
-        .search-box input::placeholder { 
-            color: #e0e0e0; 
-            opacity: 0.7; 
-        }
-
-        .search-box button {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #2c5e4f, #d4af37);
-            border: none;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 20px;
-        }
-
-        .search-box button:hover { 
-            transform: scale(1.1); 
-            box-shadow: 0 0 20px #d4af37;
-        }
-
-        .header-actions { 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-        }
-
-        .action-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #d4af37;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            position: relative;
-        }
-
-        .action-btn:hover {
-            background: #2c5e4f;
-            color: white;
-            transform: translateY(-3px);
-            border-color: #d4af37;
-        }
-
-        .cart-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #d4af37;
-            color: #0a1a15;
-            font-size: 13px;
-            font-weight: 700;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* القائمة الرئيسية */
-        .nav-menu {
-            background: linear-gradient(135deg, rgba(26, 47, 40, 0.95), rgba(26, 47, 40, 0.95));
-            backdrop-filter: blur(10px);
-            border-radius: 50px;
-            padding: 15px 25px;
-            margin: 20px 0;
-            border: 2px solid transparent;
-            border-image: linear-gradient(135deg, #2c5e4f, #d4af37, #2c5e4f);
-            border-image-slice: 1;
-            box-shadow: 0 15px 40px rgba(44, 94, 79, 0.4), 0 0 20px rgba(212, 175, 55, 0.3);
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 25px;
-            color: white;
-            text-decoration: none;
-            font-weight: 700;
-            border-radius: 50px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            white-space: nowrap;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .nav-link::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #2c5e4f, #d4af37);
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            z-index: -1;
-        }
-
-        .nav-link:hover::before { 
-            transform: translateX(0); 
-        }
-
-        .nav-link:hover { 
-            color: white; 
-        }
-
-        .nav-link:hover i { 
-            color: white; 
-            transform: scale(1.1); 
-        }
-
-        .nav-link.active {
-            background: linear-gradient(135deg, #2c5e4f, #d4af37);
-            color: white;
-            box-shadow: 0 0 20px #d4af37;
-        }
-
-        .nav-link.active i { 
-            color: white; 
-        }
-
-        .nav-link i { 
-            color: #d4af37; 
-            transition: all 0.3s ease; 
-            font-size: 16px; 
-        }
-
-        /* خيارات الفرز */
-        .sort-options {
-            margin: 20px 0;
-            text-align: left;
-        }
-
-        .sort-select {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid #d4af37;
-            color: white;
-            padding: 12px 25px;
-            border-radius: 50px;
-            font-family: 'Cairo', sans-serif;
-            font-size: 15px;
-            cursor: pointer;
-            outline: none;
-            min-width: 200px;
-        }
-
-        .sort-select option {
-            background: #1a2f28;
-            color: white;
-        }
-
-        /* نص متحرك */
-        .typing-container {
-            text-align: center;
-            margin: 20px 0;
-            font-size: 26px;
-            font-weight: 700;
-            color: #d4af37;
-            min-height: 70px;
-            text-shadow: 0 0 10px #d4af37;
-        }
-
-        /* شبكة المنتجات */
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
-            margin: 30px 0;
-        }
-
-        /* بطاقة المنتج */
-        .product-card {
-            background: rgba(26, 47, 40, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 25px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-        }
-
-        .product-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            border-color: #d4af37;
-            box-shadow: 0 15px 40px rgba(44, 94, 79, 0.4), 0 0 20px rgba(212, 175, 55, 0.3);
-        }
-
-        .product-card:hover .product-gallery img {
-            transform: scale(1.1);
-        }
-
-        .product-gallery {
-            position: relative;
-            width: 100%;
-            height: 240px;
-            overflow: hidden;
-            border-radius: 25px 25px 0 0;
-        }
-
-        .product-gallery img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-
-        .product-info {
-            padding: 20px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .product-category {
-            display: inline-block;
-            background: linear-gradient(135deg, #2c5e4f, #b38f2c);
-            color: white;
-            padding: 5px 18px;
-            border-radius: 50px;
-            font-size: 12px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            width: fit-content;
-        }
-
-        .product-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: white;
-            line-height: 1.4;
-            height: 50px;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-        }
-
-        .product-card:hover .product-title {
-            color: #d4af37;
-        }
-
-        .product-price {
-            font-size: 26px;
-            font-weight: 800;
-            color: #d4af37;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            line-height: 1;
-        }
-
-        .product-stock {
-            font-size: 13px;
-            margin-bottom: 15px;
-            padding: 6px 18px;
-            border-radius: 50px;
-            display: inline-block;
-            font-weight: 600;
-        }
-
-        .in-stock {
-            background: rgba(44, 94, 79, 0.2);
-            color: #3e826b;
-            border: 1px solid #2c5e4f;
-        }
-
-        .low-stock {
-            background: rgba(212, 175, 55, 0.2);
-            color: #d4af37;
-            border: 1px solid #d4af37;
-            animation: pulse 2s infinite;
-        }
-
-        .out-of-stock {
-            background: rgba(231, 76, 60, 0.2);
-            color: #e74c3c;
-            border: 1px solid #e74c3c;
-        }
-
-        .product-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: auto;
-        }
-
-        .add-to-cart {
-            flex: 2;
-            padding: 12px 15px;
-            background: linear-gradient(135deg, #2c5e4f, #b38f2c);
-            border: none;
-            border-radius: 50px;
-            color: white;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-
-        .add-to-cart:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(44, 94, 79, 0.4), 0 0 20px rgba(212, 175, 55, 0.3);
-            background: linear-gradient(135deg, #d4af37, #2c5e4f);
-        }
-
-        .add-to-cart:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: #666;
-        }
-
-        /* الفوتر */
-        .footer {
-            background: #1a2f28;
-            padding: 60px 0 30px;
-            margin-top: 60px;
-            border-top: 3px solid transparent;
-            border-image: linear-gradient(90deg, #2c5e4f, #d4af37, #2c5e4f);
-            border-image-slice: 1;
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            margin-bottom: 40px;
-        }
-
-        .footer-col h3 { 
-            color: #d4af37; 
-            font-size: 20px; 
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .footer-col h3 i { 
-            color: #2c5e4f; 
-        }
-
-        .footer-col p { 
-            margin-bottom: 12px; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-        }
-
-        .footer-col i { 
-            color: #d4af37; 
-            width: 22px; 
-            font-size: 16px; 
-        }
-
-        .copyright {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #b38f2c;
-            color: #e0e0e0;
-        }
-
-        /* أيقونات ثابتة */
-        .fixed-cart {
-            position: fixed;
-            bottom: 100px;
-            right: 20px;
-            width: 65px;
-            height: 65px;
-            background: linear-gradient(135deg, #2c5e4f, #d4af37);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 15px 40px rgba(44, 94, 79, 0.4), 0 0 20px rgba(212, 175, 55, 0.3);
-            z-index: 999;
-            transition: all 0.3s ease;
-            animation: pulse 2s infinite;
-        }
-
-        .fixed-cart:hover {
-            transform: scale(1.15);
-            animation: none;
-        }
-
-        .fixed-cart i { 
-            font-size: 28px; 
-            color: white; 
-        }
-
-        .fixed-cart-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #e74c3c;
-            color: white;
-            font-size: 14px;
-            font-weight: 700;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid white;
-        }
-
-        .navigation-buttons {
-            position: fixed;
-            bottom: 100px;
-            left: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            z-index: 999;
-        }
-
-        .nav-btn {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            background: rgba(26, 47, 40, 0.95);
-            border: 2px solid #d4af37;
-            color: #d4af37;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .nav-btn:hover {
-            background: #2c5e4f;
-            color: white;
-            border-color: #2c5e4f;
-            transform: scale(1.1);
-        }
-
-        .up-btn { animation: float 2s ease-in-out infinite; }
-        .down-btn { animation: float 2s ease-in-out infinite reverse; }
-
-        .quick-top-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: #2c5e4f;
-            border: none;
-            color: white;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            box-shadow: 0 10px 30px rgba(44, 94, 79, 0.5);
-            transition: all 0.3s ease;
-            z-index: 998;
-            animation: bounce 2s infinite;
-        }
-
-        .quick-top-btn:hover { 
-            transform: scale(1.1); 
-            animation: none; 
-            background: #d4af37;
-        }
-
-        .quick-top-btn.show { 
-            display: flex; 
-        }
-
-        /* أنماط النوافذ المنبثقة */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(15px);
-            z-index: 3000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: #1a2f28;
-            border: 2px solid transparent;
-            border-image: linear-gradient(135deg, #2c5e4f, #d4af37, #2c5e4f);
-            border-image-slice: 1;
-            border-radius: 30px;
-            padding: 35px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 15px 40px rgba(44, 94, 79, 0.4), 0 0 20px rgba(212, 175, 55, 0.3);
-            animation: zoomIn 0.3s ease;
-        }
-
-        .modal-lg {
-            max-width: 1000px;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #d4af37;
-        }
-
-        .modal-header h2 {
-            color: #d4af37;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            color: #d4af37;
-            font-size: 28px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .close-btn:hover {
-            color: #2c5e4f;
-            transform: scale(1.2) rotate(90deg);
-        }
-
-        /* أنماط النماذج */
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            font-weight: 700;
-            color: #d4af37;
-            font-size: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .form-group label i {
-            color: #2c5e4f;
-            font-size: 16px;
-        }
-
-        .form-control {
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            border-radius: 15px;
-            color: white;
-            font-family: 'Cairo', sans-serif;
-            font-size: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus {
-            border-color: #d4af37;
-            outline: none;
-            box-shadow: 0 0 15px #d4af37;
-        }
-
-        textarea.form-control {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .btn-gold {
-            background: linear-gradient(135deg, #d4af37, #b38f2c);
-            color: #0a1a15;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 50px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 15px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-gold:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px #d4af37;
-        }
-
-        .btn-outline-gold {
-            background: transparent;
-            border: 2px solid #d4af37;
-            color: #d4af37;
-            padding: 10px 22px;
-            border-radius: 50px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 15px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-outline-gold:hover {
-            background: linear-gradient(135deg, #2c5e4f, #d4af37);
-            color: white;
-            border-color: transparent;
-        }
-
-        /* رفع الصور */
-        .image-upload-area {
-            border: 2px dashed #d4af37;
-            border-radius: 25px;
-            padding: 40px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .image-upload-area:hover {
-            background: rgba(44, 94, 79, 0.2);
-            border-color: #2c5e4f;
-        }
-
-        .image-upload-area i {
-            font-size: 48px;
-            color: #d4af37;
-            margin-bottom: 15px;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .image-upload-area p {
-            font-size: 16px;
-            color: #d4af37;
-            font-weight: 600;
-        }
-
-        .image-preview {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 20px;
-            justify-content: center;
-        }
-
-        .preview-image {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border: 3px solid #d4af37;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .preview-image:hover {
-            transform: scale(1.1);
-            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
-        }
-
-        /* أنماط نافذة عرض الريل */
-        .reel-modal-content {
-            max-width: 800px !important;
-        }
-
-        .reel-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 2px solid #d4af37;
-        }
-
-        .reel-viewer {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .reel-video-container video {
-            width: 100%;
-            max-height: 400px;
-            border-radius: 15px;
-        }
-
-        .reel-details {
-            padding: 0 15px 15px;
-        }
-
-        .reel-header h2 {
-            color: #d4af37;
-            margin-bottom: 10px;
-        }
-
-        .reel-stats {
-            display: flex;
-            gap: 15px;
-            color: #888;
-            font-size: 14px;
-        }
-
-        .reel-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin: 15px 0;
-        }
-
-        .tag {
-            background: #1a2a25;
-            color: #d4af37;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-        }
-
-        .reel-actions {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .btn-telegram {
-            background: #0088cc;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-share {
-            background: #1a2a25;
-            color: #d4af37;
-            border: 1px solid #d4af37;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .reel-navigation {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px;
-            border-top: 1px solid #b38f2c;
-        }
-
-        .nav-reel {
-            background: none;
-            border: 1px solid #d4af37;
-            color: #d4af37;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-reel:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        @media (max-width: 768px) {
-            .fixed-reels {
-                bottom: 160px;
-                right: 15px;
-                width: 55px;
-                height: 55px;
-            }
-            
-            .fixed-reels i { font-size: 24px; }
-            
-            .fixed-cart {
-                bottom: 90px;
-                right: 15px;
-                width: 55px;
-                height: 55px;
-            }
-            
-            .fixed-cart i { font-size: 24px; }
-            
-            .navigation-buttons {
-                bottom: 90px;
-                left: 15px;
-            }
-            
-            .nav-btn {
-                width: 45px;
-                height: 45px;
-                font-size: 18px;
-            }
-            
-            .quick-top-btn {
-                bottom: 20px;
-                right: 15px;
-                width: 45px;
-                height: 45px;
-                font-size: 18px;
-            }
-            
-            .product-title {
-                font-size: 28px;
-            }
-            
-            .battery-value {
-                font-size: 24px;
-            }
-            
-            .speed-value {
-                font-size: 32px;
-            }
-            
-            .reels-scroll-btn {
-                display: none;
-            }
-            
-            .reels-interface-grid {
-                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-                gap: 15px;
-                padding: 15px;
-            }
-            
-            .reel-thumbnail {
-                height: 280px;
-            }
-            
-            .reels-interface-filters {
-                justify-content: center;
-            }
-            
-            .reels-interface-header {
-                padding: 15px;
-            }
-            
-            .reels-interface-title h2 {
-                font-size: 22px;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .reels-interface-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            }
-            
-            .reel-thumbnail {
-                height: 250px;
-            }
-        }
-    </style>
+    <!-- ===== ربط ملف CSS ===== -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- ===== شاشة التحميل ===== -->
@@ -1747,12 +34,7 @@
             <h3><i class="fas fa-shopping-cart"></i> سلة التسوق</h3>
             <i class="fas fa-times close-cart" onclick="toggleCart()"></i>
         </div>
-        <div class="cart-items" id="cartItems">
-            <div style="text-align: center; padding: 40px; color: #888;">
-                <i class="fas fa-shopping-basket" style="font-size: 60px; margin-bottom: 20px;"></i>
-                <p>سلة التسوق فارغة</p>
-            </div>
-        </div>
+        <div class="cart-items" id="cartItems"></div>
         <div class="cart-footer">
             <div class="cart-total">
                 <span>المجموع:</span>
@@ -1764,168 +46,18 @@
         </div>
     </div>
 
-    <!-- ===== أيقونة ريلز ثابتة ===== -->
-    <div class="fixed-reels" onclick="openReelsInterface()" id="fixedReels" title="واجهة الريلز">
-        <i class="fas fa-film"></i>
-        <span class="fixed-reels-count" id="fixedReelsCount">12</span>
-    </div>
-
-    <!-- ===== واجهة الريلز المنبثقة ===== -->
-    <div class="reels-interface-modal" id="reelsInterfaceModal" onclick="if(event.target===this) closeReelsInterface()">
-        <div class="reels-interface-content">
-            <!-- الهيدر -->
-            <div class="reels-interface-header">
-                <div class="reels-interface-title">
-                    <i class="fas fa-film"></i>
-                    <h2>ناردو ريلز</h2>
-                </div>
-                <button class="reels-interface-close" onclick="closeReelsInterface()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <!-- شريط البحث والتصفية -->
-            <div class="reels-interface-search">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="reelsSearchInput" placeholder="ابحث في الريلز..." onkeyup="searchReels(this.value)">
-                </div>
-                
-                <div class="reels-interface-filters">
-                    <button class="filter-btn active" onclick="filterReelsInterface('all')">الكل</button>
-                    <button class="filter-btn" onclick="filterReelsInterface('promo')">🔥 برومسيون</button>
-                    <button class="filter-btn" onclick="filterReelsInterface('spices')">🧂 توابل</button>
-                    <button class="filter-btn" onclick="filterReelsInterface('cosmetic')">💄 كوسمتيك</button>
-                    <button class="filter-btn" onclick="filterReelsInterface('other')">🎁 أخرى</button>
-                </div>
-            </div>
-            
-            <!-- شبكة الريلز -->
-            <div class="reels-interface-grid" id="reelsInterfaceGrid">
-                <!-- بطاقات الريلز (بيانات تجريبية) -->
-                <div class="reel-card" onclick="openReelDetail(1)">
-                    <div class="reel-thumbnail">
-                        <img src="https://via.placeholder.com/300x500/2c5e4f/d4af37?text=بهارات" alt="بهارات">
-                        <span class="reel-duration">1:35</span>
-                        <span class="reel-views">15.4K</span>
-                        <div class="reel-play-overlay">
-                            <i class="fas fa-play"></i>
-                        </div>
-                    </div>
-                    <div class="reel-info">
-                        <h4 class="reel-title">عرض خاص على البهارات</h4>
-                        <div class="reel-meta">
-                            <span>🔥 برومسيون</span>
-                            <span class="reel-category">🧂</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="reel-card" onclick="openReelDetail(2)">
-                    <div class="reel-thumbnail">
-                        <img src="https://via.placeholder.com/300x500/2c5e4f/d4af37?text=كريمات" alt="كريمات">
-                        <span class="reel-duration">0:58</span>
-                        <span class="reel-views">23.2K</span>
-                        <div class="reel-play-overlay">
-                            <i class="fas fa-play"></i>
-                        </div>
-                    </div>
-                    <div class="reel-info">
-                        <h4 class="reel-title">كريمات طبيعية للبشرة</h4>
-                        <div class="reel-meta">
-                            <span>💄 كوسمتيك</span>
-                            <span class="reel-category">💄</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="reel-card" onclick="openReelDetail(3)">
-                    <div class="reel-thumbnail">
-                        <img src="https://via.placeholder.com/300x500/2c5e4f/d4af37?text=عروض" alt="عروض">
-                        <span class="reel-duration">0:45</span>
-                        <span class="reel-views">8.9K</span>
-                        <div class="reel-play-overlay">
-                            <i class="fas fa-play"></i>
-                        </div>
-                    </div>
-                    <div class="reel-info">
-                        <h4 class="reel-title">هدايا مجانية مع الطلب</h4>
-                        <div class="reel-meta">
-                            <span>🎁 عروض</span>
-                            <span class="reel-category">🎁</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="reel-card" onclick="openReelDetail(4)">
-                    <div class="reel-thumbnail">
-                        <img src="https://via.placeholder.com/300x500/2c5e4f/d4af37?text=توابل" alt="توابل">
-                        <span class="reel-duration">1:20</span>
-                        <span class="reel-views">12.1K</span>
-                        <div class="reel-play-overlay">
-                            <i class="fas fa-play"></i>
-                        </div>
-                    </div>
-                    <div class="reel-info">
-                        <h4 class="reel-title">خلطات توابل خاصة</h4>
-                        <div class="reel-meta">
-                            <span>🧂 توابل</span>
-                            <span class="reel-category">🧂</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="reel-card" onclick="openReelDetail(5)">
-                    <div class="reel-thumbnail">
-                        <img src="https://via.placeholder.com/300x500/2c5e4f/d4af37?text=عطور" alt="عطور">
-                        <span class="reel-duration">0:52</span>
-                        <span class="reel-views">18.7K</span>
-                        <div class="reel-play-overlay">
-                            <i class="fas fa-play"></i>
-                        </div>
-                    </div>
-                    <div class="reel-info">
-                        <h4 class="reel-title">عطور فرنسية أصلية</h4>
-                        <div class="reel-meta">
-                            <span>💄 كوسمتيك</span>
-                            <span class="reel-category">💄</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="reel-card" onclick="openReelDetail(6)">
-                    <div class="reel-thumbnail">
-                        <img src="https://via.placeholder.com/300x500/2c5e4f/d4af37?text=تخفيضات" alt="تخفيضات">
-                        <span class="reel-duration">1:05</span>
-                        <span class="reel-views">32.5K</span>
-                        <div class="reel-play-overlay">
-                            <i class="fas fa-play"></i>
-                        </div>
-                    </div>
-                    <div class="reel-info">
-                        <h4 class="reel-title">تخفيضات تصل 50%</h4>
-                        <div class="reel-meta">
-                            <span>🔥 برومسيون</span>
-                            <span class="reel-category">🔥</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- ===== الشريط العلوي ===== -->
     <div class="top-bar">
         <div class="container">
-            <div class="top-bar-item" data-aos="fade-left" data-aos-delay="100">
+            <div class="top-bar-item">
                 <i class="fas fa-truck-fast"></i>
                 <span>شحن مجاني للطلبات فوق 5000 دج</span>
             </div>
-            <div class="top-bar-item" data-aos="fade-left" data-aos-delay="200">
+            <div class="top-bar-item">
                 <i class="fas fa-headset"></i>
                 <span>دعم VIP 24/7</span>
             </div>
-            <div class="top-bar-item" data-aos="fade-left" data-aos-delay="300">
+            <div class="top-bar-item">
                 <i class="fas fa-gem"></i>
                 <span>منتجات أصلية 100%</span>
             </div>
@@ -1938,7 +70,7 @@
 
     <!-- ===== شريط العروض المتحرك ===== -->
     <div class="marquee-bar">
-        <div class="marquee-content" id="marqueeContent">
+        <div class="marquee-content">
             <div class="marquee-item float-item">
                 <i class="fas fa-fire"></i>
                 <span>تخفيضات تصل 50%</span>
@@ -1954,185 +86,13 @@
                 <span>الوقت: <span id="marqueeHours">12</span>:<span id="marqueeMinutes">30</span>:<span id="marqueeSeconds">45</span></span>
                 <div class="marquee-progress"><div class="marquee-progress-fill" style="width:60%"></div></div>
             </div>
-            <div class="marquee-item rotate-item">
-                <i class="fas fa-star"></i>
-                <span>عرض خاص: 1+1 مجاناً</span>
-                <div class="marquee-progress"><div class="marquee-progress-fill" style="width:30%"></div></div>
-            </div>
-            <div class="marquee-item">
-                <i class="fas fa-gift"></i>
-                <span>هدية مع كل طلب</span>
-                <div class="marquee-progress"><div class="marquee-progress-fill" style="width:90%"></div></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== شريط Reels من تلجرام ===== -->
-    <div class="reels-promo-bar">
-        <div class="container">
-            <div class="reels-header-brand">
-                <span class="brand-realme">ناردو برو</span>
-                <span class="brand-protection">REELS حصرية 2026</span>
-            </div>
-            
-            <div class="reels-product-showcase">
-                <div class="product-info">
-                    <h2 class="product-title">ناردو ريلز</h2>
-                    <div class="product-battery">
-                        <span class="battery-value">قناة حصرية</span>
-                        <span class="battery-label">فيديوهات يومية</span>
-                    </div>
-                </div>
-                
-                <div class="product-charging">
-                    <div class="charging-speed">
-                        <span class="speed-value">60ث</span>
-                        <span class="speed-label">مدة الفيديو</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="charging-tagline">
-                <span class="tagline-charge">⚡ شحن لساعة</span>
-                <span class="tagline-usage">🔋 و استعمال اليومين</span>
-            </div>
-            
-            <!-- أزرار تصفية الريلز -->
-            <div class="reels-filter">
-                <button class="btn-filter active" onclick="filterReels('all')">📹 الكل</button>
-                <button class="btn-filter" onclick="filterReels('promo')">🔥 برومسيون</button>
-                <button class="btn-filter" onclick="filterReels('spices')">🧂 توابل</button>
-                <button class="btn-filter" onclick="filterReels('cosmetic')">💄 كوسمتيك</button>
-                <button class="btn-filter" onclick="filterReels('other')">🎁 أخرى</button>
-            </div>
-            
-            <div class="reels-divider">
-                <span class="divider-text">reels حصرية</span>
-                <span class="divider-line"></span>
-                <span class="divider-icon">🎬</span>
-            </div>
-            
-            <div class="reels-scroll-container">
-                <button class="reels-scroll-btn left" onclick="scrollReels('left')" id="scrollLeftBtn">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-                
-                <div class="reels-track" id="reelsTrack">
-                    <!-- بطاقات الريلز المصغرة -->
-                    <div class="reel-card" onclick="openReelDetail(1)">
-                        <div class="reel-thumbnail">
-                            <img src="https://via.placeholder.com/200x300/2c5e4f/d4af37?text=بهارات" alt="بهارات">
-                            <span class="reel-duration">1:35</span>
-                            <span class="reel-views">15.4K</span>
-                            <div class="reel-play-overlay">
-                                <i class="fas fa-play"></i>
-                            </div>
-                        </div>
-                        <div class="reel-info">
-                            <h4 class="reel-title">عرض خاص على البهارات</h4>
-                            <div class="reel-meta">
-                                <span>🔥 برومسيون</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="reel-card" onclick="openReelDetail(2)">
-                        <div class="reel-thumbnail">
-                            <img src="https://via.placeholder.com/200x300/2c5e4f/d4af37?text=كريمات" alt="كريمات">
-                            <span class="reel-duration">0:58</span>
-                            <span class="reel-views">23.2K</span>
-                            <div class="reel-play-overlay">
-                                <i class="fas fa-play"></i>
-                            </div>
-                        </div>
-                        <div class="reel-info">
-                            <h4 class="reel-title">كريمات طبيعية للبشرة</h4>
-                            <div class="reel-meta">
-                                <span>💄 كوسمتيك</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="reel-card" onclick="openReelDetail(3)">
-                        <div class="reel-thumbnail">
-                            <img src="https://via.placeholder.com/200x300/2c5e4f/d4af37?text=عروض" alt="عروض">
-                            <span class="reel-duration">0:45</span>
-                            <span class="reel-views">8.9K</span>
-                            <div class="reel-play-overlay">
-                                <i class="fas fa-play"></i>
-                            </div>
-                        </div>
-                        <div class="reel-info">
-                            <h4 class="reel-title">هدايا مجانية مع الطلب</h4>
-                            <div class="reel-meta">
-                                <span>🎁 عروض</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="reel-card" onclick="openReelDetail(4)">
-                        <div class="reel-thumbnail">
-                            <img src="https://via.placeholder.com/200x300/2c5e4f/d4af37?text=توابل" alt="توابل">
-                            <span class="reel-duration">1:20</span>
-                            <span class="reel-views">12.1K</span>
-                            <div class="reel-play-overlay">
-                                <i class="fas fa-play"></i>
-                            </div>
-                        </div>
-                        <div class="reel-info">
-                            <h4 class="reel-title">خلطات توابل خاصة</h4>
-                            <div class="reel-meta">
-                                <span>🧂 توابل</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="reel-card" onclick="openReelDetail(5)">
-                        <div class="reel-thumbnail">
-                            <img src="https://via.placeholder.com/200x300/2c5e4f/d4af37?text=عطور" alt="عطور">
-                            <span class="reel-duration">0:52</span>
-                            <span class="reel-views">18.7K</span>
-                            <div class="reel-play-overlay">
-                                <i class="fas fa-play"></i>
-                            </div>
-                        </div>
-                        <div class="reel-info">
-                            <h4 class="reel-title">عطور فرنسية أصلية</h4>
-                            <div class="reel-meta">
-                                <span>💄 كوسمتيك</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="reel-card" onclick="openReelDetail(6)">
-                        <div class="reel-thumbnail">
-                            <img src="https://via.placeholder.com/200x300/2c5e4f/d4af37?text=تخفيضات" alt="تخفيضات">
-                            <span class="reel-duration">1:05</span>
-                            <span class="reel-views">32.5K</span>
-                            <div class="reel-play-overlay">
-                                <i class="fas fa-play"></i>
-                            </div>
-                        </div>
-                        <div class="reel-info">
-                            <h4 class="reel-title">تخفيضات تصل 50%</h4>
-                            <div class="reel-meta">
-                                <span>🔥 برومسيون</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <button class="reels-scroll-btn right" onclick="scrollReels('right')" id="scrollRightBtn">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-            </div>
         </div>
     </div>
 
     <!-- ===== الهيدر الرئيسي ===== -->
     <header class="main-header">
         <div class="container header-content">
-            <div class="logo" data-aos="fade-right">
+            <div class="logo">
                 <div class="logo-icon"><i class="fas fa-leaf"></i></div>
                 <div class="logo-text">
                     <h1>نكهة وجمال</h1>
@@ -2140,22 +100,22 @@
                 </div>
             </div>
             
-            <div class="search-wrapper" data-aos="zoom-in">
+            <div class="search-wrapper">
                 <div class="search-box">
                     <input type="text" id="searchInput" placeholder="ابحث عن منتج..." onkeyup="searchProducts()">
                     <button onclick="searchProducts()"><i class="fas fa-search"></i></button>
                 </div>
             </div>
             
-            <div class="header-actions" data-aos="fade-left">
-                <button class="action-btn" onclick="openLoginModal()" id="userBtn" title="حسابي">
+            <div class="header-actions">
+                <button class="action-btn" onclick="openLoginModal()" id="userBtn">
                     <i class="far fa-user"></i>
                 </button>
-                <button class="action-btn" onclick="toggleCart()" title="سلة التسوق">
+                <button class="action-btn" onclick="toggleCart()">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-count" id="cartCounter">0</span>
                 </button>
-                <button class="action-btn" onclick="openDashboard()" id="dashboardBtn" style="display: none;" title="لوحة التحكم">
+                <button class="action-btn" onclick="openDashboard()" id="dashboardBtn" style="display: none;">
                     <i class="fas fa-chart-line"></i>
                 </button>
             </div>
@@ -2164,31 +124,18 @@
 
     <!-- ===== القائمة الرئيسية ===== -->
     <div class="container">
-        <nav class="nav-menu" id="mainNav" data-aos="fade-up">
-            <a class="nav-link active" onclick="filterProducts('all')"><i class="fas fa-home"></i><span>الرئيسية</span></a>
-            <a class="nav-link" onclick="filterProducts('promo')"><i class="fas fa-fire"></i><span>برومسيون</span></a>
-            <a class="nav-link" onclick="filterProducts('spices')"><i class="fas fa-mortar-pestle"></i><span>توابل</span></a>
-            <a class="nav-link" onclick="filterProducts('cosmetic')"><i class="fas fa-spa"></i><span>كوسمتيك</span></a>
-            <a class="nav-link" onclick="filterProducts('other')"><i class="fas fa-gem"></i><span>منتوجات أخرى</span></a>
-            <a class="nav-link" onclick="findProductById()"><i class="fas fa-search"></i><span>بحث بالمعرف</span></a>
+        <nav class="nav-menu" id="mainNav">
+            <a class="nav-link active" onclick="filterProducts('all')"><i class="fas fa-home"></i> الرئيسية</a>
+            <a class="nav-link" onclick="filterProducts('promo')"><i class="fas fa-fire"></i> برموسيو</a>
+            <a class="nav-link" onclick="filterProducts('spices')"><i class="fas fa-mortar-pestle"></i> توابل</a>
+            <a class="nav-link" onclick="filterProducts('cosmetic')"><i class="fas fa-spa"></i> كوسمتيك</a>
+            <a class="nav-link" onclick="filterProducts('other')"><i class="fas fa-gem"></i> منتوجات أخرى</a>
         </nav>
-    </div>
-
-    <!-- ===== خيارات الفرز ===== -->
-    <div class="container">
-        <div class="sort-options" data-aos="fade-up">
-            <select class="sort-select" id="sortSelect" onchange="changeSort(this.value)">
-                <option value="newest">📅 الأحدث أولاً</option>
-                <option value="price_low">💰 السعر: من الأقل للأعلى</option>
-                <option value="price_high">💰 السعر: من الأعلى للأقل</option>
-                <option value="rating">⭐ التقييم: الأعلى أولاً</option>
-            </select>
-        </div>
     </div>
 
     <!-- ===== نص متحرك ===== -->
     <div class="container">
-        <div class="typing-container" data-aos="fade-up">
+        <div class="typing-container">
             <span id="typing-text"></span>
         </div>
     </div>
@@ -2198,63 +145,17 @@
 
     <!-- ===== المنتجات ===== -->
     <div class="container">
-        <div class="products-grid" id="productsContainer">
-            <!-- بطاقات المنتجات (بيانات تجريبية) -->
-            <div class="product-card">
-                <div class="product-gallery">
-                    <img src="https://via.placeholder.com/300x300/2c5e4f/d4af37?text=بهارات" alt="منتج">
-                </div>
-                <div class="product-info">
-                    <span class="product-category">🧂 توابل</span>
-                    <h3 class="product-title">بهارات مشكلة فاخرة</h3>
-                    <div class="product-price">1200 <small>دج</small></div>
-                    <span class="product-stock in-stock"><i class="fas fa-check-circle"></i> متوفر</span>
-                    <div class="product-actions">
-                        <button class="add-to-cart" onclick="addToCart(1)"><i class="fas fa-cart-plus"></i> أضف للسلة</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="product-card">
-                <div class="product-gallery">
-                    <img src="https://via.placeholder.com/300x300/2c5e4f/d4af37?text=كريم" alt="منتج">
-                </div>
-                <div class="product-info">
-                    <span class="product-category">💄 كوسمتيك</span>
-                    <h3 class="product-title">كريم ترطيب طبيعي</h3>
-                    <div class="product-price">2500 <small>دج</small></div>
-                    <span class="product-stock low-stock"><i class="fas fa-exclamation-triangle"></i> 3 قطع فقط</span>
-                    <div class="product-actions">
-                        <button class="add-to-cart" onclick="addToCart(2)"><i class="fas fa-cart-plus"></i> أضف للسلة</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="product-card">
-                <div class="product-gallery">
-                    <img src="https://via.placeholder.com/300x300/2c5e4f/d4af37?text=عرض" alt="منتج">
-                </div>
-                <div class="product-info">
-                    <span class="product-category">🔥 برومسيون</span>
-                    <h3 class="product-title">عرض خاص: بهارات + كريم</h3>
-                    <div class="product-price">3200 <small>دج</small></div>
-                    <span class="product-stock in-stock"><i class="fas fa-check-circle"></i> متوفر</span>
-                    <div class="product-actions">
-                        <button class="add-to-cart" onclick="addToCart(3)"><i class="fas fa-cart-plus"></i> أضف للسلة</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <div class="products-grid" id="productsContainer"></div>
     </div>
 
     <!-- ===== لوحة التحكم (للمدير) ===== -->
     <div class="container dashboard-section" id="dashboardSection" style="display: none;">
-        <div class="dashboard-tabs" id="dashboardTabs">
-            <button class="dashboard-tab active" onclick="switchDashboardTab('overview')">📊 نظرة عامة</button>
-            <button class="dashboard-tab" onclick="switchDashboardTab('orders')">🛒 الطلبات</button>
-            <button class="dashboard-tab" onclick="switchDashboardTab('products')">📦 المنتجات</button>
-            <button class="dashboard-tab" onclick="switchDashboardTab('merchants')">👨‍💼 التجار</button>
-            <button class="dashboard-tab" onclick="switchDashboardTab('users')">👥 المستخدمين</button>
+        <div class="dashboard-tabs">
+            <button class="dashboard-tab active" onclick="switchDashboardTab('overview')">نظرة عامة</button>
+            <button class="dashboard-tab" onclick="switchDashboardTab('orders')">الطلبات</button>
+            <button class="dashboard-tab" onclick="switchDashboardTab('products')">المنتجات</button>
+            <button class="dashboard-tab" onclick="switchDashboardTab('merchants')">التجار</button>
+            <button class="dashboard-tab" onclick="switchDashboardTab('users')">المستخدمين</button>
         </div>
         <div class="dashboard-content" id="dashboardContent"></div>
     </div>
@@ -2263,121 +164,100 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <div class="footer-col" data-aos="fade-up" data-aos-delay="100">
-                    <h3><i class="fas fa-store"></i> نكهة وجمال</h3>
+                <div class="footer-col">
+                    <h3>نكهة وجمال</h3>
+                    <p><i class="fas fa-store"></i> المتجر الذكي المتكامل</p>
                     <p><i class="fas fa-star"></i> التقييم: 4.8/5</p>
-                    <p><i class="fas fa-users"></i> +5000 عميل</p>
-                    <p><i class="fas fa-truck"></i> شحن لجميع الولايات</p>
                 </div>
-                <div class="footer-col" data-aos="fade-up" data-aos-delay="200">
-                    <h3><i class="fas fa-headset"></i> اتصل بنا</h3>
+                <div class="footer-col">
+                    <h3>اتصل بنا</h3>
                     <p><i class="fab fa-whatsapp"></i> +213 562243648</p>
                     <p><i class="fas fa-envelope"></i> info@nardoo.com</p>
-                    <p><i class="fab fa-telegram"></i> @nardoo_support</p>
-                </div>
-                <div class="footer-col" data-aos="fade-up" data-aos-delay="300">
-                    <h3><i class="fas fa-link"></i> روابط سريعة</h3>
-                    <p><i class="fas fa-chevron-left"></i> سياسة الخصوصية</p>
-                    <p><i class="fas fa-chevron-left"></i> شروط الاستخدام</p>
-                    <p><i class="fas fa-chevron-left"></i> طرق الدفع</p>
                 </div>
             </div>
-            <div class="copyright">
-                <p>© 2026 نكهة وجمال | جميع الحقوق محفوظة</p>
-            </div>
+            <div class="copyright">© 2026 نكهة وجمال | جميع الحقوق محفوظة</div>
         </div>
     </footer>
 
     <!-- ===== أيقونات ثابتة ===== -->
-    <div class="fixed-cart" onclick="toggleCart()" id="fixedCart" title="سلة التسوق">
+    <div class="fixed-cart" onclick="toggleCart()" id="fixedCart">
         <i class="fas fa-shopping-cart"></i>
         <span class="fixed-cart-count" id="fixedCartCounter">0</span>
     </div>
 
     <div class="navigation-buttons">
-        <button class="nav-btn up-btn" onclick="scrollToTop()" title="الانتقال للأعلى">
-            <i class="fas fa-arrow-up"></i>
-        </button>
-        <button class="nav-btn down-btn" onclick="scrollToBottom()" title="الانتقال للأسفل">
-            <i class="fas fa-arrow-down"></i>
-        </button>
+        <button class="nav-btn up-btn" onclick="scrollToTop()"><i class="fas fa-arrow-up"></i></button>
+        <button class="nav-btn down-btn" onclick="scrollToBottom()"><i class="fas fa-arrow-down"></i></button>
     </div>
 
-    <button class="quick-top-btn" onclick="scrollToTop()" id="quickTopBtn" title="العودة للأعلى">
-        <i class="fas fa-chevron-up"></i>
-    </button>
+    <button class="quick-top-btn" onclick="scrollToTop()" id="quickTopBtn"><i class="fas fa-chevron-up"></i></button>
 
     <!-- ===== نافذة تسجيل الدخول ===== -->
-    <div class="modal" id="loginModal" onclick="if(event.target===this) closeModal('loginModal')">
+    <div class="modal" id="loginModal">
         <div class="modal-content">
-            <div style="text-align:center; margin-bottom:30px;">
-                <div style="font-size: 60px; color: #d4af37; margin-bottom: 10px;">
-                    <i class="fas fa-user-circle"></i>
-                </div>
-                <h2 style="color:#d4af37;">تسجيل الدخول</h2>
-            </div>
-            
+            <h2 style="text-align:center; margin-bottom:30px; color:var(--gold);">تسجيل الدخول</h2>
             <div style="display:flex; gap:10px; margin-bottom:20px;">
                 <button class="btn-gold" style="flex:1;" onclick="switchAuthTab('login')">دخول</button>
                 <button class="btn-outline-gold" style="flex:1;" onclick="switchAuthTab('register')">تسجيل</button>
             </div>
 
-            <!-- نموذج تسجيل الدخول -->
+            <!-- ===== نموذج تسجيل الدخول ===== -->
             <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
                 <div class="form-group">
-                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                    <label>📧 البريد الإلكتروني</label>
                     <input type="email" class="form-control" id="loginEmail" required placeholder="example@email.com">
                 </div>
                 <div class="form-group">
-                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                    <label>🔑 كلمة المرور</label>
                     <input type="password" class="form-control" id="loginPassword" required placeholder="أدخل كلمة المرور">
                 </div>
                 <button type="submit" class="btn-gold" style="width:100%;">دخول</button>
             </form>
 
-            <!-- نموذج التسجيل -->
+            <!-- ===== نموذج التسجيل الجديد مع جميع الحقول ===== -->
             <form id="registerForm" style="display:none;" onsubmit="event.preventDefault(); handleRegister();">
                 <div class="form-group">
-                    <label><i class="fas fa-user"></i> الاسم الكامل</label>
+                    <label>👤 الاسم الكامل</label>
                     <input type="text" class="form-control" id="regName" required placeholder="أدخل اسمك الكامل">
                 </div>
                 
                 <div class="form-group">
-                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                    <label>📧 البريد الإلكتروني</label>
                     <input type="email" class="form-control" id="regEmail" required placeholder="example@email.com">
                 </div>
                 
                 <div class="form-group">
-                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                    <label>🔑 كلمة المرور</label>
                     <input type="password" class="form-control" id="regPassword" required placeholder="أدخل كلمة المرور">
                 </div>
                 
                 <div class="form-group">
-                    <label><i class="fas fa-phone"></i> رقم الهاتف</label>
+                    <label>📱 رقم الهاتف</label>
                     <input type="tel" class="form-control" id="regPhone" required placeholder="05XXXXXXXX">
                 </div>
                 
                 <div class="form-group">
-                    <label><i class="fab fa-telegram"></i> معرف تليجرام (اختياري)</label>
+                    <label>📱 معرف تليجرام (اختياري)</label>
                     <input type="text" class="form-control" id="regTelegram" placeholder="@username">
+                    <small style="color: #888; display: block; margin-top: 5px;">أدخل معرفك في تليجرام ليتواصل معك العملاء</small>
                 </div>
                 
                 <div class="form-group">
-                    <label style="display:flex; align-items:center; gap:10px;">
+                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
                         <input type="checkbox" id="isMerchant" onchange="toggleMerchantFields()">
-                        <span><i class="fas fa-store"></i> تسجيل كتاجر</span>
+                        <span>تسجيل كتاجر</span>
                     </label>
                 </div>
                 
-                <!-- حقول التاجر -->
+                <!-- ===== حقول التاجر (تظهر عند اختيار تسجيل كتاجر) ===== -->
                 <div id="merchantFields" style="display:none;">
                     <div class="form-group">
-                        <label><i class="fas fa-store-alt"></i> اسم المتجر</label>
+                        <label>🏪 اسم المتجر</label>
                         <input type="text" class="form-control" id="storeName" placeholder="أدخل اسم متجرك">
                     </div>
                     
                     <div class="form-group">
-                        <label><i class="fas fa-tag"></i> تخصص المتجر</label>
+                        <label>🏷️ تخصص المتجر</label>
                         <select class="form-control" id="merchantCategory">
                             <option value="spices">توابل</option>
                             <option value="cosmetic">كوسمتيك</option>
@@ -2387,7 +267,7 @@
                     </div>
                     
                     <div class="form-group">
-                        <label><i class="fas fa-chart-line"></i> مستوى التاجر</label>
+                        <label>📊 مستوى التاجر</label>
                         <select class="form-control" id="merchantLevel">
                             <option value="1">المستوى الأول</option>
                             <option value="2" selected>المستوى الثاني</option>
@@ -2404,28 +284,30 @@
     </div>
 
     <!-- ===== نافذة إضافة منتج ===== -->
-    <div class="modal" id="productModal" onclick="if(event.target===this) closeModal('productModal')">
+    <div class="modal" id="productModal">
         <div class="modal-content modal-lg">
-            <div class="modal-header">
-                <h2><i class="fas fa-plus-circle"></i> إضافة منتج جديد</h2>
-                <button class="close-btn" onclick="closeModal('productModal')">&times;</button>
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color:var(--gold);">➕ إضافة منتج جديد</h2>
+                <button class="close-btn" onclick="closeModal('productModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
             </div>
             
             <form id="productForm" class="product-form" onsubmit="event.preventDefault(); saveProduct();">
+                <!-- حقل معرف تليجرام (يظهر إذا كان المستخدم تاجر وليس لديه معرف) -->
                 <div class="form-group" id="merchantTelegramField" style="display: none;">
-                    <label><i class="fab fa-telegram"></i> معرف تليجرام الخاص بك</label>
+                    <label>📱 معرف تليجرام الخاص بك</label>
                     <input type="text" class="form-control" id="merchantTelegram" placeholder="@username">
+                    <small style="color: #888;">أدخل معرفك في تليجرام ليتمكن العملاء من التواصل</small>
                 </div>
                 
                 <div class="form-group">
-                    <label><i class="fas fa-box"></i> اسم المنتج</label>
+                    <label>📦 اسم المنتج</label>
                     <input type="text" class="form-control" id="productName" required placeholder="أدخل اسم المنتج">
                 </div>
                 
                 <div class="form-group">
-                    <label><i class="fas fa-tags"></i> القسم</label>
+                    <label>🏷️ القسم</label>
                     <select class="form-control" id="productCategory" required>
-                        <option value="promo">برومسيون</option>
+                        <option value="promo">برموسيو</option>
                         <option value="spices">توابل</option>
                         <option value="cosmetic">كوسمتيك</option>
                         <option value="other">منتوجات أخرى</option>
@@ -2434,23 +316,23 @@
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="form-group">
-                        <label><i class="fas fa-coins"></i> السعر (دج)</label>
+                        <label>💰 السعر (دج)</label>
                         <input type="number" class="form-control" id="productPrice" required min="0" placeholder="0">
                     </div>
                     
                     <div class="form-group">
-                        <label><i class="fas fa-cubes"></i> الكمية</label>
+                        <label>📊 الكمية</label>
                         <input type="number" class="form-control" id="productStock" required min="0" placeholder="0">
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label><i class="fas fa-align-left"></i> وصف المنتج</label>
+                    <label>📝 وصف المنتج</label>
                     <textarea class="form-control" id="productDescription" rows="3" placeholder="أدخل وصف المنتج..."></textarea>
                 </div>
                 
                 <div class="form-group">
-                    <label><i class="fas fa-link"></i> رابط الصورة (اختياري)</label>
+                    <label>🔗 رابط الصورة (اختياري)</label>
                     <input type="url" class="form-control" id="productImage" placeholder="https://example.com/image.jpg">
                 </div>
                 
@@ -2476,120 +358,45 @@
     </div>
 
     <!-- ===== نافذة تفاصيل المنتج ===== -->
-    <div class="modal" id="productDetailModal" onclick="if(event.target===this) closeModal('productDetailModal')">
+    <div class="modal" id="productDetailModal">
         <div class="modal-content modal-lg" id="productDetailContent"></div>
     </div>
 
     <!-- ===== نافذة لوحة التاجر ===== -->
-    <div class="modal" id="merchantDashboardModal" onclick="if(event.target===this) closeModal('merchantDashboardModal')">
+    <div class="modal" id="merchantDashboardModal">
         <div class="modal-content" style="max-width: 1200px;">
-            <div class="modal-header">
-                <h2><i class="fas fa-store"></i> لوحة تحكم التاجر</h2>
-                <button class="close-btn" onclick="closeModal('merchantDashboardModal')">&times;</button>
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color:var(--gold);"><i class="fas fa-store"></i> لوحة تحكم التاجر</h2>
+                <button class="close-btn" onclick="closeModal('merchantDashboardModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
             </div>
             <div class="modal-body" id="merchantDashboardContent" style="max-height: 80vh; overflow-y: auto;"></div>
         </div>
     </div>
     
     <!-- ===== نافذة منتجات التاجر ===== -->
-    <div class="modal" id="merchantProductsModal" onclick="if(event.target===this) closeModal('merchantProductsModal')">
+    <div class="modal" id="merchantProductsModal">
         <div class="modal-content" style="max-width: 1000px;">
-            <div class="modal-header">
-                <h2><i class="fas fa-boxes"></i> منتجاتي</h2>
-                <button class="close-btn" onclick="closeModal('merchantProductsModal')">&times;</button>
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color:var(--gold);"><i class="fas fa-boxes"></i> منتجاتي</h2>
+                <button class="close-btn" onclick="closeModal('merchantProductsModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
             </div>
             <div class="modal-body" id="merchantProductsContent" style="max-height: 80vh; overflow-y: auto;"></div>
         </div>
     </div>
     
     <!-- ===== نافذة طلبات التاجر ===== -->
-    <div class="modal" id="merchantOrdersModal" onclick="if(event.target===this) closeModal('merchantOrdersModal')">
+    <div class="modal" id="merchantOrdersModal">
         <div class="modal-content" style="max-width: 800px;">
-            <div class="modal-header">
-                <h2><i class="fas fa-shopping-bag"></i> طلباتي</h2>
-                <button class="close-btn" onclick="closeModal('merchantOrdersModal')">&times;</button>
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color:var(--gold);"><i class="fas fa-shopping-bag"></i> طلباتي</h2>
+                <button class="close-btn" onclick="closeModal('merchantOrdersModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
             </div>
             <div class="modal-body" id="merchantOrdersContent" style="max-height: 80vh; overflow-y: auto;"></div>
         </div>
     </div>
 
-    <!-- ===== نافذة عرض Reel ===== -->
-    <div class="modal" id="reelViewModal" onclick="if(event.target===this) closeModal('reelViewModal')">
-        <div class="modal-content reel-modal-content">
-            <div class="reel-modal-header">
-                <h3><i class="fas fa-film" style="color: #d4af37;"></i> reel</h3>
-                <button class="close-btn" onclick="closeModal('reelViewModal')">&times;</button>
-            </div>
-            <div class="reel-modal-body" id="reelViewContent">
-                <div class="reel-viewer">
-                    <div class="reel-video-container">
-                        <video controls poster="https://via.placeholder.com/800x400/2c5e4f/d4af37?text=ناردو+برو">
-                            <source src="#" type="video/mp4">
-                        </video>
-                    </div>
-                    
-                    <div class="reel-details">
-                        <div class="reel-header">
-                            <h2>عنوان الريل</h2>
-                            <div class="reel-stats">
-                                <span><i class="fas fa-eye"></i> 15.4K</span>
-                                <span><i class="fas fa-calendar"></i> 2026-03-10</span>
-                                <span class="reel-category-badge">🔥 برومسيون</span>
-                            </div>
-                        </div>
-                        
-                        <div class="reel-description">
-                            <p>وصف الريل هنا...</p>
-                        </div>
-                        
-                        <div class="reel-tags">
-                            <span class="tag">#ناردو</span>
-                            <span class="tag">#عروض</span>
-                        </div>
-                        
-                        <div class="reel-actions">
-                            <a href="#" target="_blank" class="btn-telegram">
-                                <i class="fab fa-telegram"></i> مشاهدة على تلجرام
-                            </a>
-                            <button class="btn-share" onclick="copyLink('#')">
-                                <i class="fas fa-share-alt"></i> مشاركة
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="reel-navigation">
-                        <button class="nav-reel prev" disabled>
-                            <i class="fas fa-chevron-right"></i> السابق
-                        </button>
-                        <button class="nav-reel next">
-                            التالي <i class="fas fa-chevron-left"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== إحصائيات الموقع (مخفية) ===== -->
-    <div style="display: none;" id="siteStats">
-        <span id="visitorCount">0</span>
-    </div>
-
-    <!-- ===== مكتبات خارجية ===== -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    
-    <script>
-        // تهيئة AOS فقط (بدون دوال وهمية)
-        document.addEventListener('DOMContentLoaded', function() {
-            AOS.init({
-                duration: 800,
-                once: true,
-                offset: 100
-            });
-        });
-    </script>
-
-    <!-- ===== ربط ملف JavaScript الرئيسي ===== -->
-    <script src="nardoo-pro.js"></script>
+    <!-- ===== ربط ملف JavaScript ===== -->
+    <script src="script.js"></script>
 </body>
 </html>
+
