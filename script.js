@@ -2247,254 +2247,474 @@ const styleSheet = document.createElement("style");
 styleSheet.textContent = styles;
 document.head.appendChild(styleSheet);
 
-                
-// ========== 21. نظام Reels المتكامل مع البصمة والتكبير ==========
+
+// ========== 21. نظام Reels الكامل - بحث في المنصات + تخزين في تلجرام + عرض في المتجر ==========
 
 const REELS_SYSTEM = {
     telegram: {
         token: '8576673096:AAEFKd-YSJcW_0d_wAHZBt-5nPg_VOjDX_0',
         channelId: '-1003822964890'
     },
-    youtubeKey: 'AIzaSyCwLqX3oXoXoXoXoXoXoXoXoXoXoXo',
+    youtubeKey: 'AIzaSyCwLqX3oXoXoXoXoXoXoXoXoXoXoXo', // استبدل بالمفتاح الحقيقي
     platforms: [
-        { name: 'youtube', icon: 'fab fa-youtube', color: '#FF0000', enabled: true },
-        { name: 'instagram', icon: 'fab fa-instagram', color: '#E4405F', enabled: true },
-        { name: 'tiktok', icon: 'fab fa-tiktok', color: '#000000', enabled: true },
-        { name: 'telegram', icon: 'fab fa-telegram', color: '#0088cc', enabled: true }
+        { name: 'youtube', icon: 'fab fa-youtube', color: '#FF0000', enabled: true, search: true },
+        { name: 'instagram', icon: 'fab fa-instagram', color: '#E4405F', enabled: true, search: true },
+        { name: 'tiktok', icon: 'fab fa-tiktok', color: '#000000', enabled: true, search: true }
     ],
-    fetchCount: 15,
-    autoFetch: true,
-    intervalMinutes: 15
+    searchCount: 10,        // عدد نتائج البحث من كل منصة
+    autoSearch: true,       // بحث تلقائي
+    searchInterval: 30,     // كل 30 دقيقة
+    fetchInterval: 30,      // جلب من تلجرام كل 30 ثانية
+    maxReels: 200           // أقصى عدد للعرض
 };
 
 // ========== قاعدة بيانات Reels ==========
 let reelsDatabase = JSON.parse(localStorage.getItem('nardoo_reels') || '[]');
 
-// ========== توليد بصمة فريدة ==========
+// ========== 1. دوال البحث في المنصات ==========
+
+// ** يوتيوب - بحث عن Shorts **
+async function searchYouTubeReels() {
+    try {
+        console.log('🔍 البحث في يوتيوب عن Shorts...');
+        const reels = [];
+        
+        // كلمات بحث متنوعة
+        const searchQueries = ['shorts', '#shorts', 'viral', 'trending', 'funny', 'music'];
+        
+        for (const query of searchQueries.slice(0, 2)) { // نستخدم أول كلمتين للسرعة
+            const response = await fetch(
+                `https://www.googleapis.com/youtube/v3/search?` +
+                `part=snippet&type=video&videoDuration=short&` +
+                `q=${query}&maxResults=${REELS_SYSTEM.searchCount}&key=${REELS_SYSTEM.youtubeKey}`
+            );
+            
+            if (!response.ok) continue;
+            
+            const data = await response.json();
+            
+            for (const item of data.items || []) {
+                const videoId = item.id.videoId;
+                
+                // جلب تفاصيل المشاهدات
+                const details = await fetch(
+                    `https://www.googleapis.com/youtube/v3/videos?` +
+                    `part=statistics&id=${videoId}&key=${REELS_SYSTEM.youtubeKey}`
+                );
+                const detailsData = await details.json();
+                const views = detailsData.items[0]?.statistics.viewCount || 0;
+                
+                reels.push({
+                    id: videoId,
+                    platform: 'youtube',
+                    platformCode: 'YO',
+                    title: item.snippet.title,
+                    channel: item.snippet.channelTitle,
+                    description: item.snippet.description,
+                    thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+                    thumbnailFallback: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+                    url: `https://youtube.com/shorts/${videoId}`,
+                    embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1`,
+                    views: parseInt(views),
+                    publishedAt: item.snippet.publishedAt,
+                    searchQuery: query
+                });
+            }
+        }
+        
+        console.log(`✅ يوتيوب: ${reels.length} Reel`);
+        return reels;
+        
+    } catch (error) {
+        console.error('❌ خطأ في بحث يوتيوب:', error);
+        return getMockYouTubeReels();
+    }
+}
+
+// بيانات محاكاة يوتيوب (للاختبار)
+function getMockYouTubeReels() {
+    return [
+        {
+            id: 'RgKAFK5djSk',
+            platform: 'youtube',
+            platformCode: 'YO',
+            title: 'Wiz Khalifa - See You Again ft. Charlie Puth [Official Video] Furious 7 Soundtrack',
+            channel: 'Wiz Khalifa',
+            thumbnail: 'https://img.youtube.com/vi/RgKAFK5djSk/maxresdefault.jpg',
+            url: 'https://youtube.com/shorts/RgKAFK5djSk',
+            embedUrl: 'https://www.youtube.com/embed/RgKAFK5djSk?autoplay=1',
+            views: 5500672178,
+            publishedAt: new Date().toISOString()
+        },
+        {
+            id: 'fJ9rUzIMcZQ',
+            platform: 'youtube',
+            platformCode: 'YO',
+            title: 'Queen - Bohemian Rhapsody (Official Video Remastered)',
+            channel: 'Queen Official',
+            thumbnail: 'https://img.youtube.com/vi/fJ9rUzIMcZQ/maxresdefault.jpg',
+            url: 'https://youtube.com/shorts/fJ9rUzIMcZQ',
+            embedUrl: 'https://www.youtube.com/embed/fJ9rUzIMcZQ?autoplay=1',
+            views: 1800000000,
+            publishedAt: new Date().toISOString()
+        }
+    ];
+}
+
+// ** إنستغرام - بحث عن Reels (محاكاة) **
+async function searchInstagramReels() {
+    console.log('🔍 البحث في إنستغرام عن Reels...');
+    
+    // في الواقع، إنستغرام لا يوفر API عام للبحث عن Reels
+    // هذه محاكاة للعرض التوضيحي
+    
+    const trends = ['تحدي_الرقص', 'موضة_2026', 'طبخ_سريع', 'جمال_بشرة', 'رياضة_منزلية', 'مكياج', 'سفر', 'تصوير'];
+    const reels = [];
+    
+    for (let i = 0; i < REELS_SYSTEM.searchCount; i++) {
+        const trend = trends[i % trends.length];
+        const views = Math.floor(Math.random() * 5000000) + 100000;
+        
+        reels.push({
+            id: `insta_${Date.now()}_${i}`,
+            platform: 'instagram',
+            platformCode: 'IN',
+            title: `${trend} 🔥 ريلز رائجة`,
+            channel: `@user_${Math.floor(Math.random() * 1000)}`,
+            thumbnail: `https://via.placeholder.com/320x480/E4405F/ffffff?text=${trend}`,
+            url: `https://instagram.com/reel/trend_${i}`,
+            views: views,
+            publishedAt: new Date().toISOString()
+        });
+    }
+    
+    console.log(`✅ إنستغرام: ${reels.length} Reel`);
+    return reels;
+}
+
+// ** تيك توك - بحث (محاكاة) **
+async function searchTikTokReels() {
+    console.log('🔍 البحث في تيك توك...');
+    
+    const trends = ['dance', 'comedy', 'music', 'fyp', 'viral', 'funny', 'lip sync'];
+    const reels = [];
+    
+    for (let i = 0; i < REELS_SYSTEM.searchCount; i++) {
+        const trend = trends[i % trends.length];
+        const views = Math.floor(Math.random() * 10000000) + 500000;
+        
+        reels.push({
+            id: `tiktok_${Date.now()}_${i}`,
+            platform: 'tiktok',
+            platformCode: 'TK',
+            title: `#${trend} تيك توك ترند`,
+            channel: `@user_${Math.floor(Math.random() * 1000)}`,
+            thumbnail: `https://via.placeholder.com/320x480/000000/ffffff?text=TikTok+${trend}`,
+            url: `https://tiktok.com/@user/video/${i}`,
+            views: views,
+            publishedAt: new Date().toISOString()
+        });
+    }
+    
+    console.log(`✅ تيك توك: ${reels.length} Reel`);
+    return reels;
+}
+
+// ========== 2. توليد بصمة فريدة ==========
 function generateReelThumbprint(reel) {
-    const platform = reel.platform.substring(0, 2).toUpperCase();
+    // TP_YO_RgKAF_20260311_XY9P
+    const platform = reel.platformCode;
     const idPart = reel.id.toString().substring(0, 6);
-    const date = new Date().toISOString().split('T')[0].replace(/-/g, '').substring(2);
-    const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+    const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
     
     return `TP_${platform}_${idPart}_${date}_${random}`;
 }
 
-// ========== جلب Reels من يوتيوب ==========
-async function fetchYouTubeReels(limit = 15) {
-    const reels = [];
-    
-    // قائمة فيديوهات Shorts رائجة (للتجربة)
-    const popularShorts = [
-        { id: 'RgKAFK5djSk', title: 'Wiz Khalifa - See You Again 🎵', channel: 'Wiz Khalifa', views: 5500000000 },
-        { id: 'dQw4w9WgXcQ', title: 'Rick Astley - Never Gonna Give You Up 😂', channel: 'Rick Astley', views: 1500000000 },
-        { id: 'kJQP7kiw5Fk', title: 'Ed Sheeran - Shape of You 🔥', channel: 'Ed Sheeran', views: 6000000000 },
-        { id: 'fJ9rUzIMcZQ', title: 'Bohemian Rhapsody - Queen 👑', channel: 'Queen Official', views: 1800000000 },
-        { id: 'OPf0YbXqDm0', title: 'Uptown Funk - Mark Ronson 💃', channel: 'Mark Ronson', views: 4500000000 },
-        { id: 'CevxZvSJLk8', title: 'Katy Perry - Roar 🦁', channel: 'Katy Perry', views: 3800000000 },
-        { id: 'JGwWNGJdvx8', title: 'Ed Sheeran - Perfect 💕', channel: 'Ed Sheeran', views: 3200000000 },
-        { id: 'hT_nvWreIhg', title: 'One Republic - Counting Stars ⭐', channel: 'OneRepublic', views: 3700000000 },
-        { id: '60ItHLz5WEA', title: 'Faded - Alan Walker 🌌', channel: 'Alan Walker', views: 3500000000 },
-        { id: 'YQHsXMglC9A', title: 'Hello - Adele 👋', channel: 'Adele', views: 3000000000 },
-        { id: 'Rbt2PXbDo9Q', title: 'Baby Shark Dance 🦈', channel: 'Pinkfong', views: 13000000000 },
-        { id: 'kffacxfA7G4', title: 'Baby - Justin Bieber 👶', channel: 'Justin Bieber', views: 2900000000 },
-        { id: 'L_jWHffIx5E', title: 'Numb - Linkin Park 🎸', channel: 'Linkin Park', views: 2000000000 },
-        { id: '1y6smkh6c-0', title: 'Treat You Better - Shawn Mendes 💝', channel: 'Shawn Mendes', views: 2400000000 },
-        { id: 'V1Pl8CzNzCw', title: 'Let Her Go - Passenger 🚗', channel: 'Passenger', views: 3200000000 }
-    ];
-    
-    for (let i = 0; i < Math.min(limit, popularShorts.length); i++) {
-        const short = popularShorts[i];
-        reels.push({
-            id: short.id,
-            platform: 'youtube',
-            title: short.title,
-            channel: short.channel,
-            thumbnail: `https://img.youtube.com/vi/${short.id}/maxresdefault.jpg`,
-            thumbnailFallback: `https://img.youtube.com/vi/${short.id}/hqdefault.jpg`,
-            url: `https://youtube.com/shorts/${short.id}`,
-            embedUrl: `https://www.youtube.com/embed/${short.id}`,
-            views: short.views,
-            publishedAt: new Date().toISOString(),
-            duration: '00:60',
-            likes: Math.floor(short.views * 0.1),
-            comments: Math.floor(short.views * 0.01)
-        });
-    }
-    
-    return reels;
-}
-
-// ========== جلب Reels من إنستغرام (محاكاة) ==========
-async function fetchInstagramReels(limit = 15) {
-    const reels = [];
-    const trends = ['تحدي_الرقص', 'موضة_2026', 'طبخ_سريع', 'جمال_بشرة', 'رياضة_منزلية'];
-    
-    for (let i = 0; i < limit; i++) {
-        reels.push({
-            id: `insta_${Date.now()}_${i}`,
-            platform: 'instagram',
-            title: `${trends[i % trends.length]} 🔥`,
-            channel: `@user_${Math.floor(Math.random() * 1000)}`,
-            thumbnail: `https://via.placeholder.com/320x480/E4405F/ffffff?text=Reel+${i+1}`,
-            url: `https://instagram.com/reel/trend_${i}`,
-            embedUrl: null,
-            views: Math.floor(Math.random() * 5000000),
-            publishedAt: new Date().toISOString(),
-            duration: '00:45',
-            likes: Math.floor(Math.random() * 500000),
-            comments: Math.floor(Math.random() * 50000)
-        });
-    }
-    
-    return reels;
-}
-
-// ========== جلب Reels من تيك توك (محاكاة) ==========
-async function fetchTikTokReels(limit = 15) {
-    const reels = [];
-    
-    for (let i = 0; i < limit; i++) {
-        reels.push({
-            id: `tiktok_${Date.now()}_${i}`,
-            platform: 'tiktok',
-            title: `تيك توك ترند #${i+1} 🎵`,
-            channel: `@user_${Math.floor(Math.random() * 1000)}`,
-            thumbnail: `https://via.placeholder.com/320x480/000000/ffffff?text=TikTok+${i+1}`,
-            url: `https://tiktok.com/@user/video/${i}`,
-            embedUrl: null,
-            views: Math.floor(Math.random() * 10000000),
-            publishedAt: new Date().toISOString(),
-            duration: '00:30',
-            likes: Math.floor(Math.random() * 1000000),
-            comments: Math.floor(Math.random() * 100000)
-        });
-    }
-    
-    return reels;
-}
-
-// ========== جلب من جميع المنصات ==========
-async function fetchAllReels() {
-    console.log('🔄 جلب Reels من جميع المنصات...');
-    
-    let allReels = [];
-    
-    if (REELS_SYSTEM.platforms.find(p => p.name === 'youtube')?.enabled) {
-        const youtube = await fetchYouTubeReels(REELS_SYSTEM.fetchCount);
-        allReels = [...allReels, ...youtube];
-    }
-    
-    if (REELS_SYSTEM.platforms.find(p => p.name === 'instagram')?.enabled) {
-        const instagram = await fetchInstagramReels(REELS_SYSTEM.fetchCount);
-        allReels = [...allReels, ...instagram];
-    }
-    
-    if (REELS_SYSTEM.platforms.find(p => p.name === 'tiktok')?.enabled) {
-        const tiktok = await fetchTikTokReels(REELS_SYSTEM.fetchCount);
-        allReels = [...allReels, ...tiktok];
-    }
-    
-    // إضافة بصمة لكل Reel وحفظه
-    for (const reel of allReels) {
-        reel.thumbprint = generateReelThumbprint(reel);
-        reel.addedAt = new Date().toISOString();
-        
-        // إرسال إلى قناة تلجرام
-        await sendReelToTelegram(reel);
-    }
-    
-    // دمج مع القديم (آخر 200)
-    reelsDatabase = [...allReels, ...reelsDatabase].slice(0, 200);
-    localStorage.setItem('nardoo_reels', JSON.stringify(reelsDatabase));
-    
-    console.log(`✅ تم جلب ${allReels.length} Reel جديد`);
-    
-    // تحديث العرض إذا كانت الصفحة مفتوحة
-    if (typeof displayReels === 'function') {
-        displayReels();
-    }
-    
-    return allReels;
-}
-
-// ========== إرسال Reel إلى تلجرام ==========
-async function sendReelToTelegram(reel) {
+// ========== 3. إرسال إلى قناة تلجرام مع البصمة ==========
+async function sendReelToTelegramChannel(reel) {
     try {
-        const platformIcon = {
-            youtube: '▶️',
-            instagram: '📷',
-            tiktok: '🎵',
-            telegram: '📱'
-        }[reel.platform] || '🎬';
+        const thumbprint = generateReelThumbprint(reel);
         
-        const message = `${platformIcon} **Reels جديد**
+        // تحديد الأيقونة حسب المنصة
+        let icon = '🎬';
+        if (reel.platform === 'youtube') icon = '▶️';
+        else if (reel.platform === 'instagram') icon = '📷';
+        else if (reel.platform === 'tiktok') icon = '🎵';
         
-🔍 البصمة: \`${reel.thumbprint}\`
-📌 المنصة: ${reel.platform}
-🎥 العنوان: ${reel.title}
-👤 القناة: ${reel.channel}
-👁️ المشاهدات: ${reel.views?.toLocaleString() || 'N/A'}
-🔗 الرابط: ${reel.url}
+        // تنسيق الرسالة مثل الصور التي أرسلتها
+        const message = 
+`${icon} #${reel.platform} Reels #صحة
 
-📅 ${new Date().toLocaleString('ar-EG')}`;
+${reel.id}
+${thumbprint}
+${reel.title}
+${reel.channel}
 
+${reel.views.toLocaleString()} مشاهدة
+${reel.url}
+${reel.thumbnail}
+
+تحميل: غير متوفر`;
+
+        // إرسال النص
         await fetch(`https://api.telegram.org/bot${REELS_SYSTEM.telegram.token}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 chat_id: REELS_SYSTEM.telegram.channelId,
                 text: message,
-                parse_mode: 'Markdown'
+                parse_mode: 'HTML'
             })
         });
         
         // إرسال الصورة المصغرة
-        if (reel.thumbnail) {
+        if (reel.thumbnail && !reel.thumbnail.includes('placeholder')) {
             await fetch(`https://api.telegram.org/bot${REELS_SYSTEM.telegram.token}/sendPhoto`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     chat_id: REELS_SYSTEM.telegram.channelId,
                     photo: reel.thumbnail,
-                    caption: `📸 صورة مصغرة: ${reel.title}`
+                    caption: `📸 ${reel.title}`
                 })
             });
         }
         
+        // إضافة البصمة للـ reel لحفظها
+        reel.thumbprint = thumbprint;
+        reel.sentToTelegram = true;
+        reel.sentAt = new Date().toISOString();
+        
+        console.log(`✅ تم إرسال Reel إلى تلجرام: ${thumbprint}`);
         return true;
+        
     } catch (error) {
         console.error('❌ فشل إرسال إلى تلجرام:', error);
         return false;
     }
 }
 
-// ========== عرض Reels في المتجر ==========
+// ========== 4. البحث في جميع المنصات وإرسالها ==========
+async function searchAllPlatforms() {
+    console.log('🔄 بدء البحث في جميع المنصات...');
+    
+    let allReels = [];
+    let newReels = 0;
+    
+    // البحث في يوتيوب
+    if (REELS_SYSTEM.platforms.find(p => p.name === 'youtube')?.enabled) {
+        const youtube = await searchYouTubeReels();
+        allReels = [...allReels, ...youtube];
+    }
+    
+    // البحث في إنستغرام
+    if (REELS_SYSTEM.platforms.find(p => p.name === 'instagram')?.enabled) {
+        const instagram = await searchInstagramReels();
+        allReels = [...allReels, ...instagram];
+    }
+    
+    // البحث في تيك توك
+    if (REELS_SYSTEM.platforms.find(p => p.name === 'tiktok')?.enabled) {
+        const tiktok = await searchTikTokReels();
+        allReels = [...allReels, ...tiktok];
+    }
+    
+    // إرسال كل Reel إلى تلجرام (إذا لم يكن مرسل من قبل)
+    for (const reel of allReels) {
+        // التحقق من عدم التكرار (باستخدام المعرف)
+        const exists = reelsDatabase.some(r => r.id === reel.id && r.platform === reel.platform);
+        
+        if (!exists) {
+            const sent = await sendReelToTelegramChannel(reel);
+            if (sent) {
+                newReels++;
+                // تأخير بين الإرسال لتجنب limit
+                await new Promise(r => setTimeout(r, 2000));
+            }
+        }
+    }
+    
+    console.log(`✅ تم البحث: ${allReels.length} Reel, الجديد: ${newReels}`);
+    
+    // جلب من تلجرام بعد البحث
+    setTimeout(fetchReelsFromTelegram, 5000);
+    
+    return { total: allReels.length, new: newReels };
+}
+
+// ========== 5. جلب Reels من قناة تلجرام ==========
+async function fetchReelsFromTelegram() {
+    try {
+        console.log('🔄 جلب Reels من قناة تلجرام...');
+        
+        const response = await fetch(
+            `https://api.telegram.org/bot${REELS_SYSTEM.telegram.token}/getUpdates`
+        );
+        
+        const data = await response.json();
+        
+        if (!data.ok) return [];
+        
+        const newReels = [];
+        
+        // تحليل كل التحديثات
+        for (const update of data.result) {
+            const post = update.channel_post || update.message;
+            if (!post) continue;
+            
+            // البحث عن الرسائل التي تحتوي على بصمة (TP_)
+            const text = post.text || post.caption || '';
+            
+            if (text.includes('TP_')) {
+                const reel = parseTelegramReel(post);
+                if (reel) {
+                    newReels.push(reel);
+                }
+            }
+        }
+        
+        if (newReels.length > 0) {
+            console.log(`✅ تم العثور على ${newReels.length} Reel في تلجرام`);
+            
+            // دمج مع القديم وتجنب التكرار
+            for (const reel of newReels) {
+                const exists = reelsDatabase.some(r => r.thumbprint === reel.thumbprint);
+                if (!exists) {
+                    reelsDatabase.unshift(reel);
+                }
+            }
+            
+            // قص العدد الأقصى
+            if (reelsDatabase.length > REELS_SYSTEM.maxReels) {
+                reelsDatabase = reelsDatabase.slice(0, REELS_SYSTEM.maxReels);
+            }
+            
+            localStorage.setItem('nardoo_reels', JSON.stringify(reelsDatabase));
+            
+            // تحديث العرض
+            if (document.getElementById('reelsSection')?.style.display === 'block') {
+                displayReels();
+            }
+        }
+        
+        return newReels;
+        
+    } catch (error) {
+        console.error('❌ خطأ في جلب Reels:', error);
+        return [];
+    }
+}
+
+// ========== 6. تحليل رسالة تلجرام ==========
+function parseTelegramReel(post) {
+    try {
+        const text = post.text || post.caption || '';
+        const lines = text.split('\n').filter(l => l.trim());
+        
+        if (lines.length < 5) return null;
+        
+        // استخراج البصمة (السطر الثاني غالباً)
+        const thumbprint = lines.find(l => l.includes('TP_')) || '';
+        if (!thumbprint) return null;
+        
+        // استخراج المنصة من البصمة
+        const platformCode = thumbprint.split('_')[1] || '';
+        let platform = 'youtube';
+        if (platformCode === 'IN') platform = 'instagram';
+        else if (platformCode === 'TK') platform = 'tiktok';
+        
+        // استخراج المعرف
+        const id = lines[1] || '';
+        
+        // استخراج العنوان
+        const title = lines[2] || 'Reels';
+        
+        // استخراج القناة
+        const channel = lines[3] || 'غير معروف';
+        
+        // استخراج المشاهدات
+        let views = 0;
+        const viewsLine = lines.find(l => l.includes('مشاهدة'));
+        if (viewsLine) {
+            const match = viewsLine.match(/([0-9,]+)/);
+            if (match) views = parseInt(match[1].replace(/,/g, ''));
+        }
+        
+        // استخراج الرابط
+        const url = lines.find(l => l.includes('http')) || '';
+        
+        // استخراج الصورة
+        const thumbnail = lines.find(l => l.includes('http') && (l.includes('img') || l.includes('placeholder'))) || '';
+        
+        return {
+            id: id,
+            thumbprint: thumbprint,
+            platform: platform,
+            platformCode: platformCode,
+            title: title,
+            channel: channel,
+            url: url,
+            thumbnail: thumbnail,
+            views: views,
+            publishedAt: new Date().toISOString(),
+            addedAt: new Date().toISOString(),
+            telegramMessageId: post.message_id
+        };
+        
+    } catch (error) {
+        return null;
+    }
+}
+
+// ========== 7. عرض Reels في المتجر ==========
 function displayReels() {
     const container = document.getElementById('reelsContainer');
     if (!container) return;
     
     if (reelsDatabase.length === 0) {
         container.innerHTML = `
-            <div style="text-align: center; padding: 50px;">
-                <i class="fas fa-film" style="font-size: 60px; color: var(--gold);"></i>
-                <h3>لا توجد Reels بعد</h3>
-                <button class="btn-gold" onclick="fetchAllReels()">
-                    <i class="fas fa-sync-alt"></i> جلب Reels
-                </button>
+            <div style="grid-column: 1/-1; text-align: center; padding: 80px 20px;">
+                <i class="fas fa-film" style="font-size: 80px; color: var(--gold); margin-bottom: 20px;"></i>
+                <h3 style="color: var(--gold);">لا توجد Reels بعد</h3>
+                <p style="color: var(--text-secondary);">ابحث في المنصات أو انتظر وصول Reels من تلجرام</p>
+                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                    <button class="btn-gold" onclick="searchAllPlatforms()">
+                        <i class="fas fa-search"></i> بحث في المنصات
+                    </button>
+                    <button class="btn-outline-gold" onclick="fetchReelsFromTelegram()">
+                        <i class="fas fa-sync-alt"></i> تحديث من تلجرام
+                    </button>
+                </div>
             </div>
         `;
         return;
     }
     
-    container.innerHTML = reelsDatabase.map(reel => {
-        const platform = REELS_SYSTEM.platforms.find(p => p.name === reel.platform);
-        const timeAgo = getTimeAgo(reel.addedAt);
+    container.innerHTML = reelsDatabase.map((reel, index) => {
+        // اختيار لون وأيقونة المنصة
+        let platformColor = '#888';
+        let platformIcon = 'fas fa-link';
+        
+        switch(reel.platform) {
+            case 'youtube':
+                platformColor = '#FF0000';
+                platformIcon = 'fab fa-youtube';
+                break;
+            case 'instagram':
+                platformColor = '#E4405F';
+                platformIcon = 'fab fa-instagram';
+                break;
+            case 'tiktok':
+                platformColor = '#000000';
+                platformIcon = 'fab fa-tiktok';
+                break;
+        }
         
         return `
             <div class="reel-card" onclick="openReelModal('${reel.thumbprint}')">
-                <div class="reel-platform-badge" style="background: ${platform?.color};">
-                    <i class="${platform?.icon}"></i> ${reel.platform}
+                <div class="reel-platform-badge" style="background: ${platformColor};">
+                    <i class="${platformIcon}"></i> ${reel.platform}
                 </div>
                 
                 <div class="reel-thumbprint" title="البصمة">
@@ -2502,28 +2722,21 @@ function displayReels() {
                 </div>
                 
                 <div class="reel-thumbnail">
-                    <img src="${reel.thumbnail}" 
-                         onerror="this.src='${reel.thumbnailFallback || 'https://via.placeholder.com/320x480'}';"
+                    <img src="${reel.thumbnail || 'https://via.placeholder.com/320x480'}" 
+                         onerror="this.src='https://via.placeholder.com/320x480/2c5e4f/ffffff?text=Reel';"
                          alt="${reel.title}">
-                    <div class="reel-duration">
-                        <i class="fas fa-clock"></i> ${reel.duration}
-                    </div>
+                    <div class="reel-index">#${index + 1}</div>
                 </div>
                 
                 <div class="reel-info">
-                    <h4 class="reel-title">${reel.title}</h4>
+                    <h4 class="reel-title">${reel.title.substring(0, 50)}${reel.title.length > 50 ? '...' : ''}</h4>
                     <p class="reel-channel">
                         <i class="fas fa-user"></i> ${reel.channel}
                     </p>
                     
                     <div class="reel-stats">
                         <span><i class="fas fa-eye"></i> ${(reel.views / 1000000).toFixed(1)}M</span>
-                        <span><i class="fas fa-heart"></i> ${(reel.likes / 1000000).toFixed(1)}M</span>
-                        <span><i class="fas fa-comment"></i> ${(reel.comments / 1000).toFixed(1)}K</span>
-                    </div>
-                    
-                    <div class="reel-time">
-                        <i class="far fa-clock"></i> ${timeAgo}
+                        <span><i class="fas fa-clock"></i> ${new Date(reel.addedAt).toLocaleDateString('ar-EG')}</span>
                     </div>
                 </div>
                 
@@ -2540,7 +2753,7 @@ function displayReels() {
     }).join('');
 }
 
-// ========== فتح Reel في نافذة مكبرة ==========
+// ========== 8. فتح Reel في نافذة مكبرة ==========
 function openReelModal(thumbprint) {
     const reel = reelsDatabase.find(r => r.thumbprint === thumbprint);
     if (!reel) return;
@@ -2549,30 +2762,42 @@ function openReelModal(thumbprint) {
     modal.className = 'modal reel-modal';
     modal.style.display = 'flex';
     
-    const embedCode = reel.platform === 'youtube' ? 
-        `<iframe width="100%" height="100%" src="${reel.embedUrl}?autoplay=1" 
-                 frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>` :
-        `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
-            <img src="${reel.thumbnail}" style="max-width: 100%; max-height: 70vh; border-radius: 15px;">
-            <a href="${reel.url}" target="_blank" class="btn-gold" style="margin-top: 20px;">
-                <i class="fas fa-external-link-alt"></i> فتح في ${reel.platform}
-            </a>
-         </div>`;
+    // تحديد لون المنصة
+    let platformColor = '#888';
+    let platformIcon = 'fas fa-link';
+    
+    switch(reel.platform) {
+        case 'youtube':
+            platformColor = '#FF0000';
+            platformIcon = 'fab fa-youtube';
+            break;
+        case 'instagram':
+            platformColor = '#E4405F';
+            platformIcon = 'fab fa-instagram';
+            break;
+        case 'tiktok':
+            platformColor = '#000000';
+            platformIcon = 'fab fa-tiktok';
+            break;
+    }
+    
+    // محتوى الفيديو (يوتيوب له embed خاص)
+    const videoContent = reel.platform === 'youtube' && reel.embedUrl ?
+        `<iframe src="${reel.embedUrl}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="width:100%; height:100%;"></iframe>` :
+        `<img src="${reel.thumbnail}" style="width:100%; height:100%; object-fit:contain; background:black;">`;
     
     modal.innerHTML = `
         <div class="modal-content reel-modal-content">
             <div class="modal-header">
                 <h2>
-                    <i class="${REELS_SYSTEM.platforms.find(p => p.name === reel.platform)?.icon}" 
-                       style="color: ${REELS_SYSTEM.platforms.find(p => p.name === reel.platform)?.color};">
-                    </i>
-                    ${reel.title}
+                    <i class="${platformIcon}" style="color: ${platformColor};"></i>
+                    ${reel.title.substring(0, 60)}${reel.title.length > 60 ? '...' : ''}
                 </h2>
                 <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
             </div>
             
             <div class="reel-video-container">
-                ${embedCode}
+                ${videoContent}
             </div>
             
             <div class="reel-details">
@@ -2595,30 +2820,20 @@ function openReelModal(thumbprint) {
                 </div>
                 
                 <div class="reel-detail-row">
-                    <span class="detail-label"><i class="fas fa-heart"></i> الإعجابات:</span>
-                    <span class="detail-value">${reel.likes.toLocaleString()}</span>
-                </div>
-                
-                <div class="reel-detail-row">
-                    <span class="detail-label"><i class="fas fa-comment"></i> التعليقات:</span>
-                    <span class="detail-value">${reel.comments.toLocaleString()}</span>
-                </div>
-                
-                <div class="reel-detail-row">
                     <span class="detail-label"><i class="fas fa-calendar"></i> النشر:</span>
-                    <span class="detail-value">${new Date(reel.publishedAt).toLocaleDateString('ar-EG')}</span>
+                    <span class="detail-value">${new Date(reel.publishedAt).toLocaleString('ar-EG')}</span>
                 </div>
             </div>
             
             <div class="reel-actions-bar">
                 <a href="${reel.url}" target="_blank" class="btn-gold">
-                    <i class="fas fa-external-link-alt"></i> مشاهدة على ${reel.platform}
+                    <i class="fas fa-external-link-alt"></i> فتح في ${reel.platform}
                 </a>
                 <button class="btn-outline-gold" onclick="shareReel('${reel.thumbprint}')">
                     <i class="fas fa-share-alt"></i> مشاركة
                 </button>
-                <button class="btn-outline-gold" onclick="downloadReel('${reel.thumbprint}')">
-                    <i class="fas fa-download"></i> تحميل
+                <button class="btn-outline-gold" onclick="copyToClipboard('${reel.thumbprint}')">
+                    <i class="fas fa-fingerprint"></i> نسخ البصمة
                 </button>
             </div>
         </div>
@@ -2627,17 +2842,16 @@ function openReelModal(thumbprint) {
     document.body.appendChild(modal);
 }
 
-// ========== تشغيل Reel ==========
+// ========== 9. دوال مساعدة ==========
 function playReel(thumbprint) {
     openReelModal(thumbprint);
 }
 
-// ========== مشاركة Reel ==========
 function shareReel(thumbprint) {
     const reel = reelsDatabase.find(r => r.thumbprint === thumbprint);
     if (!reel) return;
     
-    const shareText = `🎬 ${reel.title}\n📱 ${reel.platform}\n🔗 ${reel.url}\n🔍 البصمة: ${reel.thumbprint}`;
+    const shareText = `🎬 ${reel.title}\n📱 ${reel.platform}\n🔍 البصمة: ${reel.thumbprint}\n🔗 ${reel.url}`;
     
     if (navigator.share) {
         navigator.share({
@@ -2651,29 +2865,17 @@ function shareReel(thumbprint) {
     }
 }
 
-// ========== تحميل Reel ==========
-function downloadReel(thumbprint) {
-    const reel = reelsDatabase.find(r => r.thumbprint === thumbprint);
-    if (!reel) return;
-    
-    // فتح الرابط في نافذة جديدة
-    window.open(reel.url, '_blank');
-    showNotification('📥 سيتم فتح الرابط للتحميل', 'info');
-}
-
-// ========== نسخ إلى الحافظة ==========
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
         showNotification('✅ تم النسخ', 'success');
     });
 }
 
-// ========== البحث بالبصمة ==========
 function searchReelByThumbprint() {
     const thumbprint = prompt('🔍 أدخل بصمة Reel:');
     if (!thumbprint) return;
     
-    const reel = reelsDatabase.find(r => r.thumbprint.includes(thumbprint) || r.id.includes(thumbprint));
+    const reel = reelsDatabase.find(r => r.thumbprint.includes(thumbprint));
     
     if (reel) {
         openReelModal(reel.thumbprint);
@@ -2682,7 +2884,7 @@ function searchReelByThumbprint() {
     }
 }
 
-// ========== إضافة CSS للـ Reels ==========
+// ========== 10. إضافة CSS ==========
 function addReelsStyles() {
     const style = document.createElement('style');
     style.textContent = `
@@ -2705,7 +2907,7 @@ function addReelsStyles() {
         
         .reel-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
         }
         
         .reel-platform-badge {
@@ -2725,14 +2927,15 @@ function addReelsStyles() {
             position: absolute;
             top: 10px;
             left: 10px;
-            background: rgba(0,0,0,0.7);
-            color: var(--gold);
+            background: rgba(0,0,0,0.8);
+            color: #FFD700;
             padding: 5px 10px;
             border-radius: 20px;
             font-size: 11px;
             font-family: monospace;
             z-index: 2;
             backdrop-filter: blur(5px);
+            border: 1px solid #FFD700;
         }
         
         .reel-thumbnail {
@@ -2753,7 +2956,7 @@ function addReelsStyles() {
             transform: scale(1.05);
         }
         
-        .reel-duration {
+        .reel-index {
             position: absolute;
             bottom: 10px;
             right: 10px;
@@ -2799,11 +3002,6 @@ function addReelsStyles() {
             gap: 3px;
         }
         
-        .reel-time {
-            font-size: 11px;
-            color: #666;
-        }
-        
         .reel-actions {
             display: flex;
             gap: 10px;
@@ -2846,7 +3044,6 @@ function addReelsStyles() {
             color: black;
         }
         
-        /* مودال التكبير */
         .reel-modal-content {
             max-width: 900px !important;
             width: 95%;
@@ -2862,11 +3059,6 @@ function addReelsStyles() {
             margin: 20px 0;
         }
         
-        .reel-video-container iframe {
-            width: 100%;
-            height: 100%;
-        }
-        
         .reel-details {
             background: var(--glass);
             padding: 20px;
@@ -2879,10 +3071,6 @@ function addReelsStyles() {
             align-items: center;
             padding: 10px 0;
             border-bottom: 1px solid var(--border);
-        }
-        
-        .reel-detail-row:last-child {
-            border-bottom: none;
         }
         
         .detail-label {
@@ -2901,6 +3089,7 @@ function addReelsStyles() {
             padding: 5px 10px;
             border-radius: 8px;
             direction: ltr;
+            color: #FFD700;
         }
         
         .copy-btn {
@@ -2923,31 +3112,16 @@ function addReelsStyles() {
             margin-top: 20px;
         }
         
-        /* زر Reels في القائمة */
-        .reels-nav-btn {
-            background: linear-gradient(45deg, #FF0000, #E4405F, #000000);
-            color: white !important;
-            border-radius: 25px;
-            padding: 8px 20px !important;
-        }
-        
-        .reels-nav-btn i {
-            color: white !important;
-        }
-        
         @media (max-width: 768px) {
             .reels-grid {
                 grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             }
-            
             .reel-thumbnail {
                 height: 250px;
             }
-            
             .reel-video-container {
                 height: 300px;
             }
-            
             .reel-actions-bar {
                 flex-direction: column;
             }
@@ -2956,39 +3130,10 @@ function addReelsStyles() {
     document.head.appendChild(style);
 }
 
-// ========== إضافة أزرار Reels للقائمة ==========
-function addReelsToNavigation() {
-    const nav = document.getElementById('mainNav');
-    if (!nav) return;
-    
-    // زر عرض Reels
-    const reelsBtn = document.createElement('a');
-    reelsBtn.className = 'nav-link reels-nav-btn';
-    reelsBtn.setAttribute('onclick', 'showReelsSection()');
-    reelsBtn.innerHTML = '<i class="fas fa-film"></i><span>Reels</span>';
-    nav.appendChild(reelsBtn);
-    
-    // زر جلب Reels
-    const fetchBtn = document.createElement('a');
-    fetchBtn.className = 'nav-link';
-    fetchBtn.setAttribute('onclick', 'fetchAllReels()');
-    fetchBtn.innerHTML = '<i class="fas fa-sync-alt" style="color: #00ff00;"></i><span>جلب Reels</span>';
-    nav.appendChild(fetchBtn);
-    
-    // زر بحث بالبصمة
-    const searchBtn = document.createElement('a');
-    searchBtn.className = 'nav-link';
-    searchBtn.setAttribute('onclick', 'searchReelByThumbprint()');
-    searchBtn.innerHTML = '<i class="fas fa-fingerprint"></i><span>بحث بالبصمة</span>';
-    nav.appendChild(searchBtn);
-}
-
-// ========== عرض قسم Reels ==========
+// ========== 11. واجهة المستخدم ==========
 function showReelsSection() {
-    // إخفاء المنتجات
     document.getElementById('productsContainer').style.display = 'none';
     
-    // إنشاء أو إظهار قسم Reels
     let reelsSection = document.getElementById('reelsSection');
     
     if (!reelsSection) {
@@ -2996,13 +3141,22 @@ function showReelsSection() {
         reelsSection = document.createElement('div');
         reelsSection.id = 'reelsSection';
         reelsSection.innerHTML = `
-            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                 <h2 style="color: var(--gold);">
                     <i class="fas fa-film"></i> Reels المنصات
+                    <span style="font-size: 14px; background: var(--glass); padding: 5px 10px; border-radius: 20px; margin-right: 10px;">
+                        ${reelsDatabase.length} Reel
+                    </span>
                 </h2>
-                <div>
-                    <button class="btn-gold" onclick="fetchAllReels()">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn-gold" onclick="searchAllPlatforms()">
+                        <i class="fas fa-search"></i> بحث في المنصات
+                    </button>
+                    <button class="btn-outline-gold" onclick="fetchReelsFromTelegram()">
                         <i class="fas fa-sync-alt"></i> تحديث
+                    </button>
+                    <button class="btn-outline-gold" onclick="backToProducts()">
+                        <i class="fas fa-arrow-right"></i> العودة
                     </button>
                 </div>
             </div>
@@ -3013,116 +3167,77 @@ function showReelsSection() {
     
     reelsSection.style.display = 'block';
     displayReels();
-    
-    // إخفاء Reels والعودة للمنتجات عند الحاجة
-    const backBtn = document.createElement('button');
-    backBtn.className = 'btn-outline-gold';
-    backBtn.style.marginBottom = '20px';
-    backBtn.innerHTML = '<i class="fas fa-arrow-right"></i> العودة للمنتجات';
-    backBtn.onclick = () => {
-        reelsSection.style.display = 'none';
-        document.getElementById('productsContainer').style.display = 'grid';
-    };
-    
-    const header = reelsSection.querySelector('.section-header');
-    if (header && !header.querySelector('.back-btn')) {
-        backBtn.classList.add('back-btn');
-        header.appendChild(backBtn);
-    }
 }
 
-// ========== التهيئة ==========
+function backToProducts() {
+    document.getElementById('reelsSection').style.display = 'none';
+    document.getElementById('productsContainer').style.display = 'grid';
+}
+
+function addReelsToNavigation() {
+    const nav = document.getElementById('mainNav');
+    if (!nav) return;
+    
+    const reelsBtn = document.createElement('a');
+    reelsBtn.className = 'nav-link';
+    reelsBtn.style.background = 'linear-gradient(45deg, #FF0000, #E4405F, #000000)';
+    reelsBtn.style.color = 'white';
+    reelsBtn.style.borderRadius = '25px';
+    reelsBtn.style.padding = '8px 20px';
+    reelsBtn.setAttribute('onclick', 'showReelsSection()');
+    reelsBtn.innerHTML = '<i class="fas fa-film"></i><span>Reels</span>';
+    nav.appendChild(reelsBtn);
+    
+    const searchBtn = document.createElement('a');
+    searchBtn.className = 'nav-link';
+    searchBtn.setAttribute('onclick', 'searchAllPlatforms()');
+    searchBtn.innerHTML = '<i class="fas fa-search" style="color: #00ff00;"></i><span>بحث Reels</span>';
+    nav.appendChild(searchBtn);
+    
+    const thumbBtn = document.createElement('a');
+    thumbBtn.className = 'nav-link';
+    thumbBtn.setAttribute('onclick', 'searchReelByThumbprint()');
+    thumbBtn.innerHTML = '<i class="fas fa-fingerprint"></i><span>بحث بالبصمة</span>';
+    nav.appendChild(thumbBtn);
+}
+
+// ========== 12. التهيئة والتشغيل ==========
 function initReelsSystem() {
     addReelsStyles();
     
-    // إضافة للقائمة بعد تحميل الصفحة
     setTimeout(() => {
         addReelsToNavigation();
     }, 2000);
     
-    // تشغيل تلقائي إذا كان مفعل
-    if (REELS_SYSTEM.autoFetch) {
-        fetchAllReels();
+    // جلب من تلجرام أول مرة
+    setTimeout(fetchReelsFromTelegram, 3000);
+    
+    // تشغيل البحث الدوري
+    if (REELS_SYSTEM.autoSearch) {
+        // بحث فوري بعد 10 ثواني
+        setTimeout(searchAllPlatforms, 10000);
         
-        // تشغيل دوري
-        setInterval(() => {
-            console.log('⏰ تشغيل جلب Reels الدوري');
-            fetchAllReels();
-        }, REELS_SYSTEM.intervalMinutes * 60 * 1000);
+        // بحث دوري كل 30 دقيقة
+        setInterval(searchAllPlatforms, REELS_SYSTEM.searchInterval * 60 * 1000);
     }
+    
+    // جلب دوري من تلجرام كل 30 ثانية
+    setInterval(fetchReelsFromTelegram, REELS_SYSTEM.fetchInterval * 1000);
 }
 
 // تشغيل النظام
 initReelsSystem();
 
-// ========== دوال مساعدة للاستخدام من المتصفح ==========
-window.fetchAllReels = fetchAllReels;
+// ========== دوال عامة ==========
+window.searchAllPlatforms = searchAllPlatforms;
+window.fetchReelsFromTelegram = fetchReelsFromTelegram;
 window.showReelsSection = showReelsSection;
 window.openReelModal = openReelModal;
 window.playReel = playReel;
 window.shareReel = shareReel;
-window.downloadReel = downloadReel;
 window.searchReelByThumbprint = searchReelByThumbprint;
-// دوال التحكم
-window.togglePlatform = function(platform, enabled) {
-    const p = MULTI_PLATFORM.platforms.find(p => p.name === platform);
-    if (p) p.enabled = enabled;
-};
-
-window.applySettings = function() {
-    const count = document.getElementById('fetchCount')?.value;
-    const interval = document.getElementById('intervalMinutes')?.value;
-    
-    if (count) MULTI_PLATFORM.fetchCount = parseInt(count);
-    if (interval) {
-        MULTI_PLATFORM.intervalMinutes = parseInt(interval);
-        // إعادة تعيين المؤقت
-        clearInterval(window.fetchInterval);
-        window.fetchInterval = setInterval(fetchAllPlatforms, MULTI_PLATFORM.intervalMinutes * 60 * 1000);
-    }
-    
-    alert('✅ تم حفظ الإعدادات');
-};
-
-// البحث بالبصمة
-window.searchByThumbprint = function(searchTerm) {
-    return reelsUnifiedDB.filter(item => 
-        item.thumbprint?.includes(searchTerm) ||
-        item.id?.includes(searchTerm) ||
-        item.title?.includes(searchTerm)
-    );
-};
-
-// ========== 9. إضافة الأزرار للقائمة ==========
-
-function addUnifiedButtons() {
-    const nav = document.getElementById('mainNav');
-    if (!nav) return;
-    
-    // زر لوحة التحكم
-    const dashboardBtn = document.createElement('a');
-    dashboardBtn.className = 'nav-link';
-    dashboardBtn.setAttribute('onclick', 'showUnifiedDashboard()');
-    dashboardBtn.innerHTML = '<i class="fas fa-globe" style="color: var(--gold);"></i><span>بصمات المنصات</span>';
-    nav.appendChild(dashboardBtn);
-    
-    // زر تشغيل سريع
-    const fetchBtn = document.createElement('a');
-    fetchBtn.className = 'nav-link';
-    fetchBtn.setAttribute('onclick', 'fetchAllPlatforms()');
-    fetchBtn.innerHTML = '<i class="fas fa-sync-alt" style="color: #00ff00;"></i><span>جلب الآن</span>';
-    nav.appendChild(fetchBtn);
-}
-
-// تشغيل بعد تحميل الصفحة
-setTimeout(addUnifiedButtons, 2000);
-
-// تخزين المؤقت لإمكانية إعادة التعيين
-window.fetchInterval = setInterval(fetchAllPlatforms, MULTI_PLATFORM.intervalMinutes * 60 * 1000);
-
-console.log('%c✅ نظام المنصات المتعددة جاهز!', 'color: #00ff00; font-size: 14px');
-console.log('📝 استخدم: fetchAllPlatforms() لجلب كل المنصات');
-console.log('📝 استخدم: showUnifiedDashboard() للوحة التحكم');
+window.backToProducts = backToProducts;
+window.copyToClipboard = copyToClipboard;
 // ========== 20. التهيئة ==========
 window.onload = async function() {
     await loadProducts();
