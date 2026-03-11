@@ -1,4 +1,4 @@
-// ========== ناردو برو - النظام النهائي المتكامل مع Reels ريان ==========
+// ========== ناردو برو - النظام النهائي المتكامل مع ريلز ريان ==========
 
 // ========== 1. إعدادات تلجرام ==========
 const TELEGRAM = {
@@ -78,25 +78,7 @@ function loadUsers() {
 }
 loadUsers();
 
-// ========== 4. دوال المساعدة والإشعارات ==========
-function showNotification(message, type = 'info') {
-    let container = document.getElementById('toastContainer');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'toastContainer';
-        container.className = 'toast-container';
-        document.body.appendChild(container);
-    }
-    
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `<div class="toast-message">${message}</div>`;
-    container.appendChild(toast);
-    
-    setTimeout(() => toast.remove(), 3000);
-}
-
-// ========== 5. إضافة منتج إلى تلجرام ==========
+// ========== 4. إضافة منتج إلى تلجرام ==========
 async function addProductToTelegram(product, imageFile) {
     try {
         const formData = new FormData();
@@ -145,7 +127,7 @@ async function addProductToTelegram(product, imageFile) {
     }
 }
 
-// ========== 6. جلب المنتجات من تلجرام ==========
+// ========== 5. جلب المنتجات من تلجرام ==========
 async function loadProductsFromTelegram() {
     try {
         console.log('🔄 جاري جلب المنتجات من تلجرام...');
@@ -155,7 +137,7 @@ async function loadProductsFromTelegram() {
         );
         
         const data = await response.json();
-        const productsList = [];
+        const products = [];
         
         if (data.ok && data.result) {
             const updates = [...data.result].reverse();
@@ -211,7 +193,7 @@ async function loadProductsFromTelegram() {
                 if (fileData.ok) {
                     const imageUrl = `https://api.telegram.org/file/bot${TELEGRAM.botToken}/${fileData.result.file_path}`;
                     
-                    productsList.push({
+                    products.push({
                         id: productId,
                         name: name,
                         price: price,
@@ -230,10 +212,10 @@ async function loadProductsFromTelegram() {
             }
         }
         
-        console.log(`✅ تم تحميل ${productsList.length} منتج من تلجرام`);
-        localStorage.setItem('nardoo_products', JSON.stringify(productsList));
+        console.log(`✅ تم تحميل ${products.length} منتج من تلجرام`);
+        localStorage.setItem('nardoo_products', JSON.stringify(products));
         
-        return productsList;
+        return products;
         
     } catch (error) {
         console.error('❌ خطأ في جلب المنتجات:', error);
@@ -242,7 +224,7 @@ async function loadProductsFromTelegram() {
     }
 }
 
-// ========== 7. حفظ المنتج ==========
+// ========== 6. حفظ المنتج ==========
 async function saveProduct() {
     if (!currentUser) {
         showNotification('يجب تسجيل الدخول', 'error');
@@ -327,7 +309,7 @@ async function saveProduct() {
     }
 }
 
-// ========== 8. البحث عن منتج بالمعرف ==========
+// ========== 7. البحث عن منتج بالمعرف ==========
 function findProductById() {
     const id = prompt('🔍 أدخل معرف المنتج:');
     if (!id) return;
@@ -352,6 +334,36 @@ function findProductById() {
     } else {
         alert('❌ لا يوجد منتج بهذا المعرف');
     }
+}
+
+// ========== 8. دوال المساعدة والإشعارات ==========
+function showNotification(message, type = 'info') {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<div class="toast-message">${message}</div>`;
+    container.appendChild(toast);
+    
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function toggleTheme() {
+    isDarkMode = !isDarkMode;
+    document.body.classList.toggle('light-mode', !isDarkMode);
+    const toggle = document.getElementById('themeToggle');
+    if (toggle) {
+        toggle.innerHTML = isDarkMode ? 
+            '<i class="fas fa-moon"></i><span>ليلي</span>' : 
+            '<i class="fas fa-sun"></i><span>نهاري</span>';
+    }
+    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
 }
 
 // ========== 9. دوال الوقت والفرز ==========
@@ -468,13 +480,13 @@ function displayProducts() {
                     
                     <h3 class="product-title">${product.name}</h3>
                     
-                    <div class="product-merchant-info">
+                    <div class="product-merchant-info" style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
                         <i class="fas fa-store"></i> ${product.merchantName}
                     </div>
                     
-                    <div class="product-telegram">
+                    <div class="product-telegram" style="display: flex; align-items: center; gap: 5px; margin-bottom: 10px; color: #0088cc;">
                         <i class="fab fa-telegram"></i>
-                        <a href="https://t.me/${telegramUsername.replace('@', '')}" target="_blank" onclick="event.stopPropagation()">
+                        <a href="https://t.me/${telegramUsername.replace('@', '')}" target="_blank" style="color: #0088cc; text-decoration: none;" onclick="event.stopPropagation()">
                             ${telegramUsername}
                         </a>
                     </div>
@@ -489,12 +501,12 @@ function displayProducts() {
                     <div class="product-price">${product.price.toLocaleString()} <small>دج</small></div>
                     <div class="product-stock ${stockClass}">${stockText}</div>
                     
-                    <div class="product-actions" onclick="event.stopPropagation()">
+                    <div class="product-actions" onclick="event.stopPropagation()" style="display: flex; gap: 10px;">
                         <button class="add-to-cart" onclick="addToCart(${product.id})" ${product.stock <= 0 ? 'disabled' : ''}>
                             <i class="fas fa-shopping-cart"></i> أضف للسلة
                         </button>
-                        <button class="btn-telegram" onclick="window.open('https://t.me/${telegramUsername.replace('@', '')}', '_blank')">
-                            <i class="fab fa-telegram"></i>
+                        <button class="btn-telegram" onclick="window.open('https://t.me/${telegramUsername.replace('@', '')}', '_blank')" style="background: #0088cc; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer;">
+                            <i class="fab fa-telegram"></i> تواصل
                         </button>
                     </div>
                 </div>
@@ -689,12 +701,93 @@ async function checkoutCart() {
         createdAt: new Date().toISOString()
     };
 
-    showNotification('✅ تم إرسال الطلب بنجاح، سيتم التواصل معك قريباً', 'success');
-    
+    // تجميع الطلبات حسب التاجر
+    const ordersByMerchant = {};
+    cart.forEach(item => {
+        if (!ordersByMerchant[item.merchantName]) {
+            ordersByMerchant[item.merchantName] = {
+                merchantTelegram: item.merchantTelegram,
+                items: []
+            };
+        }
+        ordersByMerchant[item.merchantName].items.push(item);
+    });
+
+    // إرسال إشعار لكل تاجر
+    for (const [merchantName, merchantData] of Object.entries(ordersByMerchant)) {
+        const merchantItems = merchantData.items;
+        const merchantTotal = merchantItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        
+        const message = `🟢 **طلب جديد**
+        
+👤 الزبون: ${order.customerName}
+📞 الهاتف: ${order.customerPhone}
+📍 العنوان: ${order.customerAddress}
+🏪 التاجر: ${merchantName}
+
+📦 **المنتجات:**
+${merchantItems.map(i => `  • ${i.name} x${i.quantity} = ${i.price * i.quantity} دج`).join('\n')}
+
+💰 إجمالي الطلب: ${merchantTotal} دج
+➕ تكلفة التوصيل: ${shipping} دج
+💵 الإجمالي الكلي: ${merchantTotal + shipping} دج
+
+🆔 رقم الطلب: ${order.orderId}
+📅 التاريخ: ${new Date().toLocaleString('ar-EG')}
+
+✅ سيتم التواصل معك قريباً`;
+
+        if (merchantData.merchantTelegram) {
+            try {
+                await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: merchantData.merchantTelegram.replace('@', ''),
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                });
+            } catch (error) {
+                console.error('❌ فشل إرسال إشعار للتاجر:', error);
+            }
+        }
+    }
+
+    // إرسال إشعار للقناة
+    const channelMessage = `🟢 **طلب جديد في المتجر**
+        
+👤 الزبون: ${order.customerName}
+📞 الهاتف: ${order.customerPhone}
+📍 العنوان: ${order.customerAddress}
+
+📦 **المنتجات:**
+${order.items.map(i => `  • ${i.name} x${i.quantity} = ${i.price * i.quantity} دج (${i.merchantName})`).join('\n')}
+
+💰 الإجمالي: ${order.total} دج
+🆔 رقم الطلب: ${order.orderId}`;
+
+    await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: TELEGRAM.channelId,
+            text: channelMessage,
+            parse_mode: 'Markdown'
+        })
+    });
+
+    // حفظ الطلب
+    const orders = JSON.parse(localStorage.getItem('nardoo_orders') || '[]');
+    orders.push(order);
+    localStorage.setItem('nardoo_orders', JSON.stringify(orders));
+
     cart = [];
     saveCart();
     updateCartCounter();
     toggleCart();
+    
+    showNotification('✅ تم إرسال الطلب بنجاح، سيتم التواصل معك قريباً', 'success');
 }
 
 // ========== 13. دوال التمرير ==========
@@ -769,6 +862,9 @@ function viewProductDetails(productId) {
                         <button class="btn-telegram" onclick="window.open('https://t.me/${telegramUsername.replace('@', '')}', '_blank')">
                             <i class="fab fa-telegram"></i> تواصل مع التاجر
                         </button>
+                        <button class="btn-outline-gold" onclick="closeModal('productDetailModal')">
+                            إغلاق
+                        </button>
                     </div>
                 </div>
             </div>
@@ -813,10 +909,12 @@ function handleLogin() {
         console.log('✅ تم تسجيل الدخول:', user);
     } else {
         showNotification('❌ بيانات غير صحيحة', 'error');
+        console.log('❌ فشل تسجيل الدخول:', { email, password });
     }
 }
 
-function handleRegister() {
+// ========== تسجيل مستخدم جديد مع أزرار التليجرام ==========
+async function handleRegister() {
     const name = document.getElementById('regName').value;
     const email = document.getElementById('regEmail').value;
     const password = document.getElementById('regPassword').value;
@@ -853,6 +951,7 @@ function handleRegister() {
         
         showNotification('🔄 جاري إرسال طلب التسجيل...', 'info');
         
+        // ✅ إرسال إشعار إلى التليجرام مع أزرار الموافقة/الرفض
         const message = `🆕 **طلب تاجر جديد**
         
 🆔 المعرف: ${newUser.id}
@@ -866,15 +965,50 @@ function handleRegister() {
 
 🔍 للموافقة أو الرفض:`;
 
-        fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: TELEGRAM.channelId,
-                text: message,
-                parse_mode: 'Markdown'
-            })
-        }).catch(error => console.log('خطأ في الإرسال:', error));
+        try {
+            const response = await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: TELEGRAM.channelId,
+                    text: message,
+                    parse_mode: 'Markdown',
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                { 
+                                    text: "✅ موافقة", 
+                                    callback_data: `approve_${newUser.id}` 
+                                },
+                                { 
+                                    text: "❌ رفض", 
+                                    callback_data: `reject_${newUser.id}` 
+                                }
+                            ],
+                            [
+                                {
+                                    text: "👤 عرض التفاصيل",
+                                    callback_data: `details_${newUser.id}`
+                                }
+                            ]
+                        ]
+                    }
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.ok) {
+                showNotification('✅ تم إرسال طلب التسجيل للمدير مع أزرار الموافقة', 'success');
+                console.log('✅ تم إرسال إشعار التاجر مع الأزرار:', data);
+            } else {
+                showNotification('⚠️ تم التسجيل لكن فشل إرسال الإشعار', 'warning');
+                console.log('❌ فشل إرسال الإشعار:', data);
+            }
+        } catch (error) {
+            console.log('خطأ في الإرسال:', error);
+            showNotification('⚠️ تم التسجيل لكن فشل الاتصال', 'warning');
+        }
     } else {
         showNotification('✅ تم التسجيل بنجاح', 'success');
     }
@@ -885,6 +1019,190 @@ function handleRegister() {
     document.getElementById('registerForm').reset();
     switchAuthTab('login');
 }
+
+// ========== معالجة الأزرار من التليجرام ==========
+async function handleTelegramCallbacks() {
+    try {
+        const response = await fetch(
+            `https://api.telegram.org/bot${TELEGRAM.botToken}/getUpdates`
+        );
+        const data = await response.json();
+        
+        if (data.ok && data.result) {
+            for (const update of data.result) {
+                // التحقق من وجود ضغطة زر
+                if (update.callback_query) {
+                    const callback = update.callback_query;
+                    const data = callback.data;
+                    const chatId = callback.message.chat.id;
+                    const messageId = callback.message.message_id;
+                    
+                    // استخراج المعرف والفعل
+                    if (data.startsWith('approve_')) {
+                        const merchantId = parseInt(data.replace('approve_', ''));
+                        await approveMerchantFromTelegram(merchantId, chatId, messageId);
+                    }
+                    else if (data.startsWith('reject_')) {
+                        const merchantId = parseInt(data.replace('reject_', ''));
+                        await rejectMerchantFromTelegram(merchantId, chatId, messageId);
+                    }
+                    else if (data.startsWith('details_')) {
+                        const merchantId = parseInt(data.replace('details_', ''));
+                        await showMerchantDetails(merchantId, chatId);
+                    }
+                    
+                    // الرد على الضغطة لإزالة حالة "جاري التحميل"
+                    await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/answerCallbackQuery`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            callback_query_id: callback.id
+                        })
+                    });
+                }
+            }
+        }
+    } catch (error) {
+        console.error('خطأ في معالجة الأزرار:', error);
+    }
+}
+
+// ========== الموافقة على التاجر من التليجرام ==========
+async function approveMerchantFromTelegram(merchantId, chatId, messageId) {
+    const merchant = users.find(u => u.id == merchantId);
+    
+    if (!merchant) {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: '❌ لم يتم العثور على التاجر'
+            })
+        });
+        return;
+    }
+    
+    // تحديث حالة التاجر
+    merchant.role = 'merchant_approved';
+    merchant.status = 'approved';
+    merchant.approvedBy = 1; // معرف المدير
+    merchant.approvedAt = new Date().toISOString();
+    
+    localStorage.setItem('nardoo_users', JSON.stringify(users));
+    
+    // تحديث الرسالة الأصلية
+    await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/editMessageText`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: chatId,
+            message_id: messageId,
+            text: `✅ **تمت الموافقة على التاجر**
+            
+🆔 المعرف: ${merchant.id}
+👤 الاسم: ${merchant.name}
+🏪 المتجر: ${merchant.storeName}
+📧 البريد: ${merchant.email}
+📱 الهاتف: ${merchant.phone}
+🏷️ القسم: ${getCategoryName(merchant.merchantCategory)}
+
+🕐 تمت الموافقة في: ${new Date().toLocaleString('ar-EG')}`,
+            parse_mode: 'Markdown'
+        })
+    });
+    
+    // إرسال إشعار للتاجر
+    await sendApprovalNotification(merchant);
+    
+    showNotification(`✅ تمت الموافقة على ${merchant.storeName} من التليجرام`, 'success');
+    
+    // تحديث واجهة المتجر إذا كانت مفتوحة
+    if (currentUser?.role === 'admin') {
+        showPendingMerchants();
+    }
+}
+
+// ========== رفض التاجر من التليجرام ==========
+async function rejectMerchantFromTelegram(merchantId, chatId, messageId) {
+    const merchant = users.find(u => u.id == merchantId);
+    
+    if (!merchant) {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: '❌ لم يتم العثور على التاجر'
+            })
+        });
+        return;
+    }
+    
+    // تحديث حالة التاجر
+    merchant.role = 'customer';
+    merchant.status = 'rejected';
+    
+    localStorage.setItem('nardoo_users', JSON.stringify(users));
+    
+    // تحديث الرسالة الأصلية
+    await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/editMessageText`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: chatId,
+            message_id: messageId,
+            text: `❌ **تم رفض طلب التاجر**
+            
+🆔 المعرف: ${merchant.id}
+👤 الاسم: ${merchant.name}
+🏪 المتجر: ${merchant.storeName}
+📧 البريد: ${merchant.email}
+
+🕐 تم الرفض في: ${new Date().toLocaleString('ar-EG')}`,
+            parse_mode: 'Markdown'
+        })
+    });
+    
+    showNotification(`❌ تم رفض ${merchant.storeName} من التليجرام`, 'info');
+    
+    if (currentUser?.role === 'admin') {
+        showPendingMerchants();
+    }
+}
+
+// ========== عرض تفاصيل التاجر ==========
+async function showMerchantDetails(merchantId, chatId) {
+    const merchant = users.find(u => u.id == merchantId);
+    
+    if (!merchant) return;
+    
+    const message = `📋 **تفاصيل التاجر**
+    
+🆔 المعرف: ${merchant.id}
+👤 الاسم: ${merchant.name}
+📧 البريد: ${merchant.email}
+📱 الهاتف: ${merchant.phone || 'غير محدد'}
+📱 تليجرام: ${merchant.telegram || 'غير محدد'}
+🏪 المتجر: ${merchant.storeName || 'غير محدد'}
+🏷️ القسم: ${getCategoryName(merchant.merchantCategory) || 'غير محدد'}
+📊 المستوى: ${merchant.merchantLevel || 'غير محدد'}
+📅 تاريخ التسجيل: ${new Date(merchant.createdAt).toLocaleString('ar-EG')}
+📌 الحالة: ${merchant.status === 'pending' ? '⏳ في الانتظار' : '✅ معتمد'}`;
+
+    await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: chatId,
+            text: message,
+            parse_mode: 'Markdown'
+        })
+    });
+}
+
+// ========== تشغيل معالجة الأزرار كل 10 ثواني ==========
+setInterval(handleTelegramCallbacks, 10000);
 
 function updateUIBasedOnRole() {
     if (!currentUser) return;
@@ -897,6 +1215,41 @@ function updateUIBasedOnRole() {
             currentUser.role === 'admin' ? '<i class="fas fa-crown"></i>' :
             currentUser.role === 'merchant_approved' ? '<i class="fas fa-store"></i>' :
             '<i class="fas fa-user"></i>';
+    }
+
+    const dashboardBtn = document.getElementById('dashboardBtn');
+    const merchantPanel = document.getElementById('merchantPanelContainer');
+    
+    if (dashboardBtn) dashboardBtn.style.display = 'none';
+    if (merchantPanel) merchantPanel.style.display = 'none';
+    
+    const oldAddBtn = document.getElementById('adminAddProductBtn');
+    if (oldAddBtn) oldAddBtn.remove();
+
+    if (currentUser.role === 'admin') {
+        console.log('👑 مرحباً أيها المدير azer');
+        
+        if (dashboardBtn) dashboardBtn.style.display = 'flex';
+        
+        const navMenu = document.getElementById('mainNav');
+        if (navMenu && !document.getElementById('adminAddProductBtn')) {
+            const addBtn = document.createElement('a');
+            addBtn.className = 'nav-link';
+            addBtn.id = 'adminAddProductBtn';
+            addBtn.setAttribute('onclick', 'showAddProductModal()');
+            addBtn.innerHTML = '<i class="fas fa-plus-circle"></i><span>إضافة منتج</span>';
+            navMenu.appendChild(addBtn);
+        }
+        
+        const dashboardSection = document.getElementById('dashboardSection');
+        if (dashboardSection) {
+            dashboardSection.style.display = 'block';
+            showDashboardOverview();
+        }
+    } 
+    else if (currentUser.role === 'merchant_approved') {
+        console.log('👨‍💼 مرحباً أيها التاجر');
+        showMerchantPanel();
     }
 }
 
@@ -959,7 +1312,35 @@ function updateNavigation() {
     `;
 }
 
-// ========== 16. دوال لوحة التاجر ==========
+function showMerchantPanel() {
+    const merchantProducts = products.filter(p => p.merchantId === currentUser.id || p.merchantName === currentUser.storeName || p.merchantName === currentUser.name);
+    
+    const panel = document.getElementById('merchantPanelContainer');
+    panel.style.display = 'block';
+    panel.innerHTML = `
+        <div class="merchant-panel">
+            <h3>👨‍💼 لوحة التاجر - ${currentUser.storeName || currentUser.name}</h3>
+            <div style="display: flex; gap: 20px; justify-content: center; margin: 20px 0;">
+                <div style="text-align: center;">
+                    <div style="font-size: 32px; color: var(--gold);">${merchantProducts.length}</div>
+                    <div>📦 منتجاتي</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 32px; color: var(--gold);">${merchantProducts.filter(p => p.stock > 0).length}</div>
+                    <div>✅ متاحة</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 32px; color: var(--gold);">${merchantProducts.reduce((sum, p) => sum + p.stock, 0)}</div>
+                    <div>📊 إجمالي المخزون</div>
+                </div>
+            </div>
+            <button class="btn-gold" onclick="showMerchantDashboard()">
+                <i class="fas fa-chart-line"></i> فتح لوحة التحكم الكاملة
+            </button>
+        </div>
+    `;
+}
+
 function showMerchantDashboard() {
     if (!currentUser || !['merchant_approved', 'admin'].includes(currentUser.role)) {
         showNotification('غير مصرح لك', 'error');
@@ -976,6 +1357,10 @@ function showMerchantDashboard() {
     const inStock = merchantProducts.filter(p => p.stock > 0).length;
     const outOfStock = merchantProducts.filter(p => p.stock <= 0).length;
     const totalValue = merchantProducts.reduce((sum, p) => sum + (p.price * p.stock), 0);
+    
+    const recentProducts = [...merchantProducts]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5);
 
     let modal = document.getElementById('merchantDashboardModal');
     if (!modal) {
@@ -986,40 +1371,48 @@ function showMerchantDashboard() {
     const content = document.getElementById('merchantDashboardContent');
     content.innerHTML = `
         <div class="merchant-dashboard">
-            <div class="dashboard-header">
+            <div class="dashboard-header" style="display: flex; align-items: center; gap: 20px; margin-bottom: 30px;">
                 <img src="${currentUser.storeLogo || 'https://via.placeholder.com/80/2c5e4f/ffffff?text=Store'}" 
                      style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--gold);">
                 <div>
                     <h2 style="color: var(--gold); margin: 0;">${currentUser.storeName || currentUser.name}</h2>
-                    <p><i class="fab fa-telegram" style="color: #0088cc;"></i> ${currentUser.telegram}</p>
-                    <p><i class="fas fa-phone"></i> ${currentUser.phone}</p>
+                    <p style="display: flex; align-items: center; gap: 5px; margin: 5px 0;">
+                        <i class="fab fa-telegram" style="color: #0088cc;"></i>
+                        <a href="https://t.me/${currentUser.telegram?.replace('@', '')}" target="_blank">${currentUser.telegram}</a>
+                    </p>
+                    <p>📱 ${currentUser.phone}</p>
+                </div>
+                <div style="margin-right: auto;">
+                    <span class="merchant-badge approved">
+                        <i class="fas fa-check-circle"></i> تاجر معتمد
+                    </span>
                 </div>
             </div>
 
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <i class="fas fa-boxes"></i>
-                    <div class="stat-number">${totalProducts}</div>
-                    <div class="stat-label">إجمالي المنتجات</div>
+            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px;">
+                <div class="stat-card" style="background: var(--glass); padding: 20px; border-radius: 15px; text-align: center;">
+                    <i class="fas fa-boxes" style="font-size: 30px; color: var(--gold);"></i>
+                    <div style="font-size: 28px; font-weight: bold;">${totalProducts}</div>
+                    <div>إجمالي المنتجات</div>
                 </div>
-                <div class="stat-card">
-                    <i class="fas fa-check-circle"></i>
-                    <div class="stat-number">${inStock}</div>
-                    <div class="stat-label">متوفر</div>
+                <div class="stat-card" style="background: var(--glass); padding: 20px; border-radius: 15px; text-align: center;">
+                    <i class="fas fa-check-circle" style="font-size: 30px; color: #4CAF50;"></i>
+                    <div style="font-size: 28px; font-weight: bold;">${inStock}</div>
+                    <div>متوفر</div>
                 </div>
-                <div class="stat-card">
-                    <i class="fas fa-times-circle"></i>
-                    <div class="stat-number">${outOfStock}</div>
-                    <div class="stat-label">نفذ من المخزون</div>
+                <div class="stat-card" style="background: var(--glass); padding: 20px; border-radius: 15px; text-align: center;">
+                    <i class="fas fa-times-circle" style="font-size: 30px; color: #f44336;"></i>
+                    <div style="font-size: 28px; font-weight: bold;">${outOfStock}</div>
+                    <div>نفذ من المخزون</div>
                 </div>
-                <div class="stat-card">
-                    <i class="fas fa-coins"></i>
-                    <div class="stat-number">${totalValue.toLocaleString()}</div>
-                    <div class="stat-label">قيمة المخزون (دج)</div>
+                <div class="stat-card" style="background: var(--glass); padding: 20px; border-radius: 15px; text-align: center;">
+                    <i class="fas fa-coins" style="font-size: 30px; color: #FFD700;"></i>
+                    <div style="font-size: 28px; font-weight: bold;">${totalValue.toLocaleString()}</div>
+                    <div>قيمة المخزون (دج)</div>
                 </div>
             </div>
 
-            <div class="quick-actions">
+            <div class="quick-actions" style="display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
                 <button class="btn-gold" onclick="showAddProductModal()">
                     <i class="fas fa-plus-circle"></i> إضافة منتج جديد
                 </button>
@@ -1032,28 +1425,50 @@ function showMerchantDashboard() {
             </div>
 
             <div class="recent-products">
-                <h3 style="color: var(--gold);"><i class="fas fa-clock"></i> آخر المنتجات المضافة</h3>
-                <div class="products-table-container">
-                    <table class="products-table">
+                <h3 style="color: var(--gold); margin-bottom: 20px;">
+                    <i class="fas fa-clock"></i> آخر المنتجات المضافة
+                </h3>
+                <div class="products-table" style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
                         <thead>
-                            <tr>
-                                <th>الصورة</th>
-                                <th>المنتج</th>
-                                <th>السعر</th>
-                                <th>المخزون</th>
-                                <th>الإجراءات</th>
+                            <tr style="background: var(--glass);">
+                                <th style="padding: 12px;">الصورة</th>
+                                <th style="padding: 12px;">المنتج</th>
+                                <th style="padding: 12px;">السعر</th>
+                                <th style="padding: 12px;">المخزون</th>
+                                <th style="padding: 12px;">معرف تليجرام</th>
+                                <th style="padding: 12px;">الإجراءات</th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${merchantProducts.slice(0, 5).map(p => `
-                                <tr>
-                                    <td><img src="${p.images?.[0] || 'https://via.placeholder.com/50'}" style="width: 50px; height: 50px; border-radius: 10px;"></td>
-                                    <td>${p.name}</td>
-                                    <td>${p.price} دج</td>
-                                    <td><span class="stock-badge ${p.stock < 5 ? 'low' : 'good'}">${p.stock}</span></td>
-                                    <td>
-                                        <button class="action-btn" onclick="editProduct(${p.id})"><i class="fas fa-edit"></i></button>
-                                        <button class="action-btn" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
+                            ${recentProducts.map(p => `
+                                <tr style="border-bottom: 1px solid var(--border);">
+                                    <td style="padding: 12px;">
+                                        <img src="${p.images?.[0] || 'https://via.placeholder.com/50'}" 
+                                             style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover;">
+                                    </td>
+                                    <td style="padding: 12px;">${p.name}</td>
+                                    <td style="padding: 12px;">${p.price} دج</td>
+                                    <td style="padding: 12px;">
+                                        <span class="stock-badge ${p.stock < 5 ? 'low' : 'good'}">
+                                            ${p.stock}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 12px;">
+                                        <a href="${p.telegramLink}" target="_blank">
+                                            <i class="fab fa-telegram"></i> ${p.telegramMessageId}
+                                        </a>
+                                    </td>
+                                    <td style="padding: 12px;">
+                                        <button class="action-btn" onclick="editProduct(${p.id})" title="تعديل">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="action-btn" onclick="viewProductTelegram(${p.id})" title="عرض في تليجرام">
+                                            <i class="fab fa-telegram"></i>
+                                        </button>
+                                        <button class="action-btn" onclick="deleteProduct(${p.id})" title="حذف">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </td>
                                 </tr>
                             `).join('')}
@@ -1085,14 +1500,19 @@ function showMerchantProducts() {
         <h3 style="color: var(--gold); margin-bottom: 20px;">📦 منتجاتي (${merchantProducts.length})</h3>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
             ${merchantProducts.map(p => `
-                <div class="product-mini-card">
-                    <img src="${p.images?.[0] || 'https://via.placeholder.com/150'}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 10px;">
+                <div class="product-mini-card" style="background: var(--glass); border-radius: 10px; padding: 15px;">
+                    <img src="${p.images?.[0] || 'https://via.placeholder.com/150'}" 
+                         style="width: 100%; height: 150px; object-fit: cover; border-radius: 10px;">
                     <h4 style="margin: 10px 0;">${p.name}</h4>
                     <p style="color: var(--gold); font-weight: bold;">${p.price} دج</p>
                     <p>📦 ${p.stock} قطعة</p>
                     <div style="display: flex; gap: 10px;">
-                        <button class="btn-gold" onclick="editProduct(${p.id})" style="flex: 1;">تعديل</button>
-                        <button class="btn-outline-gold" onclick="deleteProduct(${p.id})" style="flex: 1;">حذف</button>
+                        <button class="btn-gold" onclick="editProduct(${p.id})" style="flex: 1;">
+                            <i class="fas fa-edit"></i> تعديل
+                        </button>
+                        <button class="btn-outline-gold" onclick="deleteProduct(${p.id})" style="flex: 1;">
+                            <i class="fas fa-trash"></i> حذف
+                        </button>
                     </div>
                 </div>
             `).join('')}
@@ -1129,25 +1549,35 @@ function showMerchantOrders() {
                 const merchantTotal = merchantItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
                 return `
-                    <div class="order-card">
-                        <div class="order-header">
-                            <span class="order-id">🆔 ${order.orderId}</span>
-                            <span class="order-status new">جديد</span>
+                    <div class="order-card" style="background: var(--glass); border-radius: 10px; padding: 20px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <h4>🆔 طلب رقم: ${order.orderId}</h4>
+                            <span class="status-badge new">جديد</span>
                         </div>
-                        <p><i class="fas fa-user"></i> ${order.customerName}</p>
-                        <p><i class="fas fa-phone"></i> ${order.customerPhone}</p>
-                        <p><i class="fas fa-map-marker-alt"></i> ${order.customerAddress}</p>
-                        <div class="order-items">
+                        <p>👤 الزبون: ${order.customerName}</p>
+                        <p>📞 الهاتف: ${order.customerPhone}</p>
+                        <p>📍 العنوان: ${order.customerAddress}</p>
+                        <p>📅 التاريخ: ${new Date(order.createdAt).toLocaleString('ar-EG')}</p>
+                        <div style="margin-top: 10px;">
+                            <strong>منتجاتك:</strong>
                             ${merchantItems.map(item => `
-                                <div class="order-item">
+                                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
                                     <span>${item.name} x${item.quantity}</span>
                                     <span>${item.price * item.quantity} دج</span>
                                 </div>
                             `).join('')}
-                            <div class="order-total">
+                            <div style="display: flex; justify-content: space-between; margin-top: 10px; font-weight: bold;">
                                 <span>الإجمالي:</span>
                                 <span style="color: var(--gold);">${merchantTotal} دج</span>
                             </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 15px;">
+                            <button class="btn-gold" onclick="contactCustomer('${order.customerPhone}')">
+                                <i class="fas fa-phone"></i> اتصال
+                            </button>
+                            <button class="btn-telegram" onclick="contactCustomerTelegram('${order.customerName}')">
+                                <i class="fab fa-telegram"></i> تواصل
+                            </button>
                         </div>
                     </div>
                 `;
@@ -1156,6 +1586,311 @@ function showMerchantOrders() {
     `;
 
     modal.style.display = 'flex';
+}
+
+function showAdminDashboard() {
+    if (currentUser?.role !== 'admin') {
+        showNotification('غير مصرح', 'error');
+        return;
+    }
+    
+    const section = document.getElementById('dashboardSection');
+    section.style.display = 'block';
+    showDashboardOverview();
+}
+
+function showDashboardOverview() {
+    const content = document.getElementById('dashboardContent');
+    const pendingMerchants = users.filter(u => u.role === 'merchant_pending').length;
+    const totalProducts = products.length;
+    const totalUsers = users.length;
+    const totalOrders = JSON.parse(localStorage.getItem('nardoo_orders') || '[]').length;
+    
+    content.innerHTML = `
+        <h3 style="color: var(--gold);">📊 نظرة عامة</h3>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 20px;">
+            <div style="background: var(--glass); padding: 20px; border-radius: 15px;">
+                <div style="font-size: 32px;">${totalProducts}</div>
+                <div>📦 إجمالي المنتجات</div>
+            </div>
+            <div style="background: var(--glass); padding: 20px; border-radius: 15px;">
+                <div style="font-size: 32px;">${totalUsers}</div>
+                <div>👥 إجمالي المستخدمين</div>
+            </div>
+            <div style="background: var(--glass); padding: 20px; border-radius: 15px;">
+                <div style="font-size: 32px;">${pendingMerchants}</div>
+                <div>⏳ طلبات التجار</div>
+            </div>
+            <div style="background: var(--glass); padding: 20px; border-radius: 15px;">
+                <div style="font-size: 32px;">${totalOrders}</div>
+                <div>🛒 إجمالي الطلبات</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <button class="btn-gold" onclick="showPendingMerchants()">
+                <i class="fas fa-user-clock"></i> عرض طلبات التجار
+            </button>
+            <button class="btn-outline-gold" onclick="showApprovedMerchants()" style="margin-right: 10px;">
+                <i class="fas fa-store"></i> التجار المعتمدين
+            </button>
+            <button class="btn-outline-gold" onclick="showAllOrders()" style="margin-right: 10px;">
+                <i class="fas fa-shopping-bag"></i> جميع الطلبات
+            </button>
+        </div>
+    `;
+}
+
+function showPendingMerchants() {
+    if (currentUser?.role !== 'admin') {
+        showNotification('غير مصرح', 'error');
+        return;
+    }
+
+    const pendingMerchants = users.filter(u => u.role === 'merchant_pending');
+    const content = document.getElementById('dashboardContent');
+    
+    content.innerHTML = `
+        <h3 style="color: var(--gold); margin-bottom: 20px;">
+            <i class="fas fa-user-clock"></i> طلبات التجار الجديدة (${pendingMerchants.length})
+        </h3>
+        
+        ${pendingMerchants.length === 0 ? `
+            <div style="text-align: center; padding: 50px;">
+                <i class="fas fa-check-circle" style="font-size: 60px; color: #4CAF50;"></i>
+                <p style="margin-top: 20px;">لا توجد طلبات جديدة</p>
+            </div>
+        ` : pendingMerchants.map(m => `
+            <div class="merchant-request-card" style="background: var(--glass); border: 2px solid var(--gold); border-radius: 15px; padding: 20px; margin-bottom: 20px;">
+                <div style="display: flex; gap: 20px;">
+                    <img src="${m.storeLogo || 'https://via.placeholder.com/100'}" 
+                         style="width: 100px; height: 100px; border-radius: 15px; object-fit: cover;">
+                    
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <h4 style="color: var(--gold);">${m.storeName || m.name}</h4>
+                            <span class="status-badge pending">
+                                <i class="fas fa-hourglass-half"></i> في الانتظار
+                            </span>
+                        </div>
+                        
+                        <p><i class="fas fa-user"></i> ${m.name}</p>
+                        <p><i class="fas fa-envelope"></i> ${m.email}</p>
+                        <p><i class="fas fa-phone"></i> ${m.phone}</p>
+                        <p><i class="fab fa-telegram"></i> ${m.telegram}</p>
+                        <p><i class="fas fa-tag"></i> التخصص: ${getCategoryName(m.merchantCategory)}</p>
+                        <p><i class="fas fa-calendar"></i> ${new Date(m.createdAt).toLocaleDateString('ar-EG')}</p>
+                        
+                        <div style="margin-top: 15px; display: flex; gap: 10px;">
+                            <button class="btn-gold" onclick="approveMerchant(${m.id})">
+                                <i class="fas fa-check"></i> موافقة
+                            </button>
+                            <button class="btn-outline-gold" onclick="rejectMerchant(${m.id})" style="border-color: #f44336; color: #f44336;">
+                                <i class="fas fa-times"></i> رفض
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('')}
+    `;
+}
+
+function approveMerchant(merchantId) {
+    if (currentUser?.role !== 'admin') return;
+
+    const merchant = users.find(u => u.id == merchantId);
+    if (!merchant) return;
+
+    merchant.role = 'merchant_approved';
+    merchant.status = 'approved';
+    merchant.approvedBy = currentUser.id;
+    merchant.approvedAt = new Date().toISOString();
+
+    localStorage.setItem('nardoo_users', JSON.stringify(users));
+    
+    sendApprovalNotification(merchant);
+    
+    showNotification(`✅ تمت الموافقة على ${merchant.storeName}`, 'success');
+    showPendingMerchants();
+}
+
+async function sendApprovalNotification(merchant) {
+    try {
+        const message = `
+🎉 تهانينا! تمت الموافقة على طلب انضمامك كتاجر في ناردو برو
+
+📌 متجرك: ${merchant.storeName}
+🆔 معرفك: ${merchant.telegram}
+📝 المستوى: ${merchant.merchantLevel}
+
+✨ يمكنك الآن:
+✅ إضافة منتجاتك
+✅ إدارة متجرك
+✅ التواصل مع العملاء
+✅ متابعة طلباتك
+
+🔗 رابط المتجر: ${window.location.origin}
+📱 للدعم: @nardoo_support
+
+نتمنى لك تجارة موفقة 🌟
+        `;
+
+        await fetch(`https://api.telegram.org/bot${TELEGRAM.botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: merchant.telegram.replace('@', ''),
+                text: message,
+                parse_mode: 'HTML'
+            })
+        });
+
+        console.log('✅ تم إرسال إشعار الموافقة للتاجر');
+    } catch (error) {
+        console.error('❌ فشل إرسال الإشعار:', error);
+    }
+}
+
+function rejectMerchant(merchantId) {
+    if (currentUser?.role !== 'admin') return;
+
+    const merchant = users.find(u => u.id == merchantId);
+    if (!merchant) return;
+
+    merchant.role = 'customer';
+    merchant.status = 'rejected';
+    
+    localStorage.setItem('nardoo_users', JSON.stringify(users));
+    showNotification('❌ تم رفض الطلب', 'info');
+    showPendingMerchants();
+}
+
+function showApprovedMerchants() {
+    if (currentUser?.role !== 'admin') return;
+
+    const approvedMerchants = users.filter(u => u.role === 'merchant_approved');
+    const content = document.getElementById('dashboardContent');
+    
+    content.innerHTML = `
+        <h3 style="color: var(--gold); margin-bottom: 20px;">
+            <i class="fas fa-store-alt"></i> التجار المعتمدين (${approvedMerchants.length})
+        </h3>
+
+        <div class="merchants-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+            ${approvedMerchants.map(m => {
+                const merchantProducts = products.filter(p => p.merchantId === m.id || p.merchantName === m.storeName);
+                return `
+                    <div class="merchant-card" style="background: var(--glass); border-radius: 15px; padding: 20px;">
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                            <img src="${m.storeLogo || 'https://via.placeholder.com/60'}" 
+                                 style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--gold);">
+                            <div>
+                                <h4 style="margin: 0;">${m.storeName}</h4>
+                                <p style="margin: 5px 0; color: #888;">${m.name}</p>
+                            </div>
+                        </div>
+                        
+                        <p><i class="fab fa-telegram" style="color: #0088cc;"></i> ${m.telegram}</p>
+                        <p><i class="fas fa-phone"></i> ${m.phone}</p>
+                        <p><i class="fas fa-tag"></i> ${getCategoryName(m.merchantCategory)}</p>
+                        <p><i class="fas fa-box"></i> المنتجات: ${merchantProducts.length}</p>
+                        <p><i class="fas fa-star" style="color: var(--gold);"></i> ${m.rating || 'جديد'}</p>
+                        
+                        <div style="display: flex; gap: 10px; margin-top: 15px;">
+                            <button class="btn-gold" onclick="viewMerchantProducts(${m.id})" style="flex: 1;">
+                                <i class="fas fa-box"></i> منتجاته
+                            </button>
+                            <button class="btn-outline-gold" onclick="contactMerchant('${m.telegram}')" style="flex: 1;">
+                                <i class="fab fa-telegram"></i> تواصل
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+function viewMerchantProducts(merchantId) {
+    const merchant = users.find(u => u.id == merchantId);
+    if (!merchant) return;
+
+    const merchantProducts = products.filter(p => 
+        p.merchantId == merchantId || 
+        p.merchantName === merchant.storeName ||
+        p.merchantName === merchant.name
+    );
+
+    let modal = document.getElementById('merchantProductsModal');
+    if (!modal) {
+        createMerchantProductsModal();
+        modal = document.getElementById('merchantProductsModal');
+    }
+
+    const content = document.getElementById('merchantProductsContent');
+    content.innerHTML = `
+        <div style="text-align: center; margin-bottom: 30px;">
+            <img src="${merchant.storeLogo || 'https://via.placeholder.com/100'}" 
+                 style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--gold);">
+            <h2 style="color: var(--gold); margin: 10px 0;">${merchant.storeName}</h2>
+            <p><i class="fab fa-telegram"></i> ${merchant.telegram}</p>
+            <p>📦 عدد المنتجات: ${merchantProducts.length}</p>
+        </div>
+
+        <div class="products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+            ${merchantProducts.map(p => `
+                <div class="product-mini-card" style="background: var(--glass); border-radius: 10px; padding: 15px;">
+                    <img src="${p.images?.[0] || 'https://via.placeholder.com/150'}" 
+                         style="width: 100%; height: 150px; object-fit: cover; border-radius: 10px;">
+                    <h4 style="margin: 10px 0;">${p.name}</h4>
+                    <p style="color: var(--gold); font-weight: bold;">${p.price} دج</p>
+                    <p>📦 ${p.stock} قطعة</p>
+                    <button class="btn-gold" onclick="addToCart(${p.id})" style="width: 100%;">
+                        <i class="fas fa-shopping-cart"></i> أضف للسلة
+                    </button>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    modal.style.display = 'flex';
+}
+
+function showAllOrders() {
+    const orders = JSON.parse(localStorage.getItem('nardoo_orders') || '[]');
+    const content = document.getElementById('dashboardContent');
+    
+    content.innerHTML = `
+        <h3 style="color: var(--gold); margin-bottom: 20px;">🛒 جميع الطلبات (${orders.length})</h3>
+        <div style="max-height: 500px; overflow-y: auto;">
+            ${orders.map(order => `
+                <div class="order-card" style="background: var(--glass); border-radius: 10px; padding: 20px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <h4>🆔 طلب رقم: ${order.orderId}</h4>
+                        <span class="status-badge new">جديد</span>
+                    </div>
+                    <p>👤 الزبون: ${order.customerName}</p>
+                    <p>📞 الهاتف: ${order.customerPhone}</p>
+                    <p>📍 العنوان: ${order.customerAddress}</p>
+                    <p>📅 التاريخ: ${new Date(order.createdAt).toLocaleString('ar-EG')}</p>
+                    <div style="margin-top: 10px;">
+                        <strong>المنتجات:</strong>
+                        ${order.items.map(item => `
+                            <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                                <span>${item.name} x${item.quantity} (${item.merchantName})</span>
+                                <span>${item.price * item.quantity} دج</span>
+                            </div>
+                        `).join('')}
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px; font-weight: bold;">
+                            <span>الإجمالي الكلي:</span>
+                            <span style="color: var(--gold);">${order.total} دج</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
 }
 
 function showAddProductModal() {
@@ -1174,8 +1909,9 @@ function showAddProductModal() {
     
     const telegramField = !currentUser.telegram ? `
         <div class="form-group">
-            <label>📱 معرف تليجرام الخاص بك</label>
+            <label>📱 معرف تليجرام الخاص بك (للتواصل)</label>
             <input type="text" id="merchantTelegram" class="form-control" placeholder="@username" value="${currentUser.telegram || ''}">
+            <small style="color: #888;">أدخل معرفك في تليجرام ليتمكن العملاء من التواصل</small>
         </div>
     ` : '';
 
@@ -1204,7 +1940,7 @@ function showAddProductModal() {
                         </select>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div class="form-group">
                             <label>💰 السعر (دج)</label>
                             <input type="number" id="productPrice" class="form-control" required>
@@ -1221,17 +1957,19 @@ function showAddProductModal() {
                         <textarea id="productDescription" class="form-control" rows="3"></textarea>
                     </div>
                     
-                    <div class="image-upload-area" onclick="document.getElementById('productImages').click()">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p>اضغط لرفع صورة المنتج</p>
+                    <div class="form-group">
+                        <label>🖼️ صورة المنتج</label>
+                        <input type="file" id="productImages" class="form-control" accept="image/*" required>
+                        <div id="imagePreview" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
                     </div>
                     
-                    <input type="file" id="productImages" accept="image/*" style="display:none;" onchange="handleImageUpload(event)" required>
-                    <div class="image-preview" id="imagePreview"></div>
-                    
-                    <div style="display: flex; gap: 15px; margin-top: 20px;">
-                        <button type="submit" class="btn-gold" style="flex: 2;">حفظ المنتج</button>
-                        <button type="button" class="btn-outline-gold" style="flex: 1;" onclick="closeModal('productModal')">إلغاء</button>
+                    <div class="form-actions" style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 20px;">
+                        <button type="submit" class="btn-gold">
+                            <i class="fas fa-cloud-upload-alt"></i> رفع المنتج
+                        </button>
+                        <button type="button" class="btn-outline-gold" onclick="closeModal('productModal')">
+                            إلغاء
+                        </button>
                     </div>
                 </form>
             </div>
@@ -1244,6 +1982,8 @@ function showAddProductModal() {
 function handleImageUpload(event) {
     const files = event.target.files;
     const preview = document.getElementById('imagePreview');
+    const imagesData = [];
+
     preview.innerHTML = '';
 
     for (let i = 0; i < files.length; i++) {
@@ -1251,6 +1991,8 @@ function handleImageUpload(event) {
         const reader = new FileReader();
         reader.onload = function(e) {
             preview.innerHTML += `<img src="${e.target.result}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 10px; margin: 5px;">`;
+            imagesData.push(e.target.result);
+            document.getElementById('productImagesData').value = JSON.stringify(imagesData);
         };
         reader.readAsDataURL(file);
     }
@@ -1292,284 +2034,22 @@ function deleteProduct(productId) {
     }
 }
 
-// ========== 17. دوال لوحة المدير ==========
-function showAdminDashboard() {
-    if (currentUser?.role !== 'admin') {
-        showNotification('غير مصرح', 'error');
-        return;
+function viewProductTelegram(productId) {
+    const product = products.find(p => p.id == productId);
+    if (product && product.telegramLink) {
+        window.open(product.telegramLink, '_blank');
     }
-
-    const section = document.getElementById('dashboardSection');
-    section.style.display = 'block';
-    showDashboardOverview();
 }
 
-function showDashboardOverview() {
-    const content = document.getElementById('dashboardContent');
-    const pendingMerchants = users.filter(u => u.role === 'merchant_pending').length;
-    const totalProducts = products.length;
-    const totalUsers = users.length;
-    const totalOrders = JSON.parse(localStorage.getItem('nardoo_orders') || '[]').length;
-    
-    content.innerHTML = `
-        <h3 style="color: var(--gold);">📊 نظرة عامة</h3>
-        <div class="stats-grid">
-            <div class="stat-card products">
-                <i class="fas fa-boxes"></i>
-                <div class="stat-number">${totalProducts}</div>
-                <div class="stat-label">إجمالي المنتجات</div>
-            </div>
-            <div class="stat-card users">
-                <i class="fas fa-users"></i>
-                <div class="stat-number">${totalUsers}</div>
-                <div class="stat-label">إجمالي المستخدمين</div>
-            </div>
-            <div class="stat-card pending">
-                <i class="fas fa-user-clock"></i>
-                <div class="stat-number">${pendingMerchants}</div>
-                <div class="stat-label">طلبات التجار</div>
-            </div>
-            <div class="stat-card orders">
-                <i class="fas fa-shopping-bag"></i>
-                <div class="stat-number">${totalOrders}</div>
-                <div class="stat-label">إجمالي الطلبات</div>
-            </div>
-        </div>
-        
-        <div style="margin-top: 30px;">
-            <button class="btn-gold" onclick="showPendingMerchants()">
-                <i class="fas fa-user-clock"></i> عرض طلبات التجار
-            </button>
-            <button class="btn-outline-gold" onclick="showApprovedMerchants()" style="margin-right: 10px;">
-                <i class="fas fa-store"></i> التجار المعتمدين
-            </button>
-            <button class="btn-outline-gold" onclick="showAllOrders()" style="margin-right: 10px;">
-                <i class="fas fa-shopping-bag"></i> جميع الطلبات
-            </button>
-        </div>
-    `;
+function contactCustomer(phone) {
+    window.open(`tel:${phone}`);
 }
 
-function showPendingMerchants() {
-    if (currentUser?.role !== 'admin') {
-        showNotification('غير مصرح', 'error');
-        return;
-    }
-
-    const pendingMerchants = users.filter(u => u.role === 'merchant_pending');
-    const content = document.getElementById('dashboardContent');
-    
-    content.innerHTML = `
-        <h3 style="color: var(--gold); margin-bottom: 20px;">
-            <i class="fas fa-user-clock"></i> طلبات التجار الجديدة (${pendingMerchants.length})
-        </h3>
-        
-        ${pendingMerchants.length === 0 ? `
-            <div style="text-align: center; padding: 50px;">
-                <i class="fas fa-check-circle" style="font-size: 60px; color: #4CAF50;"></i>
-                <p style="margin-top: 20px;">لا توجد طلبات جديدة</p>
-            </div>
-        ` : pendingMerchants.map(m => `
-            <div class="merchant-request-card new">
-                <div style="display: flex; gap: 20px;">
-                    <img src="${m.storeLogo || 'https://via.placeholder.com/100'}" 
-                         style="width: 100px; height: 100px; border-radius: 15px; object-fit: cover;">
-                    
-                    <div style="flex: 1;">
-                        <div style="display: flex; justify-content: space-between;">
-                            <h4 style="color: var(--gold);">${m.storeName || m.name}</h4>
-                            <span class="status-badge pending">في الانتظار</span>
-                        </div>
-                        
-                        <p><i class="fas fa-user"></i> ${m.name}</p>
-                        <p><i class="fas fa-envelope"></i> ${m.email}</p>
-                        <p><i class="fas fa-phone"></i> ${m.phone}</p>
-                        <p><i class="fab fa-telegram"></i> ${m.telegram}</p>
-                        <p><i class="fas fa-tag"></i> التخصص: ${getCategoryName(m.merchantCategory)}</p>
-                        
-                        <div style="margin-top: 15px; display: flex; gap: 10px;">
-                            <button class="btn-gold" onclick="approveMerchant(${m.id})">
-                                <i class="fas fa-check"></i> موافقة
-                            </button>
-                            <button class="btn-outline-gold" onclick="rejectMerchant(${m.id})" style="border-color: #f44336; color: #f44336;">
-                                <i class="fas fa-times"></i> رفض
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `).join('')}
-    `;
+function contactCustomerTelegram(customerName) {
+    window.open('https://t.me/nardoo_support');
 }
 
-function approveMerchant(merchantId) {
-    if (currentUser?.role !== 'admin') return;
-
-    const merchant = users.find(u => u.id == merchantId);
-    if (!merchant) return;
-
-    merchant.role = 'merchant_approved';
-    merchant.status = 'approved';
-    merchant.approvedBy = currentUser.id;
-    merchant.approvedAt = new Date().toISOString();
-
-    localStorage.setItem('nardoo_users', JSON.stringify(users));
-    
-    showNotification(`✅ تمت الموافقة على ${merchant.storeName}`, 'success');
-    showPendingMerchants();
-}
-
-function rejectMerchant(merchantId) {
-    if (currentUser?.role !== 'admin') return;
-
-    const merchant = users.find(u => u.id == merchantId);
-    if (!merchant) return;
-
-    merchant.role = 'customer';
-    merchant.status = 'rejected';
-    
-    localStorage.setItem('nardoo_users', JSON.stringify(users));
-    showNotification('❌ تم رفض الطلب', 'info');
-    showPendingMerchants();
-}
-
-function showApprovedMerchants() {
-    if (currentUser?.role !== 'admin') return;
-
-    const approvedMerchants = users.filter(u => u.role === 'merchant_approved');
-    const content = document.getElementById('dashboardContent');
-    
-    content.innerHTML = `
-        <h3 style="color: var(--gold); margin-bottom: 20px;">
-            <i class="fas fa-store-alt"></i> التجار المعتمدين (${approvedMerchants.length})
-        </h3>
-
-        <div class="merchants-grid">
-            ${approvedMerchants.map(m => {
-                const merchantProducts = products.filter(p => p.merchantId === m.id || p.merchantName === m.storeName);
-                return `
-                    <div class="merchant-profile-card">
-                        <img src="${m.storeLogo || 'https://via.placeholder.com/100'}" class="merchant-profile-avatar">
-                        <h4 class="merchant-profile-name">${m.storeName}</h4>
-                        <p class="merchant-profile-store"><i class="fas fa-user"></i> ${m.name}</p>
-                        
-                        <div class="merchant-profile-detail">
-                            <i class="fab fa-telegram"></i> ${m.telegram}
-                        </div>
-                        <div class="merchant-profile-detail">
-                            <i class="fas fa-phone"></i> ${m.phone}
-                        </div>
-                        <div class="merchant-profile-detail">
-                            <i class="fas fa-tag"></i> ${getCategoryName(m.merchantCategory)}
-                        </div>
-                        
-                        <div class="merchant-profile-stats">
-                            <div class="merchant-stat">
-                                <div class="merchant-stat-number">${merchantProducts.length}</div>
-                                <div class="merchant-stat-label">منتجات</div>
-                            </div>
-                            <div class="merchant-stat">
-                                <div class="merchant-stat-number">${m.rating || 'جديد'}</div>
-                                <div class="merchant-stat-label">تقييم</div>
-                            </div>
-                        </div>
-                        
-                        <div class="merchant-profile-actions">
-                            <button class="btn-message" onclick="viewMerchantProducts(${m.id})">
-                                <i class="fas fa-box"></i> منتجاته
-                            </button>
-                            <button class="btn-block" onclick="contactMerchant('${m.telegram}')">
-                                <i class="fab fa-telegram"></i> تواصل
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('')}
-        </div>
-    `;
-}
-
-function showAllOrders() {
-    const orders = JSON.parse(localStorage.getItem('nardoo_orders') || '[]');
-    const content = document.getElementById('dashboardContent');
-    
-    content.innerHTML = `
-        <h3 style="color: var(--gold); margin-bottom: 20px;">🛒 جميع الطلبات (${orders.length})</h3>
-        <div class="orders-grid">
-            ${orders.map(order => `
-                <div class="order-card">
-                    <div class="order-header">
-                        <span class="order-id">🆔 ${order.orderId}</span>
-                        <span class="order-status new">جديد</span>
-                    </div>
-                    <p><i class="fas fa-user"></i> ${order.customerName}</p>
-                    <p><i class="fas fa-phone"></i> ${order.customerPhone}</p>
-                    <p><i class="fas fa-map-marker-alt"></i> ${order.customerAddress}</p>
-                    <div class="order-items">
-                        ${order.items.map(item => `
-                            <div class="order-item">
-                                <span>${item.name} x${item.quantity} (${item.merchantName})</span>
-                                <span>${item.price * item.quantity} دج</span>
-                            </div>
-                        `).join('')}
-                        <div class="order-total">
-                            <span>الإجمالي الكلي:</span>
-                            <span style="color: var(--gold);">${order.total} دج</span>
-                        </div>
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-    `;
-}
-
-function viewMerchantProducts(merchantId) {
-    const merchant = users.find(u => u.id == merchantId);
-    if (!merchant) return;
-
-    const merchantProducts = products.filter(p => 
-        p.merchantId == merchantId || 
-        p.merchantName === merchant.storeName ||
-        p.merchantName === merchant.name
-    );
-
-    let modal = document.getElementById('merchantProductsModal');
-    if (!modal) {
-        createMerchantProductsModal();
-        modal = document.getElementById('merchantProductsModal');
-    }
-
-    const content = document.getElementById('merchantProductsContent');
-    content.innerHTML = `
-        <div style="text-align: center; margin-bottom: 30px;">
-            <img src="${merchant.storeLogo || 'https://via.placeholder.com/100'}" 
-                 style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--gold);">
-            <h2 style="color: var(--gold); margin: 10px 0;">${merchant.storeName}</h2>
-            <p><i class="fab fa-telegram"></i> ${merchant.telegram}</p>
-            <p>📦 عدد المنتجات: ${merchantProducts.length}</p>
-        </div>
-
-        <div class="products-grid">
-            ${merchantProducts.map(p => `
-                <div class="product-mini-card">
-                    <img src="${p.images?.[0] || 'https://via.placeholder.com/150'}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 10px;">
-                    <h4 style="margin: 10px 0;">${p.name}</h4>
-                    <p style="color: var(--gold); font-weight: bold;">${p.price} دج</p>
-                    <p>📦 ${p.stock} قطعة</p>
-                    <button class="btn-gold" onclick="addToCart(${p.id})" style="width: 100%;">أضف للسلة</button>
-                </div>
-            `).join('')}
-        </div>
-    `;
-
-    modal.style.display = 'flex';
-}
-
-function contactMerchant(telegram) {
-    window.open(`https://t.me/${telegram.replace('@', '')}`, '_blank');
-}
-
-// ========== 18. إنشاء المودالات ==========
+// ========== 16. إنشاء المودالات ==========
 function createMerchantDashboardModal() {
     const modal = document.createElement('div');
     modal.id = 'merchantDashboardModal';
@@ -1580,7 +2060,8 @@ function createMerchantDashboardModal() {
                 <h2><i class="fas fa-store"></i> لوحة تحكم التاجر</h2>
                 <button class="close-btn" onclick="closeModal('merchantDashboardModal')">&times;</button>
             </div>
-            <div class="modal-body" id="merchantDashboardContent" style="max-height: 80vh; overflow-y: auto;"></div>
+            <div class="modal-body" id="merchantDashboardContent" style="max-height: 80vh; overflow-y: auto;">
+            </div>
         </div>
     `;
     document.body.appendChild(modal);
@@ -1596,7 +2077,8 @@ function createMerchantProductsModal() {
                 <h2><i class="fas fa-boxes"></i> منتجات التاجر</h2>
                 <button class="close-btn" onclick="closeModal('merchantProductsModal')">&times;</button>
             </div>
-            <div class="modal-body" id="merchantProductsContent" style="max-height: 80vh; overflow-y: auto;"></div>
+            <div class="modal-body" id="merchantProductsContent" style="max-height: 80vh; overflow-y: auto;">
+            </div>
         </div>
     `;
     document.body.appendChild(modal);
@@ -1612,13 +2094,14 @@ function createMerchantOrdersModal() {
                 <h2><i class="fas fa-shopping-bag"></i> طلباتي</h2>
                 <button class="close-btn" onclick="closeModal('merchantOrdersModal')">&times;</button>
             </div>
-            <div class="modal-body" id="merchantOrdersContent" style="max-height: 80vh; overflow-y: auto;"></div>
+            <div class="modal-body" id="merchantOrdersContent" style="max-height: 80vh; overflow-y: auto;">
+            </div>
         </div>
     `;
     document.body.appendChild(modal);
 }
 
-// ========== 19. نظام Reels المتطور مع التشغيل التلقائي ==========
+// ========== 17. نظام Reels المتطور مع التشغيل التلقائي ==========
 
 // تهيئة مراقبة التمرير للـ Reels
 function initReelsObserver() {
@@ -2222,7 +2705,7 @@ async function initReels() {
     setTimeout(addGlobalVolumeControl, 1000);
 }
 
-// ========== 20. تأثيرات الكتابة ==========
+// ========== 18. تأثيرات الكتابة ==========
 class TypingAnimation {
     constructor(element, texts, speed = 100, delay = 2000) {
         this.element = element;
@@ -2264,7 +2747,456 @@ class TypingAnimation {
     }
 }
 
-// ========== 21. التهيئة ==========
+// ========== 19. إضافة CSS ==========
+const styles = `
+    .btn-telegram {
+        background: #0088cc;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-telegram:hover {
+        background: #006699;
+        transform: translateY(-2px);
+    }
+    
+    .product-telegram a {
+        transition: color 0.3s ease;
+    }
+    
+    .product-telegram a:hover {
+        color: #006699 !important;
+        text-decoration: underline !important;
+    }
+    
+    .merchant-badge {
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: bold;
+    }
+    
+    .merchant-badge.approved {
+        background: linear-gradient(45deg, #4CAF50, #45a049);
+        color: white;
+    }
+    
+    .merchant-badge.pending {
+        background: linear-gradient(45deg, #FFC107, #FFB300);
+        color: black;
+    }
+    
+    .status-badge {
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+    
+    .status-badge.pending {
+        background: #FFC107;
+        color: black;
+    }
+    
+    .status-badge.approved {
+        background: #4CAF50;
+        color: white;
+    }
+    
+    .status-badge.new {
+        background: #2196F3;
+        color: white;
+    }
+    
+    .stock-badge {
+        padding: 3px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+    }
+    
+    .stock-badge.good {
+        background: #4CAF50;
+        color: white;
+    }
+    
+    .stock-badge.low {
+        background: #f44336;
+        color: white;
+    }
+    
+    .action-btn {
+        background: var(--glass);
+        border: none;
+        color: var(--text);
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin: 0 2px;
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover {
+        background: var(--gold);
+        color: black;
+        transform: translateY(-2px);
+    }
+    
+    .merchant-request-card {
+        animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* أنماط Reels الجديدة */
+    .reel-card {
+        position: relative;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+    .reel-card video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        pointer-events: none;
+    }
+
+    .reel-card.reel-playing {
+        transform: scale(1.02);
+        z-index: 10;
+        animation: playingPulse 2s infinite;
+    }
+
+    @keyframes playingPulse {
+        0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+    }
+
+    .reel-play-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60px;
+        height: 60px;
+        background: rgba(212, 175, 55, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+        animation: pulse 2s infinite;
+    }
+
+    .reel-play-icon i {
+        font-size: 30px;
+        color: black;
+        margin-left: 5px;
+    }
+
+    .reel-title-overlay {
+        position: absolute;
+        bottom: 50px;
+        left: 0;
+        right: 0;
+        padding: 15px;
+        background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        color: white;
+        z-index: 4;
+    }
+
+    .reel-title-overlay h4 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        text-shadow: 1px 1px 2px black;
+    }
+
+    .reel-volume-control {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        width: 35px;
+        height: 35px;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid var(--gold);
+    }
+
+    .reel-volume-control:hover {
+        background: var(--gold);
+        transform: scale(1.1);
+    }
+
+    .reel-volume-control i {
+        color: white;
+        font-size: 16px;
+    }
+
+    .reel-volume-control.muted i {
+        color: var(--red);
+    }
+
+    .reel-actions-mini {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+        justify-content: flex-end;
+    }
+
+    .reel-action-btn {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: var(--glass);
+        border: 1px solid var(--gold);
+        color: var(--gold);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .reel-action-btn:hover {
+        background: var(--gold);
+        color: black;
+        transform: translateY(-3px);
+    }
+
+    /* نافذة ملء الشاشة */
+    .reels-fullscreen-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .reels-fullscreen-content {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+
+    .reels-fullscreen-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        background: var(--gold);
+        border: none;
+        border-radius: 50%;
+        color: black;
+        font-size: 24px;
+        cursor: pointer;
+        z-index: 10001;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .reels-fullscreen-close:hover {
+        transform: rotate(90deg) scale(1.1);
+        background: var(--red);
+        color: white;
+    }
+
+    .reels-fullscreen-video-container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+
+    .reels-fullscreen-video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .reels-fullscreen-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 30px;
+        background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+        color: white;
+    }
+
+    .reels-fullscreen-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .reels-fullscreen-header h2 {
+        margin: 0;
+        color: var(--gold);
+        font-size: 24px;
+    }
+
+    .reels-fullscreen-badge {
+        background: rgba(212, 175, 55, 0.2);
+        border: 1px solid var(--gold);
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-family: monospace;
+        font-size: 16px;
+    }
+
+    .reels-fullscreen-stats {
+        display: flex;
+        gap: 30px;
+        margin-bottom: 20px;
+    }
+
+    .reels-fullscreen-stats .stat {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #888;
+    }
+
+    .reels-fullscreen-stats .stat i {
+        color: var(--gold);
+    }
+
+    .reels-fullscreen-actions {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .reels-fullscreen-btn {
+        flex: 1;
+        padding: 15px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .reels-fullscreen-btn.like {
+        background: linear-gradient(135deg, #ff6b6b, #ff4757);
+        color: white;
+    }
+
+    .reels-fullscreen-btn.share {
+        background: linear-gradient(135deg, #4ecdc4, #45b7af);
+        color: white;
+    }
+
+    .reels-fullscreen-btn.download {
+        background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+        color: black;
+    }
+
+    .reels-fullscreen-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+
+    .reels-fullscreen-share {
+        display: flex;
+        gap: 10px;
+    }
+
+    .reels-fullscreen-share input {
+        flex: 1;
+        padding: 15px;
+        background: rgba(255,255,255,0.1);
+        border: 2px solid var(--gold);
+        border-radius: 10px;
+        color: white;
+        font-family: monospace;
+        font-size: 16px;
+    }
+
+    .reels-fullscreen-share button {
+        padding: 15px 30px;
+        background: var(--gold);
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .reels-fullscreen-share button:hover {
+        transform: scale(1.05);
+        background: white;
+    }
+
+    .reels-volume-global {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--glass);
+        border: 2px solid var(--gold);
+        color: var(--gold);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .reels-volume-global:hover {
+        background: var(--gold);
+        color: black;
+        transform: scale(1.1);
+    }
+
+    .reels-volume-global.muted {
+        color: var(--red);
+        border-color: var(--red);
+    }
+`;
+
+const styleSheet = document.createElement("style");
+styleSheet.textContent = styles;
+document.head.appendChild(styleSheet);
+
+// ========== 20. التهيئة ==========
 window.onload = async function() {
     console.log('🚀 بدء تشغيل ناردو برو...');
     
