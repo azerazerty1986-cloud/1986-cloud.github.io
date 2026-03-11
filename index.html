@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -64,14 +63,6 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        .loader-spinner-small {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #d4af37;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -80,13 +71,6 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: 0 15px;
-        }
-        .reels-loader {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            color: #888;
-            min-width: 200px;
         }
     </style>
     
@@ -602,30 +586,9 @@
                 offset: 100
             });
         });
-        
-        // دالة وهمية لفتح لوحة التحكم (سيتم استبدالها من الملف الرئيسي)
-        function openDashboard() {
-            if (typeof showAdminDashboard === 'function') {
-                showAdminDashboard();
-            }
-        }
-        
-        // دالة وهمية لتبديل تبويبات لوحة التحكم
-        function switchDashboardTab(tab) {
-            if (tab === 'overview' && typeof showDashboardOverview === 'function') {
-                showDashboardOverview();
-            } else if (tab === 'orders' && typeof showAllOrders === 'function') {
-                showAllOrders();
-            } else if (tab === 'merchants' && typeof showApprovedMerchants === 'function') {
-                showApprovedMerchants();
-            }
-        }
     </script>
 
-    <!-- ===== ربط ملفات JavaScript بالترتيب الصحيح ===== -->
-    <!-- أولاً: الملف الرئيسي -->
-    <script src="nardoo-pro.js"></script>
-    <!-- ثانياً: ملف Reels -->
-    <script src="reels.js"></script>
+    <!-- ===== ربط ملف JavaScript الرئيسي ===== -->
+    <script src="script.js"></script>
 </body>
 </html>
