@@ -1,1 +1,200 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نكهة وجمال | ناردو برو 2026</title>
+    
+    <!-- 1️⃣ الروابط الخارجية -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- 2️⃣ ربط ملف CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 3️⃣ شاشة التحميل -->
+    <div class="loader" id="loader">
+        <div class="loader-spinner"></div>
+    </div>
 
+    <!-- 4️⃣ نظام الإشعارات -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 5️⃣ سلة التسوق الجانبية -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3><i class="fas fa-shopping-cart"></i> سلة التسوق</h3>
+            <i class="fas fa-times close-cart" onclick="toggleCart()"></i>
+        </div>
+        <div class="cart-items" id="cartItems"></div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>المجموع:</span>
+                <span id="cartTotal">0 دج</span>
+            </div>
+            <button class="checkout-btn" onclick="checkoutCart()">
+                <i class="fab fa-whatsapp"></i> إتمام الطلب
+            </button>
+        </div>
+    </div>
+
+    <!-- 6️⃣ الشريط العلوي -->
+    <div class="top-bar">
+        <div class="container">
+            <div class="top-bar-item"><i class="fas fa-truck-fast"></i><span>شحن مجاني</span></div>
+            <div class="top-bar-item"><i class="fas fa-headset"></i><span>دعم 24/7</span></div>
+            <div class="top-bar-item"><i class="fas fa-gem"></i><span>منتجات أصلية</span></div>
+            <div class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
+                <i class="fas fa-moon"></i><span>ليلي</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7️⃣ شريط العروض المتحرك -->
+    <div class="marquee-bar">
+        <div class="marquee-content" id="marqueeContent">
+            <div class="marquee-item"><i class="fas fa-fire"></i><span>تخفيضات 50%</span></div>
+            <div class="marquee-item"><i class="fas fa-gem"></i><span>عروض حصرية</span></div>
+        </div>
+    </div>
+
+    <!-- 8️⃣ قسم Reels -->
+    <div class="reels-promo-bar">
+        <div class="container">
+            <div class="reels-scroll-container">
+                <button class="reels-scroll-btn left" onclick="scrollReels('left')">❮</button>
+                <div class="reels-track" id="reelsTrack"></div>
+                <button class="reels-scroll-btn right" onclick="scrollReels('right')">❯</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 9️⃣ الهيدر الرئيسي -->
+    <header class="main-header">
+        <div class="container header-content">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-leaf"></i></div>
+                <div class="logo-text">
+                    <h1>نكهة وجمال</h1>
+                    <span>ناردو برو 2026</span>
+                </div>
+            </div>
+            
+            <!-- 🔟 مربع البحث -->
+            <div class="search-wrapper">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="ابحث..." onkeyup="searchProducts()">
+                    <button onclick="searchProducts()"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+            
+            <!-- 1️⃣1️⃣ أزرار الإجراءات -->
+            <div class="header-actions">
+                <button class="action-btn" onclick="openLoginModal()" id="userBtn"><i class="far fa-user"></i></button>
+                <button class="action-btn" onclick="toggleCart()"><i class="fas fa-shopping-cart"></i><span class="cart-count" id="cartCounter">0</span></button>
+                <button class="action-btn" onclick="openDashboard()" id="dashboardBtn" style="display:none;"><i class="fas fa-chart-line"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 1️⃣2️⃣ القائمة الرئيسية -->
+    <div class="container">
+        <nav class="nav-menu" id="mainNav"></nav>
+    </div>
+
+    <!-- 1️⃣3️⃣ خيارات الفرز -->
+    <div class="container">
+        <div class="sort-options">
+            <select class="sort-select" id="sortSelect" onchange="changeSort(this.value)">
+                <option value="newest">📅 الأحدث</option>
+                <option value="price_low">💰 الأقل سعراً</option>
+                <option value="price_high">💰 الأعلى سعراً</option>
+                <option value="rating">⭐ الأعلى تقييماً</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 1️⃣4️⃣ نص متحرك -->
+    <div class="container">
+        <div class="typing-container">
+            <span id="typing-text"></span>
+        </div>
+    </div>
+
+    <!-- 1️⃣5️⃣ لوحة التاجر -->
+    <div class="container" id="merchantPanelContainer" style="display:none;"></div>
+
+    <!-- 1️⃣6️⃣ شبكة المنتجات -->
+    <div class="container">
+        <div class="products-grid" id="productsContainer"></div>
+    </div>
+
+    <!-- 1️⃣7️⃣ لوحة التحكم -->
+    <div class="container dashboard-section" id="dashboardSection" style="display:none;">
+        <div class="dashboard-tabs" id="dashboardTabs"></div>
+        <div class="dashboard-content" id="dashboardContent"></div>
+    </div>
+
+    <!-- 1️⃣8️⃣ الفوتر -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col"><h3>نكهة وجمال</h3><p>المتجر الذكي</p></div>
+                <div class="footer-col"><h3>اتصل بنا</h3><p><i class="fab fa-telegram"></i> @nardoo_support</p></div>
+            </div>
+            <div class="copyright">© 2026 ناردو برو</div>
+        </div>
+    </footer>
+
+    <!-- 1️⃣9️⃣ أيقونات ثابتة -->
+    <div class="fixed-cart" onclick="toggleCart()">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="fixed-cart-count" id="fixedCartCounter">0</span>
+    </div>
+
+    <!-- 2️⃣0️⃣ أزرار التنقل -->
+    <div class="navigation-buttons">
+        <button class="nav-btn up-btn" onclick="scrollToTop()"><i class="fas fa-arrow-up"></i></button>
+        <button class="nav-btn down-btn" onclick="scrollToBottom()"><i class="fas fa-arrow-down"></i></button>
+    </div>
+
+    <!-- 2️⃣1️⃣ نوافذ منبثقة -->
+    <!-- نافذة تسجيل الدخول -->
+    <div class="modal" id="loginModal" onclick="if(event.target===this) closeModal('loginModal')">
+        <div class="modal-content" id="loginModalContent"></div>
+    </div>
+
+    <!-- نافذة إضافة منتج -->
+    <div class="modal" id="productModal" onclick="if(event.target===this) closeModal('productModal')">
+        <div class="modal-content" id="productModalContent"></div>
+    </div>
+
+    <!-- نافذة تفاصيل المنتج -->
+    <div class="modal" id="productDetailModal" onclick="if(event.target===this) closeModal('productDetailModal')">
+        <div class="modal-content" id="productDetailContent"></div>
+    </div>
+
+    <!-- نافذة عرض Reel -->
+    <div class="modal" id="reelViewModal" onclick="if(event.target===this) closeModal('reelViewModal')">
+        <div class="modal-content reel-modal-content" id="reelViewContent"></div>
+    </div>
+
+    <!-- 2️⃣2️⃣ مكتبة AOS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <!-- 2️⃣3️⃣ ربط ملفات JavaScript -->
+    <script src="nardoo-pro.js"></script>
+    <script src="reels.js"></script>
+    
+    <!-- 2️⃣4️⃣ تهيئة AOS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({ duration: 800, once: true });
+        });
+    </script>
+</body>
+</html>
