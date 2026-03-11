@@ -2247,9 +2247,7 @@ const styleSheet = document.createElement("style");
 styleSheet.textContent = styles;
 document.head.appendChild(styleSheet);
 
-سأقوم بإصلاح مشكلة الريلز وجعلها تعمل بشكل صحيح. المشكلة الرئيسية هي أن API Keys غير صحيحة وبعض الدوال تحتاج إلى تعديل:
 
-```javascript
 // ========== 21. النظام المتكامل لجلب بصمات Reels من جميع المنصات (محدث) ==========
 
 const MULTI_PLATFORM = {
