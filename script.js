@@ -1,4 +1,4 @@
-
+الرحوية js
 
 // ========== ناردو برو - النظام النهائي المتكامل ==========
 
@@ -3282,219 +3282,1031 @@ window.searchReelByThumbprint = searchReelByThumbprint;
 window.backToProducts = backToProducts;
 window.copyToClipboard = copyToClipboard;
 
-// ========== 22. تعديل ظهور Reels في المكان المحدد ==========
+// ========== 22. نظام Reels الاحترافي - عرض حقيقي + إضافة من الجميع ==========
 
-// دالة لتحديث قسم Reels في الصفحة الرئيسية
-function updateHomeReels() {
-    const reelsHomeSection = document.querySelector('.reels-home-section');
-    if (!reelsHomeSection) return;
+// ========== إعدادات Reels المتقدمة ==========
+const REELS_PRO_CONFIG = {
+    // عرض
+    displayCount: 6,                    // عدد Reels في الصف الرئيسي
+    gridColumns: 6,                      // عدد الأعمدة
+    thumbnailAspect: '9/16',              // نسبة أبعاد الصورة
     
-    // آخر 6 Reels للعرض في الصفحة الرئيسية
-    const latestReels = reelsDatabase.slice(0, 6);
+    // إضافة
+    allowAdd: true,                       // السماح بإضافة Reels
+    maxPerUser: 100,                       // أقصى عدد لكل مستخدم
+    pointsPerReel: 10,                     // نقاط لكل Reel
     
-    if (latestReels.length === 0) {
-        reelsHomeSection.innerHTML = `
-            <div style="text-align: center; padding: 20px;">
-                <i class="fas fa-film" style="font-size: 40px; color: var(--gold);"></i>
-                <p style="color: #888;">جاري تحميل الريالز...</p>
-            </div>
-        `;
-        return;
+    // تحديث
+    autoRefresh: 30000,                    // تحديث كل 30 ثانية
+    refreshOnAdd: true,                    // تحديث عند الإضافة
+    
+    // أدوار المسموح لهم
+    allowedRoles: ['admin', 'merchant_approved', 'customer'],
+    
+    // مكافآت حسب الدور
+    rewards: {
+        'admin': 0,
+        'merchant_approved': 20,
+        'customer': 10
     }
+};
+
+// ========== قاعدة بيانات Reels المضافة من المستخدمين ==========
+let userReelsDB = JSON.parse(localStorage.getItem('nardoo_user_reels') || '[]');
+
+// ========== 1. دالة إنشاء القسم الرئيسي ==========
+function initReelsSection() {
+    // إضافة CSS
+    addReelsStyles();
     
-    let reelsHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;">';
+    // إنشاء القسم بعد تحميل الصفحة
+    setTimeout(() => {
+        createMainReelsSection();
+    }, 1000);
     
-    latestReels.forEach(reel => {
-        // اختيار لون المنصة
-        let platformColor = '#888';
-        let platformIcon = 'fas fa-link';
-        
-        switch(reel.platform) {
-            case 'youtube':
-                platformColor = '#FF0000';
-                platformIcon = 'fab fa-youtube';
-                break;
-            case 'instagram':
-                platformColor = '#E4405F';
-                platformIcon = 'fab fa-instagram';
-                break;
-            case 'tiktok':
-                platformColor = '#000000';
-                platformIcon = 'fab fa-tiktok';
-                break;
-        }
-        
-        reelsHTML += `
-            <div class="home-reel-card" onclick="openReelModal('${reel.thumbprint}')" 
-                 style="position: relative; border-radius: 12px; overflow: hidden; cursor: pointer; aspect-ratio: 9/16; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: transform 0.3s ease;">
-                
-                <img src="${reel.thumbnail || 'https://via.placeholder.com/150x266'}" 
-                     style="width: 100%; height: 100%; object-fit: cover;"
-                     onerror="this.src='https://via.placeholder.com/150x266/2c5e4f/ffffff?text=Reel';">
-                
-                <div style="position: absolute; top: 5px; right: 5px; background: ${platformColor}; color: white; padding: 3px 8px; border-radius: 20px; font-size: 10px; display: flex; align-items: center; gap: 3px;">
-                    <i class="${platformIcon}" style="font-size: 8px;"></i>
-                </div>
-                
-                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 20px 8px 8px 8px; color: white; font-size: 11px;">
-                    <div style="display: flex; align-items: center; gap: 3px; margin-bottom: 2px;">
-                        <i class="fas fa-eye" style="font-size: 8px;"></i>
-                        ${(reel.views / 1000000).toFixed(1)}M
-                    </div>
-                    <div style="font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        ${reel.title.substring(0, 20)}...
-                    </div>
-                </div>
-                
-                <div style="position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.6); color: #FFD700; padding: 2px 5px; border-radius: 10px; font-size: 8px; font-family: monospace;">
-                    ${reel.thumbprint.substring(0, 8)}...
-                </div>
-            </div>
-        `;
-    });
+    // تشغيل التحديث التلقائي
+    setInterval(() => {
+        updateReelsSection();
+    }, REELS_PRO_CONFIG.autoRefresh);
     
-    reelsHTML += '</div>';
-    
-    // إضافة زر "عرض الكل"
-    reelsHTML += `
-        <div style="text-align: center; margin-top: 15px;">
-            <button class="btn-gold" onclick="showReelsSection()" style="padding: 8px 20px; font-size: 14px;">
-                <i class="fas fa-film"></i> عرض كل الـ Reels
-            </button>
-        </div>
-    `;
-    
-    reelsHomeSection.innerHTML = reelsHTML;
+    console.log('✅ نظام Reels الاحترافي جاهز');
 }
 
-// ========== إنشاء قسم Reels في الصفحة الرئيسية ==========
-function createHomeReelsSection() {
-    // البحث عن المكان المناسب - تحت "reels حصريّة"
+// ========== 2. إنشاء قسم Reels الرئيسي ==========
+function createMainReelsSection() {
     const container = document.querySelector('.container');
     if (!container) return;
     
-    // البحث عن النص "reels حصريّة" في الصفحة
-    const allElements = document.querySelectorAll('*');
-    let targetElement = null;
+    // حذف القديم
+    const oldSection = document.getElementById('proReelsSection');
+    if (oldSection) oldSection.remove();
     
-    for (let el of allElements) {
-        if (el.textContent && el.textContent.includes('reels حصريّة')) {
-            targetElement = el.parentElement;
-            break;
-        }
-    }
-    
-    if (!targetElement) {
-        // إذا لم نجد، نضيف بعد الهيدر مباشرة
-        targetElement = container;
-    }
-    
-    // إنشاء قسم Reels
+    // إنشاء القسم الجديد
     const reelsSection = document.createElement('div');
-    reelsSection.className = 'reels-home-section';
-    reelsSection.style.margin = '30px 0';
-    reelsSection.style.padding = '20px';
-    reelsSection.style.background = 'var(--glass)';
-    reelsSection.style.borderRadius = '20px';
-    reelsSection.style.border = '1px solid var(--gold)';
+    reelsSection.id = 'proReelsSection';
+    reelsSection.className = 'pro-reels-section';
+    
+    // الهيدر
     reelsSection.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 style="color: var(--gold); margin: 0;">
-                <i class="fas fa-film"></i> Reels حصريّة
-            </h3>
-            <span style="background: var(--gold); color: black; padding: 5px 15px; border-radius: 20px; font-size: 14px;">
-                ${reelsDatabase.length} Reel
-            </span>
+        <div class="reels-header">
+            <div class="reels-title">
+                <i class="fas fa-film"></i>
+                <h2>reels</h2>
+                <span class="live-badge">LIVE</span>
+                <span class="count-badge">${reelsDatabase.length} Reel</span>
+            </div>
+            
+            <div class="reels-actions">
+                ${currentUser ? `
+                    <button class="add-reel-btn" onclick="showAddReelModal()">
+                        <i class="fas fa-plus-circle"></i>
+                        إضافة Reel
+                    </button>
+                ` : `
+                    <button class="login-btn" onclick="openLoginModal()">
+                        <i class="fas fa-sign-in-alt"></i>
+                        سجل دخول للإضافة
+                    </button>
+                `}
+                <button class="view-all-btn" onclick="showReelsSection()">
+                    عرض الكل
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <button class="refresh-btn" onclick="searchAllPlatforms()">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
         </div>
-        <div class="reels-home-grid">
-            جاري تحميل الريالز...
+        
+        <div class="reels-grid" id="mainReelsGrid">
+            ${generateReelsHTML()}
         </div>
     `;
     
-    // إضافة بعد العنصر المستهدف
-    if (targetElement.nextSibling) {
-        targetElement.parentNode.insertBefore(reelsSection, targetElement.nextSibling);
+    // إضافة في بداية container
+    if (container.firstChild) {
+        container.insertBefore(reelsSection, container.firstChild);
     } else {
-        targetElement.parentNode.appendChild(reelsSection);
+        container.appendChild(reelsSection);
     }
-    
-    // تحديث المحتوى
-    updateHomeReels();
 }
 
-// ========== تعديل CSS لإضافة أنماط Reels الرئيسية ==========
-function addHomeReelsStyles() {
+// ========== 3. توليد HTML للـ Reels ==========
+function generateReelsHTML() {
+    if (!reelsDatabase || reelsDatabase.length === 0) {
+        return `
+            <div class="empty-reels">
+                <i class="fas fa-film"></i>
+                <p>لا توجد Reels بعد</p>
+                <div class="empty-actions">
+                    <button class="btn-gold" onclick="searchAllPlatforms()">
+                        <i class="fas fa-search"></i> بحث في المنصات
+                    </button>
+                    ${currentUser ? `
+                        <button class="btn-outline-gold" onclick="showAddReelModal()">
+                            <i class="fas fa-plus-circle"></i> إضافة Reel
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+    
+    // أحدث Reels
+    const latestReels = reelsDatabase.slice(0, REELS_PRO_CONFIG.displayCount);
+    
+    return latestReels.map(reel => {
+        const platform = getPlatformData(reel.platform);
+        const views = formatViews(reel.views || Math.floor(Math.random() * 5000000000));
+        const duration = reel.duration || generateDuration();
+        const thumbprint = reel.thumbprint || generateThumbprint(reel);
+        const isUserReel = reel.addedBy ? true : false;
+        
+        return `
+            <div class="reel-card" onclick="openReelModal('${reel.thumbprint || thumbprint}')">
+                <div class="reel-thumbnail">
+                    <img src="${getThumbnail(reel)}" 
+                         alt="${reel.title || 'Reel'}"
+                         onerror="this.src='https://via.placeholder.com/200x350/2c5e4f/ffffff?text=Reel';">
+                    
+                    <button class="play-button">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    
+                    <div class="platform-badge" style="background: ${platform.color};">
+                        <i class="${platform.icon}"></i>
+                        <span>${platform.short}</span>
+                    </div>
+                    
+                    <div class="thumbprint-badge" title="${thumbprint}">
+                        ${thumbprint.substring(0, 15)}...
+                    </div>
+                    
+                    <div class="duration-badge">
+                        <i class="fas fa-clock"></i>
+                        ${duration}
+                    </div>
+                    
+                    ${isUserReel ? `
+                        <div class="user-badge">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div class="reel-info">
+                    <div class="reel-title-row">
+                        <span class="reel-title">${truncate(reel.title || 'Reel', 25)}</span>
+                        <span class="reel-views">
+                            <i class="fas fa-eye"></i>
+                            ${views}
+                        </span>
+                    </div>
+                    <div class="reel-channel">
+                        <i class="fas fa-user-circle"></i>
+                        ${truncate(reel.channel || 'user', 15)}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ========== 4. تحديث قسم Reels ==========
+function updateReelsSection() {
+    const grid = document.getElementById('mainReelsGrid');
+    if (grid) {
+        grid.innerHTML = generateReelsHTML();
+    }
+    
+    // تحديث العدد
+    const countBadge = document.querySelector('.count-badge');
+    if (countBadge) {
+        countBadge.textContent = `${reelsDatabase.length} Reel`;
+    }
+}
+
+// ========== 5. فتح نافذة إضافة Reel ==========
+function showAddReelModal() {
+    if (!currentUser) {
+        showNotification('يجب تسجيل الدخول أولاً', 'warning');
+        openLoginModal();
+        return;
+    }
+    
+    if (!REELS_PRO_CONFIG.allowedRoles.includes(currentUser.role)) {
+        showNotification('غير مصرح لك بإضافة Reels', 'error');
+        return;
+    }
+    
+    const userReelsCount = userReelsDB.filter(r => r.addedBy === currentUser.id).length;
+    const maxReels = REELS_PRO_CONFIG.maxPerUser;
+    const points = REELS_PRO_CONFIG.rewards[currentUser.role] || 0;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'addReelModal';
+    modal.style.display = 'flex';
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--gold), #ffd700);">
+                <h2><i class="fas fa-plus-circle"></i> إضافة Reel جديد</h2>
+                <button class="close-btn" onclick="closeReelModal()">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="user-info-card">
+                    <div class="user-info">
+                        <i class="fas fa-user-circle"></i>
+                        <div>
+                            <div class="user-name">${currentUser.name}</div>
+                            <div class="user-role">${getUserRoleText(currentUser.role)}</div>
+                        </div>
+                    </div>
+                    <div class="user-stats">
+                        <span class="stat">
+                            <i class="fas fa-film"></i>
+                            ${userReelsCount}/${maxReels}
+                        </span>
+                        ${points > 0 ? `
+                            <span class="stat points">
+                                <i class="fas fa-star"></i>
+                                +${points}
+                            </span>
+                        ` : ''}
+                    </div>
+                </div>
+                
+                <form id="addReelForm" onsubmit="event.preventDefault(); saveReel()">
+                    <div class="form-group">
+                        <label><i class="fas fa-link"></i> رابط Reel</label>
+                        <input type="url" id="reelUrl" placeholder="https://youtube.com/shorts/... أو https://instagram.com/reel/..." required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label><i class="fas fa-globe"></i> المنصة</label>
+                            <select id="reelPlatform" required>
+                                <option value="youtube">▶️ يوتيوب</option>
+                                <option value="instagram">📷 إنستغرام</option>
+                                <option value="tiktok">🎵 تيك توك</option>
+                                <option value="telegram">📱 تلجرام</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group half">
+                            <label><i class="fas fa-heading"></i> عنوان (اختياري)</label>
+                            <input type="text" id="reelTitle" placeholder="أدخل عنواناً">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-image"></i> صورة مصغرة (اختياري)</label>
+                        <input type="file" id="reelThumbnail" accept="image/*">
+                        <div id="thumbnailPreview" class="thumbnail-preview"></div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-gold">
+                            <i class="fas fa-plus-circle"></i>
+                            إضافة Reel
+                        </button>
+                        <button type="button" class="btn-outline-gold" onclick="closeReelModal()">
+                            إلغاء
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // معاينة الصورة
+    document.getElementById('reelThumbnail').addEventListener('change', function(e) {
+        const preview = document.getElementById('thumbnailPreview');
+        if (e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                preview.innerHTML = `<img src="${ev.target.result}" alt="Preview">`;
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        } else {
+            preview.innerHTML = '';
+        }
+    });
+}
+
+// ========== 6. حفظ Reel جديد ==========
+async function saveReel() {
+    const url = document.getElementById('reelUrl').value;
+    const platform = document.getElementById('reelPlatform').value;
+    const customTitle = document.getElementById('reelTitle').value;
+    const thumbnailFile = document.getElementById('reelThumbnail').files[0];
+    
+    if (!url) {
+        showNotification('الرجاء إدخال رابط Reel', 'error');
+        return;
+    }
+    
+    showNotification('جاري إضافة Reel...', 'info');
+    
+    // استخراج البيانات
+    let reelData = await extractReelData(url, platform);
+    
+    if (!reelData) {
+        reelData = {
+            id: 'user_' + Date.now() + '_' + Math.random().toString(36).substring(7),
+            platform: platform,
+            platformCode: platform.substring(0, 2).toUpperCase(),
+            title: customTitle || 'Reel من مستخدم',
+            channel: currentUser.name,
+            thumbnail: 'https://via.placeholder.com/320x480/2c5e4f/ffffff?text=Reel',
+            url: url,
+            views: 0,
+            addedBy: currentUser.id,
+            addedByName: currentUser.name,
+            addedByRole: currentUser.role,
+            addedAt: new Date().toISOString()
+        };
+    }
+    
+    // إضافة بيانات المستخدم
+    reelData.addedBy = currentUser.id;
+    reelData.addedByName = currentUser.name;
+    reelData.addedByRole = currentUser.role;
+    reelData.addedAt = new Date().toISOString();
+    
+    // توليد بصمة
+    reelData.thumbprint = generateUserThumbprint(reelData);
+    
+    // حفظ الصورة
+    if (thumbnailFile) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            reelData.customThumbnail = e.target.result;
+            completeSave(reelData);
+        };
+        reader.readAsDataURL(thumbnailFile);
+    } else {
+        completeSave(reelData);
+    }
+}
+
+// ========== 7. إكمال الحفظ ==========
+function completeSave(reelData) {
+    // إضافة للنظام العام
+    reelsDatabase.unshift(reelData);
+    localStorage.setItem('nardoo_reels', JSON.stringify(reelsDatabase));
+    
+    // إضافة لسجل المستخدمين
+    userReelsDB.unshift(reelData);
+    localStorage.setItem('nardoo_user_reels', JSON.stringify(userReelsDB));
+    
+    // إرسال إلى تلجرام
+    if (typeof sendReelToTelegramChannel === 'function') {
+        sendReelToTelegramChannel(reelData);
+    }
+    
+    // إغلاق المودال
+    closeReelModal();
+    
+    // رسالة نجاح
+    showNotification('✅ تم إضافة Reel بنجاح', 'success');
+    
+    // تحديث العرض
+    updateReelsSection();
+    if (typeof displayReels === 'function' && document.getElementById('reelsSection')?.style.display === 'block') {
+        displayReels();
+    }
+}
+
+// ========== 8. دوال مساعدة ==========
+function closeReelModal() {
+    const modal = document.getElementById('addReelModal');
+    if (modal) modal.remove();
+}
+
+function getUserRoleText(role) {
+    switch(role) {
+        case 'admin': return '👑 مدير';
+        case 'merchant_approved': return '🏪 تاجر';
+        case 'customer': return '🛒 مشتري';
+        default: return '👤 مستخدم';
+    }
+}
+
+function getPlatformData(platform) {
+    switch(platform) {
+        case 'youtube':
+            return { color: '#FF0000', icon: 'fab fa-youtube', short: 'YT' };
+        case 'instagram':
+            return { color: '#E4405F', icon: 'fab fa-instagram', short: 'IG' };
+        case 'tiktok':
+            return { color: '#000000', icon: 'fab fa-tiktok', short: 'TT' };
+        case 'telegram':
+            return { color: '#0088cc', icon: 'fab fa-telegram', short: 'TG' };
+        default:
+            return { color: '#888', icon: 'fas fa-link', short: 'REEL' };
+    }
+}
+
+function getThumbnail(reel) {
+    if (reel.customThumbnail) return reel.customThumbnail;
+    if (reel.thumbnail) return reel.thumbnail;
+    if (reel.platform === 'youtube' && reel.id) {
+        return `https://img.youtube.com/vi/${reel.id}/maxresdefault.jpg`;
+    }
+    return 'https://via.placeholder.com/200x350/2c5e4f/ffffff?text=Reel';
+}
+
+function formatViews(views) {
+    if (!views) return '0';
+    if (views >= 1000000000) return (views / 1000000000).toFixed(1) + 'B';
+    if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M';
+    if (views >= 1000) return (views / 1000).toFixed(1) + 'K';
+    return views.toString();
+}
+
+function generateDuration() {
+    const minutes = Math.floor(Math.random() * 3) + 1;
+    const seconds = Math.floor(Math.random() * 50) + 10;
+    return `${minutes}:${seconds}`;
+}
+
+function truncate(str, length) {
+    if (!str) return '';
+    return str.length > length ? str.substring(0, length) + '...' : str;
+}
+
+function generateThumbprint(reel) {
+    const platform = reel.platformCode || reel.platform.substring(0, 2).toUpperCase();
+    const idPart = reel.id ? reel.id.toString().substring(0, 6) : 'XXXXXX';
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `TP_${platform}_${idPart}_${random}`;
+}
+
+function generateUserThumbprint(reel) {
+    const platform = reel.platformCode || reel.platform.substring(0, 2).toUpperCase();
+    const userPart = currentUser.id.toString().substring(0, 4);
+    const date = new Date().toISOString().split('T')[0].replace(/-/g, '').substring(2);
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `USR_${platform}_${userPart}_${date}_${random}`;
+}
+
+async function extractReelData(url, platform) {
+    try {
+        if (url.includes('youtube.com/shorts/') || url.includes('youtu.be/')) {
+            const videoId = url.includes('shorts/') 
+                ? url.split('shorts/')[1].split('?')[0].split('/')[0]
+                : url.split('youtu.be/')[1].split('?')[0];
+                
+            return {
+                id: videoId,
+                platform: 'youtube',
+                platformCode: 'YO',
+                title: 'يوتيوب Shorts',
+                channel: 'يوتيوب',
+                thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+                url: `https://youtube.com/shorts/${videoId}`,
+                embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1`,
+                views: 0
+            };
+        }
+        else if (url.includes('instagram.com/reel/')) {
+            const code = url.split('/reel/')[1].split('/')[0].split('?')[0];
+            return {
+                id: code,
+                platform: 'instagram',
+                platformCode: 'IN',
+                title: 'إنستغرام Reel',
+                channel: 'instagram_user',
+                thumbnail: `https://via.placeholder.com/320x480/E4405F/ffffff?text=Instagram`,
+                url: url,
+                views: 0
+            };
+        }
+        else if (url.includes('tiktok.com/')) {
+            return {
+                id: 'tt_' + Date.now(),
+                platform: 'tiktok',
+                platformCode: 'TK',
+                title: 'تيك توك فيديو',
+                channel: 'tiktok_user',
+                thumbnail: `https://via.placeholder.com/320x480/000000/ffffff?text=TikTok`,
+                url: url,
+                views: 0
+            };
+        }
+        return null;
+    } catch (error) {
+        console.error('خطأ في استخراج البيانات:', error);
+        return null;
+    }
+}
+
+// ========== 9. إضافة CSS ==========
+function addReelsStyles() {
     const style = document.createElement('style');
     style.textContent = `
-        .reels-home-section {
-            animation: fadeIn 0.5s ease;
+        .pro-reels-section {
+            margin: 20px 0 30px 0;
+            padding: 25px;
+            background: var(--glass);
+            border-radius: 25px;
+            border: 2px solid var(--gold);
+            box-shadow: 0 15px 40px rgba(255,215,0,0.15);
+            animation: slideDown 0.5s ease;
         }
         
-        .home-reel-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 2px solid transparent;
-        }
-        
-        .home-reel-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.4);
-            border-color: var(--gold);
-        }
-        
-        .reels-home-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-30px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .reels-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .reels-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .reels-title i {
+            font-size: 32px;
+            color: var(--gold);
+        }
+        
+        .reels-title h2 {
+            color: var(--gold);
+            font-size: 28px;
+            font-weight: bold;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+        
+        .live-badge {
+            background: #FF0000;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .live-badge i {
+            font-size: 8px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .count-badge {
+            background: var(--gold);
+            color: black;
+            padding: 5px 15px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        
+        .reels-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .add-reel-btn {
+            background: linear-gradient(135deg, var(--gold), #ffd700);
+            color: black;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .add-reel-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255,215,0,0.4);
+        }
+        
+        .login-btn {
+            background: var(--glass);
+            color: var(--text);
+            border: 1px solid var(--gold);
+            padding: 10px 22px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .login-btn:hover {
+            background: var(--gold);
+            color: black;
+        }
+        
+        .view-all-btn {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .view-all-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+        
+        .refresh-btn {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            transform: rotate(180deg);
+        }
+        
+        .reels-grid {
+            display: grid;
+            grid-template-columns: repeat(${REELS_PRO_CONFIG.gridColumns}, 1fr);
+            gap: 20px;
+        }
+        
+        .reel-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .reel-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .reel-card:hover .reel-thumbnail img {
+            transform: scale(1.1);
+        }
+        
+        .reel-thumbnail {
+            position: relative;
+            border-radius: 18px;
+            overflow: hidden;
+            aspect-ratio: ${REELS_PRO_CONFIG.thumbnailAspect};
+            background: #1a1a1a;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        
+        .reel-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.25);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+        
+        .reel-card:hover .play-button {
+            opacity: 1;
+        }
+        
+        .play-button i {
+            color: white;
+            font-size: 18px;
+            margin-left: 2px;
+        }
+        
+        .platform-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .thumbprint-badge {
+            position: absolute;
+            bottom: 45px;
+            left: 8px;
+            background: rgba(0,0,0,0.75);
+            color: #FFD700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-family: monospace;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+        
+        .duration-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.75);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            backdrop-filter: blur(4px);
+        }
+        
+        .user-badge {
+            position: absolute;
+            top: 40px;
+            right: 8px;
+            background: rgba(255,215,0,0.9);
+            color: black;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 9px;
+        }
+        
+        .reel-info {
+            margin-top: 12px;
+            padding: 0 5px;
+        }
+        
+        .reel-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .reel-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 70%;
+        }
+        
+        .reel-views {
+            font-size: 12px;
+            color: #FFD700;
+            background: rgba(255,215,0,0.1);
+            padding: 2px 8px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .reel-channel {
+            font-size: 12px;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .empty-reels {
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 60px;
+            background: var(--glass);
+            border-radius: 20px;
+        }
+        
+        .empty-reels i {
+            font-size: 60px;
+            color: var(--gold);
+            opacity: 0.5;
+            margin-bottom: 15px;
+        }
+        
+        .empty-reels p {
+            color: #888;
+            margin-bottom: 20px;
+        }
+        
+        .empty-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        /* مودال الإضافة */
+        .user-info-card {
+            background: var(--glass);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--gold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-info i {
+            font-size: 30px;
+            color: var(--gold);
+        }
+        
+        .user-name {
+            font-weight: bold;
+            color: var(--gold);
+        }
+        
+        .user-role {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .user-stats {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .stat {
+            background: rgba(255,215,0,0.1);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .stat.points {
+            background: rgba(255,215,0,0.3);
+            color: #FFD700;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--gold);
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            background: var(--glass);
+            color: var(--text);
+            border: 1px solid var(--border);
+            font-size: 14px;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .thumbnail-preview {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .thumbnail-preview img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 3px solid var(--gold);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .form-actions button {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+        }
+        
+        @media (max-width: 1200px) {
+            .reels-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .reels-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
         @media (max-width: 768px) {
-            .reels-home-grid {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-                gap: 10px;
+            .reels-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .reels-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .reels-grid {
+                grid-template-columns: 1fr;
             }
         }
     `;
     document.head.appendChild(style);
 }
 
-// ========== تحديث دالة التهيئة ==========
-function initHomeReels() {
-    addHomeReelsStyles();
-    
-    // إنشاء القسم بعد تحميل الصفحة
-    setTimeout(() => {
-        createHomeReelsSection();
-    }, 2000);
-    
-    // تحديث كلما تغيرت قاعدة البيانات
-    const originalFetch = fetchReelsFromTelegram;
-    window.fetchReelsFromTelegram = async function() {
-        const result = await originalFetch();
-        updateHomeReels();
-        return result;
-    };
-    
-    const originalSearch = searchAllPlatforms;
-    window.searchAllPlatforms = async function() {
-        const result = await originalSearch();
-        updateHomeReels();
-        return result;
-    };
-}
+// ========== 10. تشغيل النظام ==========
+initReelsSection();
 
-// تشغيل النظام
-initHomeReels();
-
-// تحديث عند إضافة Reels جديدة
-setInterval(() => {
-    updateHomeReels();
-}, 10000); // كل 10 ثواني
-
+// ========== دوال عامة ==========
+window.showAddReelModal = showAddReelModal;
+window.updateReelsSection = updateReelsSection;
+window.closeReelModal = closeReelModal;
+window.saveReel = saveReel;
 // ========== إغلاق النوافذ ==========
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
