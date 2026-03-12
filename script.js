@@ -1,4 +1,4 @@
-
+حك
 
 // ========== ناردو برو - النظام النهائي المتكامل ==========
 
@@ -3176,19 +3176,6 @@ function initReelsSystem() {
 // تشغيل النظام
 initReelsSystem();
 
-// ========== دوال عامة ==========
-window.searchAllPlatforms = searchAllPlatforms;
-window.fetchReelsFromTelegram = fetchReelsFromTelegram;
-window.scrollReels = scrollReels;
-window.openReelFullscreen = openReelFullscreen;
-window.closeReelFullscreen = closeReelFullscreen;
-window.likeReel = likeReel;
-window.shareReel = shareReel;
-window.downloadReel = downloadReel;
-window.copyReelLink = copyReelLink;
-window.showAddReelModal = showAddReelModal;
-window.toggleMute = toggleMute;
-window.copyToClipboard = copyToClipboard;
 // ========== إغلاق النوافذ ==========
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
