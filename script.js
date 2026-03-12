@@ -3282,6 +3282,218 @@ window.searchReelByThumbprint = searchReelByThumbprint;
 window.backToProducts = backToProducts;
 window.copyToClipboard = copyToClipboard;
 
+// ========== 22. تعديل ظهور Reels في المكان المحدد ==========
+
+// دالة لتحديث قسم Reels في الصفحة الرئيسية
+function updateHomeReels() {
+    const reelsHomeSection = document.querySelector('.reels-home-section');
+    if (!reelsHomeSection) return;
+    
+    // آخر 6 Reels للعرض في الصفحة الرئيسية
+    const latestReels = reelsDatabase.slice(0, 6);
+    
+    if (latestReels.length === 0) {
+        reelsHomeSection.innerHTML = `
+            <div style="text-align: center; padding: 20px;">
+                <i class="fas fa-film" style="font-size: 40px; color: var(--gold);"></i>
+                <p style="color: #888;">جاري تحميل الريالز...</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let reelsHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;">';
+    
+    latestReels.forEach(reel => {
+        // اختيار لون المنصة
+        let platformColor = '#888';
+        let platformIcon = 'fas fa-link';
+        
+        switch(reel.platform) {
+            case 'youtube':
+                platformColor = '#FF0000';
+                platformIcon = 'fab fa-youtube';
+                break;
+            case 'instagram':
+                platformColor = '#E4405F';
+                platformIcon = 'fab fa-instagram';
+                break;
+            case 'tiktok':
+                platformColor = '#000000';
+                platformIcon = 'fab fa-tiktok';
+                break;
+        }
+        
+        reelsHTML += `
+            <div class="home-reel-card" onclick="openReelModal('${reel.thumbprint}')" 
+                 style="position: relative; border-radius: 12px; overflow: hidden; cursor: pointer; aspect-ratio: 9/16; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: transform 0.3s ease;">
+                
+                <img src="${reel.thumbnail || 'https://via.placeholder.com/150x266'}" 
+                     style="width: 100%; height: 100%; object-fit: cover;"
+                     onerror="this.src='https://via.placeholder.com/150x266/2c5e4f/ffffff?text=Reel';">
+                
+                <div style="position: absolute; top: 5px; right: 5px; background: ${platformColor}; color: white; padding: 3px 8px; border-radius: 20px; font-size: 10px; display: flex; align-items: center; gap: 3px;">
+                    <i class="${platformIcon}" style="font-size: 8px;"></i>
+                </div>
+                
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 20px 8px 8px 8px; color: white; font-size: 11px;">
+                    <div style="display: flex; align-items: center; gap: 3px; margin-bottom: 2px;">
+                        <i class="fas fa-eye" style="font-size: 8px;"></i>
+                        ${(reel.views / 1000000).toFixed(1)}M
+                    </div>
+                    <div style="font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        ${reel.title.substring(0, 20)}...
+                    </div>
+                </div>
+                
+                <div style="position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.6); color: #FFD700; padding: 2px 5px; border-radius: 10px; font-size: 8px; font-family: monospace;">
+                    ${reel.thumbprint.substring(0, 8)}...
+                </div>
+            </div>
+        `;
+    });
+    
+    reelsHTML += '</div>';
+    
+    // إضافة زر "عرض الكل"
+    reelsHTML += `
+        <div style="text-align: center; margin-top: 15px;">
+            <button class="btn-gold" onclick="showReelsSection()" style="padding: 8px 20px; font-size: 14px;">
+                <i class="fas fa-film"></i> عرض كل الـ Reels
+            </button>
+        </div>
+    `;
+    
+    reelsHomeSection.innerHTML = reelsHTML;
+}
+
+// ========== إنشاء قسم Reels في الصفحة الرئيسية ==========
+function createHomeReelsSection() {
+    // البحث عن المكان المناسب - تحت "reels حصريّة"
+    const container = document.querySelector('.container');
+    if (!container) return;
+    
+    // البحث عن النص "reels حصريّة" في الصفحة
+    const allElements = document.querySelectorAll('*');
+    let targetElement = null;
+    
+    for (let el of allElements) {
+        if (el.textContent && el.textContent.includes('reels حصريّة')) {
+            targetElement = el.parentElement;
+            break;
+        }
+    }
+    
+    if (!targetElement) {
+        // إذا لم نجد، نضيف بعد الهيدر مباشرة
+        targetElement = container;
+    }
+    
+    // إنشاء قسم Reels
+    const reelsSection = document.createElement('div');
+    reelsSection.className = 'reels-home-section';
+    reelsSection.style.margin = '30px 0';
+    reelsSection.style.padding = '20px';
+    reelsSection.style.background = 'var(--glass)';
+    reelsSection.style.borderRadius = '20px';
+    reelsSection.style.border = '1px solid var(--gold)';
+    reelsSection.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="color: var(--gold); margin: 0;">
+                <i class="fas fa-film"></i> Reels حصريّة
+            </h3>
+            <span style="background: var(--gold); color: black; padding: 5px 15px; border-radius: 20px; font-size: 14px;">
+                ${reelsDatabase.length} Reel
+            </span>
+        </div>
+        <div class="reels-home-grid">
+            جاري تحميل الريالز...
+        </div>
+    `;
+    
+    // إضافة بعد العنصر المستهدف
+    if (targetElement.nextSibling) {
+        targetElement.parentNode.insertBefore(reelsSection, targetElement.nextSibling);
+    } else {
+        targetElement.parentNode.appendChild(reelsSection);
+    }
+    
+    // تحديث المحتوى
+    updateHomeReels();
+}
+
+// ========== تعديل CSS لإضافة أنماط Reels الرئيسية ==========
+function addHomeReelsStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .reels-home-section {
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .home-reel-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .home-reel-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.4);
+            border-color: var(--gold);
+        }
+        
+        .reels-home-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .reels-home-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// ========== تحديث دالة التهيئة ==========
+function initHomeReels() {
+    addHomeReelsStyles();
+    
+    // إنشاء القسم بعد تحميل الصفحة
+    setTimeout(() => {
+        createHomeReelsSection();
+    }, 2000);
+    
+    // تحديث كلما تغيرت قاعدة البيانات
+    const originalFetch = fetchReelsFromTelegram;
+    window.fetchReelsFromTelegram = async function() {
+        const result = await originalFetch();
+        updateHomeReels();
+        return result;
+    };
+    
+    const originalSearch = searchAllPlatforms;
+    window.searchAllPlatforms = async function() {
+        const result = await originalSearch();
+        updateHomeReels();
+        return result;
+    };
+}
+
+// تشغيل النظام
+initHomeReels();
+
+// تحديث عند إضافة Reels جديدة
+setInterval(() => {
+    updateHomeReels();
+}, 10000); // كل 10 ثواني
 
 // ========== إغلاق النوافذ ==========
 window.onclick = function(event) {
