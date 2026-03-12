@@ -72,149 +72,6 @@
             margin: 0 auto;
             padding: 0 15px;
         }
-
-        /* أنماط العجلة الدوارة */
-        .wheel-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 20px 0 30px;
-            perspective: 1200px;
-            width: 100%;
-        }
-        .wheel-3d {
-            position: relative;
-            width: 260px;
-            height: 260px;
-            transform-style: preserve-3d;
-            cursor: grab;
-            transition: transform 0.3s ease-out;
-            user-select: none;
-            touch-action: none;
-            margin: 0 auto;
-        }
-        .wheel-3d.dragging {
-            transition: none;
-            cursor: grabbing;
-        }
-        .wheel-option {
-            position: absolute;
-            width: 110px;
-            height: 110px;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%) rotateY(0deg) translateZ(130px);
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            border: 3px solid gold;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-            text-align: center;
-            transition: all 0.3s ease;
-            backface-visibility: visible;
-        }
-        .wheel-option i {
-            font-size: 35px;
-            margin-bottom: 5px;
-        }
-        .wheel-option span {
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .wheel-option[data-option="reel"] {
-            background: linear-gradient(135deg, #FF0000, #cc0000);
-        }
-        .wheel-option[data-option="live"] {
-            background: linear-gradient(135deg, #ff4444, #cc0000);
-        }
-        .wheel-option[data-option="tour"] {
-            background: linear-gradient(135deg, #00b894, #008b6b);
-        }
-        .wheel-option.active {
-            transform: translate(-50%, -50%) rotateY(0deg) translateZ(160px) scale(1.1);
-            box-shadow: 0 0 50px gold;
-            border-width: 4px;
-            z-index: 100;
-        }
-        .wheel-center {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            background: radial-gradient(circle, gold, transparent 80%);
-            border-radius: 50%;
-            filter: blur(12px);
-            animation: pulseGlow 2s infinite;
-            pointer-events: none;
-        }
-        .wheel-arrow {
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: gold;
-            font-size: 30px;
-            filter: drop-shadow(0 0 10px gold);
-            animation: bounceArrow 1.5s infinite;
-        }
-        .wheel-help {
-            text-align: center;
-            color: gold;
-            margin: 15px 0 10px;
-            font-size: 14px;
-            background: rgba(0,0,0,0.3);
-            padding: 8px 20px;
-            border-radius: 50px;
-            border: 1px solid gold;
-        }
-        .wheel-selected {
-            text-align: center;
-            margin: 10px 0;
-            padding: 8px 25px;
-            background: linear-gradient(135deg, #2c5e4f, #1a3a32);
-            border-radius: 50px;
-            border: 2px solid gold;
-            display: inline-block;
-        }
-        .wheel-selected span {
-            color: gold;
-            font-weight: bold;
-            font-size: 18px;
-        }
-        .wheel-btn {
-            background: linear-gradient(135deg, gold, #ffd700);
-            color: black;
-            border: none;
-            padding: 12px 35px;
-            border-radius: 50px;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 10px 30px rgba(212,175,55,0.5);
-            transition: all 0.3s ease;
-            margin: 15px 0;
-        }
-        .wheel-btn:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 15px 40px gold;
-        }
-        @keyframes pulseGlow {
-            0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-        }
-        @keyframes bounceArrow {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(-8px); }
-        }
     </style>
     
     <!-- ===== ربط ملف CSS الرئيسي ===== -->
@@ -305,7 +162,7 @@
         </div>
     </div>
 
-    <!-- ===== شريط Reels من تلجرام مع العجلة ===== -->
+    <!-- ===== شريط Reels من تلجرام مع العجلة المتكاملة ===== -->
     <div class="reels-promo-bar">
         <div class="container">
             <div class="reels-header-brand">
@@ -331,54 +188,131 @@
             </div>
             
             <div class="charging-tagline">
-                <span class="tagline-charge">شحن لساعة</span>
-                <span class="tagline-usage">و استعمال اليومين</span>
+                <span class="tagline-charge">شحن لساعة ✓</span>
+                <span class="tagline-usage">و استعمال اليومين ✗</span>
             </div>
             
             <div class="reels-divider">
-                <span class="divider-text">reels حصرية</span>
+                <span class="divider-text">Reels حصريّة</span>
                 <span class="divider-line"></span>
                 <span class="divider-icon">🎬</span>
             </div>
             
-            <!-- ===== العجلة الدوارة ===== -->
-            <div class="wheel-section">
-                <div class="wheel-3d" id="reels3DWheel">
-                    <!-- خيار Reel -->
-                    <div class="wheel-option" data-option="reel">
-                        <i class="fas fa-film"></i>
-                        <span>Reel</span>
-                    </div>
+            <!-- ===== العجلة الدوارة المتكاملة مع جميع الوظائف ===== -->
+            <div style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                margin: 20px 0 30px;
+                perspective: 1200px;
+                width: 100%;
+                background: linear-gradient(145deg, rgba(0,0,0,0.3), rgba(0,0,0,0.5));
+                border-radius: 60px;
+                padding: 20px 0;
+                border: 1px solid rgba(212,175,55,0.3);
+            ">
+                <!-- عنوان القسم -->
+                <div style="
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-bottom: 15px;
+                    color: gold;
+                    font-size: 16px;
+                    background: rgba(0,0,0,0.5);
+                    padding: 8px 25px;
+                    border-radius: 50px;
+                    border: 1px solid gold;
+                ">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>ماذا تريد أن تضيف؟</span>
+                </div>
+
+                <!-- العجلة -->
+                <div class="wheel-wrapper" style="
+                    position: relative;
+                    width: 280px;
+                    height: 280px;
+                    margin: 0 auto;
+                    cursor: grab;
+                ">
+                    <canvas id="functionWheelCanvas" width="280" height="280" style="
+                        width: 100%;
+                        height: 100%;
+                        display: block;
+                        border-radius: 50%;
+                        box-shadow: 0 0 40px rgba(212,175,55,0.6);
+                        transition: transform 0.1s ease;
+                    "></canvas>
                     
-                    <!-- خيار مباشر -->
-                    <div class="wheel-option" data-option="live">
-                        <i class="fas fa-video"></i>
-                        <span>مباشر</span>
-                    </div>
-                    
-                    <!-- خيار جولة -->
-                    <div class="wheel-option" data-option="tour">
-                        <i class="fas fa-globe"></i>
-                        <span>جولة</span>
-                    </div>
-                    
-                    <div class="wheel-center"></div>
-                    <div class="wheel-arrow">
+                    <!-- السهم العلوي -->
+                    <div style="
+                        position: absolute;
+                        top: -25px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        color: gold;
+                        font-size: 35px;
+                        filter: drop-shadow(0 0 10px gold);
+                        animation: bounce 1.5s infinite;
+                        z-index: 10;
+                    ">
                         <i class="fas fa-arrow-down"></i>
                     </div>
+                    
+                    <!-- النجمة في المنتصف -->
+                    <div style="
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 50px;
+                        height: 50px;
+                        background: gold;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        box-shadow: 0 0 30px gold;
+                        pointer-events: none;
+                        z-index: 5;
+                    ">
+                        <i class="fas fa-star" style="color: black; font-size: 25px;"></i>
+                    </div>
                 </div>
-                
-                <div class="wheel-help">
-                    <i class="fas fa-hand-pointer"></i> اسحب لاختيار نوع الإضافة
+
+                <!-- الخيار المحدد -->
+                <div style="
+                    text-align: center;
+                    margin: 15px 0;
+                    padding: 8px 25px;
+                    background: linear-gradient(135deg, #2c5e4f, #1a3a32);
+                    border-radius: 50px;
+                    border: 2px solid gold;
+                ">
+                    <span style="color: gold; font-weight: bold; font-size: 18px;" id="selectedWheelOption">Reel</span>
                 </div>
-                
-                <div class="wheel-selected">
-                    <span id="wheelSelectedText">إضافة Reel</span>
-                </div>
-                
-                <button class="wheel-btn" onclick="addFromWheel()">
+
+                <!-- زر الإضافة الرئيسي -->
+                <button onclick="handleWheelAdd()" style="
+                    background: linear-gradient(135deg, gold, #ffd700);
+                    color: black;
+                    border: none;
+                    padding: 12px 40px;
+                    border-radius: 50px;
+                    font-weight: bold;
+                    font-size: 16px;
+                    cursor: pointer;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 10px;
+                    box-shadow: 0 10px 30px rgba(212,175,55,0.5);
+                    transition: all 0.3s ease;
+                    margin-top: 5px;
+                ">
                     <i class="fas fa-plus-circle"></i>
-                    <span id="wheelBtnText">إضافة Reel</span>
+                    <span id="wheelAddButtonText">إضافة Reel</span>
                 </button>
             </div>
             
@@ -439,7 +373,7 @@
     <div class="container">
         <nav class="nav-menu" id="mainNav" data-aos="fade-up">
             <a class="nav-link active" onclick="filterProducts('all')"><i class="fas fa-home"></i><span>الرئيسية</span></a>
-            <a class="nav-link" onclick="filterProducts('promo')"><i class="fas fa-fire"></i><span>برموسيو</span></a>
+            <a class="nav-link" onclick="filterProducts('promo')"><i class="fas fa-fire"></i><span>برومسيون</span></a>
             <a class="nav-link" onclick="filterProducts('spices')"><i class="fas fa-mortar-pestle"></i><span>توابل</span></a>
             <a class="nav-link" onclick="filterProducts('cosmetic')"><i class="fas fa-spa"></i><span>كوسمتيك</span></a>
             <a class="nav-link" onclick="filterProducts('other')"><i class="fas fa-gem"></i><span>منتوجات أخرى</span></a>
@@ -655,7 +589,7 @@
                 <div class="form-group">
                     <label><i class="fas fa-tags"></i> القسم</label>
                     <select class="form-control" id="productCategory" required>
-                        <option value="promo">برموسيو</option>
+                        <option value="promo">برومسيون</option>
                         <option value="spices">توابل</option>
                         <option value="cosmetic">كوسمتيك</option>
                         <option value="other">منتوجات أخرى</option>
@@ -771,196 +705,415 @@
                 offset: 100
             });
             
-            // تهيئة العجلة الدوارة
+            // تهيئة العجلة
             initWheel();
         });
 
-        // ===== نظام العجلة الدوارة =====
-        const wheel = document.getElementById('reels3DWheel');
-        const options = document.querySelectorAll('.wheel-option');
-        let rotation = 0;
-        let dragging = false;
-        let lastX = 0;
-        let velocity = 0;
-        let frame = null;
-        let selected = 'reel';
-
-        // زوايا الخيارات
-        const angles = { 'reel': 0, 'live': 120, 'tour': 240 };
-
+        // ===== نظام العجلة المتكامل مع جميع الوظائف =====
+        let wheelRotation = 0;
+        let wheelDragging = false;
+        let wheelLastX = 0;
+        let wheelVelocity = 0;
+        let wheelFrame = null;
+        let selectedWheelIndex = 0;
+        
+        const wheelOptions = [
+            { id: 'reel', text: 'Reel', color: '#FF0000', icon: 'film' },
+            { id: 'live', text: 'مباشر', color: '#ff4444', icon: 'video' },
+            { id: 'tour', text: 'جولة', color: '#00b894', icon: 'globe' }
+        ];
+        
+        const canvas = document.getElementById('functionWheelCanvas');
+        
         function initWheel() {
-            if (!wheel) return;
+            if (!canvas) return;
+            drawWheel();
+            setupWheelEvents();
+        }
+        
+        function drawWheel() {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, 280, 280);
             
-            // تهيئة الزوايا
-            options.forEach(opt => {
-                const angle = angles[opt.dataset.option];
-                opt.style.transform = `translate(-50%, -50%) rotateY(${angle}deg) translateZ(130px)`;
-            });
-
+            const centerX = 140;
+            const centerY = 140;
+            const radius = 120;
+            
+            for (let i = 0; i < wheelOptions.length; i++) {
+                const startAngle = (i * 120 - wheelRotation) * Math.PI / 180;
+                const endAngle = ((i + 1) * 120 - wheelRotation) * Math.PI / 180;
+                
+                // رسم القطعة
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                
+                ctx.fillStyle = wheelOptions[i].color;
+                ctx.fill();
+                
+                // الحدود
+                ctx.strokeStyle = 'gold';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                
+                // النص
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + (60 * Math.PI / 180));
+                ctx.textAlign = 'center';
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 20px Cairo';
+                ctx.shadowColor = 'black';
+                ctx.shadowBlur = 8;
+                ctx.fillText(wheelOptions[i].text, 80, 10);
+                ctx.restore();
+            }
+            
+            updateSelectedOption();
+        }
+        
+        function setupWheelEvents() {
             // أحداث اللمس
-            wheel.addEventListener('touchstart', handleTouchStart, { passive: false });
-            wheel.addEventListener('touchmove', handleTouchMove, { passive: false });
-            wheel.addEventListener('touchend', handleTouchEnd);
+            canvas.addEventListener('touchstart', handleWheelTouchStart, { passive: false });
+            canvas.addEventListener('touchmove', handleWheelTouchMove, { passive: false });
+            canvas.addEventListener('touchend', handleWheelTouchEnd);
             
             // أحداث الماوس
-            wheel.addEventListener('mousedown', handleMouseDown);
-            wheel.addEventListener('dragstart', e => e.preventDefault());
-            
-            // تعيين الخيار الافتراضي
-            setTimeout(() => {
-                rotation = 0;
-                updateSelected();
-            }, 100);
+            canvas.addEventListener('mousedown', handleWheelMouseDown);
+            canvas.addEventListener('mousemove', handleWheelMouseMove);
+            canvas.addEventListener('mouseup', handleWheelMouseUp);
+            canvas.addEventListener('mouseleave', handleWheelMouseUp);
         }
-
-        function handleTouchStart(e) {
+        
+        function handleWheelTouchStart(e) {
             e.preventDefault();
-            lastX = e.touches[0].clientX;
-            dragging = true;
-            wheel.classList.add('dragging');
-            if (frame) cancelAnimationFrame(frame);
+            const touch = e.touches[0];
+            wheelLastX = touch.clientX;
+            wheelDragging = true;
+            canvas.style.cursor = 'grabbing';
+            if (wheelFrame) cancelAnimationFrame(wheelFrame);
         }
-
-        function handleTouchMove(e) {
-            if (!dragging) return;
+        
+        function handleWheelTouchMove(e) {
+            if (!wheelDragging) return;
             e.preventDefault();
-            const x = e.touches[0].clientX;
-            const diff = x - lastX;
-            velocity = diff * 0.5;
-            rotation += diff * 0.3;
-            updateRotation();
-            lastX = x;
+            const touch = e.touches[0];
+            const x = touch.clientX;
+            const diff = x - wheelLastX;
+            wheelVelocity = diff * 0.5;
+            wheelRotation += diff * 0.5;
+            drawWheel();
+            wheelLastX = x;
         }
-
-        function handleTouchEnd() {
-            dragging = false;
-            wheel.classList.remove('dragging');
-            if (Math.abs(velocity) > 1) startFling();
-            else snapToNearest();
+        
+        function handleWheelTouchEnd() {
+            wheelDragging = false;
+            canvas.style.cursor = 'grab';
+            if (Math.abs(wheelVelocity) > 1) startWheelFling();
+            else snapWheelToNearest();
         }
-
-        function handleMouseDown(e) {
+        
+        function handleWheelMouseDown(e) {
             e.preventDefault();
-            lastX = e.clientX;
-            dragging = true;
-            wheel.classList.add('dragging');
-            if (frame) cancelAnimationFrame(frame);
+            wheelLastX = e.clientX;
+            wheelDragging = true;
+            canvas.style.cursor = 'grabbing';
+            if (wheelFrame) cancelAnimationFrame(wheelFrame);
         }
-
-        window.addEventListener('mousemove', (e) => {
-            if (!dragging) return;
+        
+        function handleWheelMouseMove(e) {
+            if (!wheelDragging) return;
+            e.preventDefault();
             const x = e.clientX;
-            const diff = x - lastX;
-            velocity = diff * 0.5;
-            rotation += diff * 0.3;
-            updateRotation();
-            lastX = x;
-        });
-
-        window.addEventListener('mouseup', () => {
-            dragging = false;
-            wheel.classList.remove('dragging');
-            if (Math.abs(velocity) > 1) startFling();
-            else snapToNearest();
-        });
-
-        function updateRotation() {
-            rotation = ((rotation % 360) + 360) % 360;
-            wheel.style.transform = `rotateY(${rotation}deg)`;
-            updateSelected();
+            const diff = x - wheelLastX;
+            wheelVelocity = diff * 0.5;
+            wheelRotation += diff * 0.5;
+            drawWheel();
+            wheelLastX = x;
         }
-
-        function startFling() {
+        
+        function handleWheelMouseUp() {
+            wheelDragging = false;
+            canvas.style.cursor = 'grab';
+            if (Math.abs(wheelVelocity) > 1) startWheelFling();
+            else snapWheelToNearest();
+        }
+        
+        function startWheelFling() {
             function animate() {
-                if (Math.abs(velocity) < 0.1) {
-                    snapToNearest();
+                if (Math.abs(wheelVelocity) < 0.1) {
+                    snapWheelToNearest();
                     return;
                 }
-                velocity *= 0.95;
-                rotation += velocity;
-                updateRotation();
-                frame = requestAnimationFrame(animate);
+                wheelVelocity *= 0.95;
+                wheelRotation += wheelVelocity;
+                drawWheel();
+                wheelFrame = requestAnimationFrame(animate);
             }
-            frame = requestAnimationFrame(animate);
+            wheelFrame = requestAnimationFrame(animate);
         }
-
-        function snapToNearest() {
-            const anglesList = [0, 120, 240];
-            let minDiff = 360;
-            let target = 0;
+        
+        function snapWheelToNearest() {
+            const angles = [0, 120, 240];
+            const rawRotation = ((wheelRotation % 360) + 360) % 360;
             
-            anglesList.forEach(a => {
-                const diff = Math.min(Math.abs(rotation - a), 360 - Math.abs(rotation - a));
+            let minDiff = 360;
+            let targetAngle = 0;
+            
+            angles.forEach(angle => {
+                const diff = Math.min(Math.abs(rawRotation - angle), 360 - Math.abs(rawRotation - angle));
                 if (diff < minDiff) {
                     minDiff = diff;
-                    target = a;
+                    targetAngle = angle;
                 }
             });
-
-            animateTo(target);
+            
+            animateWheelToAngle(targetAngle);
         }
-
-        function animateTo(target) {
-            const start = rotation;
+        
+        function animateWheelToAngle(target) {
+            const start = wheelRotation;
             const startTime = performance.now();
-
+            
             function animate(now) {
                 const elapsed = now - startTime;
                 const progress = Math.min(elapsed / 300, 1);
                 const ease = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
                 
-                rotation = start + (target - start) * ease;
-                updateRotation();
-
-                if (progress < 1) requestAnimationFrame(animate);
+                wheelRotation = start + (target - start) * ease;
+                drawWheel();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
             }
             requestAnimationFrame(animate);
         }
-
-        function updateSelected() {
-            const anglesList = [0, 120, 240];
-            const ids = ['reel', 'live', 'tour'];
+        
+        function updateSelectedOption() {
+            const rawRotation = ((wheelRotation % 360) + 360) % 360;
+            const angles = [0, 120, 240];
             
             let minDiff = 360;
             let index = 0;
-
-            anglesList.forEach((a, i) => {
-                const diff = Math.min(Math.abs(rotation - a), 360 - Math.abs(rotation - a));
+            
+            angles.forEach((angle, i) => {
+                const diff = Math.min(Math.abs(rawRotation - angle), 360 - Math.abs(rawRotation - angle));
                 if (diff < minDiff) {
                     minDiff = diff;
                     index = i;
                 }
             });
-
-            selected = ids[index];
-
-            options.forEach(opt => {
-                if (opt.dataset.option === selected) opt.classList.add('active');
-                else opt.classList.remove('active');
-            });
-
-            const names = { 'reel': 'Reel', 'live': 'مباشر', 'tour': 'جولة' };
-            document.getElementById('wheelSelectedText').textContent = `إضافة ${names[selected]}`;
-            document.getElementById('wheelBtnText').textContent = `إضافة ${names[selected]}`;
-        }
-
-        // دالة الإضافة من العجلة
-        window.addFromWheel = function() {
-            const names = { 'reel': 'Reel', 'live': 'مباشر', 'tour': 'جولة' };
-            alert(`تم اختيار: إضافة ${names[selected]}`);
             
-            // هنا يمكن ربطها بالدوال الموجودة في script.js
-            switch(selected) {
+            selectedWheelIndex = index;
+            
+            document.getElementById('selectedWheelOption').textContent = wheelOptions[index].text;
+            document.getElementById('wheelAddButtonText').textContent = `إضافة ${wheelOptions[index].text}`;
+        }
+        
+        // ===== الوظائف الرئيسية =====
+        window.handleWheelAdd = function() {
+            const currentUser = JSON.parse(localStorage.getItem('current_user') || 'null');
+            
+            if (!currentUser) {
+                alert('❌ يجب تسجيل الدخول أولاً');
+                openLoginModal();
+                return;
+            }
+            
+            const selected = wheelOptions[selectedWheelIndex];
+            
+            switch(selected.id) {
                 case 'reel':
-                    if (typeof showAddReelModal === 'function') showAddReelModal();
+                    showAddReelModal();
                     break;
                 case 'live':
-                    if (typeof startLiveSetup === 'function') startLiveSetup();
+                    startLiveStream();
                     break;
                 case 'tour':
-                    if (typeof showAddTourModal === 'function') showAddTourModal();
+                    startTour();
                     break;
             }
+        };
+        
+        // ===== دوال Reel =====
+        window.showAddReelModal = function() {
+            const url = prompt('🔗 أدخل رابط Reel (يوتيوب، إنستغرام، تيك توك):');
+            if (!url) return;
+            
+            const title = prompt('📌 العنوان (اختياري):', 'Reel جديد');
+            const description = prompt('📝 الوصف (اختياري):');
+            
+            // توليد بصمة
+            const thumbprint = generateThumbprint('reel');
+            
+            alert(`✅ تمت إضافة Reel بنجاح\n🔍 البصمة: ${thumbprint}`);
+        };
+        
+        // ===== دوال البث المباشر =====
+        window.startLiveStream = function() {
+            const title = prompt('📌 عنوان البث المباشر:', 'بث مباشر جديد');
+            if (!title) return;
+            
+            const description = prompt('📝 وصف البث (اختياري):');
+            
+            // طلب صلاحيات الكاميرا
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                    .then(function(stream) {
+                        const thumbprint = generateThumbprint('live');
+                        alert(`✅ بدأ البث المباشر\n🔍 البصمة: ${thumbprint}\n🎥 تم تشغيل الكاميرا`);
+                        
+                        // فتح نافذة البث
+                        openLiveStreamWindow(stream, title, description, thumbprint);
+                    })
+                    .catch(function(err) {
+                        alert('❌ لا يمكن الوصول للكاميرا: ' + err.message);
+                    });
+            } else {
+                alert('❌ متصفحك لا يدعم البث المباشر');
+            }
+        };
+        
+        function openLiveStreamWindow(stream, title, description, thumbprint) {
+            const liveWindow = window.open('', '_blank', 'width=800,height=600');
+            liveWindow.document.write(`
+                <html>
+                <head>
+                    <title>${title} - بث مباشر</title>
+                    <style>
+                        body { margin: 0; background: black; color: white; font-family: Cairo; }
+                        video { width: 100%; height: calc(100vh - 100px); background: black; }
+                        .info { padding: 10px; background: linear-gradient(135deg, #2c5e4f, #1a3a32); }
+                        .thumbprint { color: gold; font-family: monospace; }
+                    </style>
+                </head>
+                <body>
+                    <video id="liveVideo" autoplay playsinline></video>
+                    <div class="info">
+                        <h2>${title}</h2>
+                        <p>${description || ''}</p>
+                        <p>البصمة: <span class="thumbprint">${thumbprint}</span></p>
+                        <p>👥 المشاهدين: <span id="viewerCount">0</span></p>
+                    </div>
+                    <script>
+                        const video = document.getElementById('liveVideo');
+                        video.srcObject = ${stream};
+                        
+                        let viewers = 0;
+                        setInterval(() => {
+                            viewers += Math.floor(Math.random() * 3);
+                            document.getElementById('viewerCount').textContent = viewers;
+                        }, 5000);
+                    <\/script>
+                </body>
+                </html>
+            `);
+        }
+        
+        // ===== دوال الجولات =====
+        window.startTour = function() {
+            const title = prompt('📌 عنوان الجولة:', 'جولة جديدة');
+            if (!title) return;
+            
+            const stops = parseInt(prompt('📍 عدد المحطات:', '3')) || 3;
+            const description = prompt('📝 وصف الجولة (اختياري):');
+            
+            const thumbprint = generateThumbprint('tour');
+            
+            alert(`✅ تم إنشاء الجولة بنجاح\n🔍 البصمة: ${thumbprint}\n📍 عدد المحطات: ${stops}`);
+            
+            // فتح نافذة الجولة
+            openTourWindow(title, description, stops, thumbprint);
+        };
+        
+        function openTourWindow(title, description, stops, thumbprint) {
+            const tourWindow = window.open('', '_blank', 'width=900,height=600');
+            
+            let stopsHtml = '';
+            for (let i = 1; i <= stops; i++) {
+                stopsHtml += `
+                    <div style="
+                        background: linear-gradient(135deg, #00b894, #008b6b);
+                        padding: 15px;
+                        border-radius: 10px;
+                        margin-bottom: 10px;
+                        border: 2px solid gold;
+                    ">
+                        <h4>📍 المحطة ${i}</h4>
+                        <p>وصف المحطة ${i}...</p>
+                    </div>
+                `;
+            }
+            
+            tourWindow.document.write(`
+                <html>
+                <head>
+                    <title>${title} - جولة</title>
+                    <style>
+                        body { 
+                            font-family: Cairo; 
+                            background: linear-gradient(135deg, #0a1a15, #1a3a32);
+                            color: white;
+                            margin: 0;
+                            padding: 20px;
+                        }
+                        .tour-container { max-width: 800px; margin: 0 auto; }
+                        .header { 
+                            background: linear-gradient(135deg, #2c5e4f, #1a3a32);
+                            padding: 20px;
+                            border-radius: 15px;
+                            border: 2px solid gold;
+                            margin-bottom: 20px;
+                        }
+                        .thumbprint { color: gold; font-family: monospace; }
+                    </style>
+                </head>
+                <body>
+                    <div class="tour-container">
+                        <div class="header">
+                            <h1>${title}</h1>
+                            <p>${description || ''}</p>
+                            <p>البصمة: <span class="thumbprint">${thumbprint}</span></p>
+                            <p>📍 ${stops} محطات</p>
+                        </div>
+                        
+                        <div class="stops">
+                            ${stopsHtml}
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 20px;">
+                            <button onclick="window.close()" style="
+                                background: gold;
+                                color: black;
+                                border: none;
+                                padding: 10px 30px;
+                                border-radius: 50px;
+                                font-weight: bold;
+                                cursor: pointer;
+                            ">إغلاق</button>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+        
+        // ===== توليد البصمة =====
+        window.generateThumbprint = function(type) {
+            const prefix = {
+                'reel': 'REL',
+                'live': 'LIV',
+                'tour': 'TOR'
+            }[type] || 'USR';
+            
+            const date = new Date();
+            const dateStr = `${date.getFullYear().toString().substring(2)}${(date.getMonth()+1).toString().padStart(2,'0')}${date.getDate().toString().padStart(2,'0')}`;
+            const timeStr = `${date.getHours().toString().padStart(2,'0')}${date.getMinutes().toString().padStart(2,'0')}${date.getSeconds().toString().padStart(2,'0')}`;
+            const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+            
+            return `${prefix}_${dateStr}_${timeStr}_${random}`;
         };
     </script>
 
