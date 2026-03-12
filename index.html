@@ -2,32 +2,16 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>نكهة وجمال | ناردو برو - المتجر الذكي المتكامل 2026</title>
-    
-    <!-- تحسينات SEO -->
-    <meta name="description" content="ناردو برو - منصة التجارة الإلكترونية المتكاملة للتوابل والكوسمتيك والعروض">
-    <meta name="keywords" content="ناردو, توابل, كوسمتيك, عروض, تسوق, جزائر">
-    <meta name="author" content="ناردو برو">
-    
-    <!-- فتح Graph للتواصل الاجتماعي -->
-    <meta property="og:title" content="نكهة وجمال | ناردو برو">
-    <meta property="og:description" content="منصة التجارة الإلكترونية المتكاملة">
-    <meta property="og:type" content="website">
-    
-    <!-- الخطوط -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام الجولات - ناردو برو</title>
     
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <!-- AOS Library -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- الخطوط -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        /* أنماط أساسية */
         * {
             margin: 0;
             padding: 0;
@@ -37,1230 +21,1010 @@
         body {
             font-family: 'Cairo', sans-serif;
             background: linear-gradient(135deg, #0a1a15, #1a3a32);
-            min-height: 100vh;
             color: white;
-            overflow-x: hidden;
-            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
         }
 
         .container {
-            width: 100%;
             max-width: 1200px;
-            padding: 20px;
             margin: 0 auto;
         }
 
-        h1 {
-            text-align: center;
-            color: gold;
-            margin-bottom: 30px;
-            font-size: 36px;
-            text-shadow: 0 0 20px rgba(212,175,55,0.5);
-        }
-
-        h1 i {
-            margin-left: 10px;
-        }
-
-        /* العجلة ثلاثية الأبعاد */
-        .wheel-main-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 20px 0 40px;
-            perspective: 1200px;
-            width: 100%;
-        }
-
-        .wheel-3d {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            transform-style: preserve-3d;
-            cursor: grab;
-            transition: transform 0.3s ease-out;
-            user-select: none;
-            touch-action: none;
-            margin: 0 auto;
-        }
-
-        .wheel-3d.dragging {
-            transition: none;
-            cursor: grabbing;
-        }
-
-        .wheel-option {
-            position: absolute;
-            width: 140px;
-            height: 140px;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%) rotateY(0deg) translateZ(180px);
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            border: 4px solid gold;
-            backface-visibility: visible;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-align: center;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
-        }
-
-        .wheel-option i {
-            font-size: 45px;
-            margin-bottom: 8px;
-            filter: drop-shadow(0 0 10px rgba(255,215,0,0.5));
-        }
-
-        .wheel-option .option-title {
-            font-weight: bold;
-            font-size: 18px;
-            margin-bottom: 4px;
-        }
-
-        .wheel-option .option-desc {
-            font-size: 11px;
-            opacity: 0.9;
-            padding: 0 10px;
-        }
-
-        .wheel-option[data-option="reel"] {
-            background: linear-gradient(145deg, #FF0000, #cc0000);
-            box-shadow: 0 0 40px rgba(255,0,0,0.5);
-        }
-
-        .wheel-option[data-option="live"] {
-            background: linear-gradient(145deg, #ff4444, #cc0000);
-            box-shadow: 0 0 40px rgba(255,68,68,0.5);
-        }
-
-        .wheel-option[data-option="tour"] {
-            background: linear-gradient(145deg, #00b894, #008b6b);
-            box-shadow: 0 0 40px rgba(0,184,148,0.5);
-        }
-
-        .wheel-option:hover {
-            transform: translate(-50%, -50%) rotateY(0deg) translateZ(220px) scale(1.15);
-            box-shadow: 0 0 60px gold;
-            z-index: 100;
-        }
-
-        .wheel-option.active {
-            transform: translate(-50%, -50%) rotateY(0deg) translateZ(220px) scale(1.15);
-            box-shadow: 0 0 80px gold;
-            border-width: 6px;
-            z-index: 100;
-        }
-
-        .wheel-center {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            background: radial-gradient(circle, gold, transparent 80%);
-            border-radius: 50%;
-            filter: blur(15px);
-            animation: pulseCenter 2s infinite;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .wheel-arrow {
-            position: absolute;
-            top: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: gold;
-            font-size: 40px;
-            filter: drop-shadow(0 0 10px gold);
-            animation: bounceArrow 1.5s infinite;
-            z-index: 20;
-        }
-
-        .wheel-help {
-            text-align: center;
-            color: rgba(255,215,0,0.8);
-            margin: 20px 0 15px;
-            font-size: 16px;
-            background: rgba(0,0,0,0.3);
-            padding: 10px 25px;
-            border-radius: 50px;
-            border: 1px solid gold;
-        }
-
-        .wheel-help i {
-            margin-left: 8px;
-        }
-
-        .selected-box {
-            text-align: center;
-            margin: 15px 0 20px;
-            padding: 12px 30px;
+        /* ===== الهيدر ===== */
+        .tour-header {
             background: linear-gradient(135deg, #2c5e4f, #1a3a32);
-            border-radius: 50px;
+            padding: 30px;
+            border-radius: 30px;
             border: 2px solid gold;
-            display: inline-block;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
         }
 
-        .selected-box span {
+        .tour-header h1 {
             color: gold;
-            font-weight: bold;
-            font-size: 22px;
+            font-size: 42px;
+            margin-bottom: 10px;
         }
 
-        .add-btn {
-            background: linear-gradient(135deg, gold, #ffd700);
-            color: black;
-            border: none;
-            padding: 15px 45px;
-            border-radius: 50px;
-            font-weight: bold;
-            font-size: 20px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 10px 30px rgba(212,175,55,0.5);
-            transition: all 0.3s ease;
-            margin: 20px 0 30px;
+        .tour-header h1 i {
+            margin: 0 15px;
         }
 
-        .add-btn:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 15px 40px gold;
+        .tour-header p {
+            color: rgba(255,255,255,0.8);
+            font-size: 18px;
         }
 
-        .add-btn i {
-            font-size: 24px;
-        }
-
-        .preview-grid {
+        /* ===== إحصائيات سريعة ===== */
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 20px;
-            margin-top: 30px;
+            margin-bottom: 30px;
         }
 
-        .preview-card {
-            background: rgba(255,255,255,0.1);
+        .stat-card {
+            background: rgba(255,255,255,0.05);
             backdrop-filter: blur(10px);
+            border: 1px solid gold;
             border-radius: 20px;
             padding: 20px;
-            border: 2px solid gold;
             text-align: center;
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease;
         }
 
-        .preview-card:hover {
+        .stat-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 30px gold;
         }
 
-        .preview-card i {
+        .stat-card i {
             font-size: 40px;
+            color: gold;
             margin-bottom: 10px;
         }
 
-        .preview-card .count {
-            font-size: 28px;
+        .stat-number {
+            font-size: 32px;
             font-weight: bold;
             color: gold;
-            margin: 10px 0;
         }
 
-        .preview-card .thumbprint {
-            font-family: monospace;
-            background: rgba(0,0,0,0.5);
-            padding: 8px;
-            border-radius: 10px;
-            font-size: 12px;
-            color: gold;
-            direction: ltr;
-            margin-top: 10px;
-            word-break: break-all;
+        .stat-label {
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
         }
 
-        .notification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
+        /* ===== أزرار التحكم ===== */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-primary {
             background: linear-gradient(135deg, gold, #ffd700);
             color: black;
-            padding: 15px 25px;
+            border: none;
+            padding: 15px 35px;
             border-radius: 50px;
             font-weight: bold;
-            box-shadow: 0 10px 30px rgba(212,175,55,0.5);
-            z-index: 1000;
-            animation: slideIn 0.3s ease;
-            max-width: 350px;
-        }
-
-        @keyframes pulseCenter {
-            0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
-        }
-
-        @keyframes bounceArrow {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(-10px); }
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(100px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100px); opacity: 0; }
-        }
-
-        @media (max-width: 768px) {
-            .wheel-3d {
-                width: 250px;
-                height: 250px;
-            }
-
-            .wheel-option {
-                width: 110px;
-                height: 110px;
-            }
-
-            .wheel-option i {
-                font-size: 30px;
-            }
-
-            .wheel-option .option-title {
-                font-size: 14px;
-            }
-
-            .wheel-option .option-desc {
-                display: none;
-            }
-
-            .preview-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .add-btn {
-                padding: 12px 30px;
-                font-size: 16px;
-            }
-        }
-
-        /* أنماط إضافية مع الحفاظ على الألوان الأصلية */
-        .loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0a1a15;
+            font-size: 16px;
+            cursor: pointer;
             display: flex;
-            justify-content: center;
             align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(212,175,55,0.5);
         }
-        .loader-spinner {
-            width: 80px;
-            height: 80px;
-            border: 5px solid #d4af37;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px gold;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .top-bar, .marquee-bar, .reels-promo-bar, .main-header, .nav-menu, .footer {
+
+        .btn-secondary {
             background: transparent;
-            color: white;
+            border: 2px solid gold;
+            color: gold;
+            padding: 13px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
         }
-        .btn-gold {
+
+        .btn-secondary:hover {
+            background: gold;
+            color: black;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            color: white;
+            border: none;
+            padding: 13px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        /* ===== قسم المستخدمين النشطين ===== */
+        .section-title {
+            color: gold;
+            font-size: 24px;
+            margin: 30px 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .user-card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid gold;
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .user-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, gold, transparent);
+            opacity: 0.1;
+            border-radius: 50%;
+        }
+
+        .user-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(212,175,55,0.3);
+        }
+
+        .user-avatar {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #2c5e4f, #1a3a32);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid gold;
+        }
+
+        .user-avatar i {
+            font-size: 35px;
+            color: gold;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: gold;
+        }
+
+        .user-role {
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            margin: 5px 0;
+        }
+
+        .user-role i {
+            margin-left: 5px;
+        }
+
+        .user-telegram {
+            font-size: 12px;
+            color: #0088cc;
+        }
+
+        .user-active {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 12px;
+            height: 12px;
+            background: #00ff00;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .user-action-btn {
             background: gold;
             color: black;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
         }
-        .btn-outline-gold {
-            background: transparent;
-            color: gold;
+
+        .user-action-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px gold;
+        }
+
+        /* ===== الجولات النشطة ===== */
+        .tours-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .tour-card {
+            background: linear-gradient(145deg, #1a3a32, #0d1e18);
             border: 2px solid gold;
-            padding: 8px 18px;
-            border-radius: 5px;
-            cursor: pointer;
+            border-radius: 20px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
         }
+
+        .tour-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, gold, #00b894, gold);
+        }
+
+        .tour-header-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .tour-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: gold;
+        }
+
+        .tour-status {
+            background: #00b894;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .tour-participants {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+        }
+
+        .tour-participant {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tour-participant i {
+            width: 30px;
+            height: 30px;
+            background: #2c5e4f;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: gold;
+        }
+
+        .tour-progress {
+            margin: 15px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, gold, #00b894);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .tour-stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 15px;
+        }
+
+        .tour-stat {
+            text-align: center;
+        }
+
+        .tour-stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: gold;
+        }
+
+        .tour-stat-label {
+            font-size: 11px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .tour-thumbprint {
+            background: rgba(0,0,0,0.3);
+            padding: 8px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            color: gold;
+            direction: ltr;
+            text-align: center;
+            margin: 10px 0;
+            border: 1px solid gold;
+        }
+
+        .tour-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .tour-btn {
+            flex: 1;
+            background: gold;
+            color: black;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .tour-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px gold;
+        }
+
+        .tour-btn.secondary {
+            background: transparent;
+            border: 1px solid gold;
+            color: gold;
+        }
+
+        /* ===== نافذة الجولة ===== */
         .modal {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
             justify-content: center;
             align-items: center;
-            z-index: 10000;
         }
+
         .modal-content {
-            background: #1a3a32;
+            background: linear-gradient(145deg, #1a3a32, #0d1e18);
+            border: 3px solid gold;
+            border-radius: 30px;
             padding: 30px;
-            border-radius: 20px;
-            border: 2px solid gold;
-            max-width: 500px;
             width: 90%;
-            max-height: 90vh;
+            max-width: 600px;
+            max-height: 80vh;
             overflow-y: auto;
         }
-        .modal-lg {
-            max-width: 800px;
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
-        .form-group {
-            margin-bottom: 15px;
+
+        .modal-header h2 {
+            color: gold;
+            font-size: 24px;
         }
-        .form-control {
-            width: 100%;
-            padding: 10px;
-            border-radius: 5px;
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: gold;
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        .stops-container {
+            margin: 20px 0;
+        }
+
+        .stop-item {
+            background: rgba(255,255,255,0.05);
             border: 1px solid gold;
-            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .stop-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .stop-number {
+            color: gold;
+            font-weight: bold;
+        }
+
+        .stop-status {
+            color: #00b894;
+        }
+
+        .chat-container {
+            margin: 20px 0;
+            height: 200px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 15px;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(255,215,0,0.1);
+            border-radius: 10px;
+        }
+
+        .chat-sender {
+            color: gold;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .chat-text {
+            color: white;
+            margin-top: 3px;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid gold;
+            border-radius: 10px;
             color: white;
             font-family: 'Cairo', sans-serif;
         }
-        .form-control::placeholder {
-            color: rgba(255,215,0,0.5);
+
+        .chat-input button {
+            background: gold;
+            color: black;
+            border: none;
+            width: 50px;
+            border-radius: 10px;
+            cursor: pointer;
         }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: gold;
+
+        /* ===== تذييل الصفحة ===== */
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: rgba(255,255,255,0.5);
+            border-top: 1px solid gold;
+        }
+
+        /* ===== حركات ===== */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* ===== تجاوب ===== */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .tour-header h1 {
+                font-size: 28px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- شاشة التحميل -->
-    <div class="loader" id="loader">
-        <div class="loader-spinner"></div>
-    </div>
-
-    <!-- نظام الإشعارات -->
-    <div class="toast-container" id="toastContainer"></div>
-
-    <!-- سلة التسوق الجانبية -->
-    <div class="cart-sidebar" id="cartSidebar" style="display: none; position: fixed; top: 0; left: 0; width: 300px; height: 100%; background: #1a3a32; border-left: 2px solid gold; padding: 20px; z-index: 1000;">
-        <div class="cart-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 style="color: gold;"><i class="fas fa-shopping-cart"></i> سلة التسوق</h3>
-            <i class="fas fa-times close-cart" onclick="toggleCart()" style="color: gold; cursor: pointer; font-size: 24px;"></i>
+    <div class="container">
+        <!-- ===== الهيدر ===== -->
+        <div class="tour-header">
+            <h1>
+                <i class="fas fa-globe"></i>
+                نظام الجولات
+                <i class="fas fa-users"></i>
+            </h1>
+            <p>تواصل مع التجار والمشترين في جولات تفاعلية</p>
         </div>
-        <div class="cart-items" id="cartItems">
-            <div style="text-align: center; padding: 40px; color: #888;">
-                <i class="fas fa-shopping-basket" style="font-size: 60px; margin-bottom: 20px;"></i>
-                <p>سلة التسوق فارغة</p>
+
+        <!-- ===== الإحصائيات ===== -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-users"></i>
+                <div class="stat-number" id="activeUsersCount">0</div>
+                <div class="stat-label">مستخدم نشط</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-globe"></i>
+                <div class="stat-number" id="activeToursCount">0</div>
+                <div class="stat-label">جولة نشطة</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-store"></i>
+                <div class="stat-number" id="merchantsCount">0</div>
+                <div class="stat-label">تاجر</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-user"></i>
+                <div class="stat-number" id="customersCount">0</div>
+                <div class="stat-label">مشتري</div>
             </div>
         </div>
-        <div class="cart-footer" style="position: absolute; bottom: 20px; left: 20px; right: 20px;">
-            <div class="cart-total" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                <span>المجموع:</span>
-                <span id="cartTotal">0 دج</span>
-            </div>
-            <button class="checkout-btn" onclick="checkoutCart()" style="width: 100%; padding: 10px; background: gold; color: black; border: none; border-radius: 5px; cursor: pointer;">
-                <i class="fab fa-whatsapp"></i> إتمام الطلب
+
+        <!-- ===== أزرار التحكم ===== -->
+        <div class="action-buttons">
+            <button class="btn-primary" onclick="startRandomTour()">
+                <i class="fas fa-random"></i>
+                جولة عشوائية
+            </button>
+            <button class="btn-secondary" onclick="showTourRequests()">
+                <i class="fas fa-envelope"></i>
+                طلبات الجولات
+                <span class="badge" id="requestsBadge" style="
+                    background: red;
+                    color: white;
+                    border-radius: 50%;
+                    padding: 2px 8px;
+                    font-size: 12px;
+                ">0</span>
+            </button>
+            <button class="btn-secondary" onclick="showMyTours()">
+                <i class="fas fa-history"></i>
+                جولاتي
+            </button>
+            <button class="btn-danger" onclick="searchByThumbprint()">
+                <i class="fas fa-fingerprint"></i>
+                بحث بالبصمة
             </button>
         </div>
-    </div>
 
-    <!-- الشريط العلوي -->
-    <div class="top-bar" style="background: rgba(10,26,21,0.9); padding: 10px 0; border-bottom: 1px solid gold;">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-            <div class="top-bar-item" data-aos="fade-left" data-aos-delay="100">
-                <i class="fas fa-truck-fast" style="color: gold;"></i>
-                <span style="margin-right: 5px;">شحن مجاني للطلبات فوق 5000 دج</span>
-            </div>
-            <div class="top-bar-item" data-aos="fade-left" data-aos-delay="200">
-                <i class="fas fa-headset" style="color: gold;"></i>
-                <span style="margin-right: 5px;">دعم VIP 24/7</span>
-            </div>
-            <div class="top-bar-item" data-aos="fade-left" data-aos-delay="300">
-                <i class="fas fa-gem" style="color: gold;"></i>
-                <span style="margin-right: 5px;">منتجات أصلية 100%</span>
-            </div>
-            <div class="theme-toggle" onclick="toggleTheme()" id="themeToggle" style="cursor: pointer;">
-                <i class="fas fa-moon" style="color: gold;"></i>
-                <span style="margin-right: 5px;">ليلي</span>
-            </div>
+        <!-- ===== المستخدمين النشطين ===== -->
+        <div class="section-title">
+            <i class="fas fa-circle" style="color: #00ff00; font-size: 12px;"></i>
+            المستخدمين النشطين الآن
+            <span style="color: gold;" id="activeUsersCount2">(0)</span>
         </div>
-    </div>
 
-    <!-- شريط العروض المتحرك -->
-    <div class="marquee-bar" style="background: rgba(0,0,0,0.3); padding: 10px 0; border-bottom: 1px solid gold; overflow: hidden;">
-        <div class="marquee-content" id="marqueeContent" style="display: flex; animation: marquee 20s linear infinite;">
-            <div class="marquee-item float-item" style="display: flex; align-items: center; margin-left: 30px;">
-                <i class="fas fa-fire" style="color: gold; margin-left: 5px;"></i>
-                <span>تخفيضات تصل 50%</span>
-                <div class="marquee-progress" style="width: 100px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 5px; margin-right: 10px;"><div class="marquee-progress-fill" style="width:50%; height: 100%; background: gold; border-radius: 5px;"></div></div>
-            </div>
-            <div class="marquee-item bounce-item" style="display: flex; align-items: center; margin-left: 30px;">
-                <i class="fas fa-gem" style="color: gold; margin-left: 5px;"></i>
-                <span>عروض حصرية</span>
-                <div class="marquee-progress" style="width: 100px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 5px; margin-right: 10px;"><div class="marquee-progress-fill" style="width:75%; height: 100%; background: gold; border-radius: 5px;"></div></div>
-            </div>
-            <div class="marquee-item pulse-item" style="display: flex; align-items: center; margin-left: 30px;">
-                <i class="fas fa-clock" style="color: gold; margin-left: 5px;"></i>
-                <span>الوقت: <span id="marqueeHours">12</span>:<span id="marqueeMinutes">30</span>:<span id="marqueeSeconds">45</span></span>
-                <div class="marquee-progress" style="width: 100px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 5px; margin-right: 10px;"><div class="marquee-progress-fill" style="width:60%; height: 100%; background: gold; border-radius: 5px;"></div></div>
-            </div>
-            <div class="marquee-item rotate-item" style="display: flex; align-items: center; margin-left: 30px;">
-                <i class="fas fa-star" style="color: gold; margin-left: 5px;"></i>
-                <span>عرض خاص: 1+1 مجاناً</span>
-                <div class="marquee-progress" style="width: 100px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 5px; margin-right: 10px;"><div class="marquee-progress-fill" style="width:30%; height: 100%; background: gold; border-radius: 5px;"></div></div>
-            </div>
-            <div class="marquee-item" style="display: flex; align-items: center; margin-left: 30px;">
-                <i class="fas fa-gift" style="color: gold; margin-left: 5px;"></i>
-                <span>هدية مع كل طلب</span>
-                <div class="marquee-progress" style="width: 100px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 5px; margin-right: 10px;"><div class="marquee-progress-fill" style="width:90%; height: 100%; background: gold; border-radius: 5px;"></div></div>
-            </div>
+        <div class="users-grid" id="activeUsersContainer">
+            <!-- تضاف هنا بطاقات المستخدمين ديناميكياً -->
         </div>
-    </div>
 
-    <!-- شريط Reels من تلجرام -->
-    <div class="reels-promo-bar" style="background: rgba(0,0,0,0.3); padding: 20px 0; border-bottom: 1px solid gold;">
-        <div class="container">
-            <div class="reels-header-brand" style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                <span class="brand-realme" style="color: gold; font-weight: bold;">realme</span>
-                <span class="brand-protection" style="color: white;">حماية معايير السلكية</span>
-            </div>
-            
-            <div class="reels-product-showcase" style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                <div class="product-info">
-                    <h2 class="product-title" style="color: gold;">realme C71</h2>
-                    <div class="product-battery">
-                        <span class="battery-value" style="color: white; font-weight: bold;">6000mAh</span>
-                        <span class="battery-label" style="color: #888; margin-right: 5px;">بطارية ضخمة</span>
+        <!-- ===== الجولات النشطة ===== -->
+        <div class="section-title">
+            <i class="fas fa-globe"></i>
+            الجولات النشطة
+            <span style="color: gold;" id="activeToursCount2">(0)</span>
+        </div>
+
+        <div class="tours-grid" id="activeToursContainer">
+            <!-- تضاف هنا بطاقات الجولات ديناميكياً -->
+        </div>
+
+        <!-- ===== نافذة الجولة ===== -->
+        <div class="modal" id="tourModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTourTitle">جولة جديدة</h2>
+                    <button class="close-btn" onclick="closeTourModal()">&times;</button>
+                </div>
+                
+                <div class="tour-info" id="tourInfo">
+                    <!-- معلومات الجولة -->
+                </div>
+
+                <div class="stops-container" id="stopsContainer">
+                    <!-- محطات الجولة -->
+                </div>
+
+                <div class="chat-container" id="chatContainer">
+                    <!-- رسائل الشات -->
+                    <div class="chat-message">
+                        <div class="chat-sender">النظام</div>
+                        <div class="chat-text">مرحباً بكم في الجولة</div>
                     </div>
                 </div>
-                
-                <div class="product-charging">
-                    <div class="charging-speed">
-                        <span class="speed-value" style="color: gold; font-weight: bold;">45W</span>
-                        <span class="speed-label" style="color: #888; margin-right: 5px;">شحن سريع</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="charging-tagline" style="margin-bottom: 15px;">
-                <span class="tagline-charge" style="color: gold;">شحن لساعة</span>
-                <span class="tagline-usage" style="color: white; margin-right: 5px;">و استعمال اليومين</span>
-            </div>
-            
-            <div class="reels-divider" style="display: flex; align-items: center; margin-bottom: 15px;">
-                <span class="divider-text" style="color: gold;">reels حصرية</span>
-                <span class="divider-line" style="flex: 1; height: 1px; background: gold; margin: 0 10px;"></span>
-                <span class="divider-icon" style="font-size: 24px;">🎬</span>
-            </div>
-            
-            <div class="reels-scroll-container" style="display: flex; align-items: center;">
-                <button class="reels-scroll-btn left" onclick="scrollReels('left')" id="scrollLeftBtn" style="background: none; border: none; color: gold; font-size: 24px; cursor: pointer;">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-                
-                <div class="reels-track" id="reelsTrack" style="flex: 1; margin: 0 10px;">
-                    <div class="reels-loader" style="text-align: center; color: gold;">
-                        <div class="loader-spinner-small" style="width: 20px; height: 20px; border: 2px solid gold; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; display: inline-block;"></div>
-                        <span style="margin-right: 5px;">جاري تحميل الريلز...</span>
-                    </div>
-                </div>
-                
-                <button class="reels-scroll-btn right" onclick="scrollReels('right')" id="scrollRightBtn" style="background: none; border: none; color: gold; font-size: 24px; cursor: pointer;">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-            </div>
-        </div>
-    </div>
 
-    <!-- الهيدر الرئيسي -->
-    <header class="main-header" style="padding: 20px 0; border-bottom: 1px solid gold;">
-        <div class="container header-content" style="display: flex; justify-content: space-between; align-items: center;">
-            <div class="logo" data-aos="fade-right" style="display: flex; align-items: center;">
-                <div class="logo-icon" style="font-size: 40px; color: gold; margin-left: 10px;"><i class="fas fa-leaf"></i></div>
-                <div class="logo-text">
-                    <h1 style="color: gold; margin: 0;">نكهة وجمال</h1>
-                    <span style="color: white;">ناردو برو 2026</span>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter') sendMessage()">
+                    <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
                 </div>
-            </div>
-            
-            <div class="search-wrapper" data-aos="zoom-in" style="flex: 1; max-width: 400px; margin: 0 20px;">
-                <div class="search-box" style="display: flex; background: rgba(255,255,255,0.1); border: 1px solid gold; border-radius: 5px; overflow: hidden;">
-                    <input type="text" id="searchInput" placeholder="ابحث عن منتج..." onkeyup="searchProducts()" style="flex: 1; padding: 10px; background: transparent; border: none; color: white; font-family: 'Cairo', sans-serif;">
-                    <button onclick="searchProducts()" style="padding: 10px 15px; background: gold; border: none; cursor: pointer;"><i class="fas fa-search" style="color: black;"></i></button>
-                </div>
-            </div>
-            
-            <div class="header-actions" data-aos="fade-left" style="display: flex; gap: 15px;">
-                <button class="action-btn" onclick="openLoginModal()" id="userBtn" title="حسابي" style="background: none; border: none; color: gold; font-size: 24px; cursor: pointer; position: relative;">
-                    <i class="far fa-user"></i>
-                </button>
-                <button class="action-btn" onclick="toggleCart()" title="سلة التسوق" style="background: none; border: none; color: gold; font-size: 24px; cursor: pointer; position: relative;">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span class="cart-count" id="cartCounter" style="position: absolute; top: -5px; right: -5px; background: gold; color: black; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; display: flex; align-items: center; justify-content: center;">0</span>
-                </button>
-                <button class="action-btn" onclick="openDashboard()" id="dashboardBtn" style="display: none; background: none; border: none; color: gold; font-size: 24px; cursor: pointer;" title="لوحة التحكم">
-                    <i class="fas fa-chart-line"></i>
-                </button>
-            </div>
-        </div>
-    </header>
 
-    <!-- القائمة الرئيسية -->
-    <div class="container">
-        <nav class="nav-menu" id="mainNav" data-aos="fade-up" style="display: flex; justify-content: center; gap: 20px; padding: 15px 0;">
-            <a class="nav-link active" onclick="filterProducts('all')" style="color: gold; cursor: pointer; text-decoration: none; display: flex; align-items: center;"><i class="fas fa-home" style="margin-left: 5px;"></i><span>الرئيسية</span></a>
-            <a class="nav-link" onclick="filterProducts('promo')" style="color: white; cursor: pointer; text-decoration: none; display: flex; align-items: center;"><i class="fas fa-fire" style="margin-left: 5px;"></i><span>برموسيو</span></a>
-            <a class="nav-link" onclick="filterProducts('spices')" style="color: white; cursor: pointer; text-decoration: none; display: flex; align-items: center;"><i class="fas fa-mortar-pestle" style="margin-left: 5px;"></i><span>توابل</span></a>
-            <a class="nav-link" onclick="filterProducts('cosmetic')" style="color: white; cursor: pointer; text-decoration: none; display: flex; align-items: center;"><i class="fas fa-spa" style="margin-left: 5px;"></i><span>كوسمتيك</span></a>
-            <a class="nav-link" onclick="filterProducts('other')" style="color: white; cursor: pointer; text-decoration: none; display: flex; align-items: center;"><i class="fas fa-gem" style="margin-left: 5px;"></i><span>منتوجات أخرى</span></a>
-            <a class="nav-link" onclick="findProductById()" style="color: white; cursor: pointer; text-decoration: none; display: flex; align-items: center;"><i class="fas fa-search" style="margin-left: 5px;"></i><span>بحث بالمعرف</span></a>
-        </nav>
-    </div>
-
-    <!-- خيارات الفرز -->
-    <div class="container">
-        <div class="sort-options" data-aos="fade-up" style="text-align: left; margin: 15px 0;">
-            <select class="sort-select" id="sortSelect" onchange="changeSort(this.value)" style="padding: 8px 15px; background: rgba(255,255,255,0.1); border: 1px solid gold; color: white; border-radius: 5px; font-family: 'Cairo', sans-serif;">
-                <option value="newest" style="background: #1a3a32;">📅 الأحدث أولاً</option>
-                <option value="price_low" style="background: #1a3a32;">💰 السعر: من الأقل للأعلى</option>
-                <option value="price_high" style="background: #1a3a32;">💰 السعر: من الأعلى للأقل</option>
-                <option value="rating" style="background: #1a3a32;">⭐ التقييم: الأعلى أولاً</option>
-            </select>
-        </div>
-    </div>
-
-    <!-- نص متحرك -->
-    <div class="container">
-        <div class="typing-container" data-aos="fade-up" style="text-align: center; margin: 20px 0; color: gold; font-size: 24px; min-height: 60px;">
-            <span id="typing-text"></span>
-        </div>
-    </div>
-
-    <!-- لوحة التاجر -->
-    <div class="container" id="merchantPanelContainer" style="display: none;"></div>
-
-    <!-- المنتجات -->
-    <div class="container">
-        <div class="products-grid" id="productsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
-            <!-- سيتم تعبئتها ديناميكياً من JavaScript -->
-        </div>
-    </div>
-
-    <!-- لوحة التحكم (للمدير) -->
-    <div class="container dashboard-section" id="dashboardSection" style="display: none; margin-top: 30px;">
-        <div class="dashboard-tabs" id="dashboardTabs" style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <button class="dashboard-tab active" onclick="switchDashboardTab('overview')" style="padding: 10px 20px; background: gold; color: black; border: none; border-radius: 5px; cursor: pointer;">📊 نظرة عامة</button>
-            <button class="dashboard-tab" onclick="switchDashboardTab('orders')" style="padding: 10px 20px; background: transparent; color: gold; border: 1px solid gold; border-radius: 5px; cursor: pointer;">🛒 الطلبات</button>
-            <button class="dashboard-tab" onclick="switchDashboardTab('products')" style="padding: 10px 20px; background: transparent; color: gold; border: 1px solid gold; border-radius: 5px; cursor: pointer;">📦 المنتجات</button>
-            <button class="dashboard-tab" onclick="switchDashboardTab('merchants')" style="padding: 10px 20px; background: transparent; color: gold; border: 1px solid gold; border-radius: 5px; cursor: pointer;">👨‍💼 التجار</button>
-            <button class="dashboard-tab" onclick="switchDashboardTab('users')" style="padding: 10px 20px; background: transparent; color: gold; border: 1px solid gold; border-radius: 5px; cursor: pointer;">👥 المستخدمين</button>
-        </div>
-        <div class="dashboard-content" id="dashboardContent" style="background: rgba(255,255,255,0.1); border: 1px solid gold; border-radius: 10px; padding: 20px; min-height: 200px;"></div>
-    </div>
-
-    <!-- الفوتر -->
-    <footer class="footer" style="border-top: 1px solid gold; margin-top: 50px; padding: 40px 0 20px;">
-        <div class="container">
-            <div class="footer-content" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
-                <div class="footer-col" data-aos="fade-up" data-aos-delay="100">
-                    <h3 style="color: gold; margin-bottom: 15px;">نكهة وجمال</h3>
-                    <p><i class="fas fa-store" style="color: gold; margin-left: 5px;"></i> المتجر الذكي المتكامل</p>
-                    <p><i class="fas fa-star" style="color: gold; margin-left: 5px;"></i> التقييم: 4.8/5</p>
-                    <p><i class="fas fa-users" style="color: gold; margin-left: 5px;"></i> +5000 عميل</p>
-                </div>
-                <div class="footer-col" data-aos="fade-up" data-aos-delay="200">
-                    <h3 style="color: gold; margin-bottom: 15px;">اتصل بنا</h3>
-                    <p><i class="fab fa-whatsapp" style="color: gold; margin-left: 5px;"></i> +213 562243648</p>
-                    <p><i class="fas fa-envelope" style="color: gold; margin-left: 5px;"></i> info@nardoo.com</p>
-                    <p><i class="fab fa-telegram" style="color: gold; margin-left: 5px;"></i> @nardoo_support</p>
-                </div>
-                <div class="footer-col" data-aos="fade-up" data-aos-delay="300">
-                    <h3 style="color: gold; margin-bottom: 15px;">روابط سريعة</h3>
-                    <p><i class="fas fa-chevron-left" style="color: gold; margin-left: 5px;"></i> سياسة الخصوصية</p>
-                    <p><i class="fas fa-chevron-left" style="color: gold; margin-left: 5px;"></i> شروط الاستخدام</p>
-                    <p><i class="fas fa-chevron-left" style="color: gold; margin-left: 5px;"></i> طرق الدفع</p>
-                </div>
-            </div>
-            <div class="copyright" style="text-align: center; margin-top: 40px; color: #888;">© 2026 نكهة وجمال | جميع الحقوق محفوظة</div>
-        </div>
-    </footer>
-
-    <!-- أيقونات ثابتة -->
-    <div class="fixed-cart" onclick="toggleCart()" id="fixedCart" title="سلة التسوق" style="position: fixed; bottom: 20px; right: 20px; background: gold; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 5px 20px rgba(255,215,0,0.5);">
-        <i class="fas fa-shopping-cart" style="color: black; font-size: 24px;"></i>
-        <span class="fixed-cart-count" id="fixedCartCounter" style="position: absolute; top: 0; right: 0; background: black; color: gold; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; font-size: 14px;">0</span>
-    </div>
-
-    <div class="navigation-buttons" style="position: fixed; bottom: 20px; left: 20px; display: flex; flex-direction: column; gap: 10px;">
-        <button class="nav-btn up-btn" onclick="scrollToTop()" title="الانتقال للأعلى" style="background: gold; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 20px rgba(255,215,0,0.5);"><i class="fas fa-arrow-up" style="color: black; font-size: 20px;"></i></button>
-        <button class="nav-btn down-btn" onclick="scrollToBottom()" title="الانتقال للأسفل" style="background: gold; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 20px rgba(255,215,0,0.5);"><i class="fas fa-arrow-down" style="color: black; font-size: 20px;"></i></button>
-    </div>
-
-    <button class="quick-top-btn" onclick="scrollToTop()" id="quickTopBtn" title="العودة للأعلى" style="position: fixed; bottom: 20px; left: 20px; background: gold; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; display: none; box-shadow: 0 5px 20px rgba(255,215,0,0.5);"><i class="fas fa-chevron-up" style="color: black; font-size: 20px;"></i></button>
-
-    <!-- نافذة تسجيل الدخول -->
-    <div class="modal" id="loginModal" style="display: none;" onclick="if(event.target===this) closeModal('loginModal')">
-        <div class="modal-content">
-            <div style="text-align:center; margin-bottom:30px;">
-                <div style="font-size: 60px; color: gold; margin-bottom: 10px;">
-                    <i class="fas fa-user-circle"></i>
-                </div>
-                <h2 style="color:gold;">تسجيل الدخول</h2>
-            </div>
-            
-            <div style="display:flex; gap:10px; margin-bottom:20px;">
-                <button class="btn-gold" style="flex:1;" onclick="switchAuthTab('login')">دخول</button>
-                <button class="btn-outline-gold" style="flex:1;" onclick="switchAuthTab('register')">تسجيل</button>
-            </div>
-
-            <!-- نموذج تسجيل الدخول -->
-            <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
-                <div class="form-group">
-                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
-                    <input type="email" class="form-control" id="loginEmail" required placeholder="example@email.com">
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
-                    <input type="password" class="form-control" id="loginPassword" required placeholder="أدخل كلمة المرور">
-                </div>
-                <button type="submit" class="btn-gold" style="width:100%;">دخول</button>
-            </form>
-
-            <!-- نموذج التسجيل -->
-            <form id="registerForm" style="display:none;" onsubmit="event.preventDefault(); handleRegister();">
-                <div class="form-group">
-                    <label><i class="fas fa-user"></i> الاسم الكامل</label>
-                    <input type="text" class="form-control" id="regName" required placeholder="أدخل اسمك الكامل">
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
-                    <input type="email" class="form-control" id="regEmail" required placeholder="example@email.com">
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
-                    <input type="password" class="form-control" id="regPassword" required placeholder="أدخل كلمة المرور">
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-phone"></i> رقم الهاتف</label>
-                    <input type="tel" class="form-control" id="regPhone" required placeholder="05XXXXXXXX">
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fab fa-telegram"></i> معرف تليجرام (اختياري)</label>
-                    <input type="text" class="form-control" id="regTelegram" placeholder="@username">
-                    <small style="color: #888; display: block; margin-top: 5px;">أدخل معرفك في تليجرام ليتواصل معك العملاء</small>
-                </div>
-                
-                <div class="form-group">
-                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-                        <input type="checkbox" id="isMerchant" onchange="toggleMerchantFields()">
-                        <span><i class="fas fa-store"></i> تسجيل كتاجر</span>
-                    </label>
-                </div>
-                
-                <!-- حقول التاجر -->
-                <div id="merchantFields" style="display:none;">
-                    <div class="form-group">
-                        <label><i class="fas fa-store-alt"></i> اسم المتجر</label>
-                        <input type="text" class="form-control" id="storeName" placeholder="أدخل اسم متجرك">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label><i class="fas fa-tag"></i> تخصص المتجر</label>
-                        <select class="form-control" id="merchantCategory">
-                            <option value="spices">توابل</option>
-                            <option value="cosmetic">كوسمتيك</option>
-                            <option value="promo">برومسيون</option>
-                            <option value="other">أخرى</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label><i class="fas fa-chart-line"></i> مستوى التاجر</label>
-                        <select class="form-control" id="merchantLevel">
-                            <option value="1">المستوى الأول</option>
-                            <option value="2" selected>المستوى الثاني</option>
-                            <option value="3">المستوى الثالث</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <button type="submit" class="btn-gold" style="width:100%; margin-top:20px;">تسجيل</button>
-            </form>
-
-            <button class="btn-outline-gold" style="width:100%; margin-top:15px;" onclick="closeModal('loginModal')">إلغاء</button>
-        </div>
-    </div>
-
-    <!-- نافذة إضافة منتج -->
-    <div class="modal" id="productModal" style="display: none;" onclick="if(event.target===this) closeModal('productModal')">
-        <div class="modal-content modal-lg">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color:gold;"><i class="fas fa-plus-circle"></i> إضافة منتج جديد</h2>
-                <button class="close-btn" onclick="closeModal('productModal')" style="background: none; border: none; color: gold; font-size: 28px; cursor: pointer;">&times;</button>
-            </div>
-            
-            <form id="productForm" class="product-form" onsubmit="event.preventDefault(); saveProduct();">
-                <div class="form-group" id="merchantTelegramField" style="display: none;">
-                    <label><i class="fab fa-telegram"></i> معرف تليجرام الخاص بك</label>
-                    <input type="text" class="form-control" id="merchantTelegram" placeholder="@username">
-                    <small style="color: #888;">أدخل معرفك في تليجرام ليتمكن العملاء من التواصل</small>
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-box"></i> اسم المنتج</label>
-                    <input type="text" class="form-control" id="productName" required placeholder="أدخل اسم المنتج">
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-tags"></i> القسم</label>
-                    <select class="form-control" id="productCategory" required>
-                        <option value="promo">برموسيو</option>
-                        <option value="spices">توابل</option>
-                        <option value="cosmetic">كوسمتيك</option>
-                        <option value="other">منتوجات أخرى</option>
-                    </select>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div class="form-group">
-                        <label><i class="fas fa-coins"></i> السعر (دج)</label>
-                        <input type="number" class="form-control" id="productPrice" required min="0" placeholder="0">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label><i class="fas fa-cubes"></i> الكمية</label>
-                        <input type="number" class="form-control" id="productStock" required min="0" placeholder="0">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-align-left"></i> وصف المنتج</label>
-                    <textarea class="form-control" id="productDescription" rows="3" placeholder="أدخل وصف المنتج..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-link"></i> رابط الصورة (اختياري)</label>
-                    <input type="url" class="form-control" id="productImage" placeholder="https://example.com/image.jpg">
-                </div>
-                
-                <div class="image-upload-area" onclick="document.getElementById('productImages').click()" style="border: 2px dashed gold; padding: 20px; text-align: center; border-radius: 10px; cursor: pointer;">
-                    <i class="fas fa-cloud-upload-alt" style="font-size: 40px; color: gold;"></i>
-                    <p style="color: gold;">أو اضغط لرفع صورة من جهازك</p>
-                </div>
-                
-                <input type="file" id="productImages" accept="image/*" style="display:none;" onchange="handleImageUpload(event)" multiple>
-                <div class="image-preview" id="imagePreview" style="display: flex; gap: 10px; margin-top: 10px;"></div>
-                <input type="hidden" id="productImagesData">
-
-                <div style="display: flex; gap: 15px; margin-top: 20px;">
-                    <button type="submit" class="btn-gold" style="flex: 2;">
-                        <i class="fas fa-cloud-upload-alt"></i> حفظ المنتج
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="tour-btn" onclick="nextStop()">
+                        <i class="fas fa-arrow-left"></i>
+                        المحطة التالية
                     </button>
-                    <button type="button" class="btn-outline-gold" style="flex: 1;" onclick="closeModal('productModal')">
-                        إلغاء
+                    <button class="tour-btn secondary" onclick="endTour()">
+                        <i class="fas fa-times"></i>
+                        إنهاء الجولة
                     </button>
                 </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- نافذة تفاصيل المنتج -->
-    <div class="modal" id="productDetailModal" style="display: none;" onclick="if(event.target===this) closeModal('productDetailModal')">
-        <div class="modal-content modal-lg" id="productDetailContent"></div>
-    </div>
-
-    <!-- نافذة لوحة التاجر -->
-    <div class="modal" id="merchantDashboardModal" style="display: none;" onclick="if(event.target===this) closeModal('merchantDashboardModal')">
-        <div class="modal-content" style="max-width: 1200px;">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color:gold;"><i class="fas fa-store"></i> لوحة تحكم التاجر</h2>
-                <button class="close-btn" onclick="closeModal('merchantDashboardModal')" style="background: none; border: none; color: gold; font-size: 28px; cursor: pointer;">&times;</button>
-            </div>
-            <div class="modal-body" id="merchantDashboardContent" style="max-height: 80vh; overflow-y: auto;"></div>
-        </div>
-    </div>
-    
-    <!-- نافذة منتجات التاجر -->
-    <div class="modal" id="merchantProductsModal" style="display: none;" onclick="if(event.target===this) closeModal('merchantProductsModal')">
-        <div class="modal-content" style="max-width: 1000px;">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color:gold;"><i class="fas fa-boxes"></i> منتجاتي</h2>
-                <button class="close-btn" onclick="closeModal('merchantProductsModal')" style="background: none; border: none; color: gold; font-size: 28px; cursor: pointer;">&times;</button>
-            </div>
-            <div class="modal-body" id="merchantProductsContent" style="max-height: 80vh; overflow-y: auto;"></div>
-        </div>
-    </div>
-    
-    <!-- نافذة طلبات التاجر -->
-    <div class="modal" id="merchantOrdersModal" style="display: none;" onclick="if(event.target===this) closeModal('merchantOrdersModal')">
-        <div class="modal-content" style="max-width: 800px;">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color:gold;"><i class="fas fa-shopping-bag"></i> طلباتي</h2>
-                <button class="close-btn" onclick="closeModal('merchantOrdersModal')" style="background: none; border: none; color: gold; font-size: 28px; cursor: pointer;">&times;</button>
-            </div>
-            <div class="modal-body" id="merchantOrdersContent" style="max-height: 80vh; overflow-y: auto;"></div>
-        </div>
-    </div>
-
-    <!-- نافذة عرض Reel -->
-    <div class="modal" id="reelViewModal" style="display: none;" onclick="if(event.target===this) closeModal('reelViewModal')">
-        <div class="modal-content reel-modal-content">
-            <div class="reel-modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3><i class="fas fa-film" style="color: gold;"></i> reel</h3>
-                <button class="close-btn" onclick="closeModal('reelViewModal')" style="background: none; border: none; color: gold; font-size: 28px; cursor: pointer;">&times;</button>
-            </div>
-            <div class="reel-modal-body" id="reelViewContent"></div>
-        </div>
-    </div>
-
-    <!-- إحصائيات الموقع (مخفية) -->
-    <div style="display: none;" id="siteStats">
-        <span id="visitorCount">0</span>
-    </div>
-
-    <!-- العجلة ثلاثية الأبعاد -->
-    <div class="container">
-        <h1>
-            <i class="fas fa-film"></i> 
-            العجلة الدوارة
-            <i class="fas fa-video"></i>
-        </h1>
-        
-        <div class="wheel-main-container">
-            <div class="wheel-3d" id="wheel3D">
-                <div class="wheel-option" data-option="reel">
-                    <i class="fas fa-film"></i>
-                    <span class="option-title">Reel</span>
-                    <span class="option-desc">إضافة فيديو قصير</span>
-                </div>
-                
-                <div class="wheel-option" data-option="live">
-                    <i class="fas fa-video"></i>
-                    <span class="option-title">مباشر</span>
-                    <span class="option-desc">بدء بث مباشر</span>
-                </div>
-                
-                <div class="wheel-option" data-option="tour">
-                    <i class="fas fa-globe"></i>
-                    <span class="option-title">جولة</span>
-                    <span class="option-desc">إنشاء جولة</span>
-                </div>
-                
-                <div class="wheel-center"></div>
-                <div class="wheel-arrow">
-                    <i class="fas fa-arrow-down"></i>
-                </div>
-            </div>
-            
-            <div class="wheel-help">
-                <i class="fas fa-hand-pointer"></i> 
-                اسحب لليسار أو اليمين لاختيار نوع الإضافة
-            </div>
-            
-            <div class="selected-box">
-                <span id="selectedText">إضافة Reel</span>
-            </div>
-            
-            <button class="add-btn" onclick="addSelectedContent()">
-                <i class="fas fa-plus-circle"></i>
-                <span id="addBtnText">إضافة Reel</span>
-            </button>
-        </div>
-        
-        <div class="preview-grid" id="previewGrid">
-            <div class="preview-card">
-                <i class="fas fa-film" style="color: #FF0000;"></i>
-                <h3>Reels</h3>
-                <div class="count" id="reelCount">0</div>
-                <div class="thumbprint" id="lastReelThumbprint">-</div>
-            </div>
-            
-            <div class="preview-card">
-                <i class="fas fa-video" style="color: #ff4444;"></i>
-                <h3>بث مباشر</h3>
-                <div class="count" id="liveCount">0</div>
-                <div class="thumbprint" id="lastLiveThumbprint">-</div>
-            </div>
-            
-            <div class="preview-card">
-                <i class="fas fa-globe" style="color: #00b894;"></i>
-                <h3>جولات</h3>
-                <div class="count" id="tourCount">0</div>
-                <div class="thumbprint" id="lastTourThumbprint">-</div>
             </div>
         </div>
     </div>
 
-    <!-- المكتبات الخارجية -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    
+    <div class="footer">
+        <i class="fas fa-fingerprint"></i> جميع الجولات لها بصمة فريدة في تلجرام
+    </div>
+
     <script>
-        // تهيئة AOS
-        document.addEventListener('DOMContentLoaded', function() {
-            AOS.init({
-                duration: 800,
-                once: true,
-                offset: 100
-            });
-        });
-
-        // إخفاء شاشة التحميل
-        window.addEventListener('load', function() {
-            document.getElementById('loader').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('loader').style.display = 'none';
-            }, 500);
-        });
-
-        // متغيرات العجلة
-        const wheel = document.getElementById('wheel3D');
-        const options = document.querySelectorAll('.wheel-option');
-        let currentRotation = 0;
-        let isDragging = false;
-        let startX = 0;
-        let lastX = 0;
-        let velocity = 0;
-        let animationFrame = null;
-        let selectedOption = 'reel';
-
-        const WHEEL_CONFIG = {
-            options: [
-                { id: 'reel', name: 'Reel', angle: 0 },
-                { id: 'live', name: 'مباشر', angle: 120 },
-                { id: 'tour', name: 'جولة', angle: 240 }
-            ],
-            rotationSpeed: 0.3,
-            snapDuration: 300,
-            flingDeceleration: 0.95
+        // ========== بيانات تجريبية ==========
+        let currentUser = {
+            id: 1,
+            name: 'أحمد',
+            role: 'merchant',
+            telegram: '@ahmed'
         };
 
-        function initWheelOptions() {
-            options.forEach((opt, index) => {
-                const angle = WHEEL_CONFIG.options[index].angle;
-                opt.style.transform = `translate(-50%, -50%) rotateY(${angle}deg) translateZ(180px)`;
-            });
-        }
+        let activeUsers = [
+            { id: 2, name: 'محمد', role: 'merchant', telegram: '@mohamed', lastActive: new Date() },
+            { id: 3, name: 'فاطمة', role: 'customer', telegram: '@fatma', lastActive: new Date() },
+            { id: 4, name: 'علي', role: 'merchant', telegram: '@ali', lastActive: new Date() },
+            { id: 5, name: 'نور', role: 'customer', telegram: '@noor', lastActive: new Date() }
+        ];
 
-        wheel.addEventListener('touchstart', handleTouchStart, { passive: false });
-        wheel.addEventListener('touchmove', handleTouchMove, { passive: false });
-        wheel.addEventListener('touchend', handleTouchEnd);
-        
-        wheel.addEventListener('mousedown', handleMouseDown);
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
-        
-        wheel.addEventListener('dragstart', (e) => e.preventDefault());
-
-        function handleTouchStart(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            startX = touch.clientX;
-            lastX = touch.clientX;
-            isDragging = true;
-            wheel.classList.add('dragging');
-            
-            if (animationFrame) {
-                cancelAnimationFrame(animationFrame);
-                animationFrame = null;
+        let activeTours = [
+            {
+                id: 1,
+                title: 'جولة في المتجر',
+                creator: { name: 'أحمد', role: 'merchant' },
+                participant: { name: 'محمد', role: 'merchant' },
+                stops: 5,
+                currentStop: 2,
+                thumbprint: 'TOR_001_AHM_240312_153045_XY9P',
+                status: 'active'
             }
+        ];
+
+        let tourRequests = [];
+
+        // ========== تهيئة الصفحة ==========
+        function initPage() {
+            updateActiveUsers();
+            updateActiveTours();
+            updateStats();
         }
 
-        function handleTouchMove(e) {
-            if (!isDragging) return;
-            e.preventDefault();
+        // ========== تحديث المستخدمين النشطين ==========
+        function updateActiveUsers() {
+            const container = document.getElementById('activeUsersContainer');
+            const countSpan = document.getElementById('activeUsersCount');
+            const countSpan2 = document.getElementById('activeUsersCount2');
             
-            const touch = e.touches[0];
-            const currentX = touch.clientX;
-            const diff = currentX - lastX;
-            
-            velocity = diff * 0.5;
-            currentRotation += diff * 0.3;
-            updateWheelRotation();
-            
-            lastX = currentX;
-        }
+            countSpan.textContent = activeUsers.length;
+            countSpan2.textContent = `(${activeUsers.length})`;
 
-        function handleTouchEnd(e) {
-            e.preventDefault();
-            isDragging = false;
-            wheel.classList.remove('dragging');
-            
-            if (Math.abs(velocity) > 1) {
-                startFlingAnimation();
-            } else {
-                snapToNearestOption();
+            if (activeUsers.length === 0) {
+                container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:50px;">لا يوجد مستخدمين نشطين</div>';
+                return;
             }
+
+            container.innerHTML = activeUsers.map(user => `
+                <div class="user-card">
+                    <div class="user-active"></div>
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">${user.name}</div>
+                        <div class="user-role">
+                            <i class="fas ${user.role === 'merchant' ? 'fa-store' : 'fa-user'}"></i>
+                            ${user.role === 'merchant' ? 'تاجر' : 'مشتري'}
+                        </div>
+                        <div class="user-telegram">
+                            <i class="fab fa-telegram"></i> ${user.telegram}
+                        </div>
+                        <div class="user-actions">
+                            <button class="user-action-btn" onclick="requestTour(${user.id})">
+                                <i class="fas fa-globe"></i> طلب جولة
+                            </button>
+                            <button class="user-action-btn" onclick="messageUser('${user.telegram}')">
+                                <i class="fab fa-telegram"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function handleMouseDown(e) {
-            e.preventDefault();
-            startX = e.clientX;
-            lastX = e.clientX;
-            isDragging = true;
-            wheel.classList.add('dragging');
+        // ========== تحديث الجولات النشطة ==========
+        function updateActiveTours() {
+            const container = document.getElementById('activeToursContainer');
+            const countSpan = document.getElementById('activeToursCount');
+            const countSpan2 = document.getElementById('activeToursCount2');
             
-            if (animationFrame) {
-                cancelAnimationFrame(animationFrame);
-                animationFrame = null;
+            countSpan.textContent = activeTours.length;
+            countSpan2.textContent = `(${activeTours.length})`;
+
+            if (activeTours.length === 0) {
+                container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:50px;">لا توجد جولات نشطة</div>';
+                return;
             }
+
+            container.innerHTML = activeTours.map(tour => `
+                <div class="tour-card">
+                    <div class="tour-header-card">
+                        <span class="tour-title">${tour.title}</span>
+                        <span class="tour-status">نشط</span>
+                    </div>
+                    
+                    <div class="tour-participants">
+                        <div class="tour-participant">
+                            <i class="fas fa-user"></i>
+                            <span>${tour.creator.name}</span>
+                        </div>
+                        <i class="fas fa-arrow-left" style="color: gold;"></i>
+                        <div class="tour-participant">
+                            <i class="fas fa-user"></i>
+                            <span>${tour.participant.name}</span>
+                        </div>
+                    </div>
+
+                    <div class="tour-progress">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>المحطة ${tour.currentStop} من ${tour.stops}</span>
+                            <span>${Math.round(tour.currentStop/tour.stops*100)}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${tour.currentStop/tour.stops*100}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="tour-stats">
+                        <div class="tour-stat">
+                            <div class="tour-stat-value">${tour.stops}</div>
+                            <div class="tour-stat-label">محطات</div>
+                        </div>
+                        <div class="tour-stat">
+                            <div class="tour-stat-value">${tour.currentStop}</div>
+                            <div class="tour-stat-label">الحالية</div>
+                        </div>
+                        <div class="tour-stat">
+                            <div class="tour-stat-value">15</div>
+                            <div class="tour-stat-label">دقيقة</div>
+                        </div>
+                    </div>
+
+                    <div class="tour-thumbprint">
+                        <i class="fas fa-fingerprint"></i> ${tour.thumbprint}
+                    </div>
+
+                    <div class="tour-footer">
+                        <button class="tour-btn" onclick="openTour(${tour.id})">
+                            <i class="fas fa-play"></i> متابعة
+                        </button>
+                        <button class="tour-btn secondary" onclick="copyThumbprint('${tour.thumbprint}')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function handleMouseMove(e) {
-            if (!isDragging) return;
-            e.preventDefault();
-            
-            const currentX = e.clientX;
-            const diff = currentX - lastX;
-            
-            velocity = diff * 0.5;
-            currentRotation += diff * 0.3;
-            updateWheelRotation();
-            
-            lastX = currentX;
+        // ========== تحديث الإحصائيات ==========
+        function updateStats() {
+            document.getElementById('merchantsCount').textContent = activeUsers.filter(u => u.role === 'merchant').length;
+            document.getElementById('customersCount').textContent = activeUsers.filter(u => u.role === 'customer').length;
         }
 
-        function handleMouseUp(e) {
-            e.preventDefault();
-            isDragging = false;
-            wheel.classList.remove('dragging');
+        // ========== بدء جولة عشوائية ==========
+        function startRandomTour() {
+            const otherUsers = activeUsers.filter(u => u.id !== currentUser.id);
             
-            if (Math.abs(velocity) > 1) {
-                startFlingAnimation();
-            } else {
-                snapToNearestOption();
+            if (otherUsers.length === 0) {
+                alert('❌ لا يوجد مستخدمين للجولة');
+                return;
             }
-        }
 
-        function updateWheelRotation() {
-            currentRotation = currentRotation % 360;
-            if (currentRotation < 0) currentRotation += 360;
+            const randomUser = otherUsers[Math.floor(Math.random() * otherUsers.length)];
             
-            wheel.style.transform = `rotateY(${currentRotation}deg)`;
-            updateActiveOption();
-        }
-
-        function startFlingAnimation() {
-            function animate() {
-                if (Math.abs(velocity) < 0.1) {
-                    snapToNearestOption();
-                    return;
-                }
-                
-                velocity *= WHEEL_CONFIG.flingDeceleration;
-                currentRotation += velocity;
-                updateWheelRotation();
-                
-                animationFrame = requestAnimationFrame(animate);
-            }
+            const thumbprint = generateThumbprint('tour');
             
-            animationFrame = requestAnimationFrame(animate);
-        }
-
-        function snapToNearestOption() {
-            const targetAngles = WHEEL_CONFIG.options.map(o => o.angle);
-            
-            let minDiff = 360;
-            let targetAngle = 0;
-            
-            targetAngles.forEach(angle => {
-                let diff = Math.abs(currentRotation - angle);
-                diff = Math.min(diff, 360 - diff);
-                
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    targetAngle = angle;
-                }
-            });
-            
-            animateToAngle(targetAngle);
-        }
-
-        function animateToAngle(targetAngle) {
-            const startAngle = currentRotation;
-            const startTime = performance.now();
-            const duration = WHEEL_CONFIG.snapDuration;
-            
-            function animate(currentTime) {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                
-                const easeProgress = progress < 0.5 
-                    ? 2 * progress * progress 
-                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-                
-                currentRotation = startAngle + (targetAngle - startAngle) * easeProgress;
-                updateWheelRotation();
-                
-                if (progress < 1) {
-                    requestAnimationFrame(animate);
-                }
-            }
-            
-            requestAnimationFrame(animate);
-        }
-
-        function updateActiveOption() {
-            const normalizedRotation = ((currentRotation % 360) + 360) % 360;
-            
-            let minDiff = 360;
-            let activeId = 'reel';
-            
-            WHEEL_CONFIG.options.forEach(opt => {
-                let diff = Math.abs(normalizedRotation - opt.angle);
-                diff = Math.min(diff, 360 - diff);
-                
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    activeId = opt.id;
-                }
-            });
-            
-            selectedOption = activeId;
-            
-            options.forEach(opt => {
-                if (opt.dataset.option === activeId) {
-                    opt.classList.add('active');
-                } else {
-                    opt.classList.remove('active');
-                }
-            });
-            
-            const optionNames = {
-                'reel': 'Reel',
-                'live': 'بث مباشر',
-                'tour': 'جولة'
+            const newTour = {
+                id: Date.now(),
+                title: `جولة مع ${randomUser.name}`,
+                creator: currentUser,
+                participant: randomUser,
+                stops: 5,
+                currentStop: 1,
+                thumbprint: thumbprint,
+                status: 'active'
             };
+
+            activeTours.push(newTour);
+            updateActiveTours();
             
-            document.getElementById('selectedText').textContent = `إضافة ${optionNames[activeId]}`;
-            document.getElementById('addBtnText').textContent = `إضافة ${optionNames[activeId]}`;
+            alert(`✅ بدأت جولة عشوائية مع ${randomUser.name}\nالبصمة: ${thumbprint}`);
         }
 
-        function generateThumbprint(type) {
-            const prefix = {
-                'reel': 'REL',
-                'live': 'LIV',
-                'tour': 'TOR'
-            }[type] || 'USR';
+        // ========== طلب جولة مع مستخدم ==========
+        function requestTour(userId) {
+            const user = activeUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            const message = prompt(`📝 أرسل طلب جولة إلى ${user.name}:`, 'أود القيام بجولة معك');
+            if (!message) return;
+
+            const thumbprint = generateThumbprint('tour');
+
+            const request = {
+                id: Date.now(),
+                from: currentUser,
+                to: user,
+                message: message,
+                thumbprint: thumbprint,
+                status: 'pending'
+            };
+
+            tourRequests.push(request);
+            document.getElementById('requestsBadge').textContent = tourRequests.length;
+
+            alert(`✅ تم إرسال الطلب إلى ${user.name}\nالبصمة: ${thumbprint}`);
+        }
+
+        // ========== فتح الجولة ==========
+        function openTour(tourId) {
+            const tour = activeTours.find(t => t.id === tourId);
+            if (!tour) return;
+
+            document.getElementById('modalTourTitle').textContent = tour.title;
             
+            let stopsHtml = '';
+            for (let i = 1; i <= tour.stops; i++) {
+                const isActive = i === tour.currentStop;
+                const isCompleted = i < tour.currentStop;
+                
+                stopsHtml += `
+                    <div class="stop-item" style="border-color: ${isActive ? 'gold' : isCompleted ? '#00b894' : '#666'}">
+                        <div class="stop-header">
+                            <span class="stop-number">المحطة ${i}</span>
+                            <span class="stop-status">
+                                ${isActive ? '🔴 حالية' : isCompleted ? '✅ تمت' : '⏳ قادمة'}
+                            </span>
+                        </div>
+                        <p>${isActive ? 'جاري استكشاف المحطة...' : isCompleted ? 'تم استكشاف المحطة' : 'في انتظار الوصول'}</p>
+                    </div>
+                `;
+            }
+
+            document.getElementById('stopsContainer').innerHTML = stopsHtml;
+            document.getElementById('tourModal').style.display = 'flex';
+        }
+
+        // ========== إرسال رسالة ==========
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            const chatContainer = document.getElementById('chatContainer');
+            const messageHtml = `
+                <div class="chat-message" style="border-right: 3px solid gold;">
+                    <div class="chat-sender">${currentUser.name}</div>
+                    <div class="chat-text">${message}</div>
+                </div>
+            `;
+
+            chatContainer.innerHTML += messageHtml;
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            input.value = '';
+        }
+
+        // ========== المحطة التالية ==========
+        function nextStop() {
+            // تنفيذ الانتقال للمحطة التالية
+        }
+
+        // ========== إنهاء الجولة ==========
+        function endTour() {
+            if (confirm('هل أنت متأكد من إنهاء الجولة؟')) {
+                closeTourModal();
+            }
+        }
+
+        // ========== إغلاق نافذة الجولة ==========
+        function closeTourModal() {
+            document.getElementById('tourModal').style.display = 'none';
+        }
+
+        // ========== توليد بصمة ==========
+        function generateThumbprint(type) {
+            const prefix = 'TOR';
             const date = new Date();
             const dateStr = `${date.getFullYear().toString().substring(2)}${(date.getMonth()+1).toString().padStart(2,'0')}${date.getDate().toString().padStart(2,'0')}`;
             const timeStr = `${date.getHours().toString().padStart(2,'0')}${date.getMinutes().toString().padStart(2,'0')}${date.getSeconds().toString().padStart(2,'0')}`;
@@ -1269,151 +1033,79 @@
             return `${prefix}_${dateStr}_${timeStr}_${random}`;
         }
 
-        function addSelectedContent() {
-            const contentTypes = {
-                'reel': { name: 'Reel', icon: 'film', color: '#FF0000' },
-                'live': { name: 'بث مباشر', icon: 'video', color: '#ff4444' },
-                'tour': { name: 'جولة', icon: 'globe', color: '#00b894' }
-            };
-            
-            const type = selectedOption;
-            const content = contentTypes[type];
-            const thumbprint = generateThumbprint(type);
-            
-            const countElement = document.getElementById(`${type}Count`);
-            const currentCount = parseInt(countElement.textContent) || 0;
-            countElement.textContent = currentCount + 1;
-            
-            const thumbprintElement = document.getElementById(`last${type.charAt(0).toUpperCase() + type.slice(1)}Thumbprint`);
-            thumbprintElement.textContent = thumbprint;
-            
-            const previewCard = document.createElement('div');
-            previewCard.className = 'preview-card';
-            previewCard.style.animation = 'slideIn 0.3s ease';
-            previewCard.innerHTML = `
-                <i class="fas fa-${content.icon}" style="color: ${content.color};"></i>
-                <h3>${content.name} (جديد)</h3>
-                <div class="thumbprint">${thumbprint}</div>
-            `;
-            
-            document.getElementById('previewGrid').prepend(previewCard);
-            
-            setTimeout(() => {
-                previewCard.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => previewCard.remove(), 300);
-            }, 3000);
-            
-            showNotification(`✅ تمت إضافة ${content.name} - البصمة: ${thumbprint}`);
+        // ========== نسخ البصمة ==========
+        function copyThumbprint(thumbprint) {
+            navigator.clipboard.writeText(thumbprint);
+            alert('✅ تم نسخ البصمة');
         }
 
-        function showNotification(message) {
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }
+        // ========== البحث بالبصمة ==========
+        function searchByThumbprint() {
+            const thumbprint = prompt('🔍 أدخل البصمة:');
+            if (!thumbprint) return;
 
-        function initWheel() {
-            console.log('🔄 تشغيل العجلة الدوارة...');
-            initWheelOptions();
+            const found = activeTours.find(t => t.thumbprint === thumbprint);
             
-            setTimeout(() => {
-                currentRotation = 0;
-                updateActiveOption();
-            }, 100);
-        }
-
-        document.addEventListener('DOMContentLoaded', initWheel);
-
-        // دوال عامة
-        window.addSelectedContent = addSelectedContent;
-        window.generateThumbprint = generateThumbprint;
-        window.toggleCart = function() {
-            const cart = document.getElementById('cartSidebar');
-            cart.style.display = cart.style.display === 'none' ? 'block' : 'none';
-        };
-        window.checkoutCart = function() {
-            alert('تم إتمام الطلب عبر واتساب');
-        };
-        window.searchProducts = function() {
-            console.log('بحث: ' + document.getElementById('searchInput').value);
-        };
-        window.filterProducts = function(category) {
-            console.log('تصفية: ' + category);
-        };
-        window.changeSort = function(value) {
-            console.log('ترتيب: ' + value);
-        };
-        window.openLoginModal = function() {
-            document.getElementById('loginModal').style.display = 'flex';
-        };
-        window.closeModal = function(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        };
-        window.switchAuthTab = function(tab) {
-            document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
-            document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
-        };
-        window.handleLogin = function() {
-            alert('تم تسجيل الدخول بنجاح');
-            closeModal('loginModal');
-        };
-        window.handleRegister = function() {
-            alert('تم التسجيل بنجاح');
-            closeModal('loginModal');
-        };
-        window.toggleMerchantFields = function() {
-            const isMerchant = document.getElementById('isMerchant').checked;
-            document.getElementById('merchantFields').style.display = isMerchant ? 'block' : 'none';
-        };
-        window.saveProduct = function() {
-            alert('تم حفظ المنتج');
-            closeModal('productModal');
-        };
-        window.handleImageUpload = function(event) {
-            console.log('تم رفع ' + event.target.files.length + ' صورة');
-        };
-        window.findProductById = function() {
-            alert('البحث بالمعرف');
-        };
-        window.openDashboard = function() {
-            document.getElementById('dashboardSection').style.display = 'block';
-        };
-        window.switchDashboardTab = function(tab) {
-            document.getElementById('dashboardContent').innerHTML = '<h3 style="color: gold;">محتوى ' + tab + '</h3>';
-        };
-        window.scrollReels = function(direction) {
-            console.log('تمرير الريلز: ' + direction);
-        };
-        window.toggleTheme = function() {
-            const body = document.body;
-            if (body.style.background === 'linear-gradient(135deg, rgb(10, 26, 21), rgb(26, 58, 50))') {
-                body.style.background = 'linear-gradient(135deg, #1a3a32, #0a1a15)';
+            if (found) {
+                alert(`✅ تم العثور على الجولة: ${found.title}`);
             } else {
-                body.style.background = 'linear-gradient(135deg, #0a1a15, #1a3a32)';
+                alert('❌ لا توجد جولة بهذه البصمة');
             }
-        };
-        window.scrollToTop = function() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-        window.scrollToBottom = function() {
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        };
-
-        // تحديث الوقت في الماركي
-        function updateMarqueeTime() {
-            const now = new Date();
-            document.getElementById('marqueeHours').textContent = now.getHours().toString().padStart(2,'0');
-            document.getElementById('marqueeMinutes').textContent = now.getMinutes().toString().padStart(2,'0');
-            document.getElementById('marqueeSeconds').textContent = now.getSeconds().toString().padStart(2,'0');
         }
-        setInterval(updateMarqueeTime, 1000);
+
+        // ========== عرض طلبات الجولات ==========
+        function showTourRequests() {
+            if (tourRequests.length === 0) {
+                alert('لا توجد طلبات');
+                return;
+            }
+
+            let message = '📋 طلبات الجولات:\n\n';
+            tourRequests.forEach((req, i) => {
+                message += `${i+1}. من: ${req.from.name}\n`;
+                message += `   إلى: ${req.to.name}\n`;
+                message += `   رسالة: ${req.message}\n`;
+                message += `   بصمة: ${req.thumbprint}\n\n`;
+            });
+
+            alert(message);
+        }
+
+        // ========== عرض جولاتي ==========
+        function showMyTours() {
+            const myTours = activeTours.filter(t => 
+                t.creator.id === currentUser.id || t.participant.id === currentUser.id
+            );
+
+            if (myTours.length === 0) {
+                alert('لا توجد جولات لك');
+                return;
+            }
+
+            let message = '📋 جولاتي:\n\n';
+            myTours.forEach((tour, i) => {
+                message += `${i+1}. ${tour.title}\n`;
+                message += `   مع: ${tour.creator.id === currentUser.id ? tour.participant.name : tour.creator.name}\n`;
+                message += `   المحطة: ${tour.currentStop}/${tour.stops}\n`;
+                message += `   بصمة: ${tour.thumbprint}\n\n`;
+            });
+
+            alert(message);
+        }
+
+        // ========== مراسلة مستخدم ==========
+        function messageUser(telegram) {
+            window.open(`https://t.me/${telegram.replace('@', '')}`, '_blank');
+        }
+
+        // ========== تشغيل التهيئة ==========
+        document.addEventListener('DOMContentLoaded', initPage);
+
+        // تحديث كل 30 ثانية
+        setInterval(() => {
+            updateActiveUsers();
+            updateActiveTours();
+        }, 30000);
     </script>
 </body>
 </html>
