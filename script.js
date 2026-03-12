@@ -3175,7 +3175,719 @@ function initReelsSystem() {
 
 // تشغيل النظام
 initReelsSystem();
+// ========== نظام ربط العجلة مع تلجرام وإرسال البصمات ==========
+// ========== يضاف في نهاية ملف script.js ==========
 
+// ========== 1. إعدادات تلجرام ==========
+const TELEGRAM_BOT_TOKEN = '8576673096:AAEFKd-YSJcW_0d_wAHZBt-5nPg_VOjDX_0';
+const TELEGRAM_CHANNEL_ID = '-1003822964890';
+
+// ========== 2. قاعدة بيانات المستخدمين النشطين للجولات ==========
+let activeUsers = JSON.parse(localStorage.getItem('active_users') || '[]');
+let tourRequests = JSON.parse(localStorage.getItem('tour_requests') || '[]');
+
+// ========== 3. توليد البصمة الموحدة ==========
+function generateThumbprint(type, userData) {
+    const prefix = {
+        'reel': 'REL',
+        'live': 'LIV',
+        'tour': 'TOR'
+    }[type] || 'USR';
+    
+    const userId = userData?.id?.toString().substring(0, 4) || '0000';
+    const userName = userData?.name?.substring(0, 3) || 'XXX';
+    
+    const date = new Date();
+    const dateStr = `${date.getFullYear().toString().substring(2)}${(date.getMonth()+1).toString().padStart(2,'0')}${date.getDate().toString().padStart(2,'0')}`;
+    const timeStr = `${date.getHours().toString().padStart(2,'0')}${date.getMinutes().toString().padStart(2,'0')}${date.getSeconds().toString().padStart(2,'0')}`;
+    
+    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+    
+    return `${prefix}_${userId}_${userName}_${dateStr}_${timeStr}_${random}`;
+}
+
+// ========== 4. إرسال إلى قناة تلجرام ==========
+async function sendToTelegram(content, type) {
+    try {
+        const typeEmoji = {
+            'reel': '🎬',
+            'live': '🔴',
+            'tour': '🗺️'
+        }[type] || '📦';
+        
+        const typeName = {
+            'reel': 'Reel',
+            'live': 'بث مباشر',
+            'tour': 'جولة'
+        }[type];
+        
+        // تنسيق الرسالة حسب النوع
+        let message = `${typeEmoji} #${typeName} جديد في المتجر\n\n`;
+        message += `🆔 البصمة: ${content.thumbprint}\n`;
+        message += `👤 المستخدم: ${content.userName} (${content.userRole === 'merchant' ? 'تاجر' : 'مشتري'})\n`;
+        message += `📱 المعرف: ${content.userTelegram || 'غير محدد'}\n\n`;
+        
+        if (type === 'reel') {
+            message += `📌 العنوان: ${content.title || 'Reel'}\n`;
+            message += `📝 الوصف: ${content.description || 'لا يوجد وصف'}\n`;
+            message += `🔗 الرابط: ${content.url}\n`;
+            message += `⏱️ المدة: ${content.duration || 'قصير'}\n`;
+        }
+        else if (type === 'live') {
+            message += `📌 عنوان البث: ${content.title}\n`;
+            message += `📝 الوصف: ${content.description || 'بث مباشر'}\n`;
+            message += `👥 المشاهدين: ${content.viewers || 0}\n`;
+            message += `⏱️ بدأ في: ${content.startTime}\n`;
+            message += `🔗 رابط المشاهدة: ${content.url || 'داخل التطبيق'}\n`;
+        }
+        else if (type === 'tour') {
+            message += `📌 عنوان الجولة: ${content.title}\n`;
+            message += `📝 الوصف: ${content.description}\n`;
+            message += `📍 عدد المحطات: ${content.stops}\n`;
+            message += `👥 المشاركون: ${content.participants?.length || 1}\n`;
+            message += `⏱️ المدة: ${content.duration || '30 دقيقة'}\n`;
+            message += `🎯 النوع: ${content.tourType === 'random' ? 'عشوائي' : 'بناءً على طلب'}\n`;
+        }
+        
+        message += `\n📅 التاريخ: ${new Date().toLocaleString('ar-EG')}`;
+        
+        // إرسال إلى تلجرام
+        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: TELEGRAM_CHANNEL_ID,
+                text: message,
+                parse_mode: 'HTML'
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.ok) {
+            console.log(`✅ تم إرسال ${typeName} إلى تلجرام - البصمة: ${content.thumbprint}`);
+            
+            // حفظ في localStorage
+            const sentItems = JSON.parse(localStorage.getItem('telegram_sent_items') || '[]');
+            sentItems.unshift({
+                type: type,
+                thumbprint: content.thumbprint,
+                content: content,
+                sentAt: new Date().toISOString()
+            });
+            localStorage.setItem('telegram_sent_items', JSON.stringify(sentItems.slice(0, 100)));
+            
+            return { success: true, thumbprint: content.thumbprint };
+        } else {
+            console.error('❌ فشل الإرسال:', data);
+            return { success: false, error: data.description };
+        }
+        
+    } catch (error) {
+        console.error('❌ خطأ في الإرسال:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// ========== 5. رفع Reel جديد ==========
+window.uploadReel = async function() {
+    if (!currentUser) {
+        showNotification('❌ يجب تسجيل الدخول أولاً', 'error');
+        openLoginModal();
+        return;
+    }
+    
+    // طلب معلومات Reel
+    const url = prompt('🔗 أدخل رابط Reel (يوتيوب، إنستغرام، تيك توك):');
+    if (!url) return;
+    
+    const title = prompt('📌 عنوان Reel (اختياري):', 'Reel جديد');
+    const description = prompt('📝 وصف Reel (اختياري):');
+    const duration = prompt('⏱️ مدة الفيديو (بالثواني):', '60');
+    
+    // توليد بصمة فريدة
+    const thumbprint = generateThumbprint('reel', currentUser);
+    
+    // تحضير بيانات Reel
+    const reelData = {
+        thumbprint: thumbprint,
+        type: 'reel',
+        url: url,
+        title: title || 'Reel جديد',
+        description: description || '',
+        duration: duration || '60',
+        userName: currentUser.name,
+        userRole: currentUser.role,
+        userTelegram: currentUser.telegram,
+        userId: currentUser.id,
+        createdAt: new Date().toISOString()
+    };
+    
+    // إرسال إلى تلجرام
+    const result = await sendToTelegram(reelData, 'reel');
+    
+    if (result.success) {
+        showNotification(`✅ تم رفع Reel بنجاح - البصمة: ${thumbprint}`, 'success');
+        
+        // تحديث العداد في الواجهة
+        const reelCount = document.getElementById('reelCount');
+        if (reelCount) {
+            reelCount.textContent = parseInt(reelCount.textContent || '0') + 1;
+        }
+        
+        const lastReelThumbprint = document.getElementById('lastReelThumbprint');
+        if (lastReelThumbprint) {
+            lastReelThumbprint.textContent = thumbprint;
+        }
+    } else {
+        showNotification('❌ فشل رفع Reel', 'error');
+    }
+};
+
+// ========== 6. بدء بث مباشر ==========
+window.startLiveStream = async function() {
+    if (!currentUser) {
+        showNotification('❌ يجب تسجيل الدخول أولاً', 'error');
+        openLoginModal();
+        return;
+    }
+    
+    // التحقق من صلاحيات الكاميرا
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showNotification('❌ متصفحك لا يدعم البث المباشر', 'error');
+        return;
+    }
+    
+    const title = prompt('📌 عنوان البث المباشر:', 'بث مباشر جديد');
+    if (!title) return;
+    
+    const description = prompt('📝 وصف البث (اختياري):');
+    
+    // توليد بصمة
+    const thumbprint = generateThumbprint('live', currentUser);
+    
+    // طلب صلاحيات الكاميرا والميكروفون
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        
+        // تحضير بيانات البث
+        const liveData = {
+            thumbprint: thumbprint,
+            type: 'live',
+            title: title,
+            description: description || 'بث مباشر',
+            userName: currentUser.name,
+            userRole: currentUser.role,
+            userTelegram: currentUser.telegram,
+            userId: currentUser.id,
+            viewers: 0,
+            startTime: new Date().toLocaleTimeString('ar-EG'),
+            url: window.location.href + '#live',
+            stream: stream
+        };
+        
+        // إرسال إلى تلجرام
+        const result = await sendToTelegram(liveData, 'live');
+        
+        if (result.success) {
+            showNotification(`✅ بدأ البث المباشر - البصمة: ${thumbprint}`, 'success');
+            
+            // تحديث العداد
+            const liveCount = document.getElementById('liveCount');
+            if (liveCount) {
+                liveCount.textContent = parseInt(liveCount.textContent || '0') + 1;
+            }
+            
+            const lastLiveThumbprint = document.getElementById('lastLiveThumbprint');
+            if (lastLiveThumbprint) {
+                lastLiveThumbprint.textContent = thumbprint;
+            }
+            
+            // فتح نافذة البث
+            openLiveWindow(liveData);
+        }
+        
+    } catch (error) {
+        showNotification('❌ لا يمكن الوصول للكاميرا أو الميكروفون', 'error');
+        console.error(error);
+    }
+};
+
+// ========== 7. فتح نافذة البث المباشر ==========
+function openLiveWindow(liveData) {
+    const liveWindow = window.open('', '_blank', 'width=800,height=600');
+    
+    liveWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>${liveData.title} - بث مباشر</title>
+            <style>
+                body { margin: 0; background: black; color: white; font-family: Cairo; }
+                video { width: 100%; height: calc(100vh - 120px); background: black; }
+                .info { 
+                    padding: 15px; 
+                    background: linear-gradient(135deg, #2c5e4f, #1a3a32);
+                    border-top: 2px solid gold;
+                }
+                .thumbprint { 
+                    color: gold; 
+                    font-family: monospace;
+                    background: rgba(0,0,0,0.3);
+                    padding: 5px 10px;
+                    border-radius: 5px;
+                }
+                .viewers {
+                    display: inline-block;
+                    background: gold;
+                    color: black;
+                    padding: 5px 15px;
+                    border-radius: 20px;
+                    margin-top: 10px;
+                }
+            </style>
+        </head>
+        <body>
+            <video id="liveVideo" autoplay playsinline></video>
+            <div class="info">
+                <h2>${liveData.title}</h2>
+                <p>${liveData.description}</p>
+                <p>البصمة: <span class="thumbprint">${liveData.thumbprint}</span></p>
+                <p>المذيع: ${liveData.userName} (${liveData.userRole === 'merchant' ? 'تاجر' : 'مشتري'})</p>
+                <div class="viewers" id="viewerCount">👥 0 مشاهد</div>
+            </div>
+            <script>
+                const video = document.getElementById('liveVideo');
+                video.srcObject = ${JSON.stringify(liveData.stream)};
+                
+                let viewers = 0;
+                setInterval(() => {
+                    viewers += Math.floor(Math.random() * 3);
+                    document.getElementById('viewerCount').innerHTML = '👥 ' + viewers + ' مشاهد';
+                }, 5000);
+            <\/script>
+        </body>
+        </html>
+    `);
+}
+
+// ========== 8. تحديث قائمة المستخدمين النشطين ==========
+function updateActiveUsers() {
+    // إضافة المستخدم الحالي للقائمة إذا كان مسجل دخول
+    if (currentUser) {
+        const existingIndex = activeUsers.findIndex(u => u.id === currentUser.id);
+        
+        const userData = {
+            id: currentUser.id,
+            name: currentUser.name,
+            role: currentUser.role,
+            telegram: currentUser.telegram,
+            lastActive: new Date().toISOString()
+        };
+        
+        if (existingIndex >= 0) {
+            activeUsers[existingIndex] = userData;
+        } else {
+            activeUsers.push(userData);
+        }
+        
+        // حفظ في localStorage
+        localStorage.setItem('active_users', JSON.stringify(activeUsers));
+    }
+}
+
+// ========== 9. بدء جولة عشوائية ==========
+window.startRandomTour = async function() {
+    if (!currentUser) {
+        showNotification('❌ يجب تسجيل الدخول أولاً', 'error');
+        openLoginModal();
+        return;
+    }
+    
+    // تحديث قائمة المستخدمين النشطين
+    updateActiveUsers();
+    
+    // فلترة المستخدمين (استبعاد المستخدم الحالي)
+    const otherUsers = activeUsers.filter(u => u.id !== currentUser.id);
+    
+    if (otherUsers.length === 0) {
+        showNotification('❌ لا يوجد مستخدمين نشطين حالياً', 'warning');
+        return;
+    }
+    
+    // اختيار مستخدم عشوائي
+    const randomUser = otherUsers[Math.floor(Math.random() * otherUsers.length)];
+    
+    // توليد بصمة
+    const thumbprint = generateThumbprint('tour', currentUser);
+    
+    // تحضير بيانات الجولة
+    const tourData = {
+        thumbprint: thumbprint,
+        type: 'tour',
+        title: 'جولة عشوائية',
+        description: `جولة مع ${randomUser.name}`,
+        stops: Math.floor(Math.random() * 5) + 3,
+        participants: [currentUser, randomUser],
+        tourType: 'random',
+        userName: currentUser.name,
+        userRole: currentUser.role,
+        userTelegram: currentUser.telegram,
+        userId: currentUser.id,
+        partnerName: randomUser.name,
+        partnerRole: randomUser.role,
+        partnerTelegram: randomUser.telegram,
+        duration: '30 دقيقة',
+        createdAt: new Date().toISOString()
+    };
+    
+    // إرسال إلى تلجرام
+    const result = await sendToTelegram(tourData, 'tour');
+    
+    if (result.success) {
+        showNotification(`✅ بدأت جولة عشوائية مع ${randomUser.name} - البصمة: ${thumbprint}`, 'success');
+        
+        // تحديث العداد
+        const tourCount = document.getElementById('tourCount');
+        if (tourCount) {
+            tourCount.textContent = parseInt(tourCount.textContent || '0') + 1;
+        }
+        
+        const lastTourThumbprint = document.getElementById('lastTourThumbprint');
+        if (lastTourThumbprint) {
+            lastTourThumbprint.textContent = thumbprint;
+        }
+        
+        // فتح نافذة الجولة
+        openTourWindow(tourData);
+    }
+};
+
+// ========== 10. طلب جولة مع مستخدم محدد ==========
+window.requestTour = async function(targetUserId) {
+    if (!currentUser) {
+        showNotification('❌ يجب تسجيل الدخول أولاً', 'error');
+        openLoginModal();
+        return;
+    }
+    
+    // البحث عن المستخدم المطلوب
+    const targetUser = activeUsers.find(u => u.id === targetUserId);
+    
+    if (!targetUser) {
+        showNotification('❌ المستخدم غير موجود', 'error');
+        return;
+    }
+    
+    const message = prompt(`📝 أضف رسالة للطلب مع ${targetUser.name}:`, 'أود القيام بجولة معك');
+    
+    // توليد بصمة
+    const thumbprint = generateThumbprint('tour', currentUser);
+    
+    // تحضير بيانات الطلب
+    const requestData = {
+        thumbprint: thumbprint,
+        type: 'tour',
+        title: 'طلب جولة',
+        description: message,
+        requester: currentUser,
+        targetUser: targetUser,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+    };
+    
+    // حفظ الطلب
+    tourRequests.push(requestData);
+    localStorage.setItem('tour_requests', JSON.stringify(tourRequests));
+    
+    // إرسال إلى تلجرام
+    const result = await sendToTelegram({
+        ...requestData,
+        userName: currentUser.name,
+        userRole: currentUser.role,
+        userTelegram: currentUser.telegram
+    }, 'tour');
+    
+    if (result.success) {
+        showNotification(`✅ تم إرسال طلب جولة إلى ${targetUser.name} - البصمة: ${thumbprint}`, 'success');
+    }
+};
+
+// ========== 11. فتح نافذة الجولة ==========
+function openTourWindow(tourData) {
+    const tourWindow = window.open('', '_blank', 'width=900,height=600');
+    
+    let participantsHtml = '';
+    tourData.participants.forEach(p => {
+        participantsHtml += `
+            <div style="
+                background: linear-gradient(135deg, #2c5e4f, #1a3a32);
+                padding: 10px;
+                border-radius: 10px;
+                margin: 5px 0;
+                border: 1px solid gold;
+            ">
+                <i class="fas fa-user"></i> ${p.name} (${p.role === 'merchant' ? 'تاجر' : 'مشتري'})
+                ${p.telegram ? `<br><small>📱 ${p.telegram}</small>` : ''}
+            </div>
+        `;
+    });
+    
+    let stopsHtml = '';
+    for (let i = 1; i <= tourData.stops; i++) {
+        stopsHtml += `
+            <div style="
+                background: rgba(0,184,148,0.2);
+                padding: 15px;
+                border-radius: 10px;
+                margin-bottom: 10px;
+                border: 2px solid #00b894;
+            ">
+                <h4>📍 المحطة ${i}</h4>
+                <p>جاري استكشاف المحطة ${i}...</p>
+                <div style="width: 100%; height: 5px; background: rgba(255,215,0,0.3); border-radius: 5px;">
+                    <div style="width: ${Math.random() * 100}%; height: 100%; background: gold; border-radius: 5px;"></div>
+                </div>
+            </div>
+        `;
+    }
+    
+    tourWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>${tourData.title}</title>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+            <style>
+                body { 
+                    font-family: Cairo; 
+                    background: linear-gradient(135deg, #0a1a15, #1a3a32);
+                    color: white;
+                    margin: 0;
+                    padding: 20px;
+                }
+                .tour-container { max-width: 800px; margin: 0 auto; }
+                .header { 
+                    background: linear-gradient(135deg, #2c5e4f, #1a3a32);
+                    padding: 20px;
+                    border-radius: 15px;
+                    border: 2px solid gold;
+                    margin-bottom: 20px;
+                }
+                .thumbprint { 
+                    color: gold; 
+                    font-family: monospace;
+                    background: rgba(0,0,0,0.3);
+                    padding: 5px 10px;
+                    border-radius: 5px;
+                }
+                .participants {
+                    background: rgba(255,215,0,0.1);
+                    padding: 15px;
+                    border-radius: 10px;
+                    margin: 20px 0;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="tour-container">
+                <div class="header">
+                    <h1><i class="fas fa-globe" style="color: #00b894;"></i> ${tourData.title}</h1>
+                    <p>${tourData.description}</p>
+                    <p>البصمة: <span class="thumbprint">${tourData.thumbprint}</span></p>
+                    <p>⏱️ المدة: ${tourData.duration}</p>
+                </div>
+                
+                <div class="participants">
+                    <h3><i class="fas fa-users"></i> المشاركون</h3>
+                    ${participantsHtml}
+                </div>
+                
+                <h3>📍 المحطات (${tourData.stops})</h3>
+                <div class="stops">
+                    ${stopsHtml}
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="window.close()" style="
+                        background: gold;
+                        color: black;
+                        border: none;
+                        padding: 10px 30px;
+                        border-radius: 50px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        font-size: 16px;
+                    ">إغلاق الجولة</button>
+                </div>
+            </div>
+        </body>
+        </html>
+    `);
+}
+
+// ========== 12. البحث بالبصمة في تلجرام ==========
+window.searchByThumbprint = async function() {
+    const thumbprint = prompt('🔍 أدخل البصمة للبحث:');
+    if (!thumbprint) return;
+    
+    showNotification('🔍 جاري البحث في قناة تلجرام...', 'info');
+    
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`);
+        const data = await response.json();
+        
+        if (!data.ok) {
+            showNotification('❌ فشل الاتصال بتلجرام', 'error');
+            return;
+        }
+        
+        let found = false;
+        let foundMessage = '';
+        
+        for (const update of data.result) {
+            const message = update.channel_post || update.message;
+            if (!message) continue;
+            
+            const text = message.text || message.caption || '';
+            
+            if (text.includes(thumbprint)) {
+                found = true;
+                foundMessage = text;
+                
+                const messageId = message.message_id;
+                const link = `https://t.me/nardoo_channel/${messageId}`;
+                
+                if (confirm(`✅ تم العثور على البصمة!\n📅 ${new Date(message.date * 1000).toLocaleString('ar-EG')}\n\nهل تريد فتح الرابط؟`)) {
+                    window.open(link, '_blank');
+                }
+                break;
+            }
+        }
+        
+        if (!found) {
+            showNotification('❌ لم يتم العثور على البصمة', 'error');
+        }
+        
+    } catch (error) {
+        showNotification('❌ خطأ في البحث', 'error');
+        console.error(error);
+    }
+};
+
+// ========== 13. عرض آخر البصمات المرسلة ==========
+window.showRecentThumbprints = function() {
+    const sentItems = JSON.parse(localStorage.getItem('telegram_sent_items') || '[]');
+    
+    if (sentItems.length === 0) {
+        showNotification('لا توجد بصمات مرسلة بعد', 'info');
+        return;
+    }
+    
+    let message = '📋 آخر 10 بصمات مرسلة:\n\n';
+    
+    sentItems.slice(0, 10).forEach((item, index) => {
+        const icon = {
+            'reel': '🎬',
+            'live': '🔴',
+            'tour': '🗺️'
+        }[item.type] || '📦';
+        
+        message += `${index + 1}. ${icon} ${item.thumbprint}\n`;
+        message += `   👤 ${item.content.userName}\n`;
+        message += `   🕐 ${new Date(item.sentAt).toLocaleString('ar-EG')}\n\n`;
+    });
+    
+    alert(message);
+};
+
+// ========== 14. تحديث المستخدمين النشطين كل دقيقة ==========
+setInterval(updateActiveUsers, 60000);
+
+// ========== 15. إضافة أزرار التحكم في الواجهة ==========
+function addTelegramControls() {
+    // إضافة زر البحث بالبصمة في الهيدر
+    const headerActions = document.querySelector('.header-actions');
+    if (headerActions) {
+        const searchBtn = document.createElement('button');
+        searchBtn.className = 'action-btn';
+        searchBtn.setAttribute('onclick', 'searchByThumbprint()');
+        searchBtn.setAttribute('title', 'بحث بالبصمة');
+        searchBtn.innerHTML = '<i class="fas fa-fingerprint"></i>';
+        headerActions.appendChild(searchBtn);
+        
+        const historyBtn = document.createElement('button');
+        historyBtn.className = 'action-btn';
+        historyBtn.setAttribute('onclick', 'showRecentThumbprints()');
+        historyBtn.setAttribute('title', 'آخر البصمات');
+        historyBtn.innerHTML = '<i class="fas fa-history"></i>';
+        headerActions.appendChild(historyBtn);
+    }
+}
+
+// ========== 16. ربط العجلة بالوظائف ==========
+// تعديل دالة addSelectedContent في العجلة
+const originalAddSelected = window.addSelectedContent;
+window.addSelectedContent = function() {
+    if (!currentUser) {
+        showNotification('❌ يجب تسجيل الدخول أولاً', 'error');
+        openLoginModal();
+        return;
+    }
+    
+    const selectedOption = document.querySelector('.wheel-option.active')?.dataset.option || 'reel';
+    
+    switch(selectedOption) {
+        case 'reel':
+            uploadReel();
+            break;
+        case 'live':
+            startLiveStream();
+            break;
+        case 'tour':
+            // قائمة اختيار نوع الجولة
+            const tourType = confirm('هل تريد جولة عشوائية؟\n(OK = عشوائي, Cancel = اختيار مستخدم)');
+            if (tourType) {
+                startRandomTour();
+            } else {
+                // عرض قائمة المستخدمين النشطين
+                if (activeUsers.length === 0) {
+                    showNotification('لا يوجد مستخدمين نشطين', 'warning');
+                    return;
+                }
+                
+                let userList = 'اختر مستخدم للجولة:\n';
+                activeUsers.forEach((u, i) => {
+                    if (u.id !== currentUser.id) {
+                        userList += `${i + 1}. ${u.name} (${u.role === 'merchant' ? 'تاجر' : 'مشتري'})\n`;
+                    }
+                });
+                
+                const choice = prompt(userList, '1');
+                if (choice) {
+                    const index = parseInt(choice) - 1;
+                    const selectedUser = activeUsers.filter(u => u.id !== currentUser.id)[index];
+                    if (selectedUser) {
+                        requestTour(selectedUser.id);
+                    }
+                }
+            }
+            break;
+    }
+};
+
+// ========== 17. تهيئة النظام ==========
+function initTelegramSystem() {
+    console.log('🔄 تهيئة نظام تلجرام...');
+    addTelegramControls();
+    updateActiveUsers();
+    
+    // تحديث العجلة لتعمل مع النظام الجديد
+    console.log('✅ نظام تلجرام جاهز');
+}
+
+// تشغيل بعد تحميل الصفحة
+setTimeout(initTelegramSystem, 2000);
 // ========== إغلاق النوافذ ==========
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
