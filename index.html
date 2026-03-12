@@ -355,7 +355,7 @@
             }
         }
 
-        /* أنماط إضافية */
+        /* أنماط إضافية مع الحفاظ على الألوان الأصلية */
         .loader {
             position: fixed;
             top: 0;
@@ -380,6 +380,71 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        .top-bar, .marquee-bar, .reels-promo-bar, .main-header, .nav-menu, .footer {
+            background: transparent;
+            color: white;
+        }
+        .btn-gold {
+            background: gold;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-outline-gold {
+            background: transparent;
+            color: gold;
+            border: 2px solid gold;
+            padding: 8px 18px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        .modal-content {
+            background: #1a3a32;
+            padding: 30px;
+            border-radius: 20px;
+            border: 2px solid gold;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-lg {
+            max-width: 800px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid gold;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-family: 'Cairo', sans-serif;
+        }
+        .form-control::placeholder {
+            color: rgba(255,215,0,0.5);
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: gold;
+        }
     </style>
 </head>
 <body>
@@ -392,10 +457,10 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- سلة التسوق الجانبية -->
-    <div class="cart-sidebar" id="cartSidebar" style="display: none;">
-        <div class="cart-header">
-            <h3><i class="fas fa-shopping-cart"></i> سلة التسوق</h3>
-            <i class="fas fa-times close-cart" onclick="toggleCart()"></i>
+    <div class="cart-sidebar" id="cartSidebar" style="display: none; position: fixed; top: 0; left: 0; width: 300px; height: 100%; background: #1a3a32; border-left: 2px solid gold; padding: 20px; z-index: 1000;">
+        <div class="cart-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="color: gold;"><i class="fas fa-shopping-cart"></i> سلة التسوق</h3>
+            <i class="fas fa-times close-cart" onclick="toggleCart()" style="color: gold; cursor: pointer; font-size: 24px;"></i>
         </div>
         <div class="cart-items" id="cartItems">
             <div style="text-align: center; padding: 40px; color: #888;">
@@ -403,119 +468,119 @@
                 <p>سلة التسوق فارغة</p>
             </div>
         </div>
-        <div class="cart-footer">
-            <div class="cart-total">
+        <div class="cart-footer" style="position: absolute; bottom: 20px; left: 20px; right: 20px;">
+            <div class="cart-total" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                 <span>المجموع:</span>
                 <span id="cartTotal">0 دج</span>
             </div>
-            <button class="checkout-btn" onclick="checkoutCart()">
+            <button class="checkout-btn" onclick="checkoutCart()" style="width: 100%; padding: 10px; background: gold; color: black; border: none; border-radius: 5px; cursor: pointer;">
                 <i class="fab fa-whatsapp"></i> إتمام الطلب
             </button>
         </div>
     </div>
 
     <!-- الشريط العلوي -->
-    <div class="top-bar">
-        <div class="container">
+    <div class="top-bar" style="background: rgba(10,26,21,0.9); padding: 10px 0; border-bottom: 1px solid gold;">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
             <div class="top-bar-item" data-aos="fade-left" data-aos-delay="100">
-                <i class="fas fa-truck-fast"></i>
-                <span>شحن مجاني للطلبات فوق 5000 دج</span>
+                <i class="fas fa-truck-fast" style="color: gold;"></i>
+                <span style="margin-right: 5px;">شحن مجاني للطلبات فوق 5000 دج</span>
             </div>
             <div class="top-bar-item" data-aos="fade-left" data-aos-delay="200">
-                <i class="fas fa-headset"></i>
-                <span>دعم VIP 24/7</span>
+                <i class="fas fa-headset" style="color: gold;"></i>
+                <span style="margin-right: 5px;">دعم VIP 24/7</span>
             </div>
             <div class="top-bar-item" data-aos="fade-left" data-aos-delay="300">
-                <i class="fas fa-gem"></i>
-                <span>منتجات أصلية 100%</span>
+                <i class="fas fa-gem" style="color: gold;"></i>
+                <span style="margin-right: 5px;">منتجات أصلية 100%</span>
             </div>
-            <div class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
-                <i class="fas fa-moon"></i>
-                <span>ليلي</span>
+            <div class="theme-toggle" onclick="toggleTheme()" id="themeToggle" style="cursor: pointer;">
+                <i class="fas fa-moon" style="color: gold;"></i>
+                <span style="margin-right: 5px;">ليلي</span>
             </div>
         </div>
     </div>
 
     <!-- شريط العروض المتحرك -->
-    <div class="marquee-bar">
-        <div class="marquee-content" id="marqueeContent">
-            <div class="marquee-item float-item">
-                <i class="fas fa-fire"></i>
+    <div class="marquee-bar" style="background: rgba(0,0,0,0.3); padding: 10px 0; border-bottom: 1px solid gold; overflow: hidden;">
+        <div class="marquee-content" id="marqueeContent" style="display: flex; animation: marquee 20s linear infinite;">
+            <div class="marquee-item float-item" style="display: flex; align-items: center; margin-left: 30px;">
+                <i class="fas fa-fire" style="color: gold; margin-left: 5px;"></i>
                 <span>تخفيضات تصل 50%</span>
-                <div class="marquee-progress"><div class="marquee-progress-fill" style="width:50%"></div></div>
+                <div class="marquee-progress" style="width: 100px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 5px; margin-right: 10px;"><div class="marquee-progress-fill" style="width:50%; height: 100%; background: gold; border-radius: 5px;"></div></div>
             </div>
-            <div class="marquee-item bounce-item">
-                <i class="fas fa-gem"></i>
+            <div class="marquee-item bounce-item" style="display: flex; align-items: center; margin-left: 30px;">
+                <i class="fas fa-gem" style="color: gold; margin-left: 5px;"></i>
                 <span>عروض حصرية</span>
-                <div class="marquee-progress"><div class="marquee-progress-fill" style="width:75%"></div></div>
+                <div class="marquee-progress" style="width: 100px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 5px; margin-right: 10px;"><div class="marquee-progress-fill" style="width:75%; height: 100%; background: gold; border-radius: 5px;"></div></div>
             </div>
-            <div class="marquee-item pulse-item">
-                <i class="fas fa-clock"></i>
+            <div class="marquee-item pulse-item" style="display: flex; align-items: center; margin-left: 30px;">
+                <i class="fas fa-clock" style="color: gold; margin-left: 5px;"></i>
                 <span>الوقت: <span id="marqueeHours">12</span>:<span id="marqueeMinutes">30</span>:<span id="marqueeSeconds">45</span></span>
-                <div class="marquee-progress"><div class="marquee-progress-fill" style="width:60%"></div></div>
+                <div class="marquee-progress" style="width: 100px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 5px; margin-right: 10px;"><div class="marquee-progress-fill" style="width:60%; height: 100%; background: gold; border-radius: 5px;"></div></div>
             </div>
-            <div class="marquee-item rotate-item">
-                <i class="fas fa-star"></i>
+            <div class="marquee-item rotate-item" style="display: flex; align-items: center; margin-left: 30px;">
+                <i class="fas fa-star" style="color: gold; margin-left: 5px;"></i>
                 <span>عرض خاص: 1+1 مجاناً</span>
-                <div class="marquee-progress"><div class="marquee-progress-fill" style="width:30%"></div></div>
+                <div class="marquee-progress" style="width: 100px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 5px; margin-right: 10px;"><div class="marquee-progress-fill" style="width:30%; height: 100%; background: gold; border-radius: 5px;"></div></div>
             </div>
-            <div class="marquee-item">
-                <i class="fas fa-gift"></i>
+            <div class="marquee-item" style="display: flex; align-items: center; margin-left: 30px;">
+                <i class="fas fa-gift" style="color: gold; margin-left: 5px;"></i>
                 <span>هدية مع كل طلب</span>
-                <div class="marquee-progress"><div class="marquee-progress-fill" style="width:90%"></div></div>
+                <div class="marquee-progress" style="width: 100px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 5px; margin-right: 10px;"><div class="marquee-progress-fill" style="width:90%; height: 100%; background: gold; border-radius: 5px;"></div></div>
             </div>
         </div>
     </div>
 
     <!-- شريط Reels من تلجرام -->
-    <div class="reels-promo-bar">
+    <div class="reels-promo-bar" style="background: rgba(0,0,0,0.3); padding: 20px 0; border-bottom: 1px solid gold;">
         <div class="container">
-            <div class="reels-header-brand">
-                <span class="brand-realme">realme</span>
-                <span class="brand-protection">حماية معايير السلكية</span>
+            <div class="reels-header-brand" style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                <span class="brand-realme" style="color: gold; font-weight: bold;">realme</span>
+                <span class="brand-protection" style="color: white;">حماية معايير السلكية</span>
             </div>
             
-            <div class="reels-product-showcase">
+            <div class="reels-product-showcase" style="display: flex; justify-content: space-between; margin-bottom: 15px;">
                 <div class="product-info">
-                    <h2 class="product-title">realme C71</h2>
+                    <h2 class="product-title" style="color: gold;">realme C71</h2>
                     <div class="product-battery">
-                        <span class="battery-value">6000mAh</span>
-                        <span class="battery-label">بطارية ضخمة</span>
+                        <span class="battery-value" style="color: white; font-weight: bold;">6000mAh</span>
+                        <span class="battery-label" style="color: #888; margin-right: 5px;">بطارية ضخمة</span>
                     </div>
                 </div>
                 
                 <div class="product-charging">
                     <div class="charging-speed">
-                        <span class="speed-value">45W</span>
-                        <span class="speed-label">شحن سريع</span>
+                        <span class="speed-value" style="color: gold; font-weight: bold;">45W</span>
+                        <span class="speed-label" style="color: #888; margin-right: 5px;">شحن سريع</span>
                     </div>
                 </div>
             </div>
             
-            <div class="charging-tagline">
-                <span class="tagline-charge">شحن لساعة</span>
-                <span class="tagline-usage">و استعمال اليومين</span>
+            <div class="charging-tagline" style="margin-bottom: 15px;">
+                <span class="tagline-charge" style="color: gold;">شحن لساعة</span>
+                <span class="tagline-usage" style="color: white; margin-right: 5px;">و استعمال اليومين</span>
             </div>
             
-            <div class="reels-divider">
-                <span class="divider-text">reels حصرية</span>
-                <span class="divider-line"></span>
-                <span class="divider-icon">🎬</span>
+            <div class="reels-divider" style="display: flex; align-items: center; margin-bottom: 15px;">
+                <span class="divider-text" style="color: gold;">reels حصرية</span>
+                <span class="divider-line" style="flex: 1; height: 1px; background: gold; margin: 0 10px;"></span>
+                <span class="divider-icon" style="font-size: 24px;">🎬</span>
             </div>
             
-            <div class="reels-scroll-container">
-                <button class="reels-scroll-btn left" onclick="scrollReels('left')" id="scrollLeftBtn">
+            <div class="reels-scroll-container" style="display: flex; align-items: center;">
+                <button class="reels-scroll-btn left" onclick="scrollReels('left')" id="scrollLeftBtn" style="background: none; border: none; color: gold; font-size: 24px; cursor: pointer;">
                     <i class="fas fa-chevron-right"></i>
                 </button>
                 
-                <div class="reels-track" id="reelsTrack">
-                    <div class="reels-loader">
-                        <div class="loader-spinner-small"></div>
-                        <span>جاري تحميل الريلز...</span>
+                <div class="reels-track" id="reelsTrack" style="flex: 1; margin: 0 10px;">
+                    <div class="reels-loader" style="text-align: center; color: gold;">
+                        <div class="loader-spinner-small" style="width: 20px; height: 20px; border: 2px solid gold; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; display: inline-block;"></div>
+                        <span style="margin-right: 5px;">جاري تحميل الريلز...</span>
                     </div>
                 </div>
                 
-                <button class="reels-scroll-btn right" onclick="scrollReels('right')" id="scrollRightBtn">
+                <button class="reels-scroll-btn right" onclick="scrollReels('right')" id="scrollRightBtn" style="background: none; border: none; color: gold; font-size: 24px; cursor: pointer;">
                     <i class="fas fa-chevron-left"></i>
                 </button>
             </div>
@@ -523,32 +588,32 @@
     </div>
 
     <!-- الهيدر الرئيسي -->
-    <header class="main-header">
-        <div class="container header-content">
-            <div class="logo" data-aos="fade-right">
-                <div class="logo-icon"><i class="fas fa-leaf"></i></div>
+    <header class="main-header" style="padding: 20px 0; border-bottom: 1px solid gold;">
+        <div class="container header-content" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="logo" data-aos="fade-right" style="display: flex; align-items: center;">
+                <div class="logo-icon" style="font-size: 40px; color: gold; margin-left: 10px;"><i class="fas fa-leaf"></i></div>
                 <div class="logo-text">
-                    <h1>نكهة وجمال</h1>
-                    <span>ناردو برو 2026</span>
+                    <h1 style="color: gold; margin: 0;">نكهة وجمال</h1>
+                    <span style="color: white;">ناردو برو 2026</span>
                 </div>
             </div>
             
-            <div class="search-wrapper" data-aos="zoom-in">
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="ابحث عن منتج..." onkeyup="searchProducts()">
-                    <button onclick="searchProducts()"><i class="fas fa-search"></i></button>
+            <div class="search-wrapper" data-aos="zoom-in" style="flex: 1; max-width: 400px; margin: 0 20px;">
+                <div class="search-box" style="display: flex; background: rgba(255,255,255,0.1); border: 1px solid gold; border-radius: 5px; overflow: hidden;">
+                    <input type="text" id="searchInput" placeholder="ابحث عن منتج..." onkeyup="searchProducts()" style="flex: 1; padding: 10px; background: transparent; border: none; color: white; font-family: 'Cairo', sans-serif;">
+                    <button onclick="searchProducts()" style="padding: 10px 15px; background: gold; border: none; cursor: pointer;"><i class="fas fa-search" style="color: black;"></i></button>
                 </div>
             </div>
             
-            <div class="header-actions" data-aos="fade-left">
-                <button class="action-btn" onclick="openLoginModal()" id="userBtn" title="حسابي">
+            <div class="header-actions" data-aos="fade-left" style="display: flex; gap: 15px;">
+                <button class="action-btn" onclick="openLoginModal()" id="userBtn" title="حسابي" style="background: none; border: none; color: gold; font-size: 24px; cursor: pointer; position: relative;">
                     <i class="far fa-user"></i>
                 </button>
-                <button class="action-btn" onclick="toggleCart()" title="سلة التسوق">
+                <button class="action-btn" onclick="toggleCart()" title="سلة التسوق" style="background: none; border: none; color: gold; font-size: 24px; cursor: pointer; position: relative;">
                     <i class="fas fa-shopping-cart"></i>
-                    <span class="cart-count" id="cartCounter">0</span>
+                    <span class="cart-count" id="cartCounter" style="position: absolute; top: -5px; right: -5px; background: gold; color: black; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; display: flex; align-items: center; justify-content: center;">0</span>
                 </button>
-                <button class="action-btn" onclick="openDashboard()" id="dashboardBtn" style="display: none;" title="لوحة التحكم">
+                <button class="action-btn" onclick="openDashboard()" id="dashboardBtn" style="display: none; background: none; border: none; color: gold; font-size: 24px; cursor: pointer;" title="لوحة التحكم">
                     <i class="fas fa-chart-line"></i>
                 </button>
             </div>
@@ -557,31 +622,31 @@
 
     <!-- القائمة الرئيسية -->
     <div class="container">
-        <nav class="nav-menu" id="mainNav" data-aos="fade-up">
-            <a class="nav-link active" onclick="filterProducts('all')"><i class="fas fa-home"></i><span>الرئيسية</span></a>
-            <a class="nav-link" onclick="filterProducts('promo')"><i class="fas fa-fire"></i><span>برموسيو</span></a>
-            <a class="nav-link" onclick="filterProducts('spices')"><i class="fas fa-mortar-pestle"></i><span>توابل</span></a>
-            <a class="nav-link" onclick="filterProducts('cosmetic')"><i class="fas fa-spa"></i><span>كوسمتيك</span></a>
-            <a class="nav-link" onclick="filterProducts('other')"><i class="fas fa-gem"></i><span>منتوجات أخرى</span></a>
-            <a class="nav-link" onclick="findProductById()"><i class="fas fa-search"></i><span>بحث بالمعرف</span></a>
+        <nav class="nav-menu" id="mainNav" data-aos="fade-up" style="display: flex; justify-content: center; gap: 20px; padding: 15px 0;">
+            <a class="nav-link active" onclick="filterProducts('all')" style="color: gold; cursor: pointer; text-decoration: none; display: flex; align-items: center;"><i class="fas fa-home" style="margin-left: 5px;"></i><span>الرئيسية</span></a>
+            <a class="nav-link" onclick="filterProducts('promo')" style="color: white; cursor: pointer; text-decoration: none; display: flex; align-items: center;"><i class="fas fa-fire" style="margin-left: 5px;"></i><span>برموسيو</span></a>
+            <a class="nav-link" onclick="filterProducts('spices')" style="color: white; cursor: pointer; text-decoration: none; display: flex; align-items: center;"><i class="fas fa-mortar-pestle" style="margin-left: 5px;"></i><span>توابل</span></a>
+            <a class="nav-link" onclick="filterProducts('cosmetic')" style="color: white; cursor: pointer; text-decoration: none; display: flex; align-items: center;"><i class="fas fa-spa" style="margin-left: 5px;"></i><span>كوسمتيك</span></a>
+            <a class="nav-link" onclick="filterProducts('other')" style="color: white; cursor: pointer; text-decoration: none; display: flex; align-items: center;"><i class="fas fa-gem" style="margin-left: 5px;"></i><span>منتوجات أخرى</span></a>
+            <a class="nav-link" onclick="findProductById()" style="color: white; cursor: pointer; text-decoration: none; display: flex; align-items: center;"><i class="fas fa-search" style="margin-left: 5px;"></i><span>بحث بالمعرف</span></a>
         </nav>
     </div>
 
     <!-- خيارات الفرز -->
     <div class="container">
-        <div class="sort-options" data-aos="fade-up">
-            <select class="sort-select" id="sortSelect" onchange="changeSort(this.value)">
-                <option value="newest">📅 الأحدث أولاً</option>
-                <option value="price_low">💰 السعر: من الأقل للأعلى</option>
-                <option value="price_high">💰 السعر: من الأعلى للأقل</option>
-                <option value="rating">⭐ التقييم: الأعلى أولاً</option>
+        <div class="sort-options" data-aos="fade-up" style="text-align: left; margin: 15px 0;">
+            <select class="sort-select" id="sortSelect" onchange="changeSort(this.value)" style="padding: 8px 15px; background: rgba(255,255,255,0.1); border: 1px solid gold; color: white; border-radius: 5px; font-family: 'Cairo', sans-serif;">
+                <option value="newest" style="background: #1a3a32;">📅 الأحدث أولاً</option>
+                <option value="price_low" style="background: #1a3a32;">💰 السعر: من الأقل للأعلى</option>
+                <option value="price_high" style="background: #1a3a32;">💰 السعر: من الأعلى للأقل</option>
+                <option value="rating" style="background: #1a3a32;">⭐ التقييم: الأعلى أولاً</option>
             </select>
         </div>
     </div>
 
     <!-- نص متحرك -->
     <div class="container">
-        <div class="typing-container" data-aos="fade-up">
+        <div class="typing-container" data-aos="fade-up" style="text-align: center; margin: 20px 0; color: gold; font-size: 24px; min-height: 60px;">
             <span id="typing-text"></span>
         </div>
     </div>
@@ -591,68 +656,62 @@
 
     <!-- المنتجات -->
     <div class="container">
-        <div class="products-grid" id="productsContainer">
+        <div class="products-grid" id="productsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
             <!-- سيتم تعبئتها ديناميكياً من JavaScript -->
         </div>
     </div>
 
     <!-- لوحة التحكم (للمدير) -->
-    <div class="container dashboard-section" id="dashboardSection" style="display: none;">
-        <div class="dashboard-tabs" id="dashboardTabs">
-            <button class="dashboard-tab active" onclick="switchDashboardTab('overview')">📊 نظرة عامة</button>
-            <button class="dashboard-tab" onclick="switchDashboardTab('orders')">🛒 الطلبات</button>
-            <button class="dashboard-tab" onclick="switchDashboardTab('products')">📦 المنتجات</button>
-            <button class="dashboard-tab" onclick="switchDashboardTab('merchants')">👨‍💼 التجار</button>
-            <button class="dashboard-tab" onclick="switchDashboardTab('users')">👥 المستخدمين</button>
+    <div class="container dashboard-section" id="dashboardSection" style="display: none; margin-top: 30px;">
+        <div class="dashboard-tabs" id="dashboardTabs" style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button class="dashboard-tab active" onclick="switchDashboardTab('overview')" style="padding: 10px 20px; background: gold; color: black; border: none; border-radius: 5px; cursor: pointer;">📊 نظرة عامة</button>
+            <button class="dashboard-tab" onclick="switchDashboardTab('orders')" style="padding: 10px 20px; background: transparent; color: gold; border: 1px solid gold; border-radius: 5px; cursor: pointer;">🛒 الطلبات</button>
+            <button class="dashboard-tab" onclick="switchDashboardTab('products')" style="padding: 10px 20px; background: transparent; color: gold; border: 1px solid gold; border-radius: 5px; cursor: pointer;">📦 المنتجات</button>
+            <button class="dashboard-tab" onclick="switchDashboardTab('merchants')" style="padding: 10px 20px; background: transparent; color: gold; border: 1px solid gold; border-radius: 5px; cursor: pointer;">👨‍💼 التجار</button>
+            <button class="dashboard-tab" onclick="switchDashboardTab('users')" style="padding: 10px 20px; background: transparent; color: gold; border: 1px solid gold; border-radius: 5px; cursor: pointer;">👥 المستخدمين</button>
         </div>
-        <div class="dashboard-content" id="dashboardContent"></div>
+        <div class="dashboard-content" id="dashboardContent" style="background: rgba(255,255,255,0.1); border: 1px solid gold; border-radius: 10px; padding: 20px; min-height: 200px;"></div>
     </div>
 
     <!-- الفوتر -->
-    <footer class="footer">
+    <footer class="footer" style="border-top: 1px solid gold; margin-top: 50px; padding: 40px 0 20px;">
         <div class="container">
-            <div class="footer-content">
+            <div class="footer-content" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
                 <div class="footer-col" data-aos="fade-up" data-aos-delay="100">
-                    <h3>نكهة وجمال</h3>
-                    <p><i class="fas fa-store"></i> المتجر الذكي المتكامل</p>
-                    <p><i class="fas fa-star"></i> التقييم: 4.8/5</p>
-                    <p><i class="fas fa-users"></i> +5000 عميل</p>
+                    <h3 style="color: gold; margin-bottom: 15px;">نكهة وجمال</h3>
+                    <p><i class="fas fa-store" style="color: gold; margin-left: 5px;"></i> المتجر الذكي المتكامل</p>
+                    <p><i class="fas fa-star" style="color: gold; margin-left: 5px;"></i> التقييم: 4.8/5</p>
+                    <p><i class="fas fa-users" style="color: gold; margin-left: 5px;"></i> +5000 عميل</p>
                 </div>
                 <div class="footer-col" data-aos="fade-up" data-aos-delay="200">
-                    <h3>اتصل بنا</h3>
-                    <p><i class="fab fa-whatsapp"></i> +213 562243648</p>
-                    <p><i class="fas fa-envelope"></i> info@nardoo.com</p>
-                    <p><i class="fab fa-telegram"></i> @nardoo_support</p>
+                    <h3 style="color: gold; margin-bottom: 15px;">اتصل بنا</h3>
+                    <p><i class="fab fa-whatsapp" style="color: gold; margin-left: 5px;"></i> +213 562243648</p>
+                    <p><i class="fas fa-envelope" style="color: gold; margin-left: 5px;"></i> info@nardoo.com</p>
+                    <p><i class="fab fa-telegram" style="color: gold; margin-left: 5px;"></i> @nardoo_support</p>
                 </div>
                 <div class="footer-col" data-aos="fade-up" data-aos-delay="300">
-                    <h3>روابط سريعة</h3>
-                    <p><i class="fas fa-chevron-left"></i> سياسة الخصوصية</p>
-                    <p><i class="fas fa-chevron-left"></i> شروط الاستخدام</p>
-                    <p><i class="fas fa-chevron-left"></i> طرق الدفع</p>
+                    <h3 style="color: gold; margin-bottom: 15px;">روابط سريعة</h3>
+                    <p><i class="fas fa-chevron-left" style="color: gold; margin-left: 5px;"></i> سياسة الخصوصية</p>
+                    <p><i class="fas fa-chevron-left" style="color: gold; margin-left: 5px;"></i> شروط الاستخدام</p>
+                    <p><i class="fas fa-chevron-left" style="color: gold; margin-left: 5px;"></i> طرق الدفع</p>
                 </div>
             </div>
-            <div class="copyright">© 2026 نكهة وجمال | جميع الحقوق محفوظة</div>
+            <div class="copyright" style="text-align: center; margin-top: 40px; color: #888;">© 2026 نكهة وجمال | جميع الحقوق محفوظة</div>
         </div>
     </footer>
 
     <!-- أيقونات ثابتة -->
-    <div class="fixed-cart" onclick="toggleCart()" id="fixedCart" title="سلة التسوق">
-        <i class="fas fa-shopping-cart"></i>
-        <span class="fixed-cart-count" id="fixedCartCounter">0</span>
+    <div class="fixed-cart" onclick="toggleCart()" id="fixedCart" title="سلة التسوق" style="position: fixed; bottom: 20px; right: 20px; background: gold; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 5px 20px rgba(255,215,0,0.5);">
+        <i class="fas fa-shopping-cart" style="color: black; font-size: 24px;"></i>
+        <span class="fixed-cart-count" id="fixedCartCounter" style="position: absolute; top: 0; right: 0; background: black; color: gold; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; font-size: 14px;">0</span>
     </div>
 
-    <div class="navigation-buttons">
-        <button class="nav-btn up-btn" onclick="scrollToTop()" title="الانتقال للأعلى">
-            <i class="fas fa-arrow-up"></i>
-        </button>
-        <button class="nav-btn down-btn" onclick="scrollToBottom()" title="الانتقال للأسفل">
-            <i class="fas fa-arrow-down"></i>
-        </button>
+    <div class="navigation-buttons" style="position: fixed; bottom: 20px; left: 20px; display: flex; flex-direction: column; gap: 10px;">
+        <button class="nav-btn up-btn" onclick="scrollToTop()" title="الانتقال للأعلى" style="background: gold; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 20px rgba(255,215,0,0.5);"><i class="fas fa-arrow-up" style="color: black; font-size: 20px;"></i></button>
+        <button class="nav-btn down-btn" onclick="scrollToBottom()" title="الانتقال للأسفل" style="background: gold; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 20px rgba(255,215,0,0.5);"><i class="fas fa-arrow-down" style="color: black; font-size: 20px;"></i></button>
     </div>
 
-    <button class="quick-top-btn" onclick="scrollToTop()" id="quickTopBtn" title="العودة للأعلى">
-        <i class="fas fa-chevron-up"></i>
-    </button>
+    <button class="quick-top-btn" onclick="scrollToTop()" id="quickTopBtn" title="العودة للأعلى" style="position: fixed; bottom: 20px; left: 20px; background: gold; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; display: none; box-shadow: 0 5px 20px rgba(255,215,0,0.5);"><i class="fas fa-chevron-up" style="color: black; font-size: 20px;"></i></button>
 
     <!-- نافذة تسجيل الدخول -->
     <div class="modal" id="loginModal" style="display: none;" onclick="if(event.target===this) closeModal('loginModal')">
@@ -803,13 +862,13 @@
                     <input type="url" class="form-control" id="productImage" placeholder="https://example.com/image.jpg">
                 </div>
                 
-                <div class="image-upload-area" onclick="document.getElementById('productImages').click()">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <p>أو اضغط لرفع صورة من جهازك</p>
+                <div class="image-upload-area" onclick="document.getElementById('productImages').click()" style="border: 2px dashed gold; padding: 20px; text-align: center; border-radius: 10px; cursor: pointer;">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 40px; color: gold;"></i>
+                    <p style="color: gold;">أو اضغط لرفع صورة من جهازك</p>
                 </div>
                 
                 <input type="file" id="productImages" accept="image/*" style="display:none;" onchange="handleImageUpload(event)" multiple>
-                <div class="image-preview" id="imagePreview"></div>
+                <div class="image-preview" id="imagePreview" style="display: flex; gap: 10px; margin-top: 10px;"></div>
                 <input type="hidden" id="productImagesData">
 
                 <div style="display: flex; gap: 15px; margin-top: 20px;">
@@ -865,9 +924,9 @@
     <!-- نافذة عرض Reel -->
     <div class="modal" id="reelViewModal" style="display: none;" onclick="if(event.target===this) closeModal('reelViewModal')">
         <div class="modal-content reel-modal-content">
-            <div class="reel-modal-header">
+            <div class="reel-modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3><i class="fas fa-film" style="color: gold;"></i> reel</h3>
-                <button class="close-btn" onclick="closeModal('reelViewModal')">&times;</button>
+                <button class="close-btn" onclick="closeModal('reelViewModal')" style="background: none; border: none; color: gold; font-size: 28px; cursor: pointer;">&times;</button>
             </div>
             <div class="reel-modal-body" id="reelViewContent"></div>
         </div>
@@ -1327,13 +1386,18 @@
             document.getElementById('dashboardSection').style.display = 'block';
         };
         window.switchDashboardTab = function(tab) {
-            document.getElementById('dashboardContent').innerHTML = '<h3>محتوى ' + tab + '</h3>';
+            document.getElementById('dashboardContent').innerHTML = '<h3 style="color: gold;">محتوى ' + tab + '</h3>';
         };
         window.scrollReels = function(direction) {
             console.log('تمرير الريلز: ' + direction);
         };
         window.toggleTheme = function() {
-            document.body.style.background = document.body.style.background === 'rgb(10, 26, 21)' ? 'linear-gradient(135deg, #1a3a32, #0a1a15)' : 'linear-gradient(135deg, #0a1a15, #1a3a32)';
+            const body = document.body;
+            if (body.style.background === 'linear-gradient(135deg, rgb(10, 26, 21), rgb(26, 58, 50))') {
+                body.style.background = 'linear-gradient(135deg, #1a3a32, #0a1a15)';
+            } else {
+                body.style.background = 'linear-gradient(135deg, #0a1a15, #1a3a32)';
+            }
         };
         window.scrollToTop = function() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1341,6 +1405,15 @@
         window.scrollToBottom = function() {
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         };
+
+        // تحديث الوقت في الماركي
+        function updateMarqueeTime() {
+            const now = new Date();
+            document.getElementById('marqueeHours').textContent = now.getHours().toString().padStart(2,'0');
+            document.getElementById('marqueeMinutes').textContent = now.getMinutes().toString().padStart(2,'0');
+            document.getElementById('marqueeSeconds').textContent = now.getSeconds().toString().padStart(2,'0');
+        }
+        setInterval(updateMarqueeTime, 1000);
     </script>
 </body>
 </html>
