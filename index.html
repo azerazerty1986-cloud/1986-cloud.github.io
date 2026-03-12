@@ -1,16 +1,33 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>نكهة وجمال | ناردو برو - المتجر الذكي المتكامل 2026</title>
-
+    
+    <!-- تحسينات SEO -->
+    <meta name="description" content="ناردو برو - منصة التجارة الإلكترونية المتكاملة للتوابل والكوسمتيك والعروض">
+    <meta name="keywords" content="ناردو, توابل, كوسمتيك, عروض, تسوق, جزائر">
+    <meta name="author" content="ناردو برو">
+    
+    <!-- فتح Graph للتواصل الاجتماعي -->
+    <meta property="og:title" content="نكهة وجمال | ناردو برو">
+    <meta property="og:description" content="منصة التجارة الإلكترونية المتكاملة">
+    <meta property="og:type" content="website">
+    
+    <!-- الخطوط -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
+    <!-- AOS Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
     <style>
+        /* أنماط أساسية */
         * {
             margin: 0;
             padding: 0;
@@ -21,17 +38,16 @@
             font-family: 'Cairo', sans-serif;
             background: linear-gradient(135deg, #0a1a15, #1a3a32);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             color: white;
             overflow-x: hidden;
+            line-height: 1.6;
         }
 
         .container {
             width: 100%;
             max-width: 1200px;
             padding: 20px;
+            margin: 0 auto;
         }
 
         h1 {
@@ -46,7 +62,7 @@
             margin-left: 10px;
         }
 
-        /* ===== العجلة ثلاثية الأبعاد ===== */
+        /* العجلة ثلاثية الأبعاد */
         .wheel-main-container {
             display: flex;
             flex-direction: column;
@@ -74,7 +90,6 @@
             cursor: grabbing;
         }
 
-        /* الخيارات على العجلة - 3 خيارات فقط */
         .wheel-option {
             position: absolute;
             width: 140px;
@@ -114,32 +129,27 @@
             padding: 0 10px;
         }
 
-        /* خيار Reel - أحمر */
         .wheel-option[data-option="reel"] {
             background: linear-gradient(145deg, #FF0000, #cc0000);
             box-shadow: 0 0 40px rgba(255,0,0,0.5);
         }
 
-        /* خيار مباشر - أحمر فاتح */
         .wheel-option[data-option="live"] {
             background: linear-gradient(145deg, #ff4444, #cc0000);
             box-shadow: 0 0 40px rgba(255,68,68,0.5);
         }
 
-        /* خيار جولة - أخضر */
         .wheel-option[data-option="tour"] {
             background: linear-gradient(145deg, #00b894, #008b6b);
             box-shadow: 0 0 40px rgba(0,184,148,0.5);
         }
 
-        /* تأثير hover */
         .wheel-option:hover {
             transform: translate(-50%, -50%) rotateY(0deg) translateZ(220px) scale(1.15);
             box-shadow: 0 0 60px gold;
             z-index: 100;
         }
 
-        /* الخيار النشط */
         .wheel-option.active {
             transform: translate(-50%, -50%) rotateY(0deg) translateZ(220px) scale(1.15);
             box-shadow: 0 0 80px gold;
@@ -147,7 +157,6 @@
             z-index: 100;
         }
 
-        /* المركز اللامع */
         .wheel-center {
             position: absolute;
             width: 80px;
@@ -163,7 +172,6 @@
             z-index: 10;
         }
 
-        /* السهم العلوي */
         .wheel-arrow {
             position: absolute;
             top: -30px;
@@ -176,7 +184,6 @@
             z-index: 20;
         }
 
-        /* النص المساعد */
         .wheel-help {
             text-align: center;
             color: rgba(255,215,0,0.8);
@@ -192,7 +199,6 @@
             margin-left: 8px;
         }
 
-        /* الخيار المحدد */
         .selected-box {
             text-align: center;
             margin: 15px 0 20px;
@@ -209,7 +215,6 @@
             font-size: 22px;
         }
 
-        /* زر الإضافة */
         .add-btn {
             background: linear-gradient(135deg, gold, #ffd700);
             color: black;
@@ -236,7 +241,6 @@
             font-size: 24px;
         }
 
-        /* معاينة الإضافات */
         .preview-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -283,7 +287,6 @@
             word-break: break-all;
         }
 
-        /* الإشعارات */
         .notification {
             position: fixed;
             bottom: 20px;
@@ -299,7 +302,6 @@
             max-width: 350px;
         }
 
-        /* الحركات */
         @keyframes pulseCenter {
             0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
             50% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
@@ -320,7 +322,6 @@
             to { transform: translateX(100px); opacity: 0; }
         }
 
-        /* تجاوب مع الجوال */
         @media (max-width: 768px) {
             .wheel-3d {
                 width: 250px;
@@ -353,462 +354,8 @@
                 font-size: 16px;
             }
         }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>
-            <i class="fas fa-film"></i> 
-            العجلة الدوارة
-            <i class="fas fa-video"></i>
-        </h1>
-        
-        <!-- ===== العجلة ثلاثية الأبعاد ===== -->
-        <div class="wheel-main-container">
-            <div class="wheel-3d" id="wheel3D">
-                <!-- خيار Reel - أحمر -->
-                <div class="wheel-option" data-option="reel">
-                    <i class="fas fa-film"></i>
-                    <span class="option-title">Reel</span>
-                    <span class="option-desc">إضافة فيديو قصير</span>
-                </div>
-                
-                <!-- خيار مباشر - أحمر فاتح -->
-                <div class="wheel-option" data-option="live">
-                    <i class="fas fa-video"></i>
-                    <span class="option-title">مباشر</span>
-                    <span class="option-desc">بدء بث مباشر</span>
-                </div>
-                
-                <!-- خيار جولة - أخضر -->
-                <div class="wheel-option" data-option="tour">
-                    <i class="fas fa-globe"></i>
-                    <span class="option-title">جولة</span>
-                    <span class="option-desc">إنشاء جولة</span>
-                </div>
-                
-                <!-- المركز اللامع -->
-                <div class="wheel-center"></div>
-                
-                <!-- السهم العلوي -->
-                <div class="wheel-arrow">
-                    <i class="fas fa-arrow-down"></i>
-                </div>
-            </div>
-            
-            <div class="wheel-help">
-                <i class="fas fa-hand-pointer"></i> 
-                اسحب لليسار أو اليمين لاختيار نوع الإضافة
-            </div>
-            
-            <div class="selected-box">
-                <span id="selectedText">إضافة Reel</span>
-            </div>
-            
-            <button class="add-btn" onclick="addSelectedContent()">
-                <i class="fas fa-plus-circle"></i>
-                <span id="addBtnText">إضافة Reel</span>
-            </button>
-        </div>
-        
-        <!-- ===== معاينة الإضافات ===== -->
-        <div class="preview-grid" id="previewGrid">
-            <div class="preview-card">
-                <i class="fas fa-film" style="color: #FF0000;"></i>
-                <h3>Reels</h3>
-                <div class="count" id="reelCount">0</div>
-                <div class="thumbprint" id="lastReelThumbprint">-</div>
-            </div>
-            
-            <div class="preview-card">
-                <i class="fas fa-video" style="color: #ff4444;"></i>
-                <h3>بث مباشر</h3>
-                <div class="count" id="liveCount">0</div>
-                <div class="thumbprint" id="lastLiveThumbprint">-</div>
-            </div>
-            
-            <div class="preview-card">
-                <i class="fas fa-globe" style="color: #00b894;"></i>
-                <h3>جولات</h3>
-                <div class="count" id="tourCount">0</div>
-                <div class="thumbprint" id="lastTourThumbprint">-</div>
-            </div>
-        </div>
-    </div>
 
-    <script>
-        // ========== نظام العجلة الدوارة - 3 خيارات فقط ==========
-        
-        // ========== 1. إعدادات العجلة ==========
-        const WHEEL_CONFIG = {
-            options: [
-                { id: 'reel', name: 'Reel', angle: 0, icon: 'film', color: '#FF0000' },
-                { id: 'live', name: 'مباشر', angle: 120, icon: 'video', color: '#ff4444' },
-                { id: 'tour', name: 'جولة', angle: 240, icon: 'globe', color: '#00b894' }
-            ],
-            rotationSpeed: 0.3,
-            snapDuration: 300,
-            flingDeceleration: 0.95
-        };
-        
-        // ========== 2. متغيرات العجلة ==========
-        const wheel = document.getElementById('wheel3D');
-        const options = document.querySelectorAll('.wheel-option');
-        let currentRotation = 0;
-        let isDragging = false;
-        let startX = 0;
-        let lastX = 0;
-        let velocity = 0;
-        let animationFrame = null;
-        let selectedOption = 'reel';
-        
-        // ========== 3. تهيئة زوايا الخيارات ==========
-        function initWheelOptions() {
-            options.forEach((opt, index) => {
-                const angle = WHEEL_CONFIG.options[index].angle;
-                opt.style.transform = `translate(-50%, -50%) rotateY(${angle}deg) translateZ(180px)`;
-            });
-        }
-        
-        // ========== 4. أحداث اللمس (للموبايل) ==========
-        wheel.addEventListener('touchstart', handleTouchStart, { passive: false });
-        wheel.addEventListener('touchmove', handleTouchMove, { passive: false });
-        wheel.addEventListener('touchend', handleTouchEnd);
-        
-        // ========== 5. أحداث الماوس (للكمبيوتر) ==========
-        wheel.addEventListener('mousedown', handleMouseDown);
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
-        
-        // منع السحب الافتراضي
-        wheel.addEventListener('dragstart', (e) => e.preventDefault());
-        
-        // ===== دوال اللمس =====
-        function handleTouchStart(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            startX = touch.clientX;
-            lastX = touch.clientX;
-            isDragging = true;
-            wheel.classList.add('dragging');
-            
-            if (animationFrame) {
-                cancelAnimationFrame(animationFrame);
-                animationFrame = null;
-            }
-        }
-        
-        function handleTouchMove(e) {
-            if (!isDragging) return;
-            e.preventDefault();
-            
-            const touch = e.touches[0];
-            const currentX = touch.clientX;
-            const diff = currentX - lastX;
-            
-            velocity = diff * 0.5;
-            currentRotation += diff * 0.3;
-            updateWheelRotation();
-            
-            lastX = currentX;
-        }
-        
-        function handleTouchEnd(e) {
-            e.preventDefault();
-            isDragging = false;
-            wheel.classList.remove('dragging');
-            
-            if (Math.abs(velocity) > 1) {
-                startFlingAnimation();
-            } else {
-                snapToNearestOption();
-            }
-        }
-        
-        // ===== دوال الماوس =====
-        function handleMouseDown(e) {
-            e.preventDefault();
-            startX = e.clientX;
-            lastX = e.clientX;
-            isDragging = true;
-            wheel.classList.add('dragging');
-            
-            if (animationFrame) {
-                cancelAnimationFrame(animationFrame);
-                animationFrame = null;
-            }
-        }
-        
-        function handleMouseMove(e) {
-            if (!isDragging) return;
-            e.preventDefault();
-            
-            const currentX = e.clientX;
-            const diff = currentX - lastX;
-            
-            velocity = diff * 0.5;
-            currentRotation += diff * 0.3;
-            updateWheelRotation();
-            
-            lastX = currentX;
-        }
-        
-        function handleMouseUp(e) {
-            e.preventDefault();
-            isDragging = false;
-            wheel.classList.remove('dragging');
-            
-            if (Math.abs(velocity) > 1) {
-                startFlingAnimation();
-            } else {
-                snapToNearestOption();
-            }
-        }
-        
-        // ========== 6. تحديث دوران العجلة ==========
-        function updateWheelRotation() {
-            currentRotation = currentRotation % 360;
-            if (currentRotation < 0) currentRotation += 360;
-            
-            wheel.style.transform = `rotateY(${currentRotation}deg)`;
-            updateActiveOption();
-        }
-        
-        // ========== 7. حركة الانزلاق ==========
-        function startFlingAnimation() {
-            function animate() {
-                if (Math.abs(velocity) < 0.1) {
-                    snapToNearestOption();
-                    return;
-                }
-                
-                velocity *= WHEEL_CONFIG.flingDeceleration;
-                currentRotation += velocity;
-                updateWheelRotation();
-                
-                animationFrame = requestAnimationFrame(animate);
-            }
-            
-            animationFrame = requestAnimationFrame(animate);
-        }
-        
-        // ========== 8. الالتصاق بأقرب خيار ==========
-        function snapToNearestOption() {
-            const targetAngles = WHEEL_CONFIG.options.map(o => o.angle);
-            
-            let minDiff = 360;
-            let targetAngle = 0;
-            
-            targetAngles.forEach(angle => {
-                let diff = Math.abs(currentRotation - angle);
-                diff = Math.min(diff, 360 - diff);
-                
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    targetAngle = angle;
-                }
-            });
-            
-            animateToAngle(targetAngle);
-        }
-        
-        // ========== 9. تحريك بسلاسة إلى الزاوية المستهدفة ==========
-        function animateToAngle(targetAngle) {
-            const startAngle = currentRotation;
-            const startTime = performance.now();
-            const duration = WHEEL_CONFIG.snapDuration;
-            
-            function animate(currentTime) {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                
-                // easing function
-                const easeProgress = progress < 0.5 
-                    ? 2 * progress * progress 
-                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-                
-                currentRotation = startAngle + (targetAngle - startAngle) * easeProgress;
-                updateWheelRotation();
-                
-                if (progress < 1) {
-                    requestAnimationFrame(animate);
-                }
-            }
-            
-            requestAnimationFrame(animate);
-        }
-        
-        // ========== 10. تحديث الخيار النشط ==========
-        function updateActiveOption() {
-            const normalizedRotation = ((currentRotation % 360) + 360) % 360;
-            
-            let minDiff = 360;
-            let activeId = 'reel';
-            
-            WHEEL_CONFIG.options.forEach(opt => {
-                let diff = Math.abs(normalizedRotation - opt.angle);
-                diff = Math.min(diff, 360 - diff);
-                
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    activeId = opt.id;
-                }
-            });
-            
-            selectedOption = activeId;
-            
-            // تحديث كلاس active
-            options.forEach(opt => {
-                if (opt.dataset.option === activeId) {
-                    opt.classList.add('active');
-                } else {
-                    opt.classList.remove('active');
-                }
-            });
-            
-            // تحديث النصوص
-            const optionNames = {
-                'reel': 'Reel',
-                'live': 'بث مباشر',
-                'tour': 'جولة'
-            };
-            
-            document.getElementById('selectedText').textContent = `إضافة ${optionNames[activeId]}`;
-            document.getElementById('addBtnText').textContent = `إضافة ${optionNames[activeId]}`;
-        }
-        
-        // ========== 11. توليد بصمة فريدة ==========
-        function generateThumbprint(type) {
-            const prefix = {
-                'reel': 'REL',
-                'live': 'LIV',
-                'tour': 'TOR'
-            }[type] || 'USR';
-            
-            const date = new Date();
-            const dateStr = `${date.getFullYear().toString().substring(2)}${(date.getMonth()+1).toString().padStart(2,'0')}${date.getDate().toString().padStart(2,'0')}`;
-            const timeStr = `${date.getHours().toString().padStart(2,'0')}${date.getMinutes().toString().padStart(2,'0')}${date.getSeconds().toString().padStart(2,'0')}`;
-            const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-            
-            return `${prefix}_${dateStr}_${timeStr}_${random}`;
-        }
-        
-        // ========== 12. إضافة المحتوى المحدد ==========
-        function addSelectedContent() {
-            const contentTypes = {
-                'reel': { name: 'Reel', icon: 'film', color: '#FF0000' },
-                'live': { name: 'بث مباشر', icon: 'video', color: '#ff4444' },
-                'tour': { name: 'جولة', icon: 'globe', color: '#00b894' }
-            };
-            
-            const type = selectedOption;
-            const content = contentTypes[type];
-            const thumbprint = generateThumbprint(type);
-            
-            // تحديث العداد
-            const countElement = document.getElementById(`${type}Count`);
-            const currentCount = parseInt(countElement.textContent) || 0;
-            countElement.textContent = currentCount + 1;
-            
-            // تحديث آخر بصمة
-            const thumbprintElement = document.getElementById(`last${type.charAt(0).toUpperCase() + type.slice(1)}Thumbprint`);
-            thumbprintElement.textContent = thumbprint;
-            
-            // إنشاء بطاقة مؤقتة
-            const previewCard = document.createElement('div');
-            previewCard.className = 'preview-card';
-            previewCard.style.animation = 'slideIn 0.3s ease';
-            previewCard.innerHTML = `
-                <i class="fas fa-${content.icon}" style="color: ${content.color};"></i>
-                <h3>${content.name} (جديد)</h3>
-                <div class="thumbprint">${thumbprint}</div>
-            `;
-            
-            // إضافة للشاشة (مؤقت)
-            document.getElementById('previewGrid').prepend(previewCard);
-            
-            // إزالة البطاقة بعد 3 ثواني
-            setTimeout(() => {
-                previewCard.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => previewCard.remove(), 300);
-            }, 3000);
-            
-            // عرض إشعار
-            showNotification(`✅ تمت إضافة ${content.name} - البصمة: ${thumbprint}`);
-        }
-        
-        // ========== 13. عرض الإشعارات ==========
-        function showNotification(message) {
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }
-        
-        // ========== 14. تهيئة العجلة ==========
-        function initWheel() {
-            console.log('🔄 تشغيل العجلة الدوارة...');
-            initWheelOptions();
-            
-            // تعيين الخيار الافتراضي
-            setTimeout(() => {
-                currentRotation = 0;
-                updateActiveOption();
-            }, 100);
-        }
-        
-        // تشغيل عند تحميل الصفحة
-        document.addEventListener('DOMContentLoaded', initWheel);
-        
-        // ========== دوال عامة ==========
-        window.addSelectedContent = addSelectedContent;
-        window.generateThumbprint = generateThumbprint;
-    </script>
-</body>
-</html>
-    <!-- تحسينات SEO -->
-    <meta name="description" content="ناردو برو - منصة التجارة الإلكترونية المتكاملة للتوابل والكوسمتيك والعروض">
-    <meta name="keywords" content="ناردو, توابل, كوسمتيك, عروض, تسوق, جزائر">
-    <meta name="author" content="ناردو برو">
-    
-    <!-- فتح Graph للتواصل الاجتماعي -->
-    <meta property="og:title" content="نكهة وجمال | ناردو برو">
-    <meta property="og:description" content="منصة التجارة الإلكترونية المتكاملة">
-    <meta property="og:type" content="website">
-    
-    <!-- ===== الخطوط ===== -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- ===== Font Awesome 6 ===== -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
-    <!-- ===== AOS Library للتمرير المتحرك ===== -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    
-    <style>
-        /* ===== أنماط أساسية مؤقتة لحين تحميل CSS ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Cairo', sans-serif;
-            background: #0a1a15;
-            color: #ffffff;
-            line-height: 1.6;
-            transition: all 0.3s ease;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+        /* أنماط إضافية */
         .loader {
             position: fixed;
             top: 0;
@@ -833,28 +380,19 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        .container {
-            width: 95%;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
     </style>
-    
-    <!-- ===== ربط ملف CSS الرئيسي ===== -->
-    <link rel="stylesheet" href="style.css">
-
-    </div>
-    <!-- ===== شاشة التحميل ===== -->
+</head>
+<body>
+    <!-- شاشة التحميل -->
     <div class="loader" id="loader">
         <div class="loader-spinner"></div>
     </div>
 
-    <!-- ===== نظام الإشعارات ===== -->
+    <!-- نظام الإشعارات -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- ===== سلة التسوق الجانبية ===== -->
-    <div class="cart-sidebar" id="cartSidebar">
+    <!-- سلة التسوق الجانبية -->
+    <div class="cart-sidebar" id="cartSidebar" style="display: none;">
         <div class="cart-header">
             <h3><i class="fas fa-shopping-cart"></i> سلة التسوق</h3>
             <i class="fas fa-times close-cart" onclick="toggleCart()"></i>
@@ -876,7 +414,7 @@
         </div>
     </div>
 
-    <!-- ===== الشريط العلوي ===== -->
+    <!-- الشريط العلوي -->
     <div class="top-bar">
         <div class="container">
             <div class="top-bar-item" data-aos="fade-left" data-aos-delay="100">
@@ -898,7 +436,7 @@
         </div>
     </div>
 
-    <!-- ===== شريط العروض المتحرك ===== -->
+    <!-- شريط العروض المتحرك -->
     <div class="marquee-bar">
         <div class="marquee-content" id="marqueeContent">
             <div class="marquee-item float-item">
@@ -929,7 +467,7 @@
         </div>
     </div>
 
-    <!-- ===== شريط Reels من تلجرام ===== -->
+    <!-- شريط Reels من تلجرام -->
     <div class="reels-promo-bar">
         <div class="container">
             <div class="reels-header-brand">
@@ -984,7 +522,7 @@
         </div>
     </div>
 
-    <!-- ===== الهيدر الرئيسي ===== -->
+    <!-- الهيدر الرئيسي -->
     <header class="main-header">
         <div class="container header-content">
             <div class="logo" data-aos="fade-right">
@@ -1017,7 +555,7 @@
         </div>
     </header>
 
-    <!-- ===== القائمة الرئيسية ===== -->
+    <!-- القائمة الرئيسية -->
     <div class="container">
         <nav class="nav-menu" id="mainNav" data-aos="fade-up">
             <a class="nav-link active" onclick="filterProducts('all')"><i class="fas fa-home"></i><span>الرئيسية</span></a>
@@ -1029,7 +567,7 @@
         </nav>
     </div>
 
-    <!-- ===== خيارات الفرز ===== -->
+    <!-- خيارات الفرز -->
     <div class="container">
         <div class="sort-options" data-aos="fade-up">
             <select class="sort-select" id="sortSelect" onchange="changeSort(this.value)">
@@ -1041,24 +579,24 @@
         </div>
     </div>
 
-    <!-- ===== نص متحرك ===== -->
+    <!-- نص متحرك -->
     <div class="container">
         <div class="typing-container" data-aos="fade-up">
             <span id="typing-text"></span>
         </div>
     </div>
 
-    <!-- ===== لوحة التاجر ===== -->
+    <!-- لوحة التاجر -->
     <div class="container" id="merchantPanelContainer" style="display: none;"></div>
 
-    <!-- ===== المنتجات ===== -->
+    <!-- المنتجات -->
     <div class="container">
         <div class="products-grid" id="productsContainer">
             <!-- سيتم تعبئتها ديناميكياً من JavaScript -->
         </div>
     </div>
 
-    <!-- ===== لوحة التحكم (للمدير) ===== -->
+    <!-- لوحة التحكم (للمدير) -->
     <div class="container dashboard-section" id="dashboardSection" style="display: none;">
         <div class="dashboard-tabs" id="dashboardTabs">
             <button class="dashboard-tab active" onclick="switchDashboardTab('overview')">📊 نظرة عامة</button>
@@ -1070,7 +608,7 @@
         <div class="dashboard-content" id="dashboardContent"></div>
     </div>
 
-    <!-- ===== الفوتر ===== -->
+    <!-- الفوتر -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -1097,7 +635,7 @@
         </div>
     </footer>
 
-    <!-- ===== أيقونات ثابتة ===== -->
+    <!-- أيقونات ثابتة -->
     <div class="fixed-cart" onclick="toggleCart()" id="fixedCart" title="سلة التسوق">
         <i class="fas fa-shopping-cart"></i>
         <span class="fixed-cart-count" id="fixedCartCounter">0</span>
@@ -1116,14 +654,14 @@
         <i class="fas fa-chevron-up"></i>
     </button>
 
-    <!-- ===== نافذة تسجيل الدخول ===== -->
-    <div class="modal" id="loginModal" onclick="if(event.target===this) closeModal('loginModal')">
+    <!-- نافذة تسجيل الدخول -->
+    <div class="modal" id="loginModal" style="display: none;" onclick="if(event.target===this) closeModal('loginModal')">
         <div class="modal-content">
             <div style="text-align:center; margin-bottom:30px;">
-                <div style="font-size: 60px; color: var(--gold); margin-bottom: 10px;">
+                <div style="font-size: 60px; color: gold; margin-bottom: 10px;">
                     <i class="fas fa-user-circle"></i>
                 </div>
-                <h2 style="color:var(--gold);">تسجيل الدخول</h2>
+                <h2 style="color:gold;">تسجيل الدخول</h2>
             </div>
             
             <div style="display:flex; gap:10px; margin-bottom:20px;">
@@ -1131,7 +669,7 @@
                 <button class="btn-outline-gold" style="flex:1;" onclick="switchAuthTab('register')">تسجيل</button>
             </div>
 
-            <!-- ===== نموذج تسجيل الدخول ===== -->
+            <!-- نموذج تسجيل الدخول -->
             <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
                 <div class="form-group">
                     <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
@@ -1144,7 +682,7 @@
                 <button type="submit" class="btn-gold" style="width:100%;">دخول</button>
             </form>
 
-            <!-- ===== نموذج التسجيل الجديد مع جميع الحقول ===== -->
+            <!-- نموذج التسجيل -->
             <form id="registerForm" style="display:none;" onsubmit="event.preventDefault(); handleRegister();">
                 <div class="form-group">
                     <label><i class="fas fa-user"></i> الاسم الكامل</label>
@@ -1179,7 +717,7 @@
                     </label>
                 </div>
                 
-                <!-- ===== حقول التاجر (تظهر عند اختيار تسجيل كتاجر) ===== -->
+                <!-- حقول التاجر -->
                 <div id="merchantFields" style="display:none;">
                     <div class="form-group">
                         <label><i class="fas fa-store-alt"></i> اسم المتجر</label>
@@ -1213,16 +751,15 @@
         </div>
     </div>
 
-    <!-- ===== نافذة إضافة منتج ===== -->
-    <div class="modal" id="productModal" onclick="if(event.target===this) closeModal('productModal')">
+    <!-- نافذة إضافة منتج -->
+    <div class="modal" id="productModal" style="display: none;" onclick="if(event.target===this) closeModal('productModal')">
         <div class="modal-content modal-lg">
             <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color:var(--gold);"><i class="fas fa-plus-circle"></i> إضافة منتج جديد</h2>
-                <button class="close-btn" onclick="closeModal('productModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
+                <h2 style="color:gold;"><i class="fas fa-plus-circle"></i> إضافة منتج جديد</h2>
+                <button class="close-btn" onclick="closeModal('productModal')" style="background: none; border: none; color: gold; font-size: 28px; cursor: pointer;">&times;</button>
             </div>
             
             <form id="productForm" class="product-form" onsubmit="event.preventDefault(); saveProduct();">
-                <!-- حقل معرف تليجرام (يظهر إذا كان المستخدم تاجر وليس لديه معرف) -->
                 <div class="form-group" id="merchantTelegramField" style="display: none;">
                     <label><i class="fab fa-telegram"></i> معرف تليجرام الخاص بك</label>
                     <input type="text" class="form-control" id="merchantTelegram" placeholder="@username">
@@ -1287,65 +824,138 @@
         </div>
     </div>
 
-    <!-- ===== نافذة تفاصيل المنتج ===== -->
-    <div class="modal" id="productDetailModal" onclick="if(event.target===this) closeModal('productDetailModal')">
+    <!-- نافذة تفاصيل المنتج -->
+    <div class="modal" id="productDetailModal" style="display: none;" onclick="if(event.target===this) closeModal('productDetailModal')">
         <div class="modal-content modal-lg" id="productDetailContent"></div>
     </div>
 
-    <!-- ===== نافذة لوحة التاجر ===== -->
-    <div class="modal" id="merchantDashboardModal" onclick="if(event.target===this) closeModal('merchantDashboardModal')">
+    <!-- نافذة لوحة التاجر -->
+    <div class="modal" id="merchantDashboardModal" style="display: none;" onclick="if(event.target===this) closeModal('merchantDashboardModal')">
         <div class="modal-content" style="max-width: 1200px;">
             <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color:var(--gold);"><i class="fas fa-store"></i> لوحة تحكم التاجر</h2>
-                <button class="close-btn" onclick="closeModal('merchantDashboardModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
+                <h2 style="color:gold;"><i class="fas fa-store"></i> لوحة تحكم التاجر</h2>
+                <button class="close-btn" onclick="closeModal('merchantDashboardModal')" style="background: none; border: none; color: gold; font-size: 28px; cursor: pointer;">&times;</button>
             </div>
             <div class="modal-body" id="merchantDashboardContent" style="max-height: 80vh; overflow-y: auto;"></div>
         </div>
     </div>
     
-    <!-- ===== نافذة منتجات التاجر ===== -->
-    <div class="modal" id="merchantProductsModal" onclick="if(event.target===this) closeModal('merchantProductsModal')">
+    <!-- نافذة منتجات التاجر -->
+    <div class="modal" id="merchantProductsModal" style="display: none;" onclick="if(event.target===this) closeModal('merchantProductsModal')">
         <div class="modal-content" style="max-width: 1000px;">
             <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color:var(--gold);"><i class="fas fa-boxes"></i> منتجاتي</h2>
-                <button class="close-btn" onclick="closeModal('merchantProductsModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
+                <h2 style="color:gold;"><i class="fas fa-boxes"></i> منتجاتي</h2>
+                <button class="close-btn" onclick="closeModal('merchantProductsModal')" style="background: none; border: none; color: gold; font-size: 28px; cursor: pointer;">&times;</button>
             </div>
             <div class="modal-body" id="merchantProductsContent" style="max-height: 80vh; overflow-y: auto;"></div>
         </div>
     </div>
     
-    <!-- ===== نافذة طلبات التاجر ===== -->
-    <div class="modal" id="merchantOrdersModal" onclick="if(event.target===this) closeModal('merchantOrdersModal')">
+    <!-- نافذة طلبات التاجر -->
+    <div class="modal" id="merchantOrdersModal" style="display: none;" onclick="if(event.target===this) closeModal('merchantOrdersModal')">
         <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color:var(--gold);"><i class="fas fa-shopping-bag"></i> طلباتي</h2>
-                <button class="close-btn" onclick="closeModal('merchantOrdersModal')" style="background: none; border: none; color: var(--gold); font-size: 28px; cursor: pointer;">&times;</button>
+                <h2 style="color:gold;"><i class="fas fa-shopping-bag"></i> طلباتي</h2>
+                <button class="close-btn" onclick="closeModal('merchantOrdersModal')" style="background: none; border: none; color: gold; font-size: 28px; cursor: pointer;">&times;</button>
             </div>
             <div class="modal-body" id="merchantOrdersContent" style="max-height: 80vh; overflow-y: auto;"></div>
         </div>
     </div>
 
-    <!-- ===== نافذة عرض Reel ===== -->
-    <div class="modal" id="reelViewModal" onclick="if(event.target===this) closeModal('reelViewModal')">
+    <!-- نافذة عرض Reel -->
+    <div class="modal" id="reelViewModal" style="display: none;" onclick="if(event.target===this) closeModal('reelViewModal')">
         <div class="modal-content reel-modal-content">
             <div class="reel-modal-header">
-                <h3><i class="fas fa-film" style="color: var(--gold);"></i> reel</h3>
+                <h3><i class="fas fa-film" style="color: gold;"></i> reel</h3>
                 <button class="close-btn" onclick="closeModal('reelViewModal')">&times;</button>
             </div>
             <div class="reel-modal-body" id="reelViewContent"></div>
         </div>
     </div>
 
-    <!-- ===== إحصائيات الموقع (مخفية) ===== -->
+    <!-- إحصائيات الموقع (مخفية) -->
     <div style="display: none;" id="siteStats">
         <span id="visitorCount">0</span>
     </div>
 
-    <!-- ===== مكتبات خارجية ===== -->
+    <!-- العجلة ثلاثية الأبعاد -->
+    <div class="container">
+        <h1>
+            <i class="fas fa-film"></i> 
+            العجلة الدوارة
+            <i class="fas fa-video"></i>
+        </h1>
+        
+        <div class="wheel-main-container">
+            <div class="wheel-3d" id="wheel3D">
+                <div class="wheel-option" data-option="reel">
+                    <i class="fas fa-film"></i>
+                    <span class="option-title">Reel</span>
+                    <span class="option-desc">إضافة فيديو قصير</span>
+                </div>
+                
+                <div class="wheel-option" data-option="live">
+                    <i class="fas fa-video"></i>
+                    <span class="option-title">مباشر</span>
+                    <span class="option-desc">بدء بث مباشر</span>
+                </div>
+                
+                <div class="wheel-option" data-option="tour">
+                    <i class="fas fa-globe"></i>
+                    <span class="option-title">جولة</span>
+                    <span class="option-desc">إنشاء جولة</span>
+                </div>
+                
+                <div class="wheel-center"></div>
+                <div class="wheel-arrow">
+                    <i class="fas fa-arrow-down"></i>
+                </div>
+            </div>
+            
+            <div class="wheel-help">
+                <i class="fas fa-hand-pointer"></i> 
+                اسحب لليسار أو اليمين لاختيار نوع الإضافة
+            </div>
+            
+            <div class="selected-box">
+                <span id="selectedText">إضافة Reel</span>
+            </div>
+            
+            <button class="add-btn" onclick="addSelectedContent()">
+                <i class="fas fa-plus-circle"></i>
+                <span id="addBtnText">إضافة Reel</span>
+            </button>
+        </div>
+        
+        <div class="preview-grid" id="previewGrid">
+            <div class="preview-card">
+                <i class="fas fa-film" style="color: #FF0000;"></i>
+                <h3>Reels</h3>
+                <div class="count" id="reelCount">0</div>
+                <div class="thumbprint" id="lastReelThumbprint">-</div>
+            </div>
+            
+            <div class="preview-card">
+                <i class="fas fa-video" style="color: #ff4444;"></i>
+                <h3>بث مباشر</h3>
+                <div class="count" id="liveCount">0</div>
+                <div class="thumbprint" id="lastLiveThumbprint">-</div>
+            </div>
+            
+            <div class="preview-card">
+                <i class="fas fa-globe" style="color: #00b894;"></i>
+                <h3>جولات</h3>
+                <div class="count" id="tourCount">0</div>
+                <div class="thumbprint" id="lastTourThumbprint">-</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- المكتبات الخارجية -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     
     <script>
-        // تهيئة AOS للتمرير المتحرك
+        // تهيئة AOS
         document.addEventListener('DOMContentLoaded', function() {
             AOS.init({
                 duration: 800,
@@ -1353,11 +963,384 @@
                 offset: 100
             });
         });
+
+        // إخفاء شاشة التحميل
+        window.addEventListener('load', function() {
+            document.getElementById('loader').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loader').style.display = 'none';
+            }, 500);
+        });
+
+        // متغيرات العجلة
+        const wheel = document.getElementById('wheel3D');
+        const options = document.querySelectorAll('.wheel-option');
+        let currentRotation = 0;
+        let isDragging = false;
+        let startX = 0;
+        let lastX = 0;
+        let velocity = 0;
+        let animationFrame = null;
+        let selectedOption = 'reel';
+
+        const WHEEL_CONFIG = {
+            options: [
+                { id: 'reel', name: 'Reel', angle: 0 },
+                { id: 'live', name: 'مباشر', angle: 120 },
+                { id: 'tour', name: 'جولة', angle: 240 }
+            ],
+            rotationSpeed: 0.3,
+            snapDuration: 300,
+            flingDeceleration: 0.95
+        };
+
+        function initWheelOptions() {
+            options.forEach((opt, index) => {
+                const angle = WHEEL_CONFIG.options[index].angle;
+                opt.style.transform = `translate(-50%, -50%) rotateY(${angle}deg) translateZ(180px)`;
+            });
+        }
+
+        wheel.addEventListener('touchstart', handleTouchStart, { passive: false });
+        wheel.addEventListener('touchmove', handleTouchMove, { passive: false });
+        wheel.addEventListener('touchend', handleTouchEnd);
+        
+        wheel.addEventListener('mousedown', handleMouseDown);
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+        
+        wheel.addEventListener('dragstart', (e) => e.preventDefault());
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            startX = touch.clientX;
+            lastX = touch.clientX;
+            isDragging = true;
+            wheel.classList.add('dragging');
+            
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+            }
+        }
+
+        function handleTouchMove(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            const touch = e.touches[0];
+            const currentX = touch.clientX;
+            const diff = currentX - lastX;
+            
+            velocity = diff * 0.5;
+            currentRotation += diff * 0.3;
+            updateWheelRotation();
+            
+            lastX = currentX;
+        }
+
+        function handleTouchEnd(e) {
+            e.preventDefault();
+            isDragging = false;
+            wheel.classList.remove('dragging');
+            
+            if (Math.abs(velocity) > 1) {
+                startFlingAnimation();
+            } else {
+                snapToNearestOption();
+            }
+        }
+
+        function handleMouseDown(e) {
+            e.preventDefault();
+            startX = e.clientX;
+            lastX = e.clientX;
+            isDragging = true;
+            wheel.classList.add('dragging');
+            
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+            }
+        }
+
+        function handleMouseMove(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            const currentX = e.clientX;
+            const diff = currentX - lastX;
+            
+            velocity = diff * 0.5;
+            currentRotation += diff * 0.3;
+            updateWheelRotation();
+            
+            lastX = currentX;
+        }
+
+        function handleMouseUp(e) {
+            e.preventDefault();
+            isDragging = false;
+            wheel.classList.remove('dragging');
+            
+            if (Math.abs(velocity) > 1) {
+                startFlingAnimation();
+            } else {
+                snapToNearestOption();
+            }
+        }
+
+        function updateWheelRotation() {
+            currentRotation = currentRotation % 360;
+            if (currentRotation < 0) currentRotation += 360;
+            
+            wheel.style.transform = `rotateY(${currentRotation}deg)`;
+            updateActiveOption();
+        }
+
+        function startFlingAnimation() {
+            function animate() {
+                if (Math.abs(velocity) < 0.1) {
+                    snapToNearestOption();
+                    return;
+                }
+                
+                velocity *= WHEEL_CONFIG.flingDeceleration;
+                currentRotation += velocity;
+                updateWheelRotation();
+                
+                animationFrame = requestAnimationFrame(animate);
+            }
+            
+            animationFrame = requestAnimationFrame(animate);
+        }
+
+        function snapToNearestOption() {
+            const targetAngles = WHEEL_CONFIG.options.map(o => o.angle);
+            
+            let minDiff = 360;
+            let targetAngle = 0;
+            
+            targetAngles.forEach(angle => {
+                let diff = Math.abs(currentRotation - angle);
+                diff = Math.min(diff, 360 - diff);
+                
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    targetAngle = angle;
+                }
+            });
+            
+            animateToAngle(targetAngle);
+        }
+
+        function animateToAngle(targetAngle) {
+            const startAngle = currentRotation;
+            const startTime = performance.now();
+            const duration = WHEEL_CONFIG.snapDuration;
+            
+            function animate(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const easeProgress = progress < 0.5 
+                    ? 2 * progress * progress 
+                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                
+                currentRotation = startAngle + (targetAngle - startAngle) * easeProgress;
+                updateWheelRotation();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+
+        function updateActiveOption() {
+            const normalizedRotation = ((currentRotation % 360) + 360) % 360;
+            
+            let minDiff = 360;
+            let activeId = 'reel';
+            
+            WHEEL_CONFIG.options.forEach(opt => {
+                let diff = Math.abs(normalizedRotation - opt.angle);
+                diff = Math.min(diff, 360 - diff);
+                
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    activeId = opt.id;
+                }
+            });
+            
+            selectedOption = activeId;
+            
+            options.forEach(opt => {
+                if (opt.dataset.option === activeId) {
+                    opt.classList.add('active');
+                } else {
+                    opt.classList.remove('active');
+                }
+            });
+            
+            const optionNames = {
+                'reel': 'Reel',
+                'live': 'بث مباشر',
+                'tour': 'جولة'
+            };
+            
+            document.getElementById('selectedText').textContent = `إضافة ${optionNames[activeId]}`;
+            document.getElementById('addBtnText').textContent = `إضافة ${optionNames[activeId]}`;
+        }
+
+        function generateThumbprint(type) {
+            const prefix = {
+                'reel': 'REL',
+                'live': 'LIV',
+                'tour': 'TOR'
+            }[type] || 'USR';
+            
+            const date = new Date();
+            const dateStr = `${date.getFullYear().toString().substring(2)}${(date.getMonth()+1).toString().padStart(2,'0')}${date.getDate().toString().padStart(2,'0')}`;
+            const timeStr = `${date.getHours().toString().padStart(2,'0')}${date.getMinutes().toString().padStart(2,'0')}${date.getSeconds().toString().padStart(2,'0')}`;
+            const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+            
+            return `${prefix}_${dateStr}_${timeStr}_${random}`;
+        }
+
+        function addSelectedContent() {
+            const contentTypes = {
+                'reel': { name: 'Reel', icon: 'film', color: '#FF0000' },
+                'live': { name: 'بث مباشر', icon: 'video', color: '#ff4444' },
+                'tour': { name: 'جولة', icon: 'globe', color: '#00b894' }
+            };
+            
+            const type = selectedOption;
+            const content = contentTypes[type];
+            const thumbprint = generateThumbprint(type);
+            
+            const countElement = document.getElementById(`${type}Count`);
+            const currentCount = parseInt(countElement.textContent) || 0;
+            countElement.textContent = currentCount + 1;
+            
+            const thumbprintElement = document.getElementById(`last${type.charAt(0).toUpperCase() + type.slice(1)}Thumbprint`);
+            thumbprintElement.textContent = thumbprint;
+            
+            const previewCard = document.createElement('div');
+            previewCard.className = 'preview-card';
+            previewCard.style.animation = 'slideIn 0.3s ease';
+            previewCard.innerHTML = `
+                <i class="fas fa-${content.icon}" style="color: ${content.color};"></i>
+                <h3>${content.name} (جديد)</h3>
+                <div class="thumbprint">${thumbprint}</div>
+            `;
+            
+            document.getElementById('previewGrid').prepend(previewCard);
+            
+            setTimeout(() => {
+                previewCard.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => previewCard.remove(), 300);
+            }, 3000);
+            
+            showNotification(`✅ تمت إضافة ${content.name} - البصمة: ${thumbprint}`);
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function initWheel() {
+            console.log('🔄 تشغيل العجلة الدوارة...');
+            initWheelOptions();
+            
+            setTimeout(() => {
+                currentRotation = 0;
+                updateActiveOption();
+            }, 100);
+        }
+
+        document.addEventListener('DOMContentLoaded', initWheel);
+
+        // دوال عامة
+        window.addSelectedContent = addSelectedContent;
+        window.generateThumbprint = generateThumbprint;
+        window.toggleCart = function() {
+            const cart = document.getElementById('cartSidebar');
+            cart.style.display = cart.style.display === 'none' ? 'block' : 'none';
+        };
+        window.checkoutCart = function() {
+            alert('تم إتمام الطلب عبر واتساب');
+        };
+        window.searchProducts = function() {
+            console.log('بحث: ' + document.getElementById('searchInput').value);
+        };
+        window.filterProducts = function(category) {
+            console.log('تصفية: ' + category);
+        };
+        window.changeSort = function(value) {
+            console.log('ترتيب: ' + value);
+        };
+        window.openLoginModal = function() {
+            document.getElementById('loginModal').style.display = 'flex';
+        };
+        window.closeModal = function(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        };
+        window.switchAuthTab = function(tab) {
+            document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+            document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+        };
+        window.handleLogin = function() {
+            alert('تم تسجيل الدخول بنجاح');
+            closeModal('loginModal');
+        };
+        window.handleRegister = function() {
+            alert('تم التسجيل بنجاح');
+            closeModal('loginModal');
+        };
+        window.toggleMerchantFields = function() {
+            const isMerchant = document.getElementById('isMerchant').checked;
+            document.getElementById('merchantFields').style.display = isMerchant ? 'block' : 'none';
+        };
+        window.saveProduct = function() {
+            alert('تم حفظ المنتج');
+            closeModal('productModal');
+        };
+        window.handleImageUpload = function(event) {
+            console.log('تم رفع ' + event.target.files.length + ' صورة');
+        };
+        window.findProductById = function() {
+            alert('البحث بالمعرف');
+        };
+        window.openDashboard = function() {
+            document.getElementById('dashboardSection').style.display = 'block';
+        };
+        window.switchDashboardTab = function(tab) {
+            document.getElementById('dashboardContent').innerHTML = '<h3>محتوى ' + tab + '</h3>';
+        };
+        window.scrollReels = function(direction) {
+            console.log('تمرير الريلز: ' + direction);
+        };
+        window.toggleTheme = function() {
+            document.body.style.background = document.body.style.background === 'rgb(10, 26, 21)' ? 'linear-gradient(135deg, #1a3a32, #0a1a15)' : 'linear-gradient(135deg, #0a1a15, #1a3a32)';
+        };
+        window.scrollToTop = function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+        window.scrollToBottom = function() {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        };
     </script>
-
-
-    <!-- ===== ربط ملف JavaScript الرئيسي ===== -->
-    <script src="script.js"></script>
 </body>
 </html>
-
