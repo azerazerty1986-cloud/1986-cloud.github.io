@@ -72,6 +72,149 @@
             margin: 0 auto;
             padding: 0 15px;
         }
+
+        /* أنماط العجلة الدوارة */
+        .wheel-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0 30px;
+            perspective: 1200px;
+            width: 100%;
+        }
+        .wheel-3d {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            transform-style: preserve-3d;
+            cursor: grab;
+            transition: transform 0.3s ease-out;
+            user-select: none;
+            touch-action: none;
+            margin: 0 auto;
+        }
+        .wheel-3d.dragging {
+            transition: none;
+            cursor: grabbing;
+        }
+        .wheel-option {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) rotateY(0deg) translateZ(130px);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border: 3px solid gold;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            text-align: center;
+            transition: all 0.3s ease;
+            backface-visibility: visible;
+        }
+        .wheel-option i {
+            font-size: 35px;
+            margin-bottom: 5px;
+        }
+        .wheel-option span {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .wheel-option[data-option="reel"] {
+            background: linear-gradient(135deg, #FF0000, #cc0000);
+        }
+        .wheel-option[data-option="live"] {
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+        }
+        .wheel-option[data-option="tour"] {
+            background: linear-gradient(135deg, #00b894, #008b6b);
+        }
+        .wheel-option.active {
+            transform: translate(-50%, -50%) rotateY(0deg) translateZ(160px) scale(1.1);
+            box-shadow: 0 0 50px gold;
+            border-width: 4px;
+            z-index: 100;
+        }
+        .wheel-center {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, gold, transparent 80%);
+            border-radius: 50%;
+            filter: blur(12px);
+            animation: pulseGlow 2s infinite;
+            pointer-events: none;
+        }
+        .wheel-arrow {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: gold;
+            font-size: 30px;
+            filter: drop-shadow(0 0 10px gold);
+            animation: bounceArrow 1.5s infinite;
+        }
+        .wheel-help {
+            text-align: center;
+            color: gold;
+            margin: 15px 0 10px;
+            font-size: 14px;
+            background: rgba(0,0,0,0.3);
+            padding: 8px 20px;
+            border-radius: 50px;
+            border: 1px solid gold;
+        }
+        .wheel-selected {
+            text-align: center;
+            margin: 10px 0;
+            padding: 8px 25px;
+            background: linear-gradient(135deg, #2c5e4f, #1a3a32);
+            border-radius: 50px;
+            border: 2px solid gold;
+            display: inline-block;
+        }
+        .wheel-selected span {
+            color: gold;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .wheel-btn {
+            background: linear-gradient(135deg, gold, #ffd700);
+            color: black;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(212,175,55,0.5);
+            transition: all 0.3s ease;
+            margin: 15px 0;
+        }
+        .wheel-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px gold;
+        }
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+        }
+        @keyframes bounceArrow {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-8px); }
+        }
     </style>
     
     <!-- ===== ربط ملف CSS الرئيسي ===== -->
@@ -162,7 +305,7 @@
         </div>
     </div>
 
-    <!-- ===== شريط Reels من تلجرام ===== -->
+    <!-- ===== شريط Reels من تلجرام مع العجلة ===== -->
     <div class="reels-promo-bar">
         <div class="container">
             <div class="reels-header-brand">
@@ -198,6 +341,48 @@
                 <span class="divider-icon">🎬</span>
             </div>
             
+            <!-- ===== العجلة الدوارة ===== -->
+            <div class="wheel-section">
+                <div class="wheel-3d" id="reels3DWheel">
+                    <!-- خيار Reel -->
+                    <div class="wheel-option" data-option="reel">
+                        <i class="fas fa-film"></i>
+                        <span>Reel</span>
+                    </div>
+                    
+                    <!-- خيار مباشر -->
+                    <div class="wheel-option" data-option="live">
+                        <i class="fas fa-video"></i>
+                        <span>مباشر</span>
+                    </div>
+                    
+                    <!-- خيار جولة -->
+                    <div class="wheel-option" data-option="tour">
+                        <i class="fas fa-globe"></i>
+                        <span>جولة</span>
+                    </div>
+                    
+                    <div class="wheel-center"></div>
+                    <div class="wheel-arrow">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                </div>
+                
+                <div class="wheel-help">
+                    <i class="fas fa-hand-pointer"></i> اسحب لاختيار نوع الإضافة
+                </div>
+                
+                <div class="wheel-selected">
+                    <span id="wheelSelectedText">إضافة Reel</span>
+                </div>
+                
+                <button class="wheel-btn" onclick="addFromWheel()">
+                    <i class="fas fa-plus-circle"></i>
+                    <span id="wheelBtnText">إضافة Reel</span>
+                </button>
+            </div>
+            
+            <!-- ===== شريط التمرير ===== -->
             <div class="reels-scroll-container">
                 <button class="reels-scroll-btn left" onclick="scrollReels('left')" id="scrollLeftBtn">
                     <i class="fas fa-chevron-right"></i>
@@ -585,7 +770,198 @@
                 once: true,
                 offset: 100
             });
+            
+            // تهيئة العجلة الدوارة
+            initWheel();
         });
+
+        // ===== نظام العجلة الدوارة =====
+        const wheel = document.getElementById('reels3DWheel');
+        const options = document.querySelectorAll('.wheel-option');
+        let rotation = 0;
+        let dragging = false;
+        let lastX = 0;
+        let velocity = 0;
+        let frame = null;
+        let selected = 'reel';
+
+        // زوايا الخيارات
+        const angles = { 'reel': 0, 'live': 120, 'tour': 240 };
+
+        function initWheel() {
+            if (!wheel) return;
+            
+            // تهيئة الزوايا
+            options.forEach(opt => {
+                const angle = angles[opt.dataset.option];
+                opt.style.transform = `translate(-50%, -50%) rotateY(${angle}deg) translateZ(130px)`;
+            });
+
+            // أحداث اللمس
+            wheel.addEventListener('touchstart', handleTouchStart, { passive: false });
+            wheel.addEventListener('touchmove', handleTouchMove, { passive: false });
+            wheel.addEventListener('touchend', handleTouchEnd);
+            
+            // أحداث الماوس
+            wheel.addEventListener('mousedown', handleMouseDown);
+            wheel.addEventListener('dragstart', e => e.preventDefault());
+            
+            // تعيين الخيار الافتراضي
+            setTimeout(() => {
+                rotation = 0;
+                updateSelected();
+            }, 100);
+        }
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+            lastX = e.touches[0].clientX;
+            dragging = true;
+            wheel.classList.add('dragging');
+            if (frame) cancelAnimationFrame(frame);
+        }
+
+        function handleTouchMove(e) {
+            if (!dragging) return;
+            e.preventDefault();
+            const x = e.touches[0].clientX;
+            const diff = x - lastX;
+            velocity = diff * 0.5;
+            rotation += diff * 0.3;
+            updateRotation();
+            lastX = x;
+        }
+
+        function handleTouchEnd() {
+            dragging = false;
+            wheel.classList.remove('dragging');
+            if (Math.abs(velocity) > 1) startFling();
+            else snapToNearest();
+        }
+
+        function handleMouseDown(e) {
+            e.preventDefault();
+            lastX = e.clientX;
+            dragging = true;
+            wheel.classList.add('dragging');
+            if (frame) cancelAnimationFrame(frame);
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            if (!dragging) return;
+            const x = e.clientX;
+            const diff = x - lastX;
+            velocity = diff * 0.5;
+            rotation += diff * 0.3;
+            updateRotation();
+            lastX = x;
+        });
+
+        window.addEventListener('mouseup', () => {
+            dragging = false;
+            wheel.classList.remove('dragging');
+            if (Math.abs(velocity) > 1) startFling();
+            else snapToNearest();
+        });
+
+        function updateRotation() {
+            rotation = ((rotation % 360) + 360) % 360;
+            wheel.style.transform = `rotateY(${rotation}deg)`;
+            updateSelected();
+        }
+
+        function startFling() {
+            function animate() {
+                if (Math.abs(velocity) < 0.1) {
+                    snapToNearest();
+                    return;
+                }
+                velocity *= 0.95;
+                rotation += velocity;
+                updateRotation();
+                frame = requestAnimationFrame(animate);
+            }
+            frame = requestAnimationFrame(animate);
+        }
+
+        function snapToNearest() {
+            const anglesList = [0, 120, 240];
+            let minDiff = 360;
+            let target = 0;
+            
+            anglesList.forEach(a => {
+                const diff = Math.min(Math.abs(rotation - a), 360 - Math.abs(rotation - a));
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    target = a;
+                }
+            });
+
+            animateTo(target);
+        }
+
+        function animateTo(target) {
+            const start = rotation;
+            const startTime = performance.now();
+
+            function animate(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / 300, 1);
+                const ease = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                
+                rotation = start + (target - start) * ease;
+                updateRotation();
+
+                if (progress < 1) requestAnimationFrame(animate);
+            }
+            requestAnimationFrame(animate);
+        }
+
+        function updateSelected() {
+            const anglesList = [0, 120, 240];
+            const ids = ['reel', 'live', 'tour'];
+            
+            let minDiff = 360;
+            let index = 0;
+
+            anglesList.forEach((a, i) => {
+                const diff = Math.min(Math.abs(rotation - a), 360 - Math.abs(rotation - a));
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    index = i;
+                }
+            });
+
+            selected = ids[index];
+
+            options.forEach(opt => {
+                if (opt.dataset.option === selected) opt.classList.add('active');
+                else opt.classList.remove('active');
+            });
+
+            const names = { 'reel': 'Reel', 'live': 'مباشر', 'tour': 'جولة' };
+            document.getElementById('wheelSelectedText').textContent = `إضافة ${names[selected]}`;
+            document.getElementById('wheelBtnText').textContent = `إضافة ${names[selected]}`;
+        }
+
+        // دالة الإضافة من العجلة
+        window.addFromWheel = function() {
+            const names = { 'reel': 'Reel', 'live': 'مباشر', 'tour': 'جولة' };
+            alert(`تم اختيار: إضافة ${names[selected]}`);
+            
+            // هنا يمكن ربطها بالدوال الموجودة في script.js
+            switch(selected) {
+                case 'reel':
+                    if (typeof showAddReelModal === 'function') showAddReelModal();
+                    break;
+                case 'live':
+                    if (typeof startLiveSetup === 'function') startLiveSetup();
+                    break;
+                case 'tour':
+                    if (typeof showAddTourModal === 'function') showAddTourModal();
+                    break;
+            }
+        };
     </script>
 
     <!-- ===== ربط ملف JavaScript الرئيسي ===== -->
