@@ -1,656 +1,553 @@
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎮 بوابة العوالم - الإدارة واللعبة</title>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #0a0a1a;
-    color: #fff;
-    min-height: 100vh;
-    padding: 15px;
-    direction: rtl;
-}
-.container { max-width: 1400px; margin: 0 auto; }
-
-/* ====== الهيدر ====== */
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
-    gap: 10px;
-    background: rgba(255,255,255,0.03);
-    padding: 12px 20px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.06);
-}
-.header h1 {
-    font-size: 20px;
-    background: linear-gradient(135deg, #a78bfa, #8b5cf6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-.header .admin-name {
-    color: #ffd700;
-    font-size: 12px;
-}
-.header-controls { display: flex; gap: 6px; flex-wrap: wrap; }
-.header-controls button {
-    padding: 4px 12px;
-    border: 1px solid rgba(139,92,246,0.3);
-    border-radius: 6px;
-    background: rgba(139,92,246,0.1);
-    color: #a78bfa;
-    cursor: pointer;
-    font-size: 10px;
-    transition: all 0.3s;
-    font-family: inherit;
-}
-.header-controls button:hover {
-    background: rgba(139,92,246,0.25);
-    transform: translateY(-1px);
-}
-.header-controls .btn-success { border-color: rgba(74,222,128,0.3); color: #4ade80; }
-.header-controls .btn-success:hover { background: rgba(74,222,128,0.2); }
-.header-controls .btn-danger { border-color: rgba(239,68,68,0.3); color: #f87171; }
-.header-controls .btn-danger:hover { background: rgba(239,68,68,0.2); }
-.header-controls .btn-warning { border-color: rgba(251,191,36,0.3); color: #fbbf24; }
-.header-controls .btn-warning:hover { background: rgba(251,191,36,0.2); }
-.header-controls .btn-gold { border-color: rgba(255,215,0,0.3); color: #ffd700; }
-.header-controls .btn-gold:hover { background: rgba(255,215,0,0.2); }
-
-/* ====== شاشة الدخول ====== */
-#auth-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 10000;
-    background: rgba(0,0,0,0.95);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    backdrop-filter: blur(20px);
-}
-#auth-overlay .auth-box {
-    background: rgba(10,10,30,0.97);
-    border: 2px solid rgba(255,215,0,0.3);
-    border-radius: 20px;
-    padding: 32px;
-    width: 90%;
-    max-width: 380px;
-}
-#auth-overlay .auth-box h2 {
-    color: #ffd700;
-    text-align: center;
-    font-size: 22px;
-    margin-bottom: 20px;
-}
-#auth-overlay .auth-box .field { margin-bottom: 14px; }
-#auth-overlay .auth-box .field label {
-    color: #888;
-    font-size: 11px;
-    display: block;
-    margin-bottom: 4px;
-    font-weight: 600;
-}
-#auth-overlay .auth-box .field input {
-    width: 100%;
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.04);
-    color: #fff;
-    font-size: 14px;
-    font-family: inherit;
-}
-#auth-overlay .auth-box .field input:focus {
-    outline: none;
-    border-color: rgba(255,215,0,0.4);
-}
-#auth-overlay .auth-box .auth-btn {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.3s;
-    margin-top: 4px;
-}
-#auth-overlay .auth-box .auth-btn.primary {
-    background: linear-gradient(135deg, #ffd700, #f59e0b);
-    color: #111;
-}
-#auth-overlay .auth-box .auth-btn.primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(255,215,0,0.3);
-}
-#auth-overlay .auth-box .auth-error {
-    color: #ef4444;
-    font-size: 11px;
-    text-align: center;
-    margin-top: 8px;
-    display: none;
-}
-#auth-overlay .auth-box .auth-info {
-    color: #666;
-    font-size: 11px;
-    text-align: center;
-    margin-top: 12px;
-    padding: 8px;
-    background: rgba(255,215,0,0.05);
-    border-radius: 8px;
-    border: 1px solid rgba(255,215,0,0.08);
-}
-
-/* ====== الإحصائيات ====== */
-.stats {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 6px;
-    margin-bottom: 12px;
-}
-.stat-box {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 6px;
-    padding: 8px;
-    text-align: center;
-}
-.stat-box .num {
-    font-size: 18px;
-    font-weight: 800;
-    display: block;
-}
-.stat-box .num.green { color: #4ade80; }
-.stat-box .num.purple { color: #a78bfa; }
-.stat-box .num.blue { color: #60a5fa; }
-.stat-box .num.yellow { color: #fbbf24; }
-.stat-box .num.orange { color: #fb923c; }
-.stat-box .num.red { color: #f87171; }
-.stat-box .label { font-size: 8px; color: #888; }
-
-/* ====== الشبكة ====== */
-.grid {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 2px;
-    margin-bottom: 12px;
-}
-.tile {
-    aspect-ratio: 1;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 3px;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: 7px;
-    padding: 1px;
-    position: relative;
-    min-height: 30px;
-}
-.tile:hover {
-    background: rgba(139,92,246,0.15);
-    border-color: rgba(139,92,246,0.4);
-    transform: scale(1.05);
-    z-index: 10;
-}
-.tile .icon { font-size: 14px; }
-.tile .label { color: #888; font-size: 5px; }
-.tile .status { font-size: 5px; margin-top: 1px; }
-.tile .status.online { color: #4ade80; }
-.tile .status.offline { color: #666; }
-.tile .status.running { color: #60a5fa; animation: pulse 1s infinite; }
-.tile.has-files { border-color: rgba(139,92,246,0.3); background: rgba(139,92,246,0.08); }
-.tile.protected { border-color: rgba(74,222,128,0.4); box-shadow: 0 0 10px rgba(74,222,128,0.1); }
-.tile.admin-tile { border-color: rgba(255,215,0,0.5); background: rgba(255,215,0,0.08); }
-.tile.active-tile { border-color: #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.2); }
-.tile .badge {
-    position: absolute;
-    top: -2px;
-    right: -2px;
-    background: #8b5cf6;
-    color: #fff;
-    font-size: 5px;
-    padding: 1px 3px;
-    border-radius: 4px;
-    font-weight: 700;
-}
-.tile .sync-badge {
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    background: rgba(74,222,128,0.8);
-    color: #fff;
-    font-size: 5px;
-    padding: 1px 3px;
-    border-radius: 4px;
-    font-weight: 700;
-}
-.tile .admin-badge-tile {
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    background: #ffd700;
-    color: #111;
-    font-size: 4px;
-    padding: 1px 4px;
-    border-radius: 3px;
-    font-weight: 800;
-}
-.tile .server-indicator {
-    position: absolute;
-    bottom: -2px;
-    left: -2px;
-    font-size: 6px;
-}
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-/* ====== لوحة المربع ====== */
-.tile-panel {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(10,10,30,0.97);
-    border: 1px solid rgba(139,92,246,0.3);
-    border-radius: 12px;
-    padding: 16px;
-    width: 92%;
-    max-width: 520px;
-    max-height: 80vh;
-    overflow-y: auto;
-    z-index: 9999;
-    backdrop-filter: blur(20px);
-    display: none;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-}
-.tile-panel.open { display: block; }
-.tile-panel .panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    padding-bottom: 8px;
-}
-.tile-panel .panel-header h3 { color: #a78bfa; font-size: 14px; }
-.tile-panel .panel-header h3 .admin-tag { color: #ffd700; font-size: 10px; }
-.tile-panel .panel-header button {
-    background: rgba(239,68,68,0.15);
-    color: #f87171;
-    border: none;
-    padding: 2px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 11px;
-}
-.tile-panel .info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3px 12px;
-    margin-bottom: 8px;
-}
-.tile-panel .info-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 2px 0;
-    font-size: 10px;
-    color: #888;
-    border-bottom: 1px solid rgba(255,255,255,0.03);
-}
-.tile-panel .info-item .value { color: #fff; }
-.tile-panel .info-item .value.online { color: #4ade80; }
-.tile-panel .info-item .value.offline { color: #f87171; }
-.tile-panel .info-item .value.admin { color: #ffd700; }
-.tile-panel .file-list { margin: 8px 0; max-height: 150px; overflow-y: auto; }
-.tile-panel .file-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 3px 6px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 3px;
-    margin-bottom: 2px;
-    font-size: 9px;
-}
-.tile-panel .file-item .name { color: #a78bfa; font-weight: 600; }
-.tile-panel .file-item .size { color: #666; font-size: 7px; }
-.tile-panel .file-item .actions button {
-    background: none;
-    border: none;
-    color: #888;
-    cursor: pointer;
-    font-size: 10px;
-    padding: 0 2px;
-}
-.tile-panel .file-item .actions button:hover { color: #fff; }
-.tile-panel .file-item .actions .delete:hover { color: #f87171; }
-.tile-panel .file-item .actions .edit:hover { color: #fbbf24; }
-.tile-panel .file-item .actions .sync:hover { color: #4ade80; }
-.tile-panel .actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px;
-    margin-top: 8px;
-}
-.tile-panel .actions button {
-    padding: 4px 10px;
-    border: none;
-    border-radius: 4px;
-    font-size: 9px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.2s;
-}
-.tile-panel .actions button:hover { transform: scale(1.03); }
-.tile-panel .actions .btn-upload { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
-.tile-panel .actions .btn-start { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); }
-.tile-panel .actions .btn-protect { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
-.tile-panel .actions .btn-delete { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
-.tile-panel .actions .btn-sync { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); grid-column: span 2; }
-.tile-panel .actions .btn-admin { background: rgba(255,215,0,0.15); color: #ffd700; border: 1px solid rgba(255,215,0,0.2); }
-.tile-panel .actions .btn-connect { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); grid-column: span 2; }
-
-/* ====== محرر الملفات ====== */
-.file-editor {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(10,10,30,0.97);
-    border: 1px solid rgba(251,191,36,0.3);
-    border-radius: 12px;
-    padding: 16px;
-    width: 92%;
-    max-width: 600px;
-    max-height: 80vh;
-    z-index: 99999;
-    display: none;
-    backdrop-filter: blur(20px);
-}
-.file-editor.open { display: block; }
-.file-editor .editor-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-.file-editor .editor-header h4 { color: #fbbf24; font-size: 12px; }
-.file-editor .editor-header button {
-    background: rgba(239,68,68,0.15);
-    color: #f87171;
-    border: none;
-    padding: 2px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 11px;
-}
-.file-editor textarea {
-    width: 100%;
-    height: 200px;
-    background: rgba(0,0,0,0.5);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 4px;
-    padding: 8px;
-    font-family: 'Courier New', monospace;
-    font-size: 10px;
-    resize: vertical;
-    direction: ltr;
-    text-align: left;
-    tab-size: 4;
-}
-.file-editor .editor-actions {
-    display: flex;
-    gap: 6px;
-    margin-top: 8px;
-}
-.file-editor .editor-actions button {
-    padding: 4px 12px;
-    border: none;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    flex: 1;
-}
-.file-editor .editor-actions .btn-save { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
-.file-editor .editor-actions .btn-close { background: rgba(255,255,255,0.06); color: #888; border: none; }
-
-/* ====== إعدادات التلجرام ====== */
-.telegram-settings {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(139,92,246,0.15);
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin-bottom: 12px;
-    display: none;
-}
-.telegram-settings.open { display: block; }
-.telegram-settings .row {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-.telegram-settings input {
-    flex: 1;
-    min-width: 120px;
-    padding: 4px 10px;
-    border-radius: 4px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.04);
-    color: #fff;
-    font-size: 11px;
-    font-family: inherit;
-}
-.telegram-settings input:focus {
-    outline: none;
-    border-color: rgba(139,92,246,0.4);
-}
-.telegram-settings .status {
-    font-size: 10px;
-    padding: 3px 10px;
-    border-radius: 4px;
-}
-.telegram-settings .status.online { background: rgba(74,222,128,0.2); color: #4ade80; }
-.telegram-settings .status.offline { background: rgba(239,68,68,0.2); color: #f87171; }
-
-/* ====== اللعبة - شريط الاتصال ====== */
-.game-bar {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,215,0,0.15);
-    border-radius: 12px;
-    padding: 12px 18px;
-    margin-bottom: 12px;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
-}
-.game-bar label {
-    color: #888;
-    font-size: 12px;
-}
-.game-bar input {
-    width: 50px;
-    padding: 4px 6px;
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.04);
-    color: #fff;
-    font-size: 13px;
-    text-align: center;
-    font-family: inherit;
-}
-.game-bar input:focus {
-    outline: none;
-    border-color: rgba(255,215,0,0.4);
-}
-.game-bar .coord-display {
-    color: #a78bfa;
-    font-weight: 700;
-    font-size: 14px;
-    min-width: 45px;
-    text-align: center;
-}
-.game-bar button {
-    padding: 4px 16px;
-    border: 1px solid rgba(255,215,0,0.3);
-    border-radius: 8px;
-    background: rgba(255,215,0,0.08);
-    color: #ffd700;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 700;
-    font-family: inherit;
-    transition: all 0.3s;
-}
-.game-bar button:hover {
-    background: rgba(255,215,0,0.2);
-    transform: translateY(-2px);
-}
-.game-bar .btn-disconnect {
-    border-color: rgba(239,68,68,0.3);
-    color: #f87171;
-}
-.game-bar .btn-disconnect:hover {
-    background: rgba(239,68,68,0.2);
-}
-.game-status {
-    font-size: 12px;
-    color: #888;
-    padding: 2px 12px;
-    border-radius: 12px;
-}
-.game-status.online { color: #4ade80; background: rgba(74,222,128,0.1); }
-.game-status.offline { color: #f87171; background: rgba(239,68,68,0.1); }
-.game-status.waiting { color: #fbbf24; background: rgba(251,191,36,0.1); }
-
-/* ====== بيانات اللعبة ====== */
-.game-data {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-.game-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 10px;
-    padding: 14px;
-}
-.game-card h4 {
-    color: #a78bfa;
-    font-size: 12px;
-    margin-bottom: 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    padding-bottom: 6px;
-}
-.game-card .item-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 2px 0;
-    font-size: 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.03);
-}
-.game-card .item-row .label { color: #fff; }
-.game-card .item-row .value { color: #888; }
-.game-card .item-row .value.gold { color: #ffd700; }
-.game-card .item-row .value.green { color: #4ade80; }
-.game-card .item-row .value.blue { color: #60a5fa; }
-.game-card .empty-msg {
-    color: #666;
-    font-size: 11px;
-    text-align: center;
-    padding: 8px;
-}
-.game-actions {
-    display: flex;
-    gap: 6px;
-    margin-top: 8px;
-    flex-wrap: wrap;
-}
-.game-actions button {
-    padding: 4px 12px;
-    border: 1px solid rgba(139,92,246,0.2);
-    border-radius: 6px;
-    background: rgba(139,92,246,0.06);
-    color: #a78bfa;
-    cursor: pointer;
-    font-size: 10px;
-    font-family: inherit;
-    transition: all 0.3s;
-}
-.game-actions button:hover {
-    background: rgba(139,92,246,0.15);
-    transform: translateY(-2px);
-}
-.game-actions .btn-green { border-color: rgba(74,222,128,0.2); color: #4ade80; }
-.game-actions .btn-green:hover { background: rgba(74,222,128,0.12); }
-.game-actions .btn-gold { border-color: rgba(255,215,0,0.2); color: #ffd700; }
-.game-actions .btn-gold:hover { background: rgba(255,215,0,0.12); }
-
-/* ====== إشعارات ====== */
-.toast {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(10,10,30,0.95);
-    color: #fff;
-    padding: 6px 16px;
-    border-radius: 6px;
-    border: 1px solid rgba(139,92,246,0.2);
-    z-index: 999999;
-    font-size: 11px;
-    display: none;
-    animation: fadeIn 0.3s ease;
-    max-width: 90%;
-    text-align: center;
-}
-.toast.success { border-color: rgba(74,222,128,0.3); }
-.toast.error { border-color: rgba(239,68,68,0.3); }
-.toast.warning { border-color: rgba(251,191,36,0.3); }
-.toast.admin { border-color: rgba(255,215,0,0.3); }
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
-
-@media (max-width: 768px) {
-    .grid { gap: 1px; }
-    .tile { min-height: 25px; font-size: 6px; }
-    .tile .icon { font-size: 10px; }
-    .stats { grid-template-columns: repeat(3, 1fr); }
-    .game-data { grid-template-columns: 1fr; }
-    .header h1 { font-size: 16px; }
-    .header-controls button { font-size: 8px; padding: 3px 8px; }
-}
-@media (max-width: 480px) {
-    .grid { gap: 1px; }
-    .tile { min-height: 20px; border-radius: 2px; }
-    .tile .icon { font-size: 8px; }
-    .tile .label { font-size: 4px; }
-    .header { padding: 6px 10px; }
-    .header h1 { font-size: 14px; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👑 إدارة الخوادم المصغرة - المدير</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a1a;
+            color: #fff;
+            min-height: 100vh;
+            padding: 15px;
+            direction: rtl;
+            overflow-y: auto;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: rgba(255,255,255,0.03);
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .header h1 {
+            font-size: 20px;
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header-controls { display: flex; gap: 6px; flex-wrap: wrap; }
+        .header-controls button {
+            padding: 4px 12px;
+            border: 1px solid rgba(139,92,246,0.3);
+            border-radius: 6px;
+            background: rgba(139,92,246,0.1);
+            color: #a78bfa;
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .header-controls button:hover {
+            background: rgba(139,92,246,0.25);
+            transform: translateY(-1px);
+        }
+        .header-controls .btn-success {
+            border-color: rgba(74,222,128,0.3);
+            color: #4ade80;
+        }
+        .header-controls .btn-success:hover {
+            background: rgba(74,222,128,0.2);
+        }
+        .header-controls .btn-danger {
+            border-color: rgba(239,68,68,0.3);
+            color: #f87171;
+        }
+        .header-controls .btn-danger:hover {
+            background: rgba(239,68,68,0.2);
+        }
+        .header-controls .btn-warning {
+            border-color: rgba(251,191,36,0.3);
+            color: #fbbf24;
+        }
+        .header-controls .btn-warning:hover {
+            background: rgba(251,191,36,0.2);
+        }
+        .admin-badge {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #111;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 800;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .stat-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+        }
+        .stat-box .num {
+            font-size: 18px;
+            font-weight: 800;
+            display: block;
+        }
+        .stat-box .num.green { color: #4ade80; }
+        .stat-box .num.purple { color: #a78bfa; }
+        .stat-box .num.blue { color: #60a5fa; }
+        .stat-box .num.yellow { color: #fbbf24; }
+        .stat-box .num.red { color: #f87171; }
+        .stat-box .num.orange { color: #fb923c; }
+        .stat-box .label { font-size: 8px; color: #888; }
+        
+        .telegram-settings {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(139,92,246,0.15);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            display: none;
+        }
+        .telegram-settings.open { display: block; }
+        .telegram-settings .row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .telegram-settings input {
+            flex: 1;
+            min-width: 120px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            color: #fff;
+            font-size: 11px;
+            font-family: inherit;
+        }
+        .telegram-settings input:focus {
+            outline: none;
+            border-color: rgba(139,92,246,0.4);
+        }
+        .telegram-settings .status {
+            font-size: 10px;
+            padding: 3px 10px;
+            border-radius: 4px;
+        }
+        .telegram-settings .status.online { background: rgba(74,222,128,0.2); color: #4ade80; }
+        .telegram-settings .status.offline { background: rgba(239,68,68,0.2); color: #f87171; }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 2px;
+            margin-bottom: 12px;
+        }
+        .tile {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 7px;
+            padding: 1px;
+            position: relative;
+            min-height: 30px;
+        }
+        .tile:hover {
+            background: rgba(139,92,246,0.15);
+            border-color: rgba(139,92,246,0.4);
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        .tile .icon { font-size: 14px; }
+        .tile .label { color: #888; font-size: 5px; }
+        .tile .status { font-size: 5px; margin-top: 1px; }
+        .tile .status.online { color: #4ade80; }
+        .tile .status.offline { color: #666; }
+        .tile .status.running { color: #60a5fa; animation: pulse 1s infinite; }
+        .tile.has-files {
+            border-color: rgba(139,92,246,0.3);
+            background: rgba(139,92,246,0.08);
+        }
+        .tile.protected {
+            border-color: rgba(74,222,128,0.4);
+            box-shadow: 0 0 10px rgba(74,222,128,0.1);
+        }
+        .tile.admin-tile {
+            border-color: rgba(255,215,0,0.5);
+            background: rgba(255,215,0,0.08);
+        }
+        .tile .badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: #8b5cf6;
+            color: #fff;
+            font-size: 5px;
+            padding: 1px 3px;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+        .tile .sync-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background: rgba(74,222,128,0.8);
+            color: #fff;
+            font-size: 5px;
+            padding: 1px 3px;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+        .tile .admin-badge-tile {
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            background: #ffd700;
+            color: #111;
+            font-size: 4px;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-weight: 800;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .tile-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10,10,30,0.97);
+            border: 1px solid rgba(139,92,246,0.3);
+            border-radius: 12px;
+            padding: 16px;
+            width: 92%;
+            max-width: 480px;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 9999;
+            backdrop-filter: blur(20px);
+            display: none;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+        .tile-panel.open { display: block; }
+        
+        .tile-panel .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding-bottom: 8px;
+        }
+        .tile-panel .panel-header h3 { color: #a78bfa; font-size: 14px; }
+        .tile-panel .panel-header h3 .admin-tag { color: #ffd700; font-size: 10px; }
+        .tile-panel .panel-header button {
+            background: rgba(239,68,68,0.15);
+            color: #f87171;
+            border: none;
+            padding: 2px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        
+        .tile-panel .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px 12px;
+            margin-bottom: 8px;
+        }
+        .tile-panel .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+            font-size: 10px;
+            color: #888;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .tile-panel .info-item .value { color: #fff; }
+        .tile-panel .info-item .value.online { color: #4ade80; }
+        .tile-panel .info-item .value.offline { color: #f87171; }
+        .tile-panel .info-item .value.admin { color: #ffd700; }
+        
+        .tile-panel .file-list { margin: 8px 0; max-height: 150px; overflow-y: auto; }
+        .tile-panel .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px 6px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 3px;
+            margin-bottom: 2px;
+            font-size: 9px;
+        }
+        .tile-panel .file-item .name { color: #a78bfa; font-weight: 600; }
+        .tile-panel .file-item .size { color: #666; font-size: 7px; }
+        .tile-panel .file-item .actions button {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 10px;
+            padding: 0 2px;
+        }
+        .tile-panel .file-item .actions button:hover { color: #fff; }
+        .tile-panel .file-item .actions .delete:hover { color: #f87171; }
+        .tile-panel .file-item .actions .edit:hover { color: #fbbf24; }
+        .tile-panel .file-item .actions .sync:hover { color: #4ade80; }
+        .tile-panel .file-item .actions .download:hover { color: #60a5fa; }
+        
+        .tile-panel .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            margin-top: 8px;
+        }
+        .tile-panel .actions button {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .tile-panel .actions button:hover { transform: scale(1.03); }
+        .tile-panel .actions .btn-upload { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+        .tile-panel .actions .btn-start { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); }
+        .tile-panel .actions .btn-protect { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+        .tile-panel .actions .btn-delete { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+        .tile-panel .actions .btn-sync { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); grid-column: span 2; }
+        .tile-panel .actions .btn-admin { background: rgba(255,215,0,0.15); color: #ffd700; border: 1px solid rgba(255,215,0,0.2); }
+        
+        .file-editor {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10,10,30,0.97);
+            border: 1px solid rgba(251,191,36,0.3);
+            border-radius: 12px;
+            padding: 16px;
+            width: 92%;
+            max-width: 600px;
+            max-height: 80vh;
+            z-index: 99999;
+            display: none;
+            backdrop-filter: blur(20px);
+        }
+        .file-editor.open { display: block; }
+        .file-editor .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .file-editor .editor-header h4 { color: #fbbf24; font-size: 12px; }
+        .file-editor .editor-header button {
+            background: rgba(239,68,68,0.15);
+            color: #f87171;
+            border: none;
+            padding: 2px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        .file-editor textarea {
+            width: 100%;
+            height: 200px;
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px;
+            padding: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            resize: vertical;
+            direction: ltr;
+            text-align: left;
+            tab-size: 4;
+        }
+        .file-editor .editor-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .file-editor .editor-actions button {
+            padding: 4px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            flex: 1;
+        }
+        .file-editor .editor-actions .btn-save { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+        .file-editor .editor-actions .btn-close { background: rgba(255,255,255,0.06); color: #888; border: none; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10,10,30,0.95);
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 6px;
+            border: 1px solid rgba(139,92,246,0.2);
+            z-index: 999999;
+            font-size: 11px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+        }
+        .toast.success { border-color: rgba(74,222,128,0.3); }
+        .toast.error { border-color: rgba(239,68,68,0.3); }
+        .toast.warning { border-color: rgba(251,191,36,0.3); }
+        .toast.admin { border-color: rgba(255,215,0,0.3); }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        /* ====== شاشة الدخول ====== */
+        #auth-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            backdrop-filter: blur(20px);
+        }
+        #auth-overlay .auth-box {
+            background: rgba(10,10,30,0.97);
+            border: 2px solid rgba(255,215,0,0.3);
+            border-radius: 20px;
+            padding: 32px;
+            width: 90%;
+            max-width: 380px;
+        }
+        #auth-overlay .auth-box h2 {
+            color: #ffd700;
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+        #auth-overlay .auth-box .field {
+            margin-bottom: 14px;
+        }
+        #auth-overlay .auth-box .field label {
+            color: #888;
+            font-size: 11px;
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        #auth-overlay .auth-box .field input {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            color: #fff;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        #auth-overlay .auth-box .field input:focus {
+            outline: none;
+            border-color: rgba(255,215,0,0.4);
+        }
+        #auth-overlay .auth-box .auth-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+            margin-top: 4px;
+        }
+        #auth-overlay .auth-box .auth-btn.primary {
+            background: linear-gradient(135deg, #ffd700, #f59e0b);
+            color: #111;
+        }
+        #auth-overlay .auth-box .auth-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(255,215,0,0.3);
+        }
+        #auth-overlay .auth-box .auth-error {
+            color: #ef4444;
+            font-size: 11px;
+            text-align: center;
+            margin-top: 8px;
+            display: none;
+        }
+        #auth-overlay .auth-box .auth-info {
+            color: #666;
+            font-size: 11px;
+            text-align: center;
+            margin-top: 12px;
+            padding: 8px;
+            background: rgba(255,215,0,0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255,215,0,0.08);
+        }
+        
+        .admin-only { display: none; }
+        .admin-visible .admin-only { display: block; }
+        .admin-visible .admin-only-inline { display: inline; }
+        
+        @media (max-width: 768px) {
+            .grid { gap: 1px; }
+            .tile { min-height: 25px; font-size: 6px; }
+            .tile .icon { font-size: 10px; }
+            .stats { grid-template-columns: repeat(3, 1fr); }
+            .header h1 { font-size: 16px; }
+            .header-controls button { font-size: 8px; padding: 3px 8px; }
+            .tile-panel { padding: 12px; max-width: 95%; }
+            .tile-panel .actions { grid-template-columns: 1fr; }
+            .tile-panel .actions .btn-sync { grid-column: span 1; }
+            .file-editor textarea { height: 150px; }
+        }
+        
+        @media (max-width: 480px) {
+            .grid { gap: 1px; }
+            .tile { min-height: 20px; border-radius: 2px; }
+            .tile .icon { font-size: 8px; }
+            .tile .label { font-size: 4px; }
+            .header { padding: 6px 10px; }
+            .header h1 { font-size: 14px; }
+        }
+    </style>
 </head>
 <body>
 
@@ -678,12 +575,10 @@ body {
 <!-- ====== المحتوى الرئيسي ====== -->
 <div id="main-container" style="display:none;">
     <div class="container">
-
-        <!-- ====== الهيدر ====== -->
         <div class="header">
             <div>
                 <h1>👑 إدارة الخوادم المصغرة</h1>
-                <span class="admin-name">المدير: <span id="admin-name-display">مدير</span></span>
+                <span style="font-size:10px;color:#ffd700;">المدير: <span id="admin-name-display">مدير</span></span>
             </div>
             <div class="header-controls">
                 <button class="btn-warning" onclick="toggleTelegramSettings()">📡 القناة</button>
@@ -691,13 +586,11 @@ body {
                 <button onclick="exportAllTiles()">📤 تصدير الكل</button>
                 <button onclick="document.getElementById('importFile').click()">📥 استيراد</button>
                 <button class="btn-danger" onclick="resetAll()">🔄 إعادة تعيين</button>
-                <button class="btn-gold" onclick="toggleGamePanel()">🎮 اللعبة</button>
                 <button class="btn-danger" onclick="logoutAdmin()" style="border-color:rgba(239,68,68,0.3);color:#f87171;">🚪 خروج</button>
                 <input type="file" id="importFile" accept=".json" style="display:none" onchange="importAllTiles(event)">
             </div>
         </div>
-
-        <!-- ====== إعدادات التلجرام ====== -->
+        
         <div class="telegram-settings" id="telegramSettings">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                 <span style="color:#a78bfa;font-size:12px;font-weight:600;">📡 إعدادات قناة التلجرام</span>
@@ -713,8 +606,7 @@ body {
                 💡 الملفات تُرفع بتنسيق: <code style="color:#a78bfa;">tile_row_col_filename</code>
             </div>
         </div>
-
-        <!-- ====== الإحصائيات ====== -->
+        
         <div class="stats" id="stats">
             <div class="stat-box"><span class="num purple" id="totalTiles">0</span><span class="label">📦 إجمالي</span></div>
             <div class="stat-box"><span class="num green" id="onlineTiles">0</span><span class="label">🟢 نشطة</span></div>
@@ -723,46 +615,8 @@ body {
             <div class="stat-box"><span class="num green" id="syncedCount">0</span><span class="label">🔄 مزامنة</span></div>
             <div class="stat-box"><span class="num orange" id="adminFilesCount">0</span><span class="label">👑 ملفات إدارة</span></div>
         </div>
-
-        <!-- ====== شريط اللعبة ====== -->
-        <div class="game-bar" id="gameBar">
-            <span style="color:#a78bfa;font-weight:700;">🎮 بوابة العوالم</span>
-            <label>📍 الصف:</label>
-            <input type="number" id="gameRow" min="0" max="11" value="5">
-            <label>العمود:</label>
-            <input type="number" id="gameCol" min="0" max="11" value="3">
-            <span class="coord-display" id="gameCoordDisplay">(5,3)</span>
-            <button onclick="connectToGameServer()" id="gameConnectBtn">🔗 اتصال</button>
-            <button onclick="disconnectGameServer()" class="btn-disconnect" id="gameDisconnectBtn" style="display:none;">🔌 قطع</button>
-            <span class="game-status waiting" id="gameStatus">⏳ غير متصل</span>
-        </div>
-
-        <!-- ====== بيانات اللعبة ====== -->
-        <div class="game-data" id="gameDataPanel">
-            <div class="game-card">
-                <h4>👥 اللاعبون</h4>
-                <div id="gamePlayers"><div class="empty-msg">⏳ انتظر الاتصال...</div></div>
-                <div class="game-actions">
-                    <button onclick="gameAddPlayer()" class="btn-green">➕ إضافة</button>
-                </div>
-            </div>
-            <div class="game-card">
-                <h4>🌍 العوالم</h4>
-                <div id="gameWorlds"><div class="empty-msg">⏳ انتظر الاتصال...</div></div>
-            </div>
-            <div class="game-card" style="grid-column:1/-1;">
-                <h4>📊 معلومات الخادم</h4>
-                <div id="gameServerInfo"><div class="empty-msg">⏳ انتظر الاتصال...</div></div>
-                <div class="game-actions">
-                    <button onclick="gameRefresh()">🔄 تحديث</button>
-                    <button onclick="gamePing()" class="btn-gold">📡 بينغ</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- ====== الشبكة ====== -->
+        
         <div class="grid" id="grid"></div>
-
     </div>
 </div>
 
@@ -788,7 +642,6 @@ body {
         <button class="btn-delete" onclick="clearTile()">🗑️ تفريغ</button>
         <button class="btn-sync" onclick="syncTileToChannel()">🔄 مزامنة</button>
         <button class="btn-admin" onclick="markAsAdminTile()" id="panelAdminBtn">👑 تعيين مربع إدارة</button>
-        <button class="btn-connect" onclick="connectToTileFromPanel()">🎮 الاتصال باللعبة</button>
     </div>
 </div>
 
@@ -805,12 +658,12 @@ body {
     </div>
 </div>
 
-<!-- ====== إشعارات ====== -->
+<!-- ====== الإشعارات ====== -->
 <div class="toast" id="toast"></div>
 
 <script>
 // ============================================================
-// 👑 نظام إدارة الخوادم المصغرة + بوابة العوالم (نافذة واحدة)
+// 👑 نظام إدارة الخوادم المصغرة - خاص بالمدير
 // ============================================================
 
 // ====== بيانات المدير ======
@@ -821,11 +674,6 @@ const ADMIN_CREDENTIALS = {
 
 let isAdminLoggedIn = false;
 let adminName = 'مدير';
-
-// ====== بيانات اللعبة ======
-let gameConnected = false;
-let gameTile = null;
-let gameServer = null;
 
 // ====== دوال الدخول ======
 function adminLogin() {
@@ -841,7 +689,10 @@ function adminLogin() {
         document.getElementById('admin-name-display').textContent = adminName;
         document.body.classList.add('admin-visible');
         showToast('👑 مرحباً أيها المدير!', 'admin');
-        setTimeout(function() { ServerManager.init(); }, 100);
+        // تهيئة النظام بعد الدخول
+        setTimeout(function() {
+            ServerManager.init();
+        }, 100);
     } else {
         errorEl.textContent = '❌ اسم المستخدم أو كلمة المرور غير صحيحة';
         errorEl.style.display = 'block';
@@ -857,13 +708,11 @@ function logoutAdmin() {
         document.getElementById('admin-password').value = 'admin123';
         document.getElementById('auth-error').style.display = 'none';
         document.body.classList.remove('admin-visible');
-        gameConnected = false;
-        gameServer = null;
     }
 }
 
 // ============================================================
-// 🖥️ ServerManager - نظام إدارة الخوادم
+// 🖥️ ServerManager - النظام الرئيسي
 // ============================================================
 
 const ServerManager = {
@@ -876,7 +725,7 @@ const ServerManager = {
     adminTiles: new Set(['0_0', '0_1', '0_2']),
     
     init: function() {
-        console.log('🖥️ تشغيل نظام إدارة الخوادم...');
+        console.log('🖥️ تشغيل نظام إدارة الخوادم (مدير)...');
         this.loadTiles();
         this.loadTelegramSettings();
         this.renderGrid();
@@ -901,12 +750,18 @@ const ServerManager = {
             } catch(e) {}
         }
         
+        // إنشاء المربعات الافتراضية
         for (let row = 0; row < 12; row++) {
             for (let col = 0; col < 12; col++) {
                 const id = `${row}_${col}`;
-                this.tiles[id] = { id: id, row: row, col: col, files: {}, created: Date.now() };
+                this.tiles[id] = {
+                    id: id, row: row, col: col,
+                    files: {},
+                    created: Date.now()
+                };
             }
         }
+        // مربعات الإدارة الافتراضية
         this.adminTiles = new Set(['0_0', '0_1', '0_2']);
         this.saveTiles();
     },
@@ -930,22 +785,19 @@ const ServerManager = {
                 const isActive = this.activeServers.has(id);
                 const isSynced = this.syncedTiles.has(id);
                 const isAdminTile = this.adminTiles.has(id);
-                const isGameConnected = (gameTile === id && gameConnected);
                 const fileCount = tile.files ? Object.keys(tile.files).length : 0;
                 const div = document.createElement('div');
                 div.className = 'tile';
                 if (fileCount > 0) div.classList.add('has-files');
                 if (isProtected) div.classList.add('protected');
                 if (isAdminTile) div.classList.add('admin-tile');
-                if (isGameConnected) div.classList.add('active-tile');
                 div.dataset.tile = id;
-                let html = `<div class="icon">${isGameConnected ? '🎮' : isAdminTile ? '👑' : '📦'}</div>`;
+                let html = `<div class="icon">${isAdminTile ? '👑' : '📦'}</div>`;
                 html += `<div class="label">${row},${col}</div>`;
                 html += `<div class="status ${isActive ? 'running' : 'offline'}">${isActive ? '🟢 نشط' : '⚪ متوقف'}</div>`;
                 if (fileCount > 0) html += `<div class="badge">${fileCount}</div>`;
                 if (isSynced) html += `<div class="sync-badge">🔄</div>`;
                 if (isAdminTile) html += `<div class="admin-badge-tile">👑</div>`;
-                if (isGameConnected) html += `<div class="server-indicator">🎮</div>`;
                 div.innerHTML = html;
                 div.onclick = () => this.openPanel(id);
                 grid.appendChild(div);
@@ -956,7 +808,8 @@ const ServerManager = {
     updateStats: function() {
         const total = Object.keys(this.tiles).length;
         const online = this.activeServers.size;
-        let files = 0, adminFiles = 0;
+        let files = 0;
+        let adminFiles = 0;
         Object.entries(this.tiles).forEach(([id, t]) => {
             if (t && t.files) {
                 const count = Object.keys(t.files).length;
@@ -980,8 +833,7 @@ const ServerManager = {
         const panel = document.getElementById('tilePanel');
         panel.classList.add('open');
         const isAdminTile = this.adminTiles.has(id);
-        const isGame = (gameTile === id && gameConnected);
-        document.getElementById('panelTitle').innerHTML = `📦 المربع (${tile.row}, ${tile.col}) ${isAdminTile ? '<span class="admin-tag">👑 إدارة</span>' : ''} ${isGame ? '<span class="admin-tag">🎮 متصل</span>' : ''}`;
+        document.getElementById('panelTitle').innerHTML = `📦 المربع (${tile.row}, ${tile.col}) ${isAdminTile ? '<span class="admin-tag">👑 إدارة</span>' : ''}`;
         document.getElementById('panelLocation').textContent = `(${tile.row}, ${tile.col})`;
         const isActive = this.activeServers.has(id);
         const statusEl = document.getElementById('panelStatus');
@@ -1127,7 +979,7 @@ const ServerManager = {
             const tile = this.tiles[id];
             if (tile && tile.files && tile.files['main.js']) {
                 try {
-                    eval(tile.files['main.js']);
+                    console.log(`🟢 تشغيل خادم (${tile.row},${tile.col})`);
                     showToast(`🟢 تم تشغيل خادم (${tile.row},${tile.col})`, 'success');
                 } catch(e) {
                     showToast('❌ خطأ في تشغيل الخادم', 'error');
@@ -1254,7 +1106,7 @@ const ServerManager = {
         if (el.classList.contains('open')) this.loadTelegramSettings();
     },
     
-    // ====== مزامنة الملفات ======
+    // ====== مزامنة الملفات مع القناة ======
     syncFileToChannel: async function(tileId, fileName) {
         if (!isAdminLoggedIn) return;
         const token = localStorage.getItem('telegram_bot_token');
@@ -1362,6 +1214,7 @@ const ServerManager = {
         if (synced > 0) showToast(`✅ تم مزامنة ${synced} ملف`, 'success');
     },
     
+    // ====== تحميل ملفات الإدارة ======
     loadAdminFiles: function() {
         if (!isAdminLoggedIn) return;
         const adminFileMap = {
@@ -1373,6 +1226,7 @@ const ServerManager = {
             'quests.json': 'quests',
             'game_data.json': 'gameData'
         };
+        
         let loaded = 0;
         for (const tileId of this.adminTiles) {
             const tile = this.tiles[tileId];
@@ -1397,10 +1251,12 @@ const ServerManager = {
     },
     
     applyAdminData: function(type, data) {
+        console.log(`📊 تطبيق بيانات ${type}:`, data);
         window.adminData = window.adminData || {};
         window.adminData[type] = data;
     },
     
+    // ====== تصدير واستيراد ======
     exportAllTiles: function() {
         if (!isAdminLoggedIn) return;
         const data = {
@@ -1471,235 +1327,7 @@ const ServerManager = {
     }
 };
 
-// ============================================================
-// 🎮 بوابة العوالم - الاتصال بالخوادم (نفس النافذة)
-// ============================================================
-
-function updateGameCoordDisplay() {
-    const row = parseInt(document.getElementById('gameRow').value) || 0;
-    const col = parseInt(document.getElementById('gameCol').value) || 0;
-    document.getElementById('gameCoordDisplay').textContent = `(${row},${col})`;
-}
-
-document.getElementById('gameRow').addEventListener('input', updateGameCoordDisplay);
-document.getElementById('gameCol').addEventListener('input', updateGameCoordDisplay);
-
-function toggleGamePanel() {
-    const panel = document.getElementById('gameDataPanel');
-    panel.style.display = panel.style.display === 'none' ? 'grid' : 'none';
-    const bar = document.getElementById('gameBar');
-    bar.style.display = bar.style.display === 'none' ? 'flex' : 'none';
-}
-
-function connectToGameServer() {
-    const row = parseInt(document.getElementById('gameRow').value) || 0;
-    const col = parseInt(document.getElementById('gameCol').value) || 0;
-    
-    if (row < 0 || row > 11 || col < 0 || col > 11) {
-        showToast('⚠️ أدخل أرقاماً بين 0 و 11', 'warning');
-        return;
-    }
-    
-    gameTile = `${row}_${col}`;
-    const status = document.getElementById('gameStatus');
-    status.className = 'game-status waiting';
-    status.textContent = `⏳ جاري الاتصال بـ (${row},${col})...`;
-    document.getElementById('gameConnectBtn').textContent = '⏳ جاري...';
-    document.getElementById('gameConnectBtn').disabled = true;
-    
-    console.log(`🔍 بحث عن خادم (${gameTile})...`);
-    
-    // محاولة 1: window.servers
-    if (window.servers && window.servers[gameTile]) {
-        gameServer = window.servers[gameTile];
-        gameConnected = true;
-        console.log(`✅ تم العثور على الخادم (${gameTile})!`);
-        onGameConnected(row, col);
-        return;
-    }
-    
-    // محاولة 2: ServerManager.tiles
-    if (window.ServerManager) {
-        try {
-            const tile = window.ServerManager.tiles && window.ServerManager.tiles[gameTile];
-            if (tile && tile.files && tile.files['main.js']) {
-                eval(tile.files['main.js']);
-                if (window.servers && window.servers[gameTile]) {
-                    gameServer = window.servers[gameTile];
-                    gameConnected = true;
-                    console.log(`✅ تم تحميل الخادم (${gameTile}) من ServerManager!`);
-                    onGameConnected(row, col);
-                    return;
-                }
-            }
-        } catch(e) {
-            console.warn(`⚠️ فشل تحميل main.js للمربع (${gameTile}):`, e);
-        }
-    }
-    
-    // فشل
-    gameServer = null;
-    gameConnected = false;
-    status.className = 'game-status offline';
-    status.textContent = `🔴 غير متصل بـ (${row},${col})`;
-    document.getElementById('gameConnectBtn').textContent = '🔗 اتصال';
-    document.getElementById('gameConnectBtn').disabled = false;
-    document.getElementById('gameDisconnectBtn').style.display = 'none';
-    document.getElementById('gamePlayers').innerHTML = '<div class="empty-msg">❌ الخادم غير متصل</div>';
-    document.getElementById('gameWorlds').innerHTML = '<div class="empty-msg">❌ الخادم غير متصل</div>';
-    document.getElementById('gameServerInfo').innerHTML = '<div class="empty-msg">❌ الخادم غير متصل</div>';
-    ServerManager.renderGrid();
-    showToast(`❌ لا يوجد خادم في المربع (${row},${col})`, 'error');
-}
-
-function onGameConnected(row, col) {
-    const status = document.getElementById('gameStatus');
-    status.className = 'game-status online';
-    status.textContent = `🟢 متصل بـ (${row},${col})`;
-    document.getElementById('gameConnectBtn').textContent = '🔗 اتصال';
-    document.getElementById('gameConnectBtn').disabled = false;
-    document.getElementById('gameDisconnectBtn').style.display = 'inline-block';
-    ServerManager.renderGrid();
-    loadGameData();
-    showToast(`✅ متصل بالخادم (${row},${col})`, 'success');
-}
-
-function loadGameData() {
-    if (!gameServer || !gameConnected) return;
-    
-    try {
-        // معلومات الخادم
-        if (gameServer.info) {
-            const info = gameServer.info();
-            document.getElementById('gameServerInfo').innerHTML = `
-                <div class="item-row"><span class="label">📛 الاسم</span><span class="value gold">${info.name || 'غير معروف'}</span></div>
-                <div class="item-row"><span class="label">📌 الحالة</span><span class="value green">${info.status || 'نشط'}</span></div>
-                <div class="item-row"><span class="label">📦 الإصدار</span><span class="value">${info.version || '1.0'}</span></div>
-                <div class="item-row"><span class="label">⏱️ وقت التشغيل</span><span class="value">${info.uptime || '0 ثانية'}</span></div>
-                <div class="item-row"><span class="label">📊 عدد الطلبات</span><span class="value blue">${info.requests || 0}</span></div>
-            `;
-        }
-        
-        // اللاعبين
-        if (gameServer.getPlayers) {
-            const players = gameServer.getPlayers();
-            const container = document.getElementById('gamePlayers');
-            if (players && players.length > 0) {
-                container.innerHTML = players.map(p => `
-                    <div class="item-row">
-                        <span class="label">${p.name || 'لاعب'}</span>
-                        <span style="display:flex;gap:10px;">
-                            <span class="value gold">⭐ ${p.level || 1}</span>
-                            <span class="value green">🏆 ${p.score || 0}</span>
-                        </span>
-                    </div>
-                `).join('');
-            } else {
-                container.innerHTML = '<div class="empty-msg">📭 لا يوجد لاعبون</div>';
-            }
-        }
-        
-        // العوالم
-        if (gameServer.getWorlds) {
-            const worlds = gameServer.getWorlds();
-            const container = document.getElementById('gameWorlds');
-            if (worlds && worlds.length > 0) {
-                container.innerHTML = worlds.map(w => `
-                    <div class="item-row">
-                        <span class="label">${w.name || 'عالم'}</span>
-                        <span class="value blue">👥 ${w.players || 0}</span>
-                    </div>
-                `).join('');
-            } else {
-                container.innerHTML = '<div class="empty-msg">📭 لا توجد عوالم</div>';
-            }
-        }
-        
-    } catch(e) {
-        console.error('❌ خطأ في التحميل:', e);
-    }
-}
-
-function gameRefresh() {
-    if (!gameServer || !gameConnected) {
-        connectToGameServer();
-        return;
-    }
-    loadGameData();
-    showToast('🔄 تم التحديث', 'success');
-}
-
-function gamePing() {
-    if (!gameServer || !gameConnected) {
-        showToast('❌ الخادم غير متصل', 'error');
-        return;
-    }
-    try {
-        if (gameServer.ping) {
-            const result = gameServer.ping();
-            showToast(`📡 الخادم متصل (${new Date(result.timestamp).toLocaleTimeString()})`, 'success');
-        } else {
-            showToast('📡 الخادم متصل', 'success');
-        }
-    } catch(e) {
-        showToast('❌ فشل الاتصال', 'error');
-    }
-}
-
-function gameAddPlayer() {
-    if (!gameServer || !gameConnected) {
-        showToast('❌ الخادم غير متصل', 'error');
-        return;
-    }
-    try {
-        if (gameServer.addPlayer) {
-            const name = prompt('👤 أدخل اسم اللاعب:');
-            if (name && name.trim()) {
-                const result = gameServer.addPlayer(name.trim());
-                if (result && result.id) {
-                    showToast(`✅ تم إضافة ${result.name}`, 'success');
-                    loadGameData();
-                } else {
-                    showToast('❌ فشل الإضافة', 'error');
-                }
-            }
-        } else {
-            showToast('⚠️ الخادم لا يدعم الإضافة', 'warning');
-        }
-    } catch(e) {
-        showToast('❌ خطأ: ' + e.message, 'error');
-    }
-}
-
-function disconnectGameServer() {
-    gameServer = null;
-    gameConnected = false;
-    gameTile = null;
-    document.getElementById('gameStatus').className = 'game-status waiting';
-    document.getElementById('gameStatus').textContent = '⏳ غير متصل';
-    document.getElementById('gameDisconnectBtn').style.display = 'none';
-    document.getElementById('gamePlayers').innerHTML = '<div class="empty-msg">⏳ غير متصل</div>';
-    document.getElementById('gameWorlds').innerHTML = '<div class="empty-msg">⏳ غير متصل</div>';
-    document.getElementById('gameServerInfo').innerHTML = '<div class="empty-msg">⏳ غير متصل</div>';
-    ServerManager.renderGrid();
-    showToast('🔌 تم قطع الاتصال', 'warning');
-}
-
-function connectToTileFromPanel() {
-    if (!ServerManager.currentTile) return;
-    const tile = ServerManager.tiles[ServerManager.currentTile];
-    if (!tile) return;
-    document.getElementById('gameRow').value = tile.row;
-    document.getElementById('gameCol').value = tile.col;
-    updateGameCoordDisplay();
-    closePanel();
-    setTimeout(connectToGameServer, 300);
-}
-
-// ============================================================
-// دوال الواجهة العامة
-// ============================================================
-
+// ====== دوال الواجهة العامة ======
 function closePanel() { ServerManager.closePanel(); }
 function closeEditor() { ServerManager.closeEditor(); }
 function uploadFile() { ServerManager.uploadFile(); }
@@ -1727,20 +1355,115 @@ function showToast(message, type = 'info') {
     }, 4000);
 }
 
-// ============================================================
-// بدء النظام
-// ============================================================
-
+// ====== بدء النظام ======
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('👑 نظام إدارة الخوادم + بوابة العوالم');
+    console.log('👑 نظام إدارة الخوادم (مدير) - جاهز');
     console.log('📌 بيانات الدخول: admin / admin123');
-    console.log('🎮 جميع المربعات تعمل في نفس النافذة');
-    updateGameCoordDisplay();
 });
 
 window.ServerManager = ServerManager;
 window.showToast = showToast;
 </script>
+
+// ============================================================
+// 🧩 دوال ثابتة لجميع الخوادم (لا تتغير)
+// ============================================================
+
+// ====== دالة الاتصال العامة ======
+function callServer(tileId, funcName, ...args) {
+    const server = window.servers && window.servers[tileId];
+    if (server && typeof server[funcName] === 'function') {
+        return server[funcName](...args);
+    }
+    return null;
+}
+
+// ====== دوال ثابتة تعمل مع أي خادم في أي مربع ======
+function getData(tileId) {
+    return callServer(tileId, 'getData') || 
+           callServer(tileId, 'getPlayers') || 
+           callServer(tileId, 'getInfo') || 
+           callServer(tileId, 'getBanner') || 
+           callServer(tileId, 'getWorlds') || 
+           null;
+}
+
+function getPlayers(tileId) {
+    return callServer(tileId, 'getPlayers') || 
+           callServer(tileId, 'getUsers') || 
+           callServer(tileId, 'getMembers') || 
+           null;
+}
+
+function getBanner(tileId) {
+    return callServer(tileId, 'getBanner') || 
+           callServer(tileId, 'getCurrentBanner') || 
+           callServer(tileId, 'getMessage') || 
+           null;
+}
+
+function getWorlds(tileId) {
+    return callServer(tileId, 'getWorlds') || 
+           callServer(tileId, 'getLevels') || 
+           callServer(tileId, 'getMaps') || 
+           null;
+}
+
+function getSettings(tileId) {
+    return callServer(tileId, 'getSettings') || 
+           callServer(tileId, 'getConfig') || 
+           null;
+}
+
+function addItem(tileId, name, data) {
+    return callServer(tileId, 'addPlayer', name) || 
+           callServer(tileId, 'addBanner', name, data) || 
+           callServer(tileId, 'addWorld', name) || 
+           callServer(tileId, 'addUser', name) || 
+           null;
+}
+
+function updateItem(tileId, id, value) {
+    return callServer(tileId, 'updateScore', id, value) || 
+           callServer(tileId, 'updateData', id, value) || 
+           callServer(tileId, 'updatePlayer', id, value) || 
+           null;
+}
+
+function deleteItem(tileId, id) {
+    return callServer(tileId, 'deletePlayer', id) || 
+           callServer(tileId, 'deleteUser', id) || 
+           callServer(tileId, 'deleteData', id) || 
+           null;
+}
+
+function pingServer(tileId) {
+    return callServer(tileId, 'ping') || 
+           callServer(tileId, 'test') || 
+           { status: 'unknown' };
+}
+
+function getServerInfo(tileId) {
+    return callServer(tileId, 'info') || 
+           callServer(tileId, 'getInfo') || 
+           { name: 'غير معروف', status: 'غير متصل' };
+}
+
+function execute(tileId, funcName, ...args) {
+    return callServer(tileId, funcName, ...args);
+}
+
+// ====== دوال مساعدة ======
+function isServerConnected(tileId) {
+    return !!(window.servers && window.servers[tileId]);
+}
+
+function getConnectedServers() {
+    return window.servers ? Object.keys(window.servers) : [];
+}
+
+// ====== تشغيل تلقائي ======
+console.log('🧩 دوال ثابتة جاهزة');
+console.log('📌 استخدم: getData("5_3") أو getPlayers("0_0")');
 </body>
 </html>
-
