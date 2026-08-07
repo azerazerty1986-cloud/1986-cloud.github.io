@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🖥️ إدارة الخوادم المصغرة</title>
     <style>
-        /* ============================================================
-           🎨 أنماط إدارة الخوادم
-           ============================================================ */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -16,6 +13,7 @@
             min-height: 100vh;
             padding: 15px;
             direction: rtl;
+            overflow-y: auto;
         }
         
         .container { max-width: 1400px; margin: 0 auto; }
@@ -34,21 +32,21 @@
             border: 1px solid rgba(255,255,255,0.06);
         }
         .header h1 {
-            font-size: 22px;
+            font-size: 20px;
             background: linear-gradient(135deg, #a78bfa, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        .header-controls { display: flex; gap: 8px; flex-wrap: wrap; }
+        .header-controls { display: flex; gap: 6px; flex-wrap: wrap; }
         .header-controls button {
-            padding: 6px 14px;
+            padding: 4px 12px;
             border: 1px solid rgba(139,92,246,0.3);
-            border-radius: 8px;
+            border-radius: 6px;
             background: rgba(139,92,246,0.1);
             color: #a78bfa;
             cursor: pointer;
-            font-size: 11px;
+            font-size: 10px;
             transition: all 0.3s;
             font-family: inherit;
         }
@@ -78,22 +76,43 @@
             background: rgba(251,191,36,0.2);
         }
         
+        /* ====== زر الإغلاق ====== */
+        .close-btn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 9999;
+            background: rgba(239,68,68,0.9);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: inherit;
+        }
+        .close-btn:hover {
+            background: rgba(239,68,68,1);
+            transform: scale(1.05);
+        }
+        
         /* ====== الإحصائيات ====== */
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-            gap: 8px;
-            margin-bottom: 15px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
         }
         .stat-box {
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 8px;
-            padding: 10px;
+            border-radius: 6px;
+            padding: 8px;
             text-align: center;
         }
         .stat-box .num {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 800;
             display: block;
         }
@@ -102,33 +121,33 @@
         .stat-box .num.blue { color: #60a5fa; }
         .stat-box .num.yellow { color: #fbbf24; }
         .stat-box .num.red { color: #f87171; }
-        .stat-box .label { font-size: 9px; color: #888; }
+        .stat-box .label { font-size: 8px; color: #888; }
         
         /* ====== إعدادات التلجرام ====== */
         .telegram-settings {
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(139,92,246,0.15);
-            border-radius: 10px;
-            padding: 12px 16px;
-            margin-bottom: 15px;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
             display: none;
         }
         .telegram-settings.open { display: block; }
         .telegram-settings .row {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
             align-items: center;
         }
         .telegram-settings input {
             flex: 1;
-            min-width: 150px;
-            padding: 6px 12px;
-            border-radius: 6px;
+            min-width: 120px;
+            padding: 4px 10px;
+            border-radius: 4px;
             border: 1px solid rgba(255,255,255,0.08);
             background: rgba(255,255,255,0.04);
             color: #fff;
-            font-size: 12px;
+            font-size: 11px;
             font-family: inherit;
         }
         .telegram-settings input:focus {
@@ -136,9 +155,9 @@
             border-color: rgba(139,92,246,0.4);
         }
         .telegram-settings .status {
-            font-size: 11px;
-            padding: 4px 12px;
-            border-radius: 6px;
+            font-size: 10px;
+            padding: 3px 10px;
+            border-radius: 4px;
         }
         .telegram-settings .status.online { background: rgba(74,222,128,0.2); color: #4ade80; }
         .telegram-settings .status.offline { background: rgba(239,68,68,0.2); color: #f87171; }
@@ -147,65 +166,65 @@
         .grid {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
-            gap: 3px;
-            margin-bottom: 15px;
+            gap: 2px;
+            margin-bottom: 12px;
         }
         .tile {
             aspect-ratio: 1;
-            background: rgba(255,255,255,0.03);
+            background: rgba(255,255,255,0.04);
             border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 4px;
+            border-radius: 3px;
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 8px;
-            padding: 2px;
+            font-size: 7px;
+            padding: 1px;
             position: relative;
-            min-height: 35px;
+            min-height: 30px;
         }
         .tile:hover {
-            background: rgba(139,92,246,0.1);
-            border-color: rgba(139,92,246,0.3);
+            background: rgba(139,92,246,0.15);
+            border-color: rgba(139,92,246,0.4);
             transform: scale(1.05);
             z-index: 10;
         }
         .tile .icon { font-size: 14px; }
-        .tile .label { color: #888; font-size: 6px; }
-        .tile .status { font-size: 6px; margin-top: 1px; }
+        .tile .label { color: #888; font-size: 5px; }
+        .tile .status { font-size: 5px; margin-top: 1px; }
         .tile .status.online { color: #4ade80; }
         .tile .status.offline { color: #666; }
         .tile .status.running { color: #60a5fa; animation: pulse 1s infinite; }
         .tile.has-files {
             border-color: rgba(139,92,246,0.3);
-            background: rgba(139,92,246,0.05);
+            background: rgba(139,92,246,0.08);
         }
         .tile.protected {
             border-color: rgba(74,222,128,0.4);
-            box-shadow: 0 0 15px rgba(74,222,128,0.1);
+            box-shadow: 0 0 10px rgba(74,222,128,0.1);
         }
         .tile .badge {
             position: absolute;
-            top: -3px;
-            right: -3px;
+            top: -2px;
+            right: -2px;
             background: #8b5cf6;
             color: #fff;
-            font-size: 6px;
-            padding: 1px 4px;
-            border-radius: 6px;
+            font-size: 5px;
+            padding: 1px 3px;
+            border-radius: 4px;
             font-weight: 700;
         }
         .tile .sync-badge {
             position: absolute;
-            bottom: -3px;
-            right: -3px;
+            bottom: -2px;
+            right: -2px;
             background: rgba(74,222,128,0.8);
             color: #fff;
-            font-size: 6px;
-            padding: 1px 4px;
-            border-radius: 6px;
+            font-size: 5px;
+            padding: 1px 3px;
+            border-radius: 4px;
             font-weight: 700;
         }
         
@@ -222,11 +241,11 @@
             transform: translate(-50%, -50%);
             background: rgba(10,10,30,0.97);
             border: 1px solid rgba(139,92,246,0.3);
-            border-radius: 14px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 16px;
             width: 92%;
-            max-width: 520px;
-            max-height: 85vh;
+            max-width: 480px;
+            max-height: 80vh;
             overflow-y: auto;
             z-index: 9999;
             backdrop-filter: blur(20px);
@@ -239,32 +258,32 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             border-bottom: 1px solid rgba(255,255,255,0.06);
-            padding-bottom: 10px;
+            padding-bottom: 8px;
         }
-        .tile-panel .panel-header h3 { color: #a78bfa; font-size: 16px; }
+        .tile-panel .panel-header h3 { color: #a78bfa; font-size: 14px; }
         .tile-panel .panel-header button {
             background: rgba(239,68,68,0.15);
             color: #f87171;
             border: none;
-            padding: 3px 12px;
-            border-radius: 6px;
+            padding: 2px 10px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 11px;
         }
         
         .tile-panel .info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 4px 16px;
-            margin-bottom: 10px;
+            gap: 3px 12px;
+            margin-bottom: 8px;
         }
         .tile-panel .info-item {
             display: flex;
             justify-content: space-between;
             padding: 2px 0;
-            font-size: 11px;
+            font-size: 10px;
             color: #888;
             border-bottom: 1px solid rgba(255,255,255,0.03);
         }
@@ -272,26 +291,26 @@
         .tile-panel .info-item .value.online { color: #4ade80; }
         .tile-panel .info-item .value.offline { color: #f87171; }
         
-        .tile-panel .file-list { margin: 10px 0; max-height: 200px; overflow-y: auto; }
+        .tile-panel .file-list { margin: 8px 0; max-height: 150px; overflow-y: auto; }
         .tile-panel .file-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 4px 8px;
+            padding: 3px 6px;
             background: rgba(255,255,255,0.03);
-            border-radius: 4px;
-            margin-bottom: 3px;
-            font-size: 10px;
+            border-radius: 3px;
+            margin-bottom: 2px;
+            font-size: 9px;
         }
         .tile-panel .file-item .name { color: #a78bfa; font-weight: 600; }
-        .tile-panel .file-item .size { color: #666; font-size: 8px; }
+        .tile-panel .file-item .size { color: #666; font-size: 7px; }
         .tile-panel .file-item .actions button {
             background: none;
             border: none;
             color: #888;
             cursor: pointer;
-            font-size: 11px;
-            padding: 0 3px;
+            font-size: 10px;
+            padding: 0 2px;
         }
         .tile-panel .file-item .actions button:hover { color: #fff; }
         .tile-panel .file-item .actions .delete:hover { color: #f87171; }
@@ -301,14 +320,14 @@
         .tile-panel .actions {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            margin-top: 10px;
+            gap: 4px;
+            margin-top: 8px;
         }
         .tile-panel .actions button {
-            padding: 6px 12px;
+            padding: 4px 10px;
             border: none;
-            border-radius: 6px;
-            font-size: 10px;
+            border-radius: 4px;
+            font-size: 9px;
             font-weight: 600;
             cursor: pointer;
             font-family: inherit;
@@ -329,11 +348,11 @@
             transform: translate(-50%, -50%);
             background: rgba(10,10,30,0.97);
             border: 1px solid rgba(251,191,36,0.3);
-            border-radius: 14px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 16px;
             width: 92%;
-            max-width: 650px;
-            max-height: 85vh;
+            max-width: 600px;
+            max-height: 80vh;
             z-index: 99999;
             display: none;
             backdrop-filter: blur(20px);
@@ -343,28 +362,28 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
-        .file-editor .editor-header h4 { color: #fbbf24; font-size: 13px; }
+        .file-editor .editor-header h4 { color: #fbbf24; font-size: 12px; }
         .file-editor .editor-header button {
             background: rgba(239,68,68,0.15);
             color: #f87171;
             border: none;
-            padding: 3px 10px;
-            border-radius: 6px;
+            padding: 2px 10px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 11px;
         }
         .file-editor textarea {
             width: 100%;
-            height: 280px;
+            height: 200px;
             background: rgba(0,0,0,0.5);
             color: #fff;
             border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 6px;
-            padding: 10px;
+            border-radius: 4px;
+            padding: 8px;
             font-family: 'Courier New', monospace;
-            font-size: 11px;
+            font-size: 10px;
             resize: vertical;
             direction: ltr;
             text-align: left;
@@ -372,14 +391,14 @@
         }
         .file-editor .editor-actions {
             display: flex;
-            gap: 8px;
-            margin-top: 10px;
+            gap: 6px;
+            margin-top: 8px;
         }
         .file-editor .editor-actions button {
-            padding: 6px 14px;
+            padding: 4px 12px;
             border: none;
-            border-radius: 6px;
-            font-size: 11px;
+            border-radius: 4px;
+            font-size: 10px;
             font-weight: 600;
             cursor: pointer;
             font-family: inherit;
@@ -396,11 +415,11 @@
             transform: translateX(-50%);
             background: rgba(10,10,30,0.95);
             color: #fff;
-            padding: 8px 20px;
-            border-radius: 8px;
+            padding: 6px 16px;
+            border-radius: 6px;
             border: 1px solid rgba(139,92,246,0.2);
             z-index: 999999;
-            font-size: 12px;
+            font-size: 11px;
             display: none;
             animation: fadeIn 0.3s ease;
             max-width: 90%;
@@ -415,34 +434,34 @@
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
         
-        /* ====== استجابة ====== */
         @media (max-width: 768px) {
-            .grid { gap: 2px; }
-            .tile { min-height: 30px; font-size: 7px; }
-            .tile .icon { font-size: 11px; }
-            .header h1 { font-size: 16px; }
-            .header-controls button { font-size: 9px; padding: 4px 10px; }
+            .grid { gap: 1px; }
+            .tile { min-height: 25px; font-size: 6px; }
+            .tile .icon { font-size: 10px; }
             .stats { grid-template-columns: repeat(3, 1fr); }
-            .tile-panel { padding: 14px; max-width: 95%; }
+            .header h1 { font-size: 16px; }
+            .header-controls button { font-size: 8px; padding: 3px 8px; }
+            .tile-panel { padding: 12px; max-width: 95%; }
             .tile-panel .actions { grid-template-columns: 1fr; }
             .tile-panel .actions .btn-sync { grid-column: span 1; }
-            .file-editor textarea { height: 180px; }
+            .file-editor textarea { height: 150px; }
         }
         
         @media (max-width: 480px) {
             .grid { gap: 1px; }
-            .tile { min-height: 25px; border-radius: 3px; }
-            .tile .icon { font-size: 9px; }
-            .tile .label { font-size: 5px; }
-            .header { padding: 8px 12px; }
+            .tile { min-height: 20px; border-radius: 2px; }
+            .tile .icon { font-size: 8px; }
+            .tile .label { font-size: 4px; }
+            .header { padding: 6px 10px; }
             .header h1 { font-size: 14px; }
         }
     </style>
 </head>
 <body>
 
+<button class="close-btn" onclick="closeServerManager()">✖ إغلاق</button>
+
 <div class="container">
-    <!-- ====== الهيدر ====== -->
     <div class="header">
         <h1>🖥️ إدارة الخوادم المصغرة</h1>
         <div class="header-controls">
@@ -455,43 +474,35 @@
         </div>
     </div>
     
-    <!-- ====== إعدادات التلجرام ====== -->
     <div class="telegram-settings" id="telegramSettings">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <span style="color:#a78bfa;font-size:13px;font-weight:600;">📡 إعدادات قناة التلجرام</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="color:#a78bfa;font-size:12px;font-weight:600;">📡 إعدادات قناة التلجرام</span>
             <span class="status offline" id="tgStatus">🔴 غير متصل</span>
         </div>
         <div class="row">
-            <input type="text" id="tgBotToken" placeholder="Bot Token (من @BotFather)" value="">
-            <input type="text" id="tgChatId" placeholder="Chat ID (رقم القناة أو @username)" value="">
-            <button onclick="saveTelegramSettings()" style="padding:6px 16px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.2);border-radius:6px;cursor:pointer;font-family:inherit;font-size:11px;">💾 حفظ</button>
-            <button onclick="testTelegramConnection()" style="padding:6px 16px;background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);border-radius:6px;cursor:pointer;font-family:inherit;font-size:11px;">🧪 اختبار</button>
-        </div>
-        <div style="font-size:10px;color:#666;margin-top:6px;">
-            💡 التنسيق: bot_token من @BotFather | chat_id: رقم القناة (مثال: -1001234567890) أو @username
+            <input type="text" id="tgBotToken" placeholder="Bot Token" value="">
+            <input type="text" id="tgChatId" placeholder="Chat ID" value="">
+            <button onclick="saveTelegramSettings()" style="padding:4px 12px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.2);border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;">💾 حفظ</button>
+            <button onclick="testTelegramConnection()" style="padding:4px 12px;background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;">🧪 اختبار</button>
         </div>
     </div>
     
-    <!-- ====== الإحصائيات ====== -->
     <div class="stats" id="stats">
         <div class="stat-box"><span class="num purple" id="totalTiles">0</span><span class="label">📦 إجمالي</span></div>
         <div class="stat-box"><span class="num green" id="onlineTiles">0</span><span class="label">🟢 نشطة</span></div>
         <div class="stat-box"><span class="num blue" id="filesCount">0</span><span class="label">📄 ملفات</span></div>
         <div class="stat-box"><span class="num yellow" id="protectedCount">0</span><span class="label">🛡️ محمية</span></div>
-        <div class="stat-box"><span class="num green" id="syncedCount">0</span><span class="label">🔄 متزامنة</span></div>
+        <div class="stat-box"><span class="num green" id="syncedCount">0</span><span class="label">🔄 مزامنة</span></div>
     </div>
     
-    <!-- ====== شبكة المربعات ====== -->
     <div class="grid" id="grid"></div>
 </div>
 
-<!-- ====== لوحة المربع ====== -->
 <div class="tile-panel" id="tilePanel">
     <div class="panel-header">
         <h3 id="panelTitle">📦 المربع (0,0)</h3>
         <button onclick="closePanel()">✖</button>
     </div>
-    
     <div class="info-grid">
         <div class="info-item"><span>📍 الموقع</span><span class="value" id="panelLocation">(0, 0)</span></div>
         <div class="info-item"><span>🔄 الحالة</span><span class="value offline" id="panelStatus">⚪ غير نشط</span></div>
@@ -499,19 +510,16 @@
         <div class="info-item"><span>📄 الملفات</span><span class="value" id="panelFileCount">0</span></div>
         <div class="info-item"><span>🔄 المزامنة</span><span class="value" id="panelSync">❌ غير متزامن</span></div>
     </div>
-    
     <div class="file-list" id="panelFiles"></div>
-    
     <div class="actions">
         <button class="btn-upload" onclick="uploadFile()">📤 رفع ملف</button>
         <button class="btn-start" onclick="toggleServer()" id="panelStartBtn">▶️ تشغيل</button>
         <button class="btn-protect" onclick="toggleProtect()" id="panelProtectBtn">🛡️ حماية</button>
         <button class="btn-delete" onclick="clearTile()">🗑️ تفريغ</button>
-        <button class="btn-sync" onclick="syncTileToChannel()">🔄 مزامنة مع القناة</button>
+        <button class="btn-sync" onclick="syncTileToChannel()">🔄 مزامنة</button>
     </div>
 </div>
 
-<!-- ====== محرر الملف ====== -->
 <div class="file-editor" id="fileEditor">
     <div class="editor-header">
         <h4 id="editorTitle">📝 تحرير الملف</h4>
@@ -524,47 +532,26 @@
     </div>
 </div>
 
-<!-- ====== الإشعارات ====== -->
 <div class="toast" id="toast"></div>
 
 <script>
 // ============================================================
-// 📦 نظام إدارة الخوادم المصغرة - متوافق مع الملف الرئيسي
+// 📦 نظام إدارة الخوادم المصغرة
 // ============================================================
 
-// ====== التحقق من وجود نظام التلجرام من الملف الرئيسي ======
-if (typeof window.TelegramManager === 'undefined') {
-    // نسخة مصغرة من نظام التلجرام
-    window.TelegramManager = {
-        botToken: localStorage.getItem('telegram_bot_token') || '',
-        chatId: localStorage.getItem('telegram_chat_id') || '',
-        
-        hasConfig: function() {
-            return this.botToken.length > 10 && this.chatId.length > 0;
-        },
-        
-        async uploadFile: function(file, filename) {
-            const formData = new FormData();
-            formData.append('chat_id', this.chatId);
-            formData.append('document', file, filename);
-            const resp = await fetch(`https://api.telegram.org/bot${this.botToken}/sendDocument`, {
-                method: 'POST',
-                body: formData
-            });
-            return await resp.json();
-        },
-        
-        async getFileUrl: function(fileId) {
-            const resp = await fetch(`https://api.telegram.org/bot${this.botToken}/getFile?file_id=${fileId}`);
-            const data = await resp.json();
-            return `https://api.telegram.org/file/bot${this.botToken}/${data.result.file_path}`;
-        }
-    };
+function closeServerManager() {
+    if (window.parent && window.parent.closeServerManager) {
+        window.parent.closeServerManager();
+    } else {
+        window.close();
+    }
 }
 
-// ====== النظام الرئيسي ======
+// ============================================================
+// 🖥️ ServerManager - النظام الرئيسي
+// ============================================================
+
 const ServerManager = {
-    // ====== الحالة ======
     currentTile: null,
     currentFile: null,
     tiles: {},
@@ -572,48 +559,33 @@ const ServerManager = {
     activeServers: new Set(),
     syncedTiles: new Set(),
     
-    // ====== التهيئة ======
     init: function() {
         console.log('🖥️ تشغيل نظام إدارة الخوادم...');
         this.loadTiles();
         this.loadTelegramSettings();
         this.renderGrid();
         this.updateStats();
-        
-        // محاولة استخدام Toast من الملف الرئيسي
-        if (typeof window.showToast === 'function') {
-            this._showToast = window.showToast;
-        }
-        
         console.log('✅ النظام جاهز');
     },
     
-    // ====== تحميل المربعات ======
     loadTiles: function() {
         const saved = localStorage.getItem('server_tiles');
         if (saved) {
             try {
                 this.tiles = JSON.parse(saved);
                 const protectedData = localStorage.getItem('server_protected');
-                if (protectedData) {
-                    this.protectedTiles = new Set(JSON.parse(protectedData));
-                }
+                if (protectedData) this.protectedTiles = new Set(JSON.parse(protectedData));
                 const syncedData = localStorage.getItem('server_synced');
-                if (syncedData) {
-                    this.syncedTiles = new Set(JSON.parse(syncedData));
-                }
+                if (syncedData) this.syncedTiles = new Set(JSON.parse(syncedData));
                 return;
             } catch(e) {}
         }
         
-        // إنشاء مربعات افتراضية
         for (let row = 0; row < 12; row++) {
             for (let col = 0; col < 12; col++) {
                 const id = `${row}_${col}`;
                 this.tiles[id] = {
-                    id: id,
-                    row: row,
-                    col: col,
+                    id: id, row: row, col: col,
                     files: this.getDefaultFiles(row, col),
                     created: Date.now()
                 };
@@ -622,89 +594,30 @@ const ServerManager = {
         this.saveTiles();
     },
     
-    // ====== الملفات الافتراضية ======
     getDefaultFiles: function(row, col) {
         const types = ['تسجيل', 'تحليل', 'إشعارات', 'نسخ', 'ويب هوك', 'مجدول', 'ذاكرة', 'بوابة'];
         const type = types[(row * 12 + col) % types.length];
-        
         return {
-            'main.js': `// خادم (${row}, ${col}) - نوع: ${type}
-class TileServer {
-    constructor() {
-        this.name = 'خادم (${row},${col})';
-        this.type = '${type}';
-        this.data = [];
-        this.requests = 0;
-    }
-    
-    start() {
-        console.log('🟢 بدء خادم (${row},${col})');
-        setInterval(() => {
-            this.requests++;
-            this.log('🔄 خادم يعمل');
-        }, 30000);
-        return this;
-    }
-    
-    log(msg) {
-        console.log(\`[\${this.name}] \${msg}\`);
-    }
-}
-
-const server = new TileServer();
-server.start();
-window.servers = window.servers || {};
-window.servers['${row}_${col}'] = server;`,
-            
-            'style.css': `/* مربع (${row}, ${col}) */
-.tile-${row}-${col} {
-    background: linear-gradient(135deg, #1a1a2e, #16213e);
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-}
-.tile-${row}-${col} .icon { font-size: 20px; }
-.tile-${row}-${col} .name { color: #ffd700; font-size: 8px; font-weight: 700; }
-.tile-${row}-${col} .type { color: #888; font-size: 6px; }`,
-            
-            'index.html': `<div class="tile-${row}-${col}">
-    <div class="icon">${this.getIcon(type)}</div>
-    <div class="name">(${row},${col})</div>
-    <div class="type">${type}</div>
-</div>`
+            'main.js': `// خادم (${row}, ${col}) - نوع: ${type}\nclass TileServer {\n    constructor() {\n        this.name = 'خادم (${row},${col})';\n        this.type = '${type}';\n        this.data = [];\n        this.requests = 0;\n    }\n    start() {\n        console.log('🟢 بدء خادم (${row},${col})');\n        setInterval(() => {\n            this.requests++;\n            this.log('🔄 خادم يعمل');\n        }, 30000);\n        return this;\n    }\n    log(msg) {\n        console.log(\`[\${this.name}] \${msg}\`);\n    }\n}\nconst server = new TileServer();\nserver.start();\nwindow.servers = window.servers || {};\nwindow.servers['${row}_${col}'] = server;`,
+            'style.css': `/* مربع (${row}, ${col}) */\n.tile-${row}-${col} {\n    background: linear-gradient(135deg, #1a1a2e, #16213e);\n    width: 100%;\n    height: 100%;\n    display: flex;\n    flex-direction: column;\n    align-items: center;\n    justify-content: center;\n    border-radius: 4px;\n}\n.tile-${row}-${col} .icon { font-size: 20px; }\n.tile-${row}-${col} .name { color: #ffd700; font-size: 8px; font-weight: 700; }\n.tile-${row}-${col} .type { color: #888; font-size: 6px; }`,
+            'index.html': `<div class="tile-${row}-${col}"><div class="icon">${this.getIcon(type)}</div><div class="name">(${row},${col})</div><div class="type">${type}</div></div>`
         };
     },
     
     getIcon: function(type) {
-        const icons = {
-            'تسجيل': '📋',
-            'تحليل': '📊',
-            'إشعارات': '🔔',
-            'نسخ': '💾',
-            'ويب هوك': '🔗',
-            'مجدول': '⏰',
-            'ذاكرة': '💨',
-            'بوابة': '🌐'
-        };
+        const icons = { 'تسجيل': '📋', 'تحليل': '📊', 'إشعارات': '🔔', 'نسخ': '💾', 'ويب هوك': '🔗', 'مجدول': '⏰', 'ذاكرة': '💨', 'بوابة': '🌐' };
         return icons[type] || '🖥️';
     },
     
-    // ====== حفظ ======
     saveTiles: function() {
         localStorage.setItem('server_tiles', JSON.stringify(this.tiles));
         localStorage.setItem('server_protected', JSON.stringify(Array.from(this.protectedTiles)));
         localStorage.setItem('server_synced', JSON.stringify(Array.from(this.syncedTiles)));
     },
     
-    // ====== عرض الشبكة ======
     renderGrid: function() {
         const grid = document.getElementById('grid');
         grid.innerHTML = '';
-        
         for (let row = 0; row < 12; row++) {
             for (let col = 0; col < 12; col++) {
                 const id = `${row}_${col}`;
@@ -713,24 +626,17 @@ window.servers['${row}_${col}'] = server;`,
                 const isActive = this.activeServers.has(id);
                 const isSynced = this.syncedTiles.has(id);
                 const fileCount = tile.files ? Object.keys(tile.files).length : 0;
-                
                 const div = document.createElement('div');
                 div.className = 'tile';
                 if (fileCount > 0) div.classList.add('has-files');
                 if (isProtected) div.classList.add('protected');
                 div.dataset.tile = id;
-                
                 let html = `<div class="icon">${this.getTileIcon(tile)}</div>`;
                 html += `<div class="label">${row},${col}</div>`;
                 html += `<div class="status ${isActive ? 'running' : 'offline'}">${isActive ? '🟢 نشط' : '⚪ متوقف'}</div>`;
-                if (fileCount > 0) {
-                    html += `<div class="badge">${fileCount}</div>`;
-                }
-                if (isSynced) {
-                    html += `<div class="sync-badge">🔄</div>`;
-                }
+                if (fileCount > 0) html += `<div class="badge">${fileCount}</div>`;
+                if (isSynced) html += `<div class="sync-badge">🔄</div>`;
                 div.innerHTML = html;
-                
                 div.onclick = () => this.openPanel(id);
                 grid.appendChild(div);
             }
@@ -744,72 +650,54 @@ window.servers['${row}_${col}'] = server;`,
         return match ? match[1] : '📦';
     },
     
-    // ====== الإحصائيات ======
     updateStats: function() {
         const total = Object.keys(this.tiles).length;
         const online = this.activeServers.size;
         let files = 0;
-        Object.values(this.tiles).forEach(t => {
-            if (t.files) files += Object.keys(t.files).length;
-        });
-        const protectedCount = this.protectedTiles.size;
-        const syncedCount = this.syncedTiles.size;
-        
+        Object.values(this.tiles).forEach(t => { if (t.files) files += Object.keys(t.files).length; });
         document.getElementById('totalTiles').textContent = total;
         document.getElementById('onlineTiles').textContent = online;
         document.getElementById('filesCount').textContent = files;
-        document.getElementById('protectedCount').textContent = protectedCount;
-        document.getElementById('syncedCount').textContent = syncedCount;
+        document.getElementById('protectedCount').textContent = this.protectedTiles.size;
+        document.getElementById('syncedCount').textContent = this.syncedTiles.size;
     },
     
-    // ====== فتح لوحة المربع ======
     openPanel: function(id) {
         this.currentTile = id;
         const tile = this.tiles[id];
         if (!tile) return;
-        
         const panel = document.getElementById('tilePanel');
         panel.classList.add('open');
-        
         document.getElementById('panelTitle').textContent = `📦 المربع (${tile.row}, ${tile.col})`;
         document.getElementById('panelLocation').textContent = `(${tile.row}, ${tile.col})`;
-        
         const isActive = this.activeServers.has(id);
         const statusEl = document.getElementById('panelStatus');
         statusEl.textContent = isActive ? '🟢 نشط' : '⚪ غير نشط';
         statusEl.className = `value ${isActive ? 'online' : 'offline'}`;
-        
         const isProtected = this.protectedTiles.has(id);
         document.getElementById('panelProtected').textContent = isProtected ? '✅ محمي' : '❌ غير محمي';
         document.getElementById('panelProtected').style.color = isProtected ? '#4ade80' : '#f87171';
-        
         const isSynced = this.syncedTiles.has(id);
         document.getElementById('panelSync').textContent = isSynced ? '✅ متزامن' : '❌ غير متزامن';
         document.getElementById('panelSync').style.color = isSynced ? '#4ade80' : '#f87171';
-        
         document.getElementById('panelStartBtn').textContent = isActive ? '⏹️ إيقاف' : '▶️ تشغيل';
         document.getElementById('panelProtectBtn').textContent = isProtected ? '🔓 إزالة' : '🛡️ حماية';
-        
         this.renderFiles(tile);
         document.getElementById('panelFileCount').textContent = tile.files ? Object.keys(tile.files).length : 0;
     },
     
-    // ====== عرض الملفات ======
     renderFiles: function(tile) {
         const container = document.getElementById('panelFiles');
         container.innerHTML = '';
-        
         if (!tile.files || Object.keys(tile.files).length === 0) {
             container.innerHTML = '<div style="color:#666;font-size:11px;text-align:center;padding:10px;">📭 لا توجد ملفات</div>';
             return;
         }
-        
         Object.entries(tile.files).forEach(([name, content]) => {
             const div = document.createElement('div');
             div.className = 'file-item';
             const size = new Blob([content]).size;
             const sizeStr = size < 1024 ? size + ' B' : (size / 1024).toFixed(1) + ' KB';
-            
             div.innerHTML = `
                 <span class="name">${name}</span>
                 <span class="size">${sizeStr}</span>
@@ -824,13 +712,11 @@ window.servers['${row}_${col}'] = server;`,
         });
     },
     
-    // ====== إغلاق اللوحة ======
     closePanel: function() {
         document.getElementById('tilePanel').classList.remove('open');
         this.currentTile = null;
     },
     
-    // ====== رفع ملف ======
     uploadFile: function() {
         if (!this.currentTile) return;
         const input = document.createElement('input');
@@ -860,20 +746,17 @@ window.servers['${row}_${col}'] = server;`,
         input.click();
     },
     
-    // ====== تحرير ملف ======
     editFile: function(tileId, fileName) {
         this.currentTile = tileId;
         this.currentFile = fileName;
         const tile = this.tiles[tileId];
         if (!tile || !tile.files || !tile.files[fileName]) return;
-        
         const editor = document.getElementById('fileEditor');
         editor.classList.add('open');
         document.getElementById('editorTitle').textContent = `📝 تحرير ${fileName}`;
         document.getElementById('editorContent').value = tile.files[fileName];
     },
     
-    // ====== حفظ الملف ======
     saveFile: function() {
         if (!this.currentTile || !this.currentFile) return;
         const content = document.getElementById('editorContent').value;
@@ -885,13 +768,11 @@ window.servers['${row}_${col}'] = server;`,
         this.showToast(`✅ تم حفظ ${this.currentFile}`, 'success');
     },
     
-    // ====== إغلاق المحرر ======
     closeEditor: function() {
         document.getElementById('fileEditor').classList.remove('open');
         this.currentFile = null;
     },
     
-    // ====== تحميل ملف ======
     downloadFile: function(tileId, fileName) {
         const tile = this.tiles[tileId];
         if (!tile || !tile.files || !tile.files[fileName]) return;
@@ -904,7 +785,6 @@ window.servers['${row}_${col}'] = server;`,
         URL.revokeObjectURL(url);
     },
     
-    // ====== حذف ملف ======
     deleteFile: function(tileId, fileName) {
         if (!confirm(`🗑️ حذف ${fileName}؟`)) return;
         const tile = this.tiles[tileId];
@@ -918,7 +798,6 @@ window.servers['${row}_${col}'] = server;`,
         }
     },
     
-    // ====== تشغيل/إيقاف الخادم ======
     toggleServer: function() {
         if (!this.currentTile) return;
         const id = this.currentTile;
@@ -946,7 +825,6 @@ window.servers['${row}_${col}'] = server;`,
         this.openPanel(id);
     },
     
-    // ====== حماية/إزالة الحماية ======
     toggleProtect: function() {
         if (!this.currentTile) return;
         const id = this.currentTile;
@@ -963,7 +841,6 @@ window.servers['${row}_${col}'] = server;`,
         this.openPanel(id);
     },
     
-    // ====== تفريغ المربع ======
     clearTile: function() {
         if (!this.currentTile) return;
         if (!confirm(`🗑️ تفريغ المربع (${this.currentTile})؟`)) return;
@@ -981,11 +858,7 @@ window.servers['${row}_${col}'] = server;`,
         }
     },
     
-    // ============================================================
-    // 📡 نظام التلجرام - المزامنة مع القناة
-    // ============================================================
-    
-    // تحميل إعدادات التلجرام
+    // ====== نظام التلجرام ======
     loadTelegramSettings: function() {
         const token = localStorage.getItem('telegram_bot_token') || '';
         const chatId = localStorage.getItem('telegram_chat_id') || '';
@@ -994,7 +867,6 @@ window.servers['${row}_${col}'] = server;`,
         this.updateTelegramStatus();
     },
     
-    // حفظ إعدادات التلجرام
     saveTelegramSettings: function() {
         const token = document.getElementById('tgBotToken').value.trim();
         const chatId = document.getElementById('tgChatId').value.trim();
@@ -1008,7 +880,6 @@ window.servers['${row}_${col}'] = server;`,
         this.showToast('✅ تم حفظ إعدادات التلجرام', 'success');
     },
     
-    // اختبار اتصال التلجرام
     testTelegramConnection: async function() {
         const token = document.getElementById('tgBotToken').value.trim();
         if (!token) {
@@ -1030,7 +901,6 @@ window.servers['${row}_${col}'] = server;`,
         }
     },
     
-    // تحديث حالة التلجرام
     updateTelegramStatus: function() {
         const token = localStorage.getItem('telegram_bot_token') || '';
         const chatId = localStorage.getItem('telegram_chat_id') || '';
@@ -1044,16 +914,12 @@ window.servers['${row}_${col}'] = server;`,
         }
     },
     
-    // تبديل إعدادات التلجرام
     toggleTelegramSettings: function() {
         const el = document.getElementById('telegramSettings');
         el.classList.toggle('open');
-        if (el.classList.contains('open')) {
-            this.loadTelegramSettings();
-        }
+        if (el.classList.contains('open')) this.loadTelegramSettings();
     },
     
-    // مزامنة ملف مع القناة
     syncFileToChannel: async function(tileId, fileName) {
         const token = localStorage.getItem('telegram_bot_token');
         const chatId = localStorage.getItem('telegram_chat_id');
@@ -1061,37 +927,32 @@ window.servers['${row}_${col}'] = server;`,
             this.showToast('⚠️ قم بإعداد التلجرام أولاً', 'warning');
             return;
         }
-        
         const tile = this.tiles[tileId];
         if (!tile || !tile.files || !tile.files[fileName]) {
             this.showToast('❌ الملف غير موجود', 'error');
             return;
         }
-        
         try {
             const [row, col] = tileId.split('_');
             const formattedName = `tile_${row}_${col}_${fileName}`;
             const content = tile.files[fileName];
             const blob = new Blob([content], { type: 'text/plain' });
             const file = new File([blob], formattedName);
-            
             const formData = new FormData();
             formData.append('chat_id', chatId);
             formData.append('document', file);
-            
             const resp = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, {
                 method: 'POST',
                 body: formData
             });
             const data = await resp.json();
-            
             if (data.ok) {
                 this.syncedTiles.add(tileId);
                 this.saveTiles();
                 this.renderGrid();
                 this.updateStats();
                 this.openPanel(tileId);
-                this.showToast(`✅ تم مزامنة ${formattedName} مع القناة`, 'success');
+                this.showToast(`✅ تم مزامنة ${formattedName}`, 'success');
             } else {
                 this.showToast('❌ فشل المزامنة: ' + data.description, 'error');
             }
@@ -1100,7 +961,6 @@ window.servers['${row}_${col}'] = server;`,
         }
     },
     
-    // مزامنة كل المربعات مع القناة
     syncAllFromChannel: async function() {
         const token = localStorage.getItem('telegram_bot_token');
         const chatId = localStorage.getItem('telegram_chat_id');
@@ -1108,65 +968,47 @@ window.servers['${row}_${col}'] = server;`,
             this.showToast('⚠️ قم بإعداد التلجرام أولاً', 'warning');
             return;
         }
-        
         this.showToast('🔄 جاري المزامنة...', 'warning');
-        
         try {
             const resp = await fetch(`https://api.telegram.org/bot${token}/getUpdates?limit=100`);
             const data = await resp.json();
-            
             if (!data.ok) {
                 this.showToast('❌ فشل جلب التحديثات', 'error');
                 return;
             }
-            
             let synced = 0;
             for (const update of data.result) {
                 const msg = update.channel_post || update.message;
                 if (!msg || !msg.document) continue;
-                
                 const fileName = msg.document.file_name || '';
                 const match = fileName.match(/tile_(\d+)_(\d+)_(.+)/);
                 if (!match) continue;
-                
                 const row = parseInt(match[1]);
                 const col = parseInt(match[2]);
                 const tileId = `${row}_${col}`;
                 const fileType = match[3];
-                
                 const fileResp = await fetch(`https://api.telegram.org/bot${token}/getFile?file_id=${msg.document.file_id}`);
                 const fileData = await fileResp.json();
                 if (!fileData.ok) continue;
-                
                 const fileUrl = `https://api.telegram.org/file/bot${token}/${fileData.result.file_path}`;
                 const contentResp = await fetch(fileUrl);
                 const content = await contentResp.text();
-                
                 if (!this.tiles[tileId]) {
-                    this.tiles[tileId] = {
-                        id: tileId,
-                        row: row,
-                        col: col,
-                        files: {},
-                        created: Date.now()
-                    };
+                    this.tiles[tileId] = { id: tileId, row: row, col: col, files: {}, created: Date.now() };
                 }
                 this.tiles[tileId].files[fileType] = content;
                 this.syncedTiles.add(tileId);
                 synced++;
             }
-            
             this.saveTiles();
             this.renderGrid();
             this.updateStats();
             this.showToast(`✅ تم مزامنة ${synced} ملف`, 'success');
-            
         } catch(e) {
             this.showToast('❌ فشل المزامنة: ' + e.message, 'error');
         }
     },
     
-    // مزامنة المربع الحالي مع القناة
     syncTileToChannel: async function() {
         if (!this.currentTile) return;
         const tile = this.tiles[this.currentTile];
@@ -1174,21 +1016,13 @@ window.servers['${row}_${col}'] = server;`,
             this.showToast('❌ لا توجد ملفات للمزامنة', 'error');
             return;
         }
-        
         let synced = 0;
         for (const fileName of Object.keys(tile.files)) {
             await this.syncFileToChannel(this.currentTile, fileName);
             synced++;
         }
-        
-        if (synced > 0) {
-            this.showToast(`✅ تم مزامنة ${synced} ملف`, 'success');
-        }
+        if (synced > 0) this.showToast(`✅ تم مزامنة ${synced} ملف`, 'success');
     },
-    
-    // ============================================================
-    // 📤 تصدير واستيراد
-    // ============================================================
     
     exportAllTiles: function() {
         const data = {
@@ -1231,10 +1065,6 @@ window.servers['${row}_${col}'] = server;`,
         event.target.value = '';
     },
     
-    // ============================================================
-    // 🔄 إعادة تعيين
-    // ============================================================
-    
     resetAll: function() {
         if (!confirm('⚠️ هل أنت متأكد من إعادة تعيين كل شيء؟')) return;
         localStorage.removeItem('server_tiles');
@@ -1251,18 +1081,7 @@ window.servers['${row}_${col}'] = server;`,
         this.showToast('🔄 تم إعادة التعيين', 'warning');
     },
     
-    // ============================================================
-    // 📢 الإشعارات
-    // ============================================================
-    
     showToast: function(message, type = 'info') {
-        // محاولة استخدام Toast من الملف الرئيسي
-        if (typeof this._showToast === 'function') {
-            this._showToast(message, type);
-            return;
-        }
-        
-        // استخدام Toast محلي
         const toast = document.getElementById('toast');
         toast.textContent = message;
         toast.className = 'toast ' + (type || 'info');
@@ -1274,10 +1093,7 @@ window.servers['${row}_${col}'] = server;`,
     }
 };
 
-// ============================================================
-// 🚀 دوال الواجهة العامة
-// ============================================================
-
+// ====== دوال الواجهة العامة ======
 function closePanel() { ServerManager.closePanel(); }
 function closeEditor() { ServerManager.closeEditor(); }
 function uploadFile() { ServerManager.uploadFile(); }
@@ -1293,21 +1109,18 @@ function toggleTelegramSettings() { ServerManager.toggleTelegramSettings(); }
 function saveTelegramSettings() { ServerManager.saveTelegramSettings(); }
 function testTelegramConnection() { ServerManager.testTelegramConnection(); }
 
-// ============================================================
-// 🚀 بدء النظام
-// ============================================================
-
+// ====== بدء النظام ======
 document.addEventListener('DOMContentLoaded', function() {
     ServerManager.init();
     console.log('🖥️ نظام إدارة الخوادم جاهز!');
     console.log('📡 استخدم القناة لمزامنة الملفات');
     console.log('💡 انقر على أي مربع لفتحه وإضافة ملفات');
-    console.log('🔗 متوافق مع نظام التلجرام في الملف الرئيسي');
 });
 
-// تصدير للاستخدام في الكونسول
 window.ServerManager = ServerManager;
 </script>
 
 </body>
+
+    
 </html>
