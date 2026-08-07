@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎮 عالمك الافتراضي</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0a0a2a, #1a0a2e);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+.header-bar {
+    width: 100%;
+    max-width: 800px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 16px;
+    padding: 20px 30px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.header-bar h1 {
+    font-size: 28px;
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.header-bar .subtitle {
+    color: #aaa;
+    font-size: 14px;
+    margin-top: 4px;
+}
+.header-bar .server-status {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
+.server-status.online {
+    background: rgba(74,222,128,0.2);
+    color: #4ade80;
+    border: 1px solid rgba(74,222,128,0.3);
+}
+.server-status.offline {
+    background: rgba(239,68,68,0.2);
+    color: #f87171;
+    border: 1px solid rgba(239,68,68,0.3);
+}
+.server-status.waiting {
+    background: rgba(251,191,36,0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(251,191,36,0.3);
+}
+.content {
+    width: 100%;
+    max-width: 800px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+.card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 18px;
+}
+.card h3 {
+    color: #a78bfa;
+    font-size: 14px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding-bottom: 8px;
+}
+.player-item, .world-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.player-item .name { color: #fff; }
+.player-item .level { color: #fbbf24; }
+.player-item .score { color: #4ade80; }
+.world-item .w-name { color: #fff; }
+.world-item .w-players { color: #60a5fa; }
+.empty-msg {
+    color: #666;
+    font-size: 12px;
+    text-align: center;
+    padding: 10px;
+}
+.actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+.actions button {
+    padding: 6px 16px;
+    border: 1px solid rgba(139,92,246,0.3);
+    border-radius: 8px;
+    background: rgba(139,92,246,0.1);
+    color: #a78bfa;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+    transition: all 0.3s;
+}
+.actions button:hover {
+    background: rgba(139,92,246,0.25);
+    transform: translateY(-2px);
+}
+.actions .btn-green {
+    border-color: rgba(74,222,128,0.3);
+    color: #4ade80;
+}
+.actions .btn-green:hover {
+    background: rgba(74,222,128,0.2);
+}
+.actions .btn-gold {
+    border-color: rgba(255,215,0,0.3);
+    color: #ffd700;
+}
+.actions .btn-gold:hover {
+    background: rgba(255,215,0,0.2);
+}
+.actions .btn-red {
+    border-color: rgba(239,68,68,0.3);
+    color: #f87171;
+}
+.actions .btn-red:hover {
+    background: rgba(239,68,68,0.2);
+}
+#tile-input-section {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    border: 1px solid rgba(255,215,0,0.1);
+    flex-wrap: wrap;
+}
+#tile-input-section label {
+    color: #888;
+    font-size: 12px;
+}
+#tile-input-section input {
+    width: 50px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    font-size: 13px;
+    text-align: center;
+    font-family: inherit;
+}
+#tile-input-section input:focus {
+    outline: none;
+    border-color: rgba(255,215,0,0.4);
+}
+#tile-input-section .tile-label {
+    color: #a78bfa;
+    font-weight: 700;
+    font-size: 14px;
+    min-width: 40px;
+    text-align: center;
+}
+#toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10,10,30,0.95);
+    padding: 8px 24px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,215,0,0.2);
+    color: #fff;
+    font-size: 13px;
+    display: none;
+    z-index: 999;
+}
+#toast.show { display: block; }
+@media (max-width: 600px) {
+    .content { grid-template-columns: 1fr; }
+    .header-bar h1 { font-size: 22px; }
+    #tile-input-section input { width: 40px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header-bar">
+    <h1>🌍 مرحباً بك في عالمك الافتراضي</h1>
+    <div class="subtitle">🖥️ اختر المربع الذي تريد الاتصال به</div>
+    <div class="server-status waiting" id="serverStatus">⏳ انتظر التحديد...</div>
+</div>
+
+<div class="content">
+    <div class="card" style="grid-column: 1 / -1;">
+        <h3>🔗 تحديد المربع</h3>
+        <div id="tile-input-section">
+            <label>📍 الصف (Row):</label>
+            <input type="number" id="tileRow" min="0" max="11" value="5">
+            <label>العمود (Col):</label>
+            <input type="number" id="tileCol" min="0" max="11" value="3">
+            <span class="tile-label" id="tileDisplay">(5,3)</span>
+            <button onclick="connectToTile()" class="btn-gold">🔗 اتصال</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>👥 اللاعبون النشطون</h3>
+        <div id="playersList"><div class="empty-msg">⏳ انتظر الاتصال...</div></div>
+        <div class="actions">
+            <button onclick="addNewPlayer()" class="btn-green">➕ إضافة لاعب</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>🌍 العوالم المتاحة</h3>
+        <div id="worldsList"><div class="empty-msg">⏳ انتظر الاتصال...</div></div>
+    </div>
+
+    <div class="card" style="grid-column: 1 / -1;">
+        <h3>📊 معلومات الخادم</h3>
+        <div id="serverInfo" style="font-size:13px;color:#aaa;line-height:1.8;">
+            ⏳ انتظر الاتصال...
+        </div>
+        <div class="actions">
+            <button onclick="refreshData()">🔄 تحديث</button>
+            <button onclick="pingServer()" class="btn-green">📡 اختبار الاتصال</button>
+            <button onclick="disconnectServer()" class="btn-red">🔌 قطع الاتصال</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// 🎮 الملف الرئيسي للعبة - اتصال يدوي بالمربع
+// ============================================================
+
+let currentTile = '5_3';
+let server = null;
+let isConnected = false;
+
+function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+function updateTileDisplay() {
+    const row = document.getElementById('tileRow').value || 0;
+    const col = document.getElementById('tileCol').value || 0;
+    document.getElementById('tileDisplay').textContent = `(${row},${col})`;
+}
+
+document.getElementById('tileRow').addEventListener('input', updateTileDisplay);
+document.getElementById('tileCol').addEventListener('input', updateTileDisplay);
+
+function connectToTile() {
+    const row = parseInt(document.getElementById('tileRow').value) || 0;
+    const col = parseInt(document.getElementById('tileCol').value) || 0;
+    
+    if (row < 0 || row > 11 || col < 0 || col > 11) {
+        showToast('⚠️ أدخل أرقاماً بين 0 و 11');
+        return;
+    }
+    
+    currentTile = `${row}_${col}`;
+    document.getElementById('serverStatus').className = 'server-status waiting';
+    document.getElementById('serverStatus').textContent = '⏳ جاري الاتصال بـ (' + row + ',' + col + ')...';
+    
+    console.log(`🔍 جاري البحث عن خادم (${currentTile})...`);
+    
+    // محاولة جلب الخادم من window.servers
+    if (window.servers && window.servers[currentTile]) {
+        server = window.servers[currentTile];
+        isConnected = true;
+        console.log(`✅ تم العثور على الخادم (${currentTile})!`);
+        document.getElementById('serverStatus').className = 'server-status online';
+        document.getElementById('serverStatus').textContent = `🟢 متصل بـ (${row},${col})`;
+        loadServerData();
+        showToast(`✅ متصل بالخادم (${row},${col})`);
+        return;
+    }
+    
+    // محاولة بديلة: البحث في ServerManager
+    if (window.ServerManager) {
+        const tile = window.ServerManager.tiles && window.ServerManager.tiles[currentTile];
+        if (tile && tile.files && tile.files['main.js']) {
+            try {
+                eval(tile.files['main.js']);
+                if (window.servers && window.servers[currentTile]) {
+                    server = window.servers[currentTile];
+                    isConnected = true;
+                    console.log(`✅ تم تحميل الخادم (${currentTile}) من ServerManager!`);
+                    document.getElementById('serverStatus').className = 'server-status online';
+                    document.getElementById('serverStatus').textContent = `🟢 متصل بـ (${row},${col})`;
+                    loadServerData();
+                    showToast(`✅ متصل بالخادم (${row},${col})`);
+                    return;
+                }
+            } catch(e) {
+                console.warn(`⚠️ فشل تقييم main.js للمربع (${currentTile}):`, e);
+            }
+        }
+    }
+    
+    // فشل الاتصال
+    server = null;
+    isConnected = false;
+    console.warn(`❌ الخادم (${currentTile}) غير متصل`);
+    document.getElementById('serverStatus').className = 'server-status offline';
+    document.getElementById('serverStatus').textContent = `🔴 غير متصل بـ (${row},${col})`;
+    document.getElementById('playersList').innerHTML = '<div class="empty-msg">❌ الخادم غير متصل</div>';
+    document.getElementById('worldsList').innerHTML = '<div class="empty-msg">❌ الخادم غير متصل</div>';
+    document.getElementById('serverInfo').textContent = '❌ الخادم غير متصل';
+    showToast(`❌ لا يوجد خادم في المربع (${row},${col})`);
+}
+
+function loadServerData() {
+    if (!server || !isConnected) return;
+    
+    try {
+        // معلومات الخادم
+        if (server.info) {
+            const info = server.info();
+            document.getElementById('serverInfo').innerHTML = `
+                <div>📛 <b style="color:#fff;">الاسم:</b> ${info.name || 'غير معروف'}</div>
+                <div>📌 <b style="color:#fff;">الحالة:</b> <span style="color:#4ade80;">${info.status || 'نشط'}</span></div>
+                <div>📦 <b style="color:#fff;">الإصدار:</b> ${info.version || '1.0'}</div>
+                <div>⏱️ <b style="color:#fff;">وقت التشغيل:</b> ${info.uptime || '0 ثانية'}</div>
+                <div>📊 <b style="color:#fff;">الطلبات:</b> ${info.requests || 0}</div>
+            `;
+        }
+        
+        // قائمة اللاعبين
+        if (server.getPlayers) {
+            const players = server.getPlayers();
+            const container = document.getElementById('playersList');
+            if (players && players.length > 0) {
+                container.innerHTML = players.map(p => `
+                    <div class="player-item">
+                        <span class="name">${p.name || 'لاعب'}</span>
+                        <span class="level">⭐ ${p.level || 1}</span>
+                        <span class="score">🏆 ${p.score || 0}</span>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<div class="empty-msg">📭 لا يوجد لاعبون</div>';
+            }
+        }
+        
+        // قائمة العوالم
+        if (server.getWorlds) {
+            const worlds = server.getWorlds();
+            const container = document.getElementById('worldsList');
+            if (worlds && worlds.length > 0) {
+                container.innerHTML = worlds.map(w => `
+                    <div class="world-item">
+                        <span class="w-name">${w.name || 'عالم'}</span>
+                        <span class="w-players">👥 ${w.players || 0}</span>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<div class="empty-msg">📭 لا توجد عوالم</div>';
+            }
+        }
+        
+        showToast('✅ تم تحديث البيانات');
+    } catch(e) {
+        console.error('❌ خطأ في تحميل البيانات:', e);
+        showToast('⚠️ خطأ في تحميل البيانات');
+    }
+}
+
+function refreshData() {
+    if (!server || !isConnected) {
+        connectToTile();
+        return;
+    }
+    loadServerData();
+    showToast('🔄 تم التحديث');
+}
+
+function pingServer() {
+    if (!server || !isConnected) {
+        showToast('❌ الخادم غير متصل');
+        return;
+    }
+    try {
+        if (server.ping) {
+            const result = server.ping();
+            showToast(`📡 الخادم متصل (${new Date(result.timestamp).toLocaleTimeString()})`);
+        } else {
+            showToast('📡 الخادم متصل');
+        }
+    } catch(e) {
+        showToast('❌ فشل الاتصال بالخادم');
+    }
+}
+
+function disconnectServer() {
+    server = null;
+    isConnected = false;
+    document.getElementById('serverStatus').className = 'server-status waiting';
+    document.getElementById('serverStatus').textContent = '⏳ غير متصل';
+    document.getElementById('playersList').innerHTML = '<div class="empty-msg">⏳ غير متصل</div>';
+    document.getElementById('worldsList').innerHTML = '<div class="empty-msg">⏳ غير متصل</div>';
+    document.getElementById('serverInfo').textContent = '⏳ غير متصل';
+    showToast('🔌 تم قطع الاتصال');
+}
+
+function addNewPlayer() {
+    if (!server || !isConnected) {
+        showToast('❌ الخادم غير متصل');
+        return;
+    }
+    try {
+        if (server.addPlayer) {
+            const name = prompt('👤 أدخل اسم اللاعب الجديد:');
+            if (name && name.trim()) {
+                const result = server.addPlayer(name.trim());
+                if (result && result.id) {
+                    showToast(`✅ تم إضافة ${result.name}`);
+                    loadServerData();
+                } else {
+                    showToast('❌ فشل إضافة اللاعب');
+                }
+            }
+        } else {
+            showToast('⚠️ الخادم لا يدعم إضافة لاعبين');
+        }
+    } catch(e) {
+        showToast('❌ خطأ: ' + e.message);
+    }
+}
+
+// ====== تهيئة ======
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎮 تشغيل الملف الرئيسي للعبة...');
+    console.log('📌 حدد المربع واضغط "اتصال"');
+    updateTileDisplay();
+});
+
+console.log('🌍 مرحباً بك في عالمك الافتراضي!');
+console.log('📌 استخدم واجهة التحديد أعلاه للاتصال بأي مربع');
+</script>
+</body>
+</html>
+
