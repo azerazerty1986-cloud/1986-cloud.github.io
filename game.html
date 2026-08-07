@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎮 عالمك الافتراضي</title>
+<title>🎮 بوابة العوالم</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -16,89 +16,151 @@ body {
     align-items: center;
     padding: 20px;
 }
-.header-bar {
+.header {
     width: 100%;
-    max-width: 800px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,215,0,0.2);
-    border-radius: 16px;
-    padding: 20px 30px;
-    margin-bottom: 20px;
+    max-width: 900px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,215,0,0.15);
+    border-radius: 20px;
+    padding: 25px 30px;
     text-align: center;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    margin-bottom: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.3);
 }
-.header-bar h1 {
-    font-size: 28px;
-    background: linear-gradient(135deg, #ffd700, #ff8c00);
+.header h1 {
+    font-size: 32px;
+    background: linear-gradient(135deg, #ffd700, #ff6b6b, #a78bfa);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
-.header-bar .subtitle {
-    color: #aaa;
-    font-size: 14px;
+.header .sub {
+    color: #888;
+    font-size: 13px;
     margin-top: 4px;
 }
-.header-bar .server-status {
-    display: inline-block;
-    margin-top: 8px;
+.status-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+.status-badge {
     padding: 4px 16px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 700;
 }
-.server-status.online {
-    background: rgba(74,222,128,0.2);
-    color: #4ade80;
-    border: 1px solid rgba(74,222,128,0.3);
-}
-.server-status.offline {
-    background: rgba(239,68,68,0.2);
-    color: #f87171;
-    border: 1px solid rgba(239,68,68,0.3);
-}
-.server-status.waiting {
-    background: rgba(251,191,36,0.2);
-    color: #fbbf24;
-    border: 1px solid rgba(251,191,36,0.3);
-}
-.content {
+.status-badge.online { background: rgba(74,222,128,0.2); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+.status-badge.offline { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+.status-badge.waiting { background: rgba(251,191,36,0.2); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+.status-badge .tile-id { color: #ffd700; font-weight: 900; }
+
+.connection-box {
     width: 100%;
-    max-width: 800px;
+    max-width: 900px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(139,92,246,0.15);
+    border-radius: 16px;
+    padding: 18px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+.connection-box label {
+    color: #888;
+    font-size: 13px;
+}
+.connection-box input {
+    width: 55px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.04);
+    color: #fff;
+    font-size: 14px;
+    text-align: center;
+    font-family: inherit;
+}
+.connection-box input:focus {
+    outline: none;
+    border-color: rgba(139,92,246,0.4);
+}
+.connection-box .coord-display {
+    color: #a78bfa;
+    font-weight: 700;
+    font-size: 16px;
+    min-width: 50px;
+    text-align: center;
+}
+.connection-box button {
+    padding: 6px 20px;
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 10px;
+    background: rgba(255,215,0,0.08);
+    color: #ffd700;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: inherit;
+    transition: all 0.3s;
+}
+.connection-box button:hover {
+    background: rgba(255,215,0,0.2);
+    transform: translateY(-2px);
+}
+.connection-box .btn-disconnect {
+    border-color: rgba(239,68,68,0.3);
+    color: #f87171;
+}
+.connection-box .btn-disconnect:hover {
+    background: rgba(239,68,68,0.2);
+}
+
+.grid-2col {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
+    width: 100%;
+    max-width: 900px;
 }
 .card {
-    background: rgba(255,255,255,0.04);
+    background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 18px;
 }
 .card h3 {
     color: #a78bfa;
     font-size: 14px;
     margin-bottom: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
     padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
 }
-.player-item, .world-item {
+.card-full {
+    grid-column: 1 / -1;
+}
+.item-row {
     display: flex;
     justify-content: space-between;
     padding: 4px 0;
     font-size: 13px;
     border-bottom: 1px solid rgba(255,255,255,0.03);
 }
-.player-item .name { color: #fff; }
-.player-item .level { color: #fbbf24; }
-.player-item .score { color: #4ade80; }
-.world-item .w-name { color: #fff; }
-.world-item .w-players { color: #60a5fa; }
+.item-row .label { color: #fff; }
+.item-row .value { color: #888; }
+.item-row .value.gold { color: #ffd700; }
+.item-row .value.green { color: #4ade80; }
+.item-row .value.blue { color: #60a5fa; }
 .empty-msg {
     color: #666;
     font-size: 12px;
     text-align: center;
-    padding: 10px;
+    padding: 12px;
 }
 .actions {
     display: flex;
@@ -107,143 +169,91 @@ body {
     flex-wrap: wrap;
 }
 .actions button {
-    padding: 6px 16px;
-    border: 1px solid rgba(139,92,246,0.3);
+    padding: 5px 14px;
+    border: 1px solid rgba(139,92,246,0.25);
     border-radius: 8px;
-    background: rgba(139,92,246,0.1);
+    background: rgba(139,92,246,0.08);
     color: #a78bfa;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 11px;
     font-family: inherit;
     transition: all 0.3s;
 }
 .actions button:hover {
-    background: rgba(139,92,246,0.25);
+    background: rgba(139,92,246,0.2);
     transform: translateY(-2px);
 }
-.actions .btn-green {
-    border-color: rgba(74,222,128,0.3);
-    color: #4ade80;
-}
-.actions .btn-green:hover {
-    background: rgba(74,222,128,0.2);
-}
-.actions .btn-gold {
-    border-color: rgba(255,215,0,0.3);
-    color: #ffd700;
-}
-.actions .btn-gold:hover {
-    background: rgba(255,215,0,0.2);
-}
-.actions .btn-red {
-    border-color: rgba(239,68,68,0.3);
-    color: #f87171;
-}
-.actions .btn-red:hover {
-    background: rgba(239,68,68,0.2);
-}
-#tile-input-section {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin-top: 10px;
-    padding: 10px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 10px;
-    border: 1px solid rgba(255,215,0,0.1);
-    flex-wrap: wrap;
-}
-#tile-input-section label {
-    color: #888;
-    font-size: 12px;
-}
-#tile-input-section input {
-    width: 50px;
-    padding: 4px 6px;
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.05);
-    color: #fff;
-    font-size: 13px;
-    text-align: center;
-    font-family: inherit;
-}
-#tile-input-section input:focus {
-    outline: none;
-    border-color: rgba(255,215,0,0.4);
-}
-#tile-input-section .tile-label {
-    color: #a78bfa;
-    font-weight: 700;
-    font-size: 14px;
-    min-width: 40px;
-    text-align: center;
-}
+.actions .btn-green { border-color: rgba(74,222,128,0.25); color: #4ade80; }
+.actions .btn-green:hover { background: rgba(74,222,128,0.15); }
+.actions .btn-gold { border-color: rgba(255,215,0,0.25); color: #ffd700; }
+.actions .btn-gold:hover { background: rgba(255,215,0,0.15); }
+
 #toast {
     position: fixed;
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(10,10,30,0.95);
-    padding: 8px 24px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,215,0,0.2);
+    padding: 10px 28px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,215,0,0.15);
     color: #fff;
     font-size: 13px;
     display: none;
     z-index: 999;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
 }
 #toast.show { display: block; }
-@media (max-width: 600px) {
-    .content { grid-template-columns: 1fr; }
-    .header-bar h1 { font-size: 22px; }
-    #tile-input-section input { width: 40px; }
+
+@media (max-width: 700px) {
+    .grid-2col { grid-template-columns: 1fr; }
+    .card-full { grid-column: 1; }
+    .header h1 { font-size: 24px; }
+    .connection-box { padding: 14px; }
 }
 </style>
 </head>
 <body>
 
-<div class="header-bar">
-    <h1>🌍 مرحباً بك في عالمك الافتراضي</h1>
-    <div class="subtitle">🖥️ اختر المربع الذي تريد الاتصال به</div>
-    <div class="server-status waiting" id="serverStatus">⏳ انتظر التحديد...</div>
+<div class="header">
+    <h1>🌍 بوابة العوالم الافتراضية</h1>
+    <div class="sub">🖥️ اتصل بأي خادم مصغر في شبكة المربعات</div>
+    <div class="status-bar">
+        <span class="status-badge waiting" id="statusBadge">⏳ انتظر التحديد</span>
+        <span style="color:#666;font-size:12px;">المربع: <span id="currentTileDisplay" style="color:#ffd700;font-weight:700;">--</span></span>
+    </div>
 </div>
 
-<div class="content">
-    <div class="card" style="grid-column: 1 / -1;">
-        <h3>🔗 تحديد المربع</h3>
-        <div id="tile-input-section">
-            <label>📍 الصف (Row):</label>
-            <input type="number" id="tileRow" min="0" max="11" value="5">
-            <label>العمود (Col):</label>
-            <input type="number" id="tileCol" min="0" max="11" value="3">
-            <span class="tile-label" id="tileDisplay">(5,3)</span>
-            <button onclick="connectToTile()" class="btn-gold">🔗 اتصال</button>
-        </div>
-    </div>
+<div class="connection-box">
+    <label>📍 الصف:</label>
+    <input type="number" id="tileRow" min="0" max="11" value="5">
+    <label>العمود:</label>
+    <input type="number" id="tileCol" min="0" max="11" value="3">
+    <span class="coord-display" id="coordDisplay">(5,3)</span>
+    <button onclick="connectToTile()" id="connectBtn">🔗 اتصال</button>
+    <button onclick="disconnectServer()" class="btn-disconnect" id="disconnectBtn" style="display:none;">🔌 قطع</button>
+</div>
 
+<div class="grid-2col">
     <div class="card">
-        <h3>👥 اللاعبون النشطون</h3>
+        <h3>👥 اللاعبون</h3>
         <div id="playersList"><div class="empty-msg">⏳ انتظر الاتصال...</div></div>
         <div class="actions">
-            <button onclick="addNewPlayer()" class="btn-green">➕ إضافة لاعب</button>
+            <button onclick="addPlayer()" class="btn-green">➕ إضافة</button>
         </div>
     </div>
 
     <div class="card">
-        <h3>🌍 العوالم المتاحة</h3>
+        <h3>🌍 العوالم</h3>
         <div id="worldsList"><div class="empty-msg">⏳ انتظر الاتصال...</div></div>
     </div>
 
-    <div class="card" style="grid-column: 1 / -1;">
+    <div class="card card-full">
         <h3>📊 معلومات الخادم</h3>
-        <div id="serverInfo" style="font-size:13px;color:#aaa;line-height:1.8;">
-            ⏳ انتظر الاتصال...
-        </div>
+        <div id="serverInfo"><div class="empty-msg">⏳ انتظر الاتصال...</div></div>
         <div class="actions">
             <button onclick="refreshData()">🔄 تحديث</button>
-            <button onclick="pingServer()" class="btn-green">📡 اختبار الاتصال</button>
-            <button onclick="disconnectServer()" class="btn-red">🔌 قطع الاتصال</button>
+            <button onclick="pingServer()" class="btn-green">📡 بينغ</button>
         </div>
     </div>
 </div>
@@ -252,10 +262,10 @@ body {
 
 <script>
 // ============================================================
-// 🎮 الملف الرئيسي للعبة - اتصال يدوي بالمربع
+// 🎮 بوابة العوالم - اتصال يدوي بأي مربع
 // ============================================================
 
-let currentTile = '5_3';
+let currentTile = null;
 let server = null;
 let isConnected = false;
 
@@ -267,14 +277,14 @@ function showToast(msg) {
     el._t = setTimeout(() => el.classList.remove('show'), 3000);
 }
 
-function updateTileDisplay() {
-    const row = document.getElementById('tileRow').value || 0;
-    const col = document.getElementById('tileCol').value || 0;
-    document.getElementById('tileDisplay').textContent = `(${row},${col})`;
+function updateCoordDisplay() {
+    const row = parseInt(document.getElementById('tileRow').value) || 0;
+    const col = parseInt(document.getElementById('tileCol').value) || 0;
+    document.getElementById('coordDisplay').textContent = `(${row},${col})`;
 }
 
-document.getElementById('tileRow').addEventListener('input', updateTileDisplay);
-document.getElementById('tileCol').addEventListener('input', updateTileDisplay);
+document.getElementById('tileRow').addEventListener('input', updateCoordDisplay);
+document.getElementById('tileCol').addEventListener('input', updateCoordDisplay);
 
 function connectToTile() {
     const row = parseInt(document.getElementById('tileRow').value) || 0;
@@ -286,55 +296,68 @@ function connectToTile() {
     }
     
     currentTile = `${row}_${col}`;
-    document.getElementById('serverStatus').className = 'server-status waiting';
-    document.getElementById('serverStatus').textContent = '⏳ جاري الاتصال بـ (' + row + ',' + col + ')...';
+    document.getElementById('currentTileDisplay').textContent = currentTile;
     
-    console.log(`🔍 جاري البحث عن خادم (${currentTile})...`);
+    const badge = document.getElementById('statusBadge');
+    badge.className = 'status-badge waiting';
+    badge.textContent = `⏳ جاري الاتصال بـ (${row},${col})...`;
     
-    // محاولة جلب الخادم من window.servers
+    document.getElementById('connectBtn').textContent = '⏳ جاري...';
+    document.getElementById('connectBtn').disabled = true;
+    
+    console.log(`🔍 بحث عن خادم (${currentTile})...`);
+    
+    // محاولة 1: window.servers
     if (window.servers && window.servers[currentTile]) {
         server = window.servers[currentTile];
         isConnected = true;
         console.log(`✅ تم العثور على الخادم (${currentTile})!`);
-        document.getElementById('serverStatus').className = 'server-status online';
-        document.getElementById('serverStatus').textContent = `🟢 متصل بـ (${row},${col})`;
-        loadServerData();
-        showToast(`✅ متصل بالخادم (${row},${col})`);
+        onConnected(row, col);
         return;
     }
     
-    // محاولة بديلة: البحث في ServerManager
+    // محاولة 2: ServerManager
     if (window.ServerManager) {
-        const tile = window.ServerManager.tiles && window.ServerManager.tiles[currentTile];
-        if (tile && tile.files && tile.files['main.js']) {
-            try {
+        try {
+            const tile = window.ServerManager.tiles && window.ServerManager.tiles[currentTile];
+            if (tile && tile.files && tile.files['main.js']) {
                 eval(tile.files['main.js']);
                 if (window.servers && window.servers[currentTile]) {
                     server = window.servers[currentTile];
                     isConnected = true;
                     console.log(`✅ تم تحميل الخادم (${currentTile}) من ServerManager!`);
-                    document.getElementById('serverStatus').className = 'server-status online';
-                    document.getElementById('serverStatus').textContent = `🟢 متصل بـ (${row},${col})`;
-                    loadServerData();
-                    showToast(`✅ متصل بالخادم (${row},${col})`);
+                    onConnected(row, col);
                     return;
                 }
-            } catch(e) {
-                console.warn(`⚠️ فشل تقييم main.js للمربع (${currentTile}):`, e);
             }
+        } catch(e) {
+            console.warn(`⚠️ فشل تحميل main.js للمربع (${currentTile}):`, e);
         }
     }
     
-    // فشل الاتصال
+    // فشل
     server = null;
     isConnected = false;
-    console.warn(`❌ الخادم (${currentTile}) غير متصل`);
-    document.getElementById('serverStatus').className = 'server-status offline';
-    document.getElementById('serverStatus').textContent = `🔴 غير متصل بـ (${row},${col})`;
+    badge.className = 'status-badge offline';
+    badge.textContent = `🔴 غير متصل بـ (${row},${col})`;
+    document.getElementById('connectBtn').textContent = '🔗 اتصال';
+    document.getElementById('connectBtn').disabled = false;
+    document.getElementById('disconnectBtn').style.display = 'none';
     document.getElementById('playersList').innerHTML = '<div class="empty-msg">❌ الخادم غير متصل</div>';
     document.getElementById('worldsList').innerHTML = '<div class="empty-msg">❌ الخادم غير متصل</div>';
-    document.getElementById('serverInfo').textContent = '❌ الخادم غير متصل';
+    document.getElementById('serverInfo').innerHTML = '<div class="empty-msg">❌ الخادم غير متصل</div>';
     showToast(`❌ لا يوجد خادم في المربع (${row},${col})`);
+}
+
+function onConnected(row, col) {
+    const badge = document.getElementById('statusBadge');
+    badge.className = 'status-badge online';
+    badge.textContent = `🟢 متصل بـ (${row},${col})`;
+    document.getElementById('connectBtn').textContent = '🔗 اتصال';
+    document.getElementById('connectBtn').disabled = false;
+    document.getElementById('disconnectBtn').style.display = 'inline-block';
+    loadServerData();
+    showToast(`✅ متصل بالخادم (${row},${col})`);
 }
 
 function loadServerData() {
@@ -345,24 +368,26 @@ function loadServerData() {
         if (server.info) {
             const info = server.info();
             document.getElementById('serverInfo').innerHTML = `
-                <div>📛 <b style="color:#fff;">الاسم:</b> ${info.name || 'غير معروف'}</div>
-                <div>📌 <b style="color:#fff;">الحالة:</b> <span style="color:#4ade80;">${info.status || 'نشط'}</span></div>
-                <div>📦 <b style="color:#fff;">الإصدار:</b> ${info.version || '1.0'}</div>
-                <div>⏱️ <b style="color:#fff;">وقت التشغيل:</b> ${info.uptime || '0 ثانية'}</div>
-                <div>📊 <b style="color:#fff;">الطلبات:</b> ${info.requests || 0}</div>
+                <div class="item-row"><span class="label">📛 الاسم</span><span class="value gold">${info.name || 'غير معروف'}</span></div>
+                <div class="item-row"><span class="label">📌 الحالة</span><span class="value green">${info.status || 'نشط'}</span></div>
+                <div class="item-row"><span class="label">📦 الإصدار</span><span class="value">${info.version || '1.0'}</span></div>
+                <div class="item-row"><span class="label">⏱️ وقت التشغيل</span><span class="value">${info.uptime || '0 ثانية'}</span></div>
+                <div class="item-row"><span class="label">📊 عدد الطلبات</span><span class="value blue">${info.requests || 0}</span></div>
             `;
         }
         
-        // قائمة اللاعبين
+        // اللاعبين
         if (server.getPlayers) {
             const players = server.getPlayers();
             const container = document.getElementById('playersList');
             if (players && players.length > 0) {
                 container.innerHTML = players.map(p => `
-                    <div class="player-item">
-                        <span class="name">${p.name || 'لاعب'}</span>
-                        <span class="level">⭐ ${p.level || 1}</span>
-                        <span class="score">🏆 ${p.score || 0}</span>
+                    <div class="item-row">
+                        <span class="label">${p.name || 'لاعب'}</span>
+                        <span style="display:flex;gap:10px;">
+                            <span class="value gold">⭐ ${p.level || 1}</span>
+                            <span class="value green">🏆 ${p.score || 0}</span>
+                        </span>
                     </div>
                 `).join('');
             } else {
@@ -370,15 +395,15 @@ function loadServerData() {
             }
         }
         
-        // قائمة العوالم
+        // العوالم
         if (server.getWorlds) {
             const worlds = server.getWorlds();
             const container = document.getElementById('worldsList');
             if (worlds && worlds.length > 0) {
                 container.innerHTML = worlds.map(w => `
-                    <div class="world-item">
-                        <span class="w-name">${w.name || 'عالم'}</span>
-                        <span class="w-players">👥 ${w.players || 0}</span>
+                    <div class="item-row">
+                        <span class="label">${w.name || 'عالم'}</span>
+                        <span class="value blue">👥 ${w.players || 0}</span>
                     </div>
                 `).join('');
             } else {
@@ -386,10 +411,8 @@ function loadServerData() {
             }
         }
         
-        showToast('✅ تم تحديث البيانات');
     } catch(e) {
-        console.error('❌ خطأ في تحميل البيانات:', e);
-        showToast('⚠️ خطأ في تحميل البيانات');
+        console.error('❌ خطأ في التحميل:', e);
     }
 }
 
@@ -415,40 +438,42 @@ function pingServer() {
             showToast('📡 الخادم متصل');
         }
     } catch(e) {
-        showToast('❌ فشل الاتصال بالخادم');
+        showToast('❌ فشل الاتصال');
     }
 }
 
 function disconnectServer() {
     server = null;
     isConnected = false;
-    document.getElementById('serverStatus').className = 'server-status waiting';
-    document.getElementById('serverStatus').textContent = '⏳ غير متصل';
+    document.getElementById('statusBadge').className = 'status-badge waiting';
+    document.getElementById('statusBadge').textContent = '⏳ غير متصل';
+    document.getElementById('currentTileDisplay').textContent = '--';
+    document.getElementById('disconnectBtn').style.display = 'none';
     document.getElementById('playersList').innerHTML = '<div class="empty-msg">⏳ غير متصل</div>';
     document.getElementById('worldsList').innerHTML = '<div class="empty-msg">⏳ غير متصل</div>';
-    document.getElementById('serverInfo').textContent = '⏳ غير متصل';
+    document.getElementById('serverInfo').innerHTML = '<div class="empty-msg">⏳ غير متصل</div>';
     showToast('🔌 تم قطع الاتصال');
 }
 
-function addNewPlayer() {
+function addPlayer() {
     if (!server || !isConnected) {
         showToast('❌ الخادم غير متصل');
         return;
     }
     try {
         if (server.addPlayer) {
-            const name = prompt('👤 أدخل اسم اللاعب الجديد:');
+            const name = prompt('👤 أدخل اسم اللاعب:');
             if (name && name.trim()) {
                 const result = server.addPlayer(name.trim());
                 if (result && result.id) {
                     showToast(`✅ تم إضافة ${result.name}`);
                     loadServerData();
                 } else {
-                    showToast('❌ فشل إضافة اللاعب');
+                    showToast('❌ فشل الإضافة');
                 }
             }
         } else {
-            showToast('⚠️ الخادم لا يدعم إضافة لاعبين');
+            showToast('⚠️ الخادم لا يدعم الإضافة');
         }
     } catch(e) {
         showToast('❌ خطأ: ' + e.message);
@@ -457,13 +482,12 @@ function addNewPlayer() {
 
 // ====== تهيئة ======
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎮 تشغيل الملف الرئيسي للعبة...');
+    console.log('🌍 بوابة العوالم جاهزة!');
     console.log('📌 حدد المربع واضغط "اتصال"');
-    updateTileDisplay();
+    updateCoordDisplay();
 });
 
-console.log('🌍 مرحباً بك في عالمك الافتراضي!');
-console.log('📌 استخدم واجهة التحديد أعلاه للاتصال بأي مربع');
+console.log('🎮 مرحباً بك في بوابة العوالم!');
 </script>
 </body>
 </html>
