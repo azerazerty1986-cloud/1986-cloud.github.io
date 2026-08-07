@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🖥️ إدارة الخوادم المصغرة - المدير</title>
+    <title>👑 إدارة الخوادم المصغرة - المدير</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -80,26 +80,6 @@
             border-radius: 12px;
             font-size: 10px;
             font-weight: 800;
-        }
-        
-        .close-btn {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            z-index: 9999;
-            background: rgba(239,68,68,0.9);
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 700;
-            font-family: inherit;
-        }
-        .close-btn:hover {
-            background: rgba(239,68,68,1);
-            transform: scale(1.05);
         }
         
         .stats {
@@ -454,6 +434,7 @@
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
         
+        /* ====== شاشة الدخول ====== */
         #auth-overlay {
             position: fixed;
             inset: 0;
@@ -576,68 +557,70 @@
         <h2>👑 دخول المدير</h2>
         <div class="field">
             <label>👤 اسم المستخدم</label>
-            <input type="text" id="admin-username" placeholder="أدخل اسم المستخدم">
+            <input type="text" id="admin-username" placeholder="أدخل اسم المستخدم" value="admin">
         </div>
         <div class="field">
             <label>🔑 كلمة المرور</label>
-            <input type="password" id="admin-password" placeholder="أدخل كلمة المرور" onkeydown="if(event.key==='Enter')adminLogin()">
+            <input type="password" id="admin-password" placeholder="أدخل كلمة المرور" value="admin123" onkeydown="if(event.key==='Enter')adminLogin()">
         </div>
         <div class="auth-error" id="auth-error"></div>
         <button class="auth-btn primary" onclick="adminLogin()">🚀 دخول</button>
         <div class="auth-info">
             🔐 هذا الخادم خاص بالمدير فقط<br>
-            <span style="color:#888;font-size:10px;">يُرجى إدخال بيانات المدير للدخول</span>
+            <span style="color:#888;font-size:10px;">بيانات الدخول: admin / admin123</span>
         </div>
     </div>
 </div>
 
-<button class="close-btn" onclick="closeServerManager()">✖ إغلاق</button>
-
-<div class="container" id="main-container" style="display:none;">
-    <div class="header">
-        <div>
-            <h1>🖥️ إدارة الخوادم المصغرة</h1>
-            <span style="font-size:10px;color:#ffd700;">👑 المدير: <span id="admin-name-display">مدير</span></span>
+<!-- ====== المحتوى الرئيسي ====== -->
+<div id="main-container" style="display:none;">
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>👑 إدارة الخوادم المصغرة</h1>
+                <span style="font-size:10px;color:#ffd700;">المدير: <span id="admin-name-display">مدير</span></span>
+            </div>
+            <div class="header-controls">
+                <button class="btn-warning" onclick="toggleTelegramSettings()">📡 القناة</button>
+                <button class="btn-success" onclick="syncAllFromChannel()">🔄 مزامنة الكل</button>
+                <button onclick="exportAllTiles()">📤 تصدير الكل</button>
+                <button onclick="document.getElementById('importFile').click()">📥 استيراد</button>
+                <button class="btn-danger" onclick="resetAll()">🔄 إعادة تعيين</button>
+                <button class="btn-danger" onclick="logoutAdmin()" style="border-color:rgba(239,68,68,0.3);color:#f87171;">🚪 خروج</button>
+                <input type="file" id="importFile" accept=".json" style="display:none" onchange="importAllTiles(event)">
+            </div>
         </div>
-        <div class="header-controls">
-            <button class="btn-warning" onclick="toggleTelegramSettings()">📡 القناة</button>
-            <button class="btn-success" onclick="syncAllFromChannel()">🔄 مزامنة الكل</button>
-            <button onclick="exportAllTiles()">📤 تصدير الكل</button>
-            <button onclick="document.getElementById('importFile').click()">📥 استيراد</button>
-            <button class="btn-danger" onclick="resetAll()">🔄 إعادة تعيين</button>
-            <button class="btn-danger" onclick="logoutAdmin()" style="border-color:rgba(239,68,68,0.3);color:#f87171;">🚪 خروج</button>
-            <input type="file" id="importFile" accept=".json" style="display:none" onchange="importAllTiles(event)">
+        
+        <div class="telegram-settings" id="telegramSettings">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <span style="color:#a78bfa;font-size:12px;font-weight:600;">📡 إعدادات قناة التلجرام</span>
+                <span class="status offline" id="tgStatus">🔴 غير متصل</span>
+            </div>
+            <div class="row">
+                <input type="text" id="tgBotToken" placeholder="Bot Token" value="">
+                <input type="text" id="tgChatId" placeholder="Chat ID" value="">
+                <button onclick="saveTelegramSettings()" style="padding:4px 12px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.2);border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;">💾 حفظ</button>
+                <button onclick="testTelegramConnection()" style="padding:4px 12px;background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;">🧪 اختبار</button>
+            </div>
+            <div style="margin-top:6px;font-size:9px;color:#666;">
+                💡 الملفات تُرفع بتنسيق: <code style="color:#a78bfa;">tile_row_col_filename</code>
+            </div>
         </div>
+        
+        <div class="stats" id="stats">
+            <div class="stat-box"><span class="num purple" id="totalTiles">0</span><span class="label">📦 إجمالي</span></div>
+            <div class="stat-box"><span class="num green" id="onlineTiles">0</span><span class="label">🟢 نشطة</span></div>
+            <div class="stat-box"><span class="num blue" id="filesCount">0</span><span class="label">📄 ملفات</span></div>
+            <div class="stat-box"><span class="num yellow" id="protectedCount">0</span><span class="label">🛡️ محمية</span></div>
+            <div class="stat-box"><span class="num green" id="syncedCount">0</span><span class="label">🔄 مزامنة</span></div>
+            <div class="stat-box"><span class="num orange" id="adminFilesCount">0</span><span class="label">👑 ملفات إدارة</span></div>
+        </div>
+        
+        <div class="grid" id="grid"></div>
     </div>
-    
-    <div class="telegram-settings" id="telegramSettings">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <span style="color:#a78bfa;font-size:12px;font-weight:600;">📡 إعدادات قناة التلجرام</span>
-            <span class="status offline" id="tgStatus">🔴 غير متصل</span>
-        </div>
-        <div class="row">
-            <input type="text" id="tgBotToken" placeholder="Bot Token" value="">
-            <input type="text" id="tgChatId" placeholder="Chat ID" value="">
-            <button onclick="saveTelegramSettings()" style="padding:4px 12px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.2);border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;">💾 حفظ</button>
-            <button onclick="testTelegramConnection()" style="padding:4px 12px;background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;">🧪 اختبار</button>
-        </div>
-        <div style="margin-top:6px;font-size:9px;color:#666;">
-            💡 الملفات تُرفع بتنسيق: <code style="color:#a78bfa;">tile_row_col_filename</code>
-        </div>
-    </div>
-    
-    <div class="stats" id="stats">
-        <div class="stat-box"><span class="num purple" id="totalTiles">0</span><span class="label">📦 إجمالي</span></div>
-        <div class="stat-box"><span class="num green" id="onlineTiles">0</span><span class="label">🟢 نشطة</span></div>
-        <div class="stat-box"><span class="num blue" id="filesCount">0</span><span class="label">📄 ملفات</span></div>
-        <div class="stat-box"><span class="num yellow" id="protectedCount">0</span><span class="label">🛡️ محمية</span></div>
-        <div class="stat-box"><span class="num green" id="syncedCount">0</span><span class="label">🔄 مزامنة</span></div>
-        <div class="stat-box"><span class="num orange" id="adminFilesCount">0</span><span class="label">👑 ملفات إدارة</span></div>
-    </div>
-    
-    <div class="grid" id="grid"></div>
 </div>
 
+<!-- ====== لوحة المربع ====== -->
 <div class="tile-panel" id="tilePanel">
     <div class="panel-header">
         <h3 id="panelTitle">📦 المربع (0,0) <span class="admin-tag">👑 مدير</span></h3>
@@ -662,6 +645,7 @@
     </div>
 </div>
 
+<!-- ====== محرر الملفات ====== -->
 <div class="file-editor" id="fileEditor">
     <div class="editor-header">
         <h4 id="editorTitle">📝 تحرير الملف</h4>
@@ -674,6 +658,7 @@
     </div>
 </div>
 
+<!-- ====== الإشعارات ====== -->
 <div class="toast" id="toast"></div>
 
 <script>
@@ -704,7 +689,10 @@ function adminLogin() {
         document.getElementById('admin-name-display').textContent = adminName;
         document.body.classList.add('admin-visible');
         showToast('👑 مرحباً أيها المدير!', 'admin');
-        ServerManager.init();
+        // تهيئة النظام بعد الدخول
+        setTimeout(function() {
+            ServerManager.init();
+        }, 100);
     } else {
         errorEl.textContent = '❌ اسم المستخدم أو كلمة المرور غير صحيحة';
         errorEl.style.display = 'block';
@@ -716,23 +704,15 @@ function logoutAdmin() {
         isAdminLoggedIn = false;
         document.getElementById('main-container').style.display = 'none';
         document.getElementById('auth-overlay').style.display = 'flex';
-        document.getElementById('admin-username').value = '';
-        document.getElementById('admin-password').value = '';
+        document.getElementById('admin-username').value = 'admin';
+        document.getElementById('admin-password').value = 'admin123';
         document.getElementById('auth-error').style.display = 'none';
         document.body.classList.remove('admin-visible');
     }
 }
 
-function closeServerManager() {
-    if (window.parent && window.parent.closeServerManager) {
-        window.parent.closeServerManager();
-    } else {
-        window.close();
-    }
-}
-
 // ============================================================
-// 🖥️ ServerManager - النظام الرئيسي (خاص بالمدير)
+// 🖥️ ServerManager - النظام الرئيسي
 // ============================================================
 
 const ServerManager = {
@@ -742,7 +722,7 @@ const ServerManager = {
     protectedTiles: new Set(),
     activeServers: new Set(),
     syncedTiles: new Set(),
-    adminTiles: new Set(), // مربعات الإدارة
+    adminTiles: new Set(['0_0', '0_1', '0_2']),
     
     init: function() {
         console.log('🖥️ تشغيل نظام إدارة الخوادم (مدير)...');
@@ -752,6 +732,7 @@ const ServerManager = {
         this.updateStats();
         this.loadAdminFiles();
         console.log('✅ النظام جاهز');
+        showToast('✅ تم تحميل الخوادم بنجاح', 'success');
     },
     
     loadTiles: function() {
@@ -769,6 +750,7 @@ const ServerManager = {
             } catch(e) {}
         }
         
+        // إنشاء المربعات الافتراضية
         for (let row = 0; row < 12; row++) {
             for (let col = 0; col < 12; col++) {
                 const id = `${row}_${col}`;
@@ -780,9 +762,7 @@ const ServerManager = {
             }
         }
         // مربعات الإدارة الافتراضية
-        this.adminTiles.add('0_0');
-        this.adminTiles.add('0_1');
-        this.adminTiles.add('0_2');
+        this.adminTiles = new Set(['0_0', '0_1', '0_2']);
         this.saveTiles();
     },
     
@@ -800,6 +780,7 @@ const ServerManager = {
             for (let col = 0; col < 12; col++) {
                 const id = `${row}_${col}`;
                 const tile = this.tiles[id];
+                if (!tile) continue;
                 const isProtected = this.protectedTiles.has(id);
                 const isActive = this.activeServers.has(id);
                 const isSynced = this.syncedTiles.has(id);
@@ -830,7 +811,7 @@ const ServerManager = {
         let files = 0;
         let adminFiles = 0;
         Object.entries(this.tiles).forEach(([id, t]) => {
-            if (t.files) {
+            if (t && t.files) {
                 const count = Object.keys(t.files).length;
                 files += count;
                 if (this.adminTiles.has(id)) adminFiles += count;
@@ -876,7 +857,7 @@ const ServerManager = {
     renderFiles: function(tile) {
         const container = document.getElementById('panelFiles');
         container.innerHTML = '';
-        if (!tile.files || Object.keys(tile.files).length === 0) {
+        if (!tile || !tile.files || Object.keys(tile.files).length === 0) {
             container.innerHTML = '<div style="color:#666;font-size:11px;text-align:center;padding:10px;">📭 لا توجد ملفات</div>';
             return;
         }
@@ -924,9 +905,7 @@ const ServerManager = {
                     this.renderFiles(tile);
                     count++;
                     if (count === files.length) {
-                        this.showToast(`✅ تم رفع ${count} ملف`, 'success');
-                        // مزامنة تلقائية مع القناة
-                        this.syncTileToChannel();
+                        showToast(`✅ تم رفع ${count} ملف`, 'success');
                     }
                 };
                 reader.readAsText(file);
@@ -955,7 +934,7 @@ const ServerManager = {
         this.renderGrid();
         this.updateStats();
         this.closeEditor();
-        this.showToast(`✅ تم حفظ ${this.currentFile}`, 'success');
+        showToast(`✅ تم حفظ ${this.currentFile}`, 'success');
     },
     
     closeEditor: function() {
@@ -985,7 +964,7 @@ const ServerManager = {
             this.renderGrid();
             this.updateStats();
             this.renderFiles(tile);
-            this.showToast(`🗑️ تم حذف ${fileName}`, 'warning');
+            showToast(`🗑️ تم حذف ${fileName}`, 'warning');
         }
     },
     
@@ -994,20 +973,20 @@ const ServerManager = {
         const id = this.currentTile;
         if (this.activeServers.has(id)) {
             this.activeServers.delete(id);
-            this.showToast('⏹️ تم إيقاف الخادم', 'warning');
+            showToast('⏹️ تم إيقاف الخادم', 'warning');
         } else {
             this.activeServers.add(id);
             const tile = this.tiles[id];
             if (tile && tile.files && tile.files['main.js']) {
                 try {
                     console.log(`🟢 تشغيل خادم (${tile.row},${tile.col})`);
-                    this.showToast(`🟢 تم تشغيل خادم (${tile.row},${tile.col})`, 'success');
+                    showToast(`🟢 تم تشغيل خادم (${tile.row},${tile.col})`, 'success');
                 } catch(e) {
-                    this.showToast('❌ خطأ في تشغيل الخادم', 'error');
+                    showToast('❌ خطأ في تشغيل الخادم', 'error');
                     this.activeServers.delete(id);
                 }
             } else {
-                this.showToast('⚠️ لا يوجد ملف main.js', 'warning');
+                showToast('⚠️ لا يوجد ملف main.js', 'warning');
                 this.activeServers.delete(id);
             }
         }
@@ -1021,10 +1000,10 @@ const ServerManager = {
         const id = this.currentTile;
         if (this.protectedTiles.has(id)) {
             this.protectedTiles.delete(id);
-            this.showToast('🔓 تم إزالة الحماية', 'warning');
+            showToast('🔓 تم إزالة الحماية', 'warning');
         } else {
             this.protectedTiles.add(id);
-            this.showToast('🛡️ تم تفعيل الحماية', 'success');
+            showToast('🛡️ تم تفعيل الحماية', 'success');
         }
         this.saveTiles();
         this.renderGrid();
@@ -1037,10 +1016,10 @@ const ServerManager = {
         const id = this.currentTile;
         if (this.adminTiles.has(id)) {
             this.adminTiles.delete(id);
-            this.showToast('🔽 تم إزالة دور الإدارة', 'warning');
+            showToast('🔽 تم إزالة دور الإدارة', 'warning');
         } else {
             this.adminTiles.add(id);
-            this.showToast('👑 تم تعيين مربع إدارة', 'admin');
+            showToast('👑 تم تعيين مربع إدارة', 'admin');
         }
         this.saveTiles();
         this.renderGrid();
@@ -1061,7 +1040,7 @@ const ServerManager = {
             this.renderGrid();
             this.updateStats();
             this.openPanel(this.currentTile);
-            this.showToast('🗑️ تم تفريغ المربع', 'warning');
+            showToast('🗑️ تم تفريغ المربع', 'warning');
         }
     },
     
@@ -1078,33 +1057,33 @@ const ServerManager = {
         const token = document.getElementById('tgBotToken').value.trim();
         const chatId = document.getElementById('tgChatId').value.trim();
         if (!token || !chatId) {
-            this.showToast('⚠️ أدخل Token و Chat ID', 'warning');
+            showToast('⚠️ أدخل Token و Chat ID', 'warning');
             return;
         }
         localStorage.setItem('telegram_bot_token', token);
         localStorage.setItem('telegram_chat_id', chatId);
         this.updateTelegramStatus();
-        this.showToast('✅ تم حفظ إعدادات التلجرام', 'success');
+        showToast('✅ تم حفظ إعدادات التلجرام', 'success');
     },
     
     testTelegramConnection: async function() {
         const token = document.getElementById('tgBotToken').value.trim();
         if (!token) {
-            this.showToast('⚠️ أدخل Bot Token أولاً', 'warning');
+            showToast('⚠️ أدخل Bot Token أولاً', 'warning');
             return;
         }
         try {
             const resp = await fetch(`https://api.telegram.org/bot${token}/getMe`);
             const data = await resp.json();
             if (data.ok) {
-                this.showToast(`✅ البوت متصل: @${data.result.username}`, 'success');
+                showToast(`✅ البوت متصل: @${data.result.username}`, 'success');
                 document.getElementById('tgStatus').className = 'status online';
                 document.getElementById('tgStatus').textContent = '🟢 متصل';
             } else {
-                this.showToast('❌ فشل الاتصال: ' + data.description, 'error');
+                showToast('❌ فشل الاتصال: ' + data.description, 'error');
             }
         } catch(e) {
-            this.showToast('❌ خطأ في الاتصال', 'error');
+            showToast('❌ خطأ في الاتصال', 'error');
         }
     },
     
@@ -1133,12 +1112,12 @@ const ServerManager = {
         const token = localStorage.getItem('telegram_bot_token');
         const chatId = localStorage.getItem('telegram_chat_id');
         if (!token || !chatId) {
-            this.showToast('⚠️ قم بإعداد التلجرام أولاً', 'warning');
+            showToast('⚠️ قم بإعداد التلجرام أولاً', 'warning');
             return;
         }
         const tile = this.tiles[tileId];
         if (!tile || !tile.files || !tile.files[fileName]) {
-            this.showToast('❌ الملف غير موجود', 'error');
+            showToast('❌ الملف غير موجود', 'error');
             return;
         }
         try {
@@ -1161,12 +1140,12 @@ const ServerManager = {
                 this.renderGrid();
                 this.updateStats();
                 this.openPanel(tileId);
-                this.showToast(`✅ تم مزامنة ${formattedName}`, 'success');
+                showToast(`✅ تم مزامنة ${formattedName}`, 'success');
             } else {
-                this.showToast('❌ فشل المزامنة: ' + data.description, 'error');
+                showToast('❌ فشل المزامنة: ' + data.description, 'error');
             }
         } catch(e) {
-            this.showToast('❌ خطأ في المزامنة', 'error');
+            showToast('❌ خطأ في المزامنة', 'error');
         }
     },
     
@@ -1175,15 +1154,15 @@ const ServerManager = {
         const token = localStorage.getItem('telegram_bot_token');
         const chatId = localStorage.getItem('telegram_chat_id');
         if (!token || !chatId) {
-            this.showToast('⚠️ قم بإعداد التلجرام أولاً', 'warning');
+            showToast('⚠️ قم بإعداد التلجرام أولاً', 'warning');
             return;
         }
-        this.showToast('🔄 جاري المزامنة...', 'warning');
+        showToast('🔄 جاري المزامنة...', 'warning');
         try {
             const resp = await fetch(`https://api.telegram.org/bot${token}/getUpdates?limit=100`);
             const data = await resp.json();
             if (!data.ok) {
-                this.showToast('❌ فشل جلب التحديثات', 'error');
+                showToast('❌ فشل جلب التحديثات', 'error');
                 return;
             }
             let synced = 0;
@@ -1214,9 +1193,9 @@ const ServerManager = {
             this.renderGrid();
             this.updateStats();
             this.loadAdminFiles();
-            this.showToast(`✅ تم مزامنة ${synced} ملف`, 'success');
+            showToast(`✅ تم مزامنة ${synced} ملف`, 'success');
         } catch(e) {
-            this.showToast('❌ فشل المزامنة: ' + e.message, 'error');
+            showToast('❌ فشل المزامنة: ' + e.message, 'error');
         }
     },
     
@@ -1224,7 +1203,7 @@ const ServerManager = {
         if (!this.currentTile || !isAdminLoggedIn) return;
         const tile = this.tiles[this.currentTile];
         if (!tile || !tile.files) {
-            this.showToast('❌ لا توجد ملفات للمزامنة', 'error');
+            showToast('❌ لا توجد ملفات للمزامنة', 'error');
             return;
         }
         let synced = 0;
@@ -1232,7 +1211,7 @@ const ServerManager = {
             await this.syncFileToChannel(this.currentTile, fileName);
             synced++;
         }
-        if (synced > 0) this.showToast(`✅ تم مزامنة ${synced} ملف`, 'success');
+        if (synced > 0) showToast(`✅ تم مزامنة ${synced} ملف`, 'success');
     },
     
     // ====== تحميل ملفات الإدارة ======
@@ -1257,7 +1236,6 @@ const ServerManager = {
                     try {
                         const data = JSON.parse(content);
                         console.log(`📂 تحميل ملف إدارة: ${fileName} (${tileId})`, data);
-                        // تطبيق البيانات على النظام
                         this.applyAdminData(adminFileMap[fileName], data);
                         loaded++;
                     } catch(e) {
@@ -1267,25 +1245,15 @@ const ServerManager = {
             }
         }
         if (loaded > 0) {
-            this.showToast(`📂 تم تحميل ${loaded} ملف إدارة`, 'admin');
+            showToast(`📂 تم تحميل ${loaded} ملف إدارة`, 'admin');
         }
         this.updateStats();
     },
     
     applyAdminData: function(type, data) {
-        // يمكن تخصيص هذه الدالة حسب احتياجات اللعبة
         console.log(`📊 تطبيق بيانات ${type}:`, data);
-        // تخزين البيانات في متغير عام
         window.adminData = window.adminData || {};
         window.adminData[type] = data;
-        
-        // تحديث الواجهة حسب نوع البيانات
-        if (type === 'users') {
-            // تحديث بيانات المستخدمين
-            if (data.users) {
-                console.log(`👥 تم تحميل ${data.users.length} مستخدم`);
-            }
-        }
     },
     
     // ====== تصدير واستيراد ======
@@ -1307,7 +1275,7 @@ const ServerManager = {
         a.download = `servers_admin_backup_${Date.now()}.json`;
         a.click();
         URL.revokeObjectURL(url);
-        this.showToast('📤 تم تصدير جميع المربعات (مدير)', 'admin');
+        showToast('📤 تم تصدير جميع المربعات (مدير)', 'admin');
     },
     
     importAllTiles: function(event) {
@@ -1326,9 +1294,9 @@ const ServerManager = {
                 this.renderGrid();
                 this.updateStats();
                 this.loadAdminFiles();
-                this.showToast('📥 تم استيراد المربعات (مدير)', 'admin');
+                showToast('📥 تم استيراد المربعات (مدير)', 'admin');
             } catch(err) {
-                this.showToast('❌ فشل الاستيراد: ' + err.message, 'error');
+                showToast('❌ فشل الاستيراد: ' + err.message, 'error');
             }
         };
         reader.readAsText(file);
@@ -1348,7 +1316,6 @@ const ServerManager = {
         this.syncedTiles = new Set();
         this.adminTiles = new Set();
         this.loadTiles();
-        // إضافة مربعات الإدارة الافتراضية
         this.adminTiles.add('0_0');
         this.adminTiles.add('0_1');
         this.adminTiles.add('0_2');
@@ -1356,18 +1323,7 @@ const ServerManager = {
         this.renderGrid();
         this.updateStats();
         this.closePanel();
-        this.showToast('🔄 تم إعادة التعيين', 'warning');
-    },
-    
-    showToast: function(message, type = 'info') {
-        const toast = document.getElementById('toast');
-        toast.textContent = message;
-        toast.className = 'toast ' + (type || 'info');
-        toast.style.display = 'block';
-        clearTimeout(this._toastTimeout);
-        this._toastTimeout = setTimeout(() => {
-            toast.style.display = 'none';
-        }, 4000);
+        showToast('🔄 تم إعادة التعيين', 'warning');
     }
 };
 
@@ -1388,16 +1344,26 @@ function toggleTelegramSettings() { ServerManager.toggleTelegramSettings(); }
 function saveTelegramSettings() { ServerManager.saveTelegramSettings(); }
 function testTelegramConnection() { ServerManager.testTelegramConnection(); }
 
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = 'toast ' + (type || 'info');
+    toast.style.display = 'block';
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => {
+        toast.style.display = 'none';
+    }, 4000);
+}
+
 // ====== بدء النظام ======
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🖥️ نظام إدارة الخوادم (مدير) جاهز!');
-    console.log('👑 يُرجى تسجيل الدخول كمدير');
+    console.log('👑 نظام إدارة الخوادم (مدير) - جاهز');
+    console.log('📌 بيانات الدخول: admin / admin123');
 });
 
 window.ServerManager = ServerManager;
+window.showToast = showToast;
 </script>
 
 </body>
 </html>
-
-                                        
