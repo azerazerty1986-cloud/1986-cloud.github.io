@@ -3,19 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>👑 إدارة الخوادم المصغرة - النهائي</title>
+<title>👑 إدارة الخوادم المصغرة - النهائي المحسّن</title>
 <style>
+:root {
+    --bg-primary: #0a0a1a;
+    --bg-secondary: rgba(255,255,255,0.03);
+    --bg-tertiary: rgba(255,255,255,0.06);
+    --border-color: rgba(255,255,255,0.08);
+    --text-primary: #ffffff;
+    --text-secondary: #888888;
+    --accent-purple: #a78bfa;
+    --accent-purple-dark: #8b5cf6;
+    --accent-green: #4ade80;
+    --accent-blue: #60a5fa;
+    --accent-yellow: #fbbf24;
+    --accent-orange: #fb923c;
+    --accent-red: #f87171;
+    --accent-gold: #ffd700;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.4);
+    --shadow-lg: 0 8px 40px rgba(0,0,0,0.5);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+}
+
+[data-theme="light"] {
+    --bg-primary: #f0f0f5;
+    --bg-secondary: rgba(0,0,0,0.03);
+    --bg-tertiary: rgba(0,0,0,0.06);
+    --border-color: rgba(0,0,0,0.08);
+    --text-primary: #1a1a2e;
+    --text-secondary: #666666;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #0a0a1a;
-    color: #fff;
+    background: var(--bg-primary);
+    color: var(--text-primary);
     min-height: 100vh;
     padding: 15px;
     direction: rtl;
+    transition: background var(--transition-normal), color var(--transition-normal);
+    overflow-x: hidden;
 }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--accent-purple-dark); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-purple); }
+
 .container { max-width: 1400px; margin: 0 auto; }
 
+/* Header */
 .header {
     display: flex;
     justify-content: space-between;
@@ -23,44 +67,81 @@ body {
     margin-bottom: 15px;
     flex-wrap: wrap;
     gap: 10px;
-    background: rgba(255,255,255,0.03);
-    padding: 12px 20px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.06);
+    background: var(--bg-secondary);
+    padding: 14px 22px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(10px);
+    animation: slideDown 0.5s ease;
 }
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .header h1 {
-    font-size: 20px;
-    background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+    font-size: 22px;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-dark));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    animation: shimmer 3s infinite;
 }
-.header .admin-name { color: #ffd700; font-size: 12px; }
-.header-controls { display: flex; gap: 6px; flex-wrap: wrap; }
-.header-controls button {
-    padding: 4px 12px;
-    border: 1px solid rgba(139,92,246,0.3);
-    border-radius: 6px;
-    background: rgba(139,92,246,0.1);
-    color: #a78bfa;
-    cursor: pointer;
-    font-size: 10px;
-    transition: all 0.3s;
-    font-family: inherit;
-}
-.header-controls button:hover {
-    background: rgba(139,92,246,0.25);
-    transform: translateY(-1px);
-}
-.header-controls .btn-success { border-color: rgba(74,222,128,0.3); color: #4ade80; }
-.header-controls .btn-success:hover { background: rgba(74,222,128,0.2); }
-.header-controls .btn-danger { border-color: rgba(239,68,68,0.3); color: #f87171; }
-.header-controls .btn-danger:hover { background: rgba(239,68,68,0.2); }
-.header-controls .btn-warning { border-color: rgba(251,191,36,0.3); color: #fbbf24; }
-.header-controls .btn-warning:hover { background: rgba(251,191,36,0.2); }
-.header-controls .btn-gold { border-color: rgba(255,215,0,0.3); color: #ffd700; }
-.header-controls .btn-gold:hover { background: rgba(255,215,0,0.2); }
 
+@keyframes shimmer {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.2); }
+}
+
+.header .admin-name { color: var(--accent-gold); font-size: 12px; display: flex; align-items: center; gap: 6px; }
+.header .admin-name::before { content: "●"; animation: pulse 2s infinite; }
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.header-controls { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.header-controls button {
+    padding: 6px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    color: var(--accent-purple);
+    cursor: pointer;
+    font-size: 11px;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+}
+
+.header-controls button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+}
+
+.header-controls button:hover::before { transform: translateX(100%); }
+.header-controls button:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+
+.header-controls .btn-success { border-color: rgba(74,222,128,0.3); color: var(--accent-green); }
+.header-controls .btn-success:hover { background: rgba(74,222,128,0.15); }
+.header-controls .btn-danger { border-color: rgba(239,68,68,0.3); color: var(--accent-red); }
+.header-controls .btn-danger:hover { background: rgba(239,68,68,0.15); }
+.header-controls .btn-warning { border-color: rgba(251,191,36,0.3); color: var(--accent-yellow); }
+.header-controls .btn-warning:hover { background: rgba(251,191,36,0.15); }
+.header-controls .btn-gold { border-color: rgba(255,215,0,0.3); color: var(--accent-gold); }
+.header-controls .btn-gold:hover { background: rgba(255,215,0,0.15); }
+.header-controls .btn-blue { border-color: rgba(96,165,250,0.3); color: var(--accent-blue); }
+.header-controls .btn-blue:hover { background: rgba(96,165,250,0.15); }
+
+/* Auth Overlay */
 #auth-overlay {
     position: fixed;
     inset: 0;
@@ -71,429 +152,968 @@ body {
     align-items: center;
     flex-direction: column;
     backdrop-filter: blur(20px);
+    animation: fadeIn 0.5s ease;
 }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
 #auth-overlay .auth-box {
     background: rgba(10,10,30,0.97);
     border: 2px solid rgba(255,215,0,0.3);
     border-radius: 20px;
-    padding: 32px;
+    padding: 36px;
     width: 90%;
-    max-width: 380px;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(255,215,0,0.05);
+    animation: slideUp 0.6s ease;
 }
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 #auth-overlay .auth-box h2 {
-    color: #ffd700;
+    color: var(--accent-gold);
     text-align: center;
-    font-size: 22px;
-    margin-bottom: 20px;
+    font-size: 24px;
+    margin-bottom: 24px;
+    text-shadow: 0 0 20px rgba(255,215,0,0.3);
 }
-#auth-overlay .auth-box .field { margin-bottom: 14px; }
+
+#auth-overlay .auth-box .field { margin-bottom: 16px; }
 #auth-overlay .auth-box .field label {
-    color: #888;
-    font-size: 11px;
+    color: var(--text-secondary);
+    font-size: 12px;
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     font-weight: 600;
 }
+
 #auth-overlay .auth-box .field input {
     width: 100%;
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.08);
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
     background: rgba(255,255,255,0.04);
     color: #fff;
     font-size: 14px;
     font-family: inherit;
+    transition: all var(--transition-fast);
 }
+
 #auth-overlay .auth-box .field input:focus {
     outline: none;
     border-color: rgba(255,215,0,0.4);
+    box-shadow: 0 0 0 3px rgba(255,215,0,0.1);
 }
+
 #auth-overlay .auth-box .auth-btn {
     width: 100%;
-    padding: 12px;
+    padding: 14px;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 15px;
     cursor: pointer;
     font-family: inherit;
-    transition: all 0.3s;
-    margin-top: 4px;
+    transition: all var(--transition-normal);
+    margin-top: 8px;
+    position: relative;
+    overflow: hidden;
 }
+
 #auth-overlay .auth-box .auth-btn.primary {
     background: linear-gradient(135deg, #ffd700, #f59e0b);
     color: #111;
-}
-#auth-overlay .auth-box .auth-btn.primary:hover {
-    transform: translateY(-2px);
     box-shadow: 0 4px 20px rgba(255,215,0,0.3);
 }
-#auth-overlay .auth-box .auth-error {
-    color: #ef4444;
-    font-size: 11px;
-    text-align: center;
-    margin-top: 8px;
-    display: none;
-}
-#auth-overlay .auth-box .auth-info {
-    color: #666;
-    font-size: 11px;
-    text-align: center;
-    margin-top: 12px;
-    padding: 8px;
-    background: rgba(255,215,0,0.05);
-    border-radius: 8px;
-    border: 1px solid rgba(255,215,0,0.08);
+
+#auth-overlay .auth-box .auth-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px rgba(255,215,0,0.4);
 }
 
+#auth-overlay .auth-box .auth-btn.primary:active { transform: translateY(0); }
+
+#auth-overlay .auth-box .auth-error {
+    color: var(--accent-red);
+    font-size: 12px;
+    text-align: center;
+    margin-top: 10px;
+    display: none;
+    padding: 8px;
+    background: rgba(239,68,68,0.1);
+    border-radius: 8px;
+    animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+#auth-overlay .auth-box .auth-info {
+    color: var(--text-secondary);
+    font-size: 11px;
+    text-align: center;
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(255,215,0,0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(255,215,0,0.1);
+}
+
+/* Stats */
 .stats {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 6px;
-    margin-bottom: 12px;
+    gap: 8px;
+    margin-bottom: 14px;
 }
-.stat-box {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 6px;
-    padding: 8px;
-    text-align: center;
-}
-.stat-box .num { font-size: 18px; font-weight: 800; display: block; }
-.stat-box .num.green { color: #4ade80; }
-.stat-box .num.purple { color: #a78bfa; }
-.stat-box .num.blue { color: #60a5fa; }
-.stat-box .num.yellow { color: #fbbf24; }
-.stat-box .num.orange { color: #fb923c; }
-.stat-box .num.red { color: #f87171; }
-.stat-box .label { font-size: 8px; color: #888; }
 
+.stat-box {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 12px 8px;
+    text-align: center;
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-box::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, currentColor, transparent);
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+}
+
+.stat-box:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-sm);
+    border-color: rgba(139,92,246,0.2);
+}
+
+.stat-box:hover::after { opacity: 0.5; }
+
+.stat-box .num { font-size: 20px; font-weight: 800; display: block; transition: transform var(--transition-fast); }
+.stat-box:hover .num { transform: scale(1.1); }
+
+.stat-box .num.green { color: var(--accent-green); }
+.stat-box .num.purple { color: var(--accent-purple); }
+.stat-box .num.blue { color: var(--accent-blue); }
+.stat-box .num.yellow { color: var(--accent-yellow); }
+.stat-box .num.orange { color: var(--accent-orange); }
+.stat-box .num.red { color: var(--accent-red); }
+.stat-box .label { font-size: 9px; color: var(--text-secondary); margin-top: 4px; display: block; }
+
+/* Telegram Settings */
 .telegram-settings {
-    background: rgba(255,255,255,0.03);
+    background: var(--bg-secondary);
     border: 1px solid rgba(139,92,246,0.15);
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin-bottom: 12px;
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    margin-bottom: 14px;
     display: none;
+    animation: slideDown 0.3s ease;
 }
 .telegram-settings.open { display: block; }
 .telegram-settings .row {
     display: flex;
-    gap: 6px;
+    gap: 8px;
     flex-wrap: wrap;
     align-items: center;
 }
 .telegram-settings input {
     flex: 1;
-    min-width: 120px;
-    padding: 4px 10px;
-    border-radius: 4px;
-    border: 1px solid rgba(255,255,255,0.08);
+    min-width: 140px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
     background: rgba(255,255,255,0.04);
-    color: #fff;
-    font-size: 11px;
+    color: var(--text-primary);
+    font-size: 12px;
     font-family: inherit;
+    transition: all var(--transition-fast);
 }
 .telegram-settings input:focus {
     outline: none;
     border-color: rgba(139,92,246,0.4);
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.1);
 }
 .telegram-settings .status {
-    font-size: 10px;
-    padding: 3px 10px;
-    border-radius: 4px;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
 }
-.telegram-settings .status.online { background: rgba(74,222,128,0.2); color: #4ade80; }
-.telegram-settings .status.offline { background: rgba(239,68,68,0.2); color: #f87171; }
+.telegram-settings .status.online { background: rgba(74,222,128,0.15); color: var(--accent-green); }
+.telegram-settings .status.offline { background: rgba(239,68,68,0.15); color: var(--accent-red); }
 
+/* Game Bar */
+.game-bar {
+    background: var(--bg-secondary);
+    border: 1px solid rgba(255,215,0,0.15);
+    border-radius: var(--radius-lg);
+    padding: 14px 20px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    animation: slideDown 0.4s ease;
+}
+
+.game-bar input[type="number"] {
+    width: 55px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: rgba(255,255,255,0.04);
+    color: var(--text-primary);
+    font-size: 14px;
+    text-align: center;
+    font-family: inherit;
+    transition: all var(--transition-fast);
+}
+
+.game-bar input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 0 3px rgba(255,215,0,0.1);
+}
+
+.coord-display {
+    color: var(--accent-purple);
+    font-weight: 700;
+    font-size: 15px;
+    min-width: 50px;
+    text-align: center;
+    background: rgba(139,92,246,0.1);
+    padding: 4px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(139,92,246,0.2);
+}
+
+.game-status {
+    font-size: 12px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-weight: 600;
+    transition: all var(--transition-normal);
+}
+
+.game-status.waiting { background: rgba(251,191,36,0.1); color: var(--accent-yellow); }
+.game-status.online { background: rgba(74,222,128,0.1); color: var(--accent-green); animation: pulseGlow 2s infinite; }
+.game-status.offline { background: rgba(239,68,68,0.1); color: var(--accent-red); }
+
+@keyframes pulseGlow {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74,222,128,0.4); }
+    50% { opacity: 0.8; box-shadow: 0 0 0 10px rgba(74,222,128,0); }
+}
+
+/* Game Cards */
+.game-data {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.game-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    transition: all var(--transition-normal);
+}
+
+.game-card:hover {
+    border-color: rgba(139,92,246,0.2);
+    box-shadow: var(--shadow-sm);
+}
+
+.game-card h4 {
+    color: var(--accent-purple);
+    font-size: 13px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.game-card .item-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    transition: background var(--transition-fast);
+    border-radius: 4px;
+    padding: 6px 8px;
+}
+
+.game-card .item-row:hover { background: rgba(255,255,255,0.03); }
+.game-card .item-row .label { color: var(--text-primary); font-weight: 500; }
+.game-card .item-row .value { color: var(--text-secondary); }
+.game-card .item-row .value.gold { color: var(--accent-gold); }
+.game-card .item-row .value.green { color: var(--accent-green); }
+.game-card .item-row .value.blue { color: var(--accent-blue); }
+
+.game-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.game-actions button {
+    padding: 6px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 11px;
+    font-family: inherit;
+    transition: all var(--transition-fast);
+}
+.game-actions button:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.game-actions .btn-green { border-color: rgba(74,222,128,0.2); color: var(--accent-green); }
+.game-actions .btn-green:hover { background: rgba(74,222,128,0.1); }
+.game-actions .btn-gold { border-color: rgba(255,215,0,0.2); color: var(--accent-gold); }
+.game-actions .btn-gold:hover { background: rgba(255,215,0,0.1); }
+
+/* Grid & Tiles */
 .grid {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    gap: 2px;
-    margin-bottom: 12px;
+    gap: 3px;
+    margin-bottom: 14px;
 }
+
 .tile {
     aspect-ratio: 1;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 3px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all var(--transition-fast);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 7px;
-    padding: 1px;
+    font-size: 8px;
+    padding: 2px;
     position: relative;
-    min-height: 30px;
+    min-height: 32px;
+    user-select: none;
 }
+
 .tile:hover {
-    background: rgba(139,92,246,0.15);
+    background: rgba(139,92,246,0.12);
     border-color: rgba(139,92,246,0.4);
-    transform: scale(1.05);
-    z-index: 10;
+    transform: scale(1.08);
+    z-index: 20;
+    box-shadow: 0 4px 20px rgba(139,92,246,0.2);
 }
-.tile .icon { font-size: 14px; }
-.tile .label { color: #888; font-size: 5px; }
-.tile .status { font-size: 5px; margin-top: 1px; }
-.tile .status.online { color: #4ade80; }
+
+.tile .icon { font-size: 16px; transition: transform var(--transition-fast); }
+.tile:hover .icon { transform: scale(1.2); }
+.tile .label { color: var(--text-secondary); font-size: 6px; margin-top: 2px; }
+.tile .status { font-size: 5px; margin-top: 2px; }
+.tile .status.online { color: var(--accent-green); }
 .tile .status.offline { color: #666; }
-.tile .status.running { color: #60a5fa; animation: pulse 1s infinite; }
-.tile.has-files { border-color: rgba(139,92,246,0.3); background: rgba(139,92,246,0.08); }
-.tile.protected { border-color: rgba(74,222,128,0.4); box-shadow: 0 0 10px rgba(74,222,128,0.1); }
-.tile.admin-tile { border-color: rgba(255,215,0,0.5); background: rgba(255,215,0,0.08); }
+.tile .status.running { color: var(--accent-blue); animation: pulse 1.5s infinite; }
+
+.tile.has-files { border-color: rgba(139,92,246,0.3); background: rgba(139,92,246,0.06); }
+.tile.protected { border-color: rgba(74,222,128,0.4); box-shadow: 0 0 12px rgba(74,222,128,0.08); }
+.tile.admin-tile { border-color: rgba(255,215,0,0.5); background: rgba(255,215,0,0.06); }
+.tile.game-connected { border-color: rgba(96,165,250,0.5); background: rgba(96,165,250,0.08); animation: glow 2s infinite; }
+
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 5px rgba(96,165,250,0.2); }
+    50% { box-shadow: 0 0 15px rgba(96,165,250,0.4); }
+}
+
 .tile .badge {
     position: absolute;
-    top: -2px;
-    right: -2px;
-    background: #8b5cf6;
+    top: -3px;
+    right: -3px;
+    background: linear-gradient(135deg, var(--accent-purple-dark), var(--accent-purple));
     color: #fff;
-    font-size: 5px;
-    padding: 1px 3px;
+    font-size: 6px;
+    padding: 2px 4px;
     border-radius: 4px;
     font-weight: 700;
+    box-shadow: 0 2px 6px rgba(139,92,246,0.3);
+    animation: popIn 0.3s ease;
 }
+
 .tile .sync-badge {
     position: absolute;
-    bottom: -2px;
-    right: -2px;
-    background: rgba(74,222,128,0.8);
+    bottom: -3px;
+    right: -3px;
+    background: rgba(74,222,128,0.85);
     color: #fff;
-    font-size: 5px;
-    padding: 1px 3px;
+    font-size: 6px;
+    padding: 2px 4px;
     border-radius: 4px;
     font-weight: 700;
 }
+
 .tile .admin-badge-tile {
     position: absolute;
-    top: -2px;
-    left: -2px;
-    background: #ffd700;
+    top: -3px;
+    left: -3px;
+    background: linear-gradient(135deg, #ffd700, #f59e0b);
     color: #111;
-    font-size: 4px;
-    padding: 1px 4px;
-    border-radius: 3px;
+    font-size: 5px;
+    padding: 2px 5px;
+    border-radius: 4px;
     font-weight: 800;
 }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
+.tile .game-badge {
+    position: absolute;
+    bottom: -3px;
+    left: -3px;
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    color: #fff;
+    font-size: 5px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-weight: 800;
+}
+
+@keyframes popIn {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
+}
+
+/* Tile Panel */
 .tile-panel {
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(10,10,30,0.97);
+    transform: translate(-50%, -50%) scale(0.95);
+    background: rgba(10,10,30,0.98);
     border: 1px solid rgba(139,92,246,0.3);
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: var(--radius-lg);
+    padding: 20px;
     width: 92%;
-    max-width: 520px;
-    max-height: 80vh;
+    max-width: 560px;
+    max-height: 85vh;
     overflow-y: auto;
     z-index: 9999;
     backdrop-filter: blur(20px);
     display: none;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    box-shadow: var(--shadow-lg), 0 0 60px rgba(139,92,246,0.1);
+    opacity: 0;
+    transition: all var(--transition-normal);
 }
-.tile-panel.open { display: block; }
+
+.tile-panel.open {
+    display: block;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    animation: panelIn 0.3s ease;
+}
+
+@keyframes panelIn {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
 .tile-panel .panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    padding-bottom: 8px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
 }
-.tile-panel .panel-header h3 { color: #a78bfa; font-size: 14px; }
-.tile-panel .panel-header h3 .admin-tag { color: #ffd700; font-size: 10px; }
+
+.tile-panel .panel-header h3 { color: var(--accent-purple); font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.tile-panel .panel-header h3 .admin-tag { color: var(--accent-gold); font-size: 11px; background: rgba(255,215,0,0.1); padding: 2px 8px; border-radius: 4px; }
+.tile-panel .panel-header h3 .game-tag { color: var(--accent-blue); font-size: 11px; background: rgba(96,165,250,0.1); padding: 2px 8px; border-radius: 4px; }
+
 .tile-panel .panel-header button {
     background: rgba(239,68,68,0.15);
-    color: #f87171;
+    color: var(--accent-red);
     border: none;
-    padding: 2px 10px;
-    border-radius: 4px;
+    padding: 4px 12px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 11px;
+    font-size: 12px;
+    transition: all var(--transition-fast);
 }
+.tile-panel .panel-header button:hover { background: rgba(239,68,68,0.25); transform: scale(1.05); }
+
 .tile-panel .info-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 3px 12px;
-    margin-bottom: 8px;
+    gap: 4px 14px;
+    margin-bottom: 12px;
 }
+
 .tile-panel .info-item {
     display: flex;
     justify-content: space-between;
-    padding: 2px 0;
-    font-size: 10px;
-    color: #888;
+    padding: 6px 0;
+    font-size: 11px;
+    color: var(--text-secondary);
     border-bottom: 1px solid rgba(255,255,255,0.03);
+    transition: all var(--transition-fast);
 }
-.tile-panel .info-item .value { color: #fff; }
-.tile-panel .info-item .value.online { color: #4ade80; }
-.tile-panel .info-item .value.offline { color: #f87171; }
-.tile-panel .info-item .value.admin { color: #ffd700; }
-.tile-panel .file-list { margin: 8px 0; max-height: 150px; overflow-y: auto; }
+
+.tile-panel .info-item:hover {
+    color: var(--text-primary);
+    padding-right: 4px;
+}
+
+.tile-panel .info-item .value { color: var(--text-primary); font-weight: 500; }
+.tile-panel .info-item .value.online { color: var(--accent-green); }
+.tile-panel .info-item .value.offline { color: var(--accent-red); }
+.tile-panel .info-item .value.admin { color: var(--accent-gold); }
+
+/* Drop Zone */
+.drop-zone {
+    border: 2px dashed rgba(139,92,246,0.2);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin: 10px 0;
+    transition: all var(--transition-normal);
+    cursor: pointer;
+}
+
+.drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent-purple);
+    background: rgba(139,92,246,0.05);
+    color: var(--accent-purple);
+}
+
+.drop-zone .icon { font-size: 24px; margin-bottom: 8px; display: block; }
+
+/* File List */
+.tile-panel .file-list { margin: 10px 0; max-height: 180px; overflow-y: auto; }
+
 .tile-panel .file-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 3px 6px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 3px;
-    margin-bottom: 2px;
-    font-size: 9px;
+    padding: 6px 10px;
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    margin-bottom: 4px;
+    font-size: 11px;
+    transition: all var(--transition-fast);
+    border: 1px solid transparent;
 }
-.tile-panel .file-item .name { color: #a78bfa; font-weight: 600; }
-.tile-panel .file-item .size { color: #666; font-size: 7px; }
+
+.tile-panel .file-item:hover {
+    background: rgba(139,92,246,0.08);
+    border-color: rgba(139,92,246,0.15);
+    transform: translateX(-4px);
+}
+
+.tile-panel .file-item .name { color: var(--accent-purple); font-weight: 600; }
+.tile-panel .file-item .size { color: var(--text-secondary); font-size: 9px; }
+.tile-panel .file-item .actions { display: flex; gap: 4px; }
 .tile-panel .file-item .actions button {
     background: none;
     border: none;
-    color: #888;
+    color: var(--text-secondary);
     cursor: pointer;
-    font-size: 10px;
-    padding: 0 2px;
+    font-size: 12px;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all var(--transition-fast);
 }
-.tile-panel .file-item .actions button:hover { color: #fff; }
-.tile-panel .file-item .actions .delete:hover { color: #f87171; }
-.tile-panel .file-item .actions .edit:hover { color: #fbbf24; }
-.tile-panel .file-item .actions .sync:hover { color: #4ade80; }
+.tile-panel .file-item .actions button:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+.tile-panel .file-item .actions button.delete:hover { color: var(--accent-red); background: rgba(239,68,68,0.1); }
+.tile-panel .file-item .actions button.edit:hover { color: var(--accent-yellow); background: rgba(251,191,36,0.1); }
+.tile-panel .file-item .actions button.sync:hover { color: var(--accent-green); background: rgba(74,222,128,0.1); }
+
+/* Panel Actions */
 .tile-panel .actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 4px;
-    margin-top: 8px;
+    gap: 6px;
+    margin-top: 12px;
 }
+
 .tile-panel .actions button {
-    padding: 4px 10px;
+    padding: 8px 12px;
     border: none;
-    border-radius: 4px;
-    font-size: 9px;
+    border-radius: 8px;
+    font-size: 10px;
     font-weight: 600;
     cursor: pointer;
     font-family: inherit;
-    transition: all 0.2s;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 }
-.tile-panel .actions button:hover { transform: scale(1.03); }
-.tile-panel .actions .btn-upload { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
-.tile-panel .actions .btn-start { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); }
-.tile-panel .actions .btn-protect { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
-.tile-panel .actions .btn-delete { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
-.tile-panel .actions .btn-sync { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); grid-column: span 2; }
-.tile-panel .actions .btn-admin { background: rgba(255,215,0,0.15); color: #ffd700; border: 1px solid rgba(255,215,0,0.2); }
 
+.tile-panel .actions button:hover { transform: scale(1.03); box-shadow: var(--shadow-sm); }
+.tile-panel .actions button:active { transform: scale(0.98); }
+
+.tile-panel .actions .btn-upload { background: rgba(74,222,128,0.12); color: var(--accent-green); border: 1px solid rgba(74,222,128,0.2); }
+.tile-panel .actions .btn-start { background: rgba(96,165,250,0.12); color: var(--accent-blue); border: 1px solid rgba(96,165,250,0.2); }
+.tile-panel .actions .btn-protect { background: rgba(251,191,36,0.12); color: var(--accent-yellow); border: 1px solid rgba(251,191,36,0.2); }
+.tile-panel .actions .btn-delete { background: rgba(239,68,68,0.12); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.2); }
+.tile-panel .actions .btn-sync { background: rgba(74,222,128,0.12); color: var(--accent-green); border: 1px solid rgba(74,222,128,0.2); grid-column: span 2; }
+.tile-panel .actions .btn-admin { background: rgba(255,215,0,0.12); color: var(--accent-gold); border: 1px solid rgba(255,215,0,0.2); }
+.tile-panel .actions .btn-connect { background: rgba(96,165,250,0.12); color: var(--accent-blue); border: 1px solid rgba(96,165,250,0.2); grid-column: span 2; }
+
+/* File Editor */
 .file-editor {
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(10,10,30,0.97);
+    transform: translate(-50%, -50%) scale(0.95);
+    background: rgba(10,10,30,0.98);
     border: 1px solid rgba(251,191,36,0.3);
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: var(--radius-lg);
+    padding: 20px;
     width: 92%;
-    max-width: 600px;
-    max-height: 80vh;
+    max-width: 700px;
+    max-height: 85vh;
     z-index: 99999;
     display: none;
     backdrop-filter: blur(20px);
+    opacity: 0;
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-lg);
 }
-.file-editor.open { display: block; }
+
+.file-editor.open {
+    display: block;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    animation: panelIn 0.3s ease;
+}
+
 .file-editor .editor-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
-.file-editor .editor-header h4 { color: #fbbf24; font-size: 12px; }
+
+.file-editor .editor-header h4 { color: var(--accent-yellow); font-size: 14px; display: flex; align-items: center; gap: 8px; }
 .file-editor .editor-header button {
     background: rgba(239,68,68,0.15);
-    color: #f87171;
+    color: var(--accent-red);
     border: none;
-    padding: 2px 10px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all var(--transition-fast);
+}
+.file-editor .editor-header button:hover { background: rgba(239,68,68,0.25); }
+
+.file-editor .editor-toolbar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.file-editor .editor-toolbar button {
+    padding: 4px 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
     border-radius: 4px;
     cursor: pointer;
-    font-size: 11px;
+    font-size: 10px;
+    font-family: inherit;
+    transition: all var(--transition-fast);
 }
+.file-editor .editor-toolbar button:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+
 .file-editor textarea {
     width: 100%;
-    height: 200px;
+    height: 280px;
     background: rgba(0,0,0,0.5);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 4px;
-    padding: 8px;
-    font-family: 'Courier New', monospace;
-    font-size: 10px;
+    color: #e2e8f0;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 12px;
     resize: vertical;
     direction: ltr;
     text-align: left;
     tab-size: 4;
+    line-height: 1.6;
+    transition: all var(--transition-fast);
 }
+
+.file-editor textarea:focus {
+    outline: none;
+    border-color: rgba(251,191,36,0.3);
+    box-shadow: 0 0 0 3px rgba(251,191,36,0.1);
+}
+
 .file-editor .editor-actions {
     display: flex;
-    gap: 6px;
-    margin-top: 8px;
+    gap: 8px;
+    margin-top: 12px;
 }
+
 .file-editor .editor-actions button {
-    padding: 4px 12px;
+    padding: 8px 16px;
     border: none;
-    border-radius: 4px;
-    font-size: 10px;
+    border-radius: 8px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     font-family: inherit;
     flex: 1;
+    transition: all var(--transition-fast);
 }
-.file-editor .editor-actions .btn-save { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
-.file-editor .editor-actions .btn-close { background: rgba(255,255,255,0.06); color: #888; border: none; }
 
+.file-editor .editor-actions .btn-save { background: rgba(74,222,128,0.15); color: var(--accent-green); border: 1px solid rgba(74,222,128,0.2); }
+.file-editor .editor-actions .btn-save:hover { background: rgba(74,222,128,0.25); }
+.file-editor .editor-actions .btn-close { background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border-color); }
+.file-editor .editor-actions .btn-close:hover { background: rgba(255,255,255,0.05); }
+
+/* Terminal */
+.terminal {
+    background: rgba(0,0,0,0.7);
+    border: 1px solid rgba(139,92,246,0.2);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    margin-top: 12px;
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 11px;
+    max-height: 150px;
+    overflow-y: auto;
+    display: none;
+}
+
+.terminal.open { display: block; animation: slideDown 0.3s ease; }
+.terminal .line { padding: 2px 0; color: #a0a0a0; border-bottom: 1px solid rgba(255,255,255,0.02); }
+.terminal .line.cmd { color: var(--accent-purple); }
+.terminal .line.out { color: #e2e8f0; }
+.terminal .line.err { color: var(--accent-red); }
+.terminal .line.success { color: var(--accent-green); }
+.terminal .line.info { color: var(--accent-blue); }
+
+/* Activity Log */
+.activity-log {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    margin-bottom: 14px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+}
+
+.activity-log.open { display: block; animation: slideDown 0.3s ease; }
+.activity-log h4 {
+    color: var(--accent-purple);
+    font-size: 12px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 6px;
+}
+
+.log-entry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 11px;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.log-entry .time { color: var(--text-secondary); font-size: 9px; min-width: 55px; }
+.log-entry .type { padding: 1px 6px; border-radius: 3px; font-size: 8px; font-weight: 700; }
+.log-entry .type.info { background: rgba(96,165,250,0.15); color: var(--accent-blue); }
+.log-entry .type.success { background: rgba(74,222,128,0.15); color: var(--accent-green); }
+.log-entry .type.warning { background: rgba(251,191,36,0.15); color: var(--accent-yellow); }
+.log-entry .type.error { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+.log-entry .type.admin { background: rgba(255,215,0,0.15); color: var(--accent-gold); }
+.log-entry .msg { color: var(--text-primary); flex: 1; }
+
+/* Toast */
 .toast {
     position: fixed;
-    bottom: 20px;
+    bottom: 24px;
     left: 50%;
-    transform: translateX(-50%);
-    background: rgba(10,10,30,0.95);
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(10,10,30,0.97);
     color: #fff;
-    padding: 6px 16px;
-    border-radius: 6px;
+    padding: 10px 20px;
+    border-radius: 10px;
     border: 1px solid rgba(139,92,246,0.2);
     z-index: 999999;
-    font-size: 11px;
+    font-size: 12px;
     display: none;
-    animation: fadeIn 0.3s ease;
+    animation: toastIn 0.4s ease forwards;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-lg);
     max-width: 90%;
     text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
-.toast.success { border-color: rgba(74,222,128,0.3); }
-.toast.error { border-color: rgba(239,68,68,0.3); }
-.toast.warning { border-color: rgba(251,191,36,0.3); }
-.toast.admin { border-color: rgba(255,215,0,0.3); }
-@keyframes fadeIn {
+
+@keyframes toastIn {
     from { opacity: 0; transform: translateX(-50%) translateY(20px); }
     to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
+.toast.success { border-color: rgba(74,222,128,0.3); }
+.toast.error { border-color: rgba(239,68,68,0.3); }
+.toast.warning { border-color: rgba(251,191,36,0.3); }
+.toast.admin { border-color: rgba(255,215,0,0.3); }
+.toast.info { border-color: rgba(96,165,250,0.3); }
+
+/* Search Bar */
+.search-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    align-items: center;
+}
+
+.search-bar input {
+    flex: 1;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 12px;
+    font-family: inherit;
+    transition: all var(--transition-fast);
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.1);
+}
+
+.search-bar button {
+    padding: 8px 14px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+    transition: all var(--transition-fast);
+}
+
+.search-bar button:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+
+/* Quick Tools */
+.quick-tools {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.quick-tools button {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 10px;
+    font-family: inherit;
+    transition: all var(--transition-fast);
+}
+
+.quick-tools button:hover {
+    color: var(--text-primary);
+    background: rgba(255,255,255,0.05);
+    transform: translateY(-1px);
+}
+
+.quick-tools button.active {
+    background: rgba(139,92,246,0.15);
+    color: var(--accent-purple);
+    border-color: rgba(139,92,246,0.3);
+}
+
+/* Overlay Backdrop */
+.overlay-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    z-index: 9998;
+    display: none;
+}
+
+.overlay-backdrop.open { display: block; animation: fadeIn 0.2s ease; }
+
+/* Responsive */
 @media (max-width: 768px) {
-    .grid { gap: 1px; }
-    .tile { min-height: 25px; font-size: 6px; }
-    .tile .icon { font-size: 10px; }
+    .grid { gap: 2px; }
+    .tile { min-height: 28px; font-size: 7px; }
+    .tile .icon { font-size: 12px; }
     .stats { grid-template-columns: repeat(3, 1fr); }
     .header h1 { font-size: 16px; }
-    .header-controls button { font-size: 8px; padding: 3px 8px; }
-    .tile-panel { padding: 12px; max-width: 95%; }
+    .header-controls button { font-size: 9px; padding: 4px 10px; }
+    .tile-panel { padding: 14px; max-width: 95%; }
     .tile-panel .actions { grid-template-columns: 1fr; }
-    .file-editor textarea { height: 150px; }
+    .file-editor textarea { height: 200px; }
+    .game-data { grid-template-columns: 1fr; }
+    .game-bar { padding: 10px 14px; }
 }
+
 @media (max-width: 480px) {
     .grid { gap: 1px; }
-    .tile { min-height: 20px; border-radius: 2px; }
-    .tile .icon { font-size: 8px; }
-    .tile .label { font-size: 4px; }
-    .header { padding: 6px 10px; }
+    .tile { min-height: 22px; border-radius: 3px; }
+    .tile .icon { font-size: 10px; }
+    .tile .label { font-size: 5px; }
+    .header { padding: 8px 12px; }
     .header h1 { font-size: 14px; }
+    body { padding: 8px; }
 }
+
+/* Spinner */
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(139,92,246,0.2);
+    border-top-color: var(--accent-purple);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -501,19 +1121,19 @@ body {
 <!-- ====== شاشة الدخول ====== -->
 <div id="auth-overlay">
     <div class="auth-box">
-        <h2>👑 دخول المدير</h2>
+        <h2>👑 بوابة المدير</h2>
         <div class="field">
             <label>👤 اسم المستخدم</label>
-            <input type="text" id="admin-username" placeholder="أدخل اسم المستخدم" value="admin">
+            <input type="text" id="admin-username" placeholder="أدخل اسم المستخدم" value="admin" autocomplete="username">
         </div>
         <div class="field">
             <label>🔑 كلمة المرور</label>
-            <input type="password" id="admin-password" placeholder="أدخل كلمة المرور" value="admin123" onkeydown="if(event.key==='Enter')adminLogin()">
+            <input type="password" id="admin-password" placeholder="أدخل كلمة المرور" value="admin123" onkeydown="if(event.key==='Enter')adminLogin()" autocomplete="current-password">
         </div>
         <div class="auth-error" id="auth-error"></div>
-        <button class="auth-btn primary" onclick="adminLogin()">🚀 دخول</button>
+        <button class="auth-btn primary" onclick="adminLogin()">🚀 تسجيل الدخول</button>
         <div class="auth-info">
-            🔐 هذا الخادم خاص بالمدير فقط<br>
+            🔐 هذا النظام خاص بالمدير فقط<br>
             <span style="color:#888;font-size:10px;">بيانات الدخول: admin / admin123</span>
         </div>
     </div>
@@ -529,30 +1149,32 @@ body {
                 <span class="admin-name">المدير: <span id="admin-name-display">مدير</span></span>
             </div>
             <div class="header-controls">
+                <button class="btn-blue" onclick="toggleTheme()" title="تبديل الوضع">🌓</button>
                 <button class="btn-warning" onclick="toggleTelegramSettings()">📡 القناة</button>
                 <button class="btn-success" onclick="syncAllFromChannel()">🔄 مزامنة الكل</button>
-                <button onclick="exportAllTiles()">📤 تصدير الكل</button>
+                <button onclick="exportAllTiles()">📤 تصدير</button>
                 <button onclick="document.getElementById('importFile').click()">📥 استيراد</button>
-                <button class="btn-danger" onclick="resetAll()">🔄 إعادة تعيين</button>
                 <button class="btn-gold" onclick="toggleGamePanel()">🎮 اللعبة</button>
-                <button class="btn-danger" onclick="logoutAdmin()" style="border-color:rgba(239,68,68,0.3);color:#f87171;">🚪 خروج</button>
+                <button onclick="toggleActivityLog()">📜 السجل</button>
+                <button onclick="resetAll()" class="btn-danger">🔄 إعادة تعيين</button>
+                <button class="btn-danger" onclick="logoutAdmin()">🚪 خروج</button>
                 <input type="file" id="importFile" accept=".json" style="display:none" onchange="importAllTiles(event)">
             </div>
         </div>
 
         <div class="telegram-settings" id="telegramSettings">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                <span style="color:#a78bfa;font-size:12px;font-weight:600;">📡 إعدادات قناة التلجرام</span>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <span style="color:var(--accent-purple);font-size:13px;font-weight:600;">📡 إعدادات قناة التلجرام</span>
                 <span class="status offline" id="tgStatus">🔴 غير متصل</span>
             </div>
             <div class="row">
                 <input type="text" id="tgBotToken" placeholder="Bot Token" value="">
                 <input type="text" id="tgChatId" placeholder="Chat ID" value="">
-                <button onclick="saveTelegramSettings()" style="padding:4px 12px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.2);border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;">💾 حفظ</button>
-                <button onclick="testTelegramConnection()" style="padding:4px 12px;background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;">🧪 اختبار</button>
+                <button onclick="saveTelegramSettings()" style="padding:6px 14px;background:rgba(74,222,128,0.15);color:var(--accent-green);border:1px solid rgba(74,222,128,0.2);border-radius:6px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;">💾 حفظ</button>
+                <button onclick="testTelegramConnection()" style="padding:6px 14px;background:rgba(96,165,250,0.15);color:var(--accent-blue);border:1px solid rgba(96,165,250,0.2);border-radius:6px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;">🧪 اختبار</button>
             </div>
-            <div style="margin-top:6px;font-size:9px;color:#666;">
-                💡 الملفات تُرفع بتنسيق: <code style="color:#a78bfa;">tile_row_col_filename</code>
+            <div style="margin-top:8px;font-size:10px;color:var(--text-secondary);">
+                💡 الملفات تُرفع بتنسيق: <code style="color:var(--accent-purple);background:rgba(139,92,246,0.1);padding:2px 6px;border-radius:4px;">tile_row_col_filename</code>
             </div>
         </div>
 
@@ -565,36 +1187,59 @@ body {
             <div class="stat-box"><span class="num orange" id="adminFilesCount">0</span><span class="label">👑 ملفات إدارة</span></div>
         </div>
 
-        <div class="game-bar" id="gameBar" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,215,0,0.15);border-radius:12px;padding:12px 18px;margin-bottom:12px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;">
-            <span style="color:#a78bfa;font-weight:700;">🎮 بوابة العوالم</span>
-            <label style="color:#888;font-size:12px;">📍 الصف:</label>
-            <input type="number" id="gameRow" min="0" max="11" value="5" style="width:50px;padding:4px 6px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#fff;font-size:13px;text-align:center;font-family:inherit;">
-            <label style="color:#888;font-size:12px;">العمود:</label>
-            <input type="number" id="gameCol" min="0" max="11" value="3" style="width:50px;padding:4px 6px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#fff;font-size:13px;text-align:center;font-family:inherit;">
-            <span class="coord-display" id="gameCoordDisplay" style="color:#a78bfa;font-weight:700;font-size:14px;min-width:45px;text-align:center;">(5,3)</span>
-            <button onclick="connectToGameServer()" id="gameConnectBtn" style="padding:4px 16px;border:1px solid rgba(255,215,0,0.3);border-radius:8px;background:rgba(255,215,0,0.08);color:#ffd700;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;transition:all 0.3s;">🔗 اتصال</button>
-            <button onclick="disconnectGameServer()" class="btn-disconnect" id="gameDisconnectBtn" style="display:none;padding:4px 16px;border:1px solid rgba(239,68,68,0.3);border-radius:8px;background:rgba(239,68,68,0.08);color:#f87171;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;">🔌 قطع</button>
-            <span class="game-status waiting" id="gameStatus" style="font-size:12px;color:#fbbf24;padding:2px 12px;border-radius:12px;background:rgba(251,191,36,0.1);">⏳ غير متصل</span>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="🔍 ابحث عن مربع (مثال: 5_3 أو ملف...)" oninput="handleSearch()">
+            <button onclick="clearSearch()">✖</button>
+            <button onclick="focusRandomTile()">🎲 عشوائي</button>
         </div>
 
-        <div class="game-data" id="gameDataPanel" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-            <div class="game-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;">
-                <h4 style="color:#a78bfa;font-size:12px;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:6px;">👥 اللاعبون</h4>
+        <div class="quick-tools">
+            <button onclick="filterTiles('all')" class="active" id="filter-all">الكل</button>
+            <button onclick="filterTiles('active')" id="filter-active">🟢 نشطة</button>
+            <button onclick="filterTiles('files')" id="filter-files">📄 بها ملفات</button>
+            <button onclick="filterTiles('protected')" id="filter-protected">🛡️ محمية</button>
+            <button onclick="filterTiles('admin')" id="filter-admin">👑 إدارة</button>
+            <button onclick="filterTiles('synced')" id="filter-synced">🔄 متزامنة</button>
+        </div>
+
+        <div class="activity-log" id="activityLog">
+            <h4>📜 سجل الأحداث</h4>
+            <div id="logContainer"></div>
+        </div>
+
+        <div class="game-bar" id="gameBar" style="display:none;">
+            <span style="color:var(--accent-purple);font-weight:700;font-size:14px;">🎮 بوابة العوالم</span>
+            <label style="color:var(--text-secondary);font-size:12px;">📍 الصف:</label>
+            <input type="number" id="gameRow" min="0" max="11" value="5">
+            <label style="color:var(--text-secondary);font-size:12px;">العمود:</label>
+            <input type="number" id="gameCol" min="0" max="11" value="3">
+            <span class="coord-display" id="gameCoordDisplay">(5,3)</span>
+            <button onclick="connectToGameServer()" id="gameConnectBtn" style="padding:6px 18px;border:1px solid rgba(255,215,0,0.3);border-radius:10px;background:rgba(255,215,0,0.08);color:var(--accent-gold);cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;transition:all 0.3s;">🔗 اتصال</button>
+            <button onclick="disconnectGameServer()" id="gameDisconnectBtn" style="display:none;padding:6px 18px;border:1px solid rgba(239,68,68,0.3);border-radius:10px;background:rgba(239,68,68,0.08);color:var(--accent-red);cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;">🔌 قطع</button>
+            <span class="game-status waiting" id="gameStatus">⏳ غير متصل</span>
+        </div>
+
+        <div class="game-data" id="gameDataPanel" style="display:none;">
+            <div class="game-card">
+                <h4>👥 اللاعبون</h4>
                 <div id="gamePlayers"><div class="empty-msg" style="color:#666;font-size:11px;text-align:center;padding:8px;">⏳ انتظر الاتصال...</div></div>
-                <div class="game-actions" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
-                    <button onclick="gameAddPlayer()" class="btn-green" style="padding:4px 12px;border:1px solid rgba(74,222,128,0.2);border-radius:6px;background:rgba(74,222,128,0.06);color:#4ade80;cursor:pointer;font-size:10px;font-family:inherit;">➕ إضافة</button>
+                <div class="game-actions">
+                    <button onclick="gameAddPlayer()" class="btn-green">➕ إضافة لاعب</button>
                 </div>
             </div>
-            <div class="game-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;">
-                <h4 style="color:#a78bfa;font-size:12px;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:6px;">🌍 العوالم</h4>
+            <div class="game-card">
+                <h4>🌍 العوالم</h4>
                 <div id="gameWorlds"><div class="empty-msg" style="color:#666;font-size:11px;text-align:center;padding:8px;">⏳ انتظر الاتصال...</div></div>
+                <div class="game-actions">
+                    <button onclick="gameAddWorld()" class="btn-green">➕ إضافة عالم</button>
+                </div>
             </div>
-            <div class="game-card" style="grid-column:1/-1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;">
-                <h4 style="color:#a78bfa;font-size:12px;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:6px;">📊 معلومات الخادم</h4>
+            <div class="game-card" style="grid-column:1/-1;">
+                <h4>📊 معلومات الخادم</h4>
                 <div id="gameServerInfo"><div class="empty-msg" style="color:#666;font-size:11px;text-align:center;padding:8px;">⏳ انتظر الاتصال...</div></div>
-                <div class="game-actions" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
-                    <button onclick="gameRefresh()" style="padding:4px 12px;border:1px solid rgba(139,92,246,0.2);border-radius:6px;background:rgba(139,92,246,0.06);color:#a78bfa;cursor:pointer;font-size:10px;font-family:inherit;">🔄 تحديث</button>
-                    <button onclick="gamePing()" class="btn-gold" style="padding:4px 12px;border:1px solid rgba(255,215,0,0.2);border-radius:6px;background:rgba(255,215,0,0.06);color:#ffd700;cursor:pointer;font-size:10px;font-family:inherit;">📡 بينغ</button>
+                <div class="game-actions">
+                    <button onclick="gameRefresh()">🔄 تحديث</button>
+                    <button onclick="gamePing()" class="btn-gold">📡 بينغ</button>
                 </div>
             </div>
         </div>
@@ -604,10 +1249,11 @@ body {
     </div>
 </div>
 
-<!-- ====== لوحة المربع ====== -->
+<div class="overlay-backdrop" id="overlayBackdrop" onclick="closeAllPanels()"></div>
+
 <div class="tile-panel" id="tilePanel">
     <div class="panel-header">
-        <h3 id="panelTitle">📦 المربع (0,0) <span class="admin-tag">👑 مدير</span></h3>
+        <h3 id="panelTitle">📦 المربع (0,0)</h3>
         <button onclick="closePanel()">✖</button>
     </div>
     <div class="info-grid">
@@ -616,59 +1262,105 @@ body {
         <div class="info-item"><span>🛡️ الحماية</span><span class="value" id="panelProtected">❌ غير محمي</span></div>
         <div class="info-item"><span>📄 الملفات</span><span class="value" id="panelFileCount">0</span></div>
         <div class="info-item"><span>🔄 المزامنة</span><span class="value" id="panelSync">❌ غير متزامن</span></div>
-        <div class="info-item"><span>👑 دور المربع</span><span class="value admin" id="panelRole">📂 عادي</span></div>
+        <div class="info-item"><span>👑 الدور</span><span class="value admin" id="panelRole">📂 عادي</span></div>
+    </div>
+    <div class="drop-zone" id="dropZone" onclick="uploadFile()">
+        <span class="icon">📂</span>
+        <div>اسحب الملفات هنا أو انقر للرفع</div>
     </div>
     <div class="file-list" id="panelFiles"></div>
+    <div class="terminal" id="tileTerminal">
+        <div class="line info">💻 طرفية المربع جاهزة...</div>
+    </div>
     <div class="actions">
         <button class="btn-upload" onclick="uploadFile()">📤 رفع ملف</button>
         <button class="btn-start" onclick="toggleServer()" id="panelStartBtn">▶️ تشغيل</button>
         <button class="btn-protect" onclick="toggleProtect()" id="panelProtectBtn">🛡️ حماية</button>
         <button class="btn-delete" onclick="clearTile()">🗑️ تفريغ</button>
         <button class="btn-sync" onclick="syncTileToChannel()">🔄 مزامنة</button>
-        <button class="btn-admin" onclick="markAsAdminTile()" id="panelAdminBtn">👑 تعيين مربع إدارة</button>
-        <button class="btn-connect" onclick="connectToTileFromPanel()" style="background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);grid-column:span 2;">🎮 الاتصال باللعبة</button>
+        <button class="btn-admin" onclick="markAsAdminTile()" id="panelAdminBtn">👑 تعيين إدارة</button>
+        <button class="btn-connect" onclick="connectToTileFromPanel()">🎮 الاتصال باللعبة</button>
     </div>
 </div>
 
-<!-- ====== محرر الملفات ====== -->
 <div class="file-editor" id="fileEditor">
     <div class="editor-header">
         <h4 id="editorTitle">📝 تحرير الملف</h4>
         <button onclick="closeEditor()">✖</button>
     </div>
-    <textarea id="editorContent" spellcheck="false"></textarea>
+    <div class="editor-toolbar">
+        <button onclick="editorFormat()">🔧 تنسيق JSON</button>
+        <button onclick="editorMinify()">📦 ضغط</button>
+        <button onclick="editorWrap()">↩️ التفاف</button>
+        <button onclick="editorUndo()">↩️ تراجع</button>
+        <span style="margin-right:auto;color:var(--text-secondary);font-size:10px;"><span id="editorCursorPos">1:1</span> | <span id="editorCharCount">0</span> حرف</span>
+    </div>
+    <textarea id="editorContent" spellcheck="false" oninput="updateEditorStats()" onkeydown="handleEditorKeydown(event)"></textarea>
     <div class="editor-actions">
         <button class="btn-save" onclick="saveFile()">💾 حفظ</button>
         <button class="btn-close" onclick="closeEditor()">✖ إلغاء</button>
     </div>
 </div>
 
-<!-- ====== إشعارات ====== -->
 <div class="toast" id="toast"></div>
 
 <script>
 // ============================================================
-// 👑 نظام إدارة الخوادم المصغرة + بوابة العوالم
+// 👑 نظام إدارة الخوادم المصغرة - النسخة المحسّنة 4.0
 // ============================================================
 
-// ====== بيانات المدير ======
-const ADMIN_CREDENTIALS = {
-    username: 'admin',
-    password: 'admin123'
-};
-
+const ADMIN_CREDENTIALS = { username: 'admin', password: 'admin123' };
 let isAdminLoggedIn = false;
 let adminName = 'مدير';
 let gameConnected = false;
 let gameTile = null;
 let gameServer = null;
+let currentFilter = 'all';
+let editorHistory = [];
+let editorHistoryIndex = -1;
 
-// ====== دوال الدخول ======
+// ====== Activity Log ======
+const ActivityLog = {
+    entries: [],
+    maxEntries: 50,
+
+    add: function(type, message) {
+        const entry = {
+            time: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+            type: type,
+            message: message
+        };
+        this.entries.unshift(entry);
+        if (this.entries.length > this.maxEntries) this.entries.pop();
+        this.render();
+    },
+
+    render: function() {
+        const container = document.getElementById('logContainer');
+        if (!container) return;
+        container.innerHTML = this.entries.map(e => `
+            <div class="log-entry">
+                <span class="time">${e.time}</span>
+                <span class="type ${e.type}">${e.type.toUpperCase()}</span>
+                <span class="msg">${e.message}</span>
+            </div>
+        `).join('');
+    },
+
+    clear: function() {
+        this.entries = [];
+        this.render();
+    }
+};
+
+function log(type, msg) { ActivityLog.add(type, msg); }
+
+// ====== Auth ======
 function adminLogin() {
     const username = document.getElementById('admin-username').value.trim();
     const password = document.getElementById('admin-password').value.trim();
     const errorEl = document.getElementById('auth-error');
-    
+
     if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
         isAdminLoggedIn = true;
         adminName = username;
@@ -677,10 +1369,12 @@ function adminLogin() {
         document.getElementById('admin-name-display').textContent = adminName;
         document.body.classList.add('admin-visible');
         showToast('👑 مرحباً أيها المدير!', 'admin');
-        setTimeout(function() { ServerManager.init(); }, 100);
+        log('admin', 'تسجيل دخول المدير');
+        setTimeout(() => { ServerManager.init(); }, 100);
     } else {
         errorEl.textContent = '❌ اسم المستخدم أو كلمة المرور غير صحيحة';
         errorEl.style.display = 'block';
+        log('error', 'محاولة دخول فاشلة');
     }
 }
 
@@ -695,11 +1389,56 @@ function logoutAdmin() {
         document.body.classList.remove('admin-visible');
         gameConnected = false;
         gameServer = null;
+        log('admin', 'تسجيل خروج المدير');
     }
 }
 
+// ====== Theme Toggle ======
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    showToast(next === 'light' ? '☀️ الوضع الفاتح' : '🌙 الوضع الداكن', 'info');
+}
+
+function loadTheme() {
+    const saved = localStorage.getItem('theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+}
+
+// ====== Search & Filter ======
+function handleSearch() {
+    const query = document.getElementById('searchInput').value.trim().toLowerCase();
+    ServerManager.renderGrid(query);
+}
+
+function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    ServerManager.renderGrid();
+}
+
+function focusRandomTile() {
+    const row = Math.floor(Math.random() * 12);
+    const col = Math.floor(Math.random() * 12);
+    const id = `${row}_${col}`;
+    ServerManager.openPanel(id);
+    showToast(`🎲 تم اختيار المربع (${row},${col})`, 'info');
+}
+
+function filterTiles(type) {
+    currentFilter = type;
+    document.querySelectorAll('.quick-tools button').forEach(b => b.classList.remove('active'));
+    document.getElementById('filter-' + type).classList.add('active');
+    ServerManager.renderGrid();
+}
+
+function toggleActivityLog() {
+    document.getElementById('activityLog').classList.toggle('open');
+}
+
 // ============================================================
-// 🖥️ ServerManager - نظام إدارة الخوادم
+// 🖥️ ServerManager
 // ============================================================
 
 const ServerManager = {
@@ -710,33 +1449,36 @@ const ServerManager = {
     activeServers: new Set(),
     syncedTiles: new Set(),
     adminTiles: new Set(['0_0', '0_1', '0_2']),
-    
+
     init: function() {
         console.log('🖥️ تشغيل نظام إدارة الخوادم...');
+        loadTheme();
         this.loadTiles();
         this.loadTelegramSettings();
         this.renderGrid();
         this.updateStats();
         this.loadAdminFiles();
+        this.setupDropZone();
         console.log('✅ النظام جاهز');
         showToast('✅ تم تحميل الخوادم بنجاح', 'success');
+        log('success', 'النظام جاهز للعمل');
     },
-    
+
     loadTiles: function() {
         const saved = localStorage.getItem('server_tiles_admin');
         if (saved) {
             try {
                 this.tiles = JSON.parse(saved);
-                const protectedData = localStorage.getItem('server_protected_admin');
-                if (protectedData) this.protectedTiles = new Set(JSON.parse(protectedData));
-                const syncedData = localStorage.getItem('server_synced_admin');
-                if (syncedData) this.syncedTiles = new Set(JSON.parse(syncedData));
-                const adminData = localStorage.getItem('server_admin_tiles');
-                if (adminData) this.adminTiles = new Set(JSON.parse(adminData));
+                const p = localStorage.getItem('server_protected_admin');
+                if (p) this.protectedTiles = new Set(JSON.parse(p));
+                const s = localStorage.getItem('server_synced_admin');
+                if (s) this.syncedTiles = new Set(JSON.parse(s));
+                const a = localStorage.getItem('server_admin_tiles');
+                if (a) this.adminTiles = new Set(JSON.parse(a));
                 return;
-            } catch(e) {}
+            } catch(e) { console.error(e); }
         }
-        
+
         for (let row = 0; row < 12; row++) {
             for (let col = 0; col < 12; col++) {
                 const id = `${row}_${col}`;
@@ -746,58 +1488,85 @@ const ServerManager = {
         this.adminTiles = new Set(['0_0', '0_1', '0_2']);
         this.saveTiles();
     },
-    
+
     saveTiles: function() {
         localStorage.setItem('server_tiles_admin', JSON.stringify(this.tiles));
         localStorage.setItem('server_protected_admin', JSON.stringify(Array.from(this.protectedTiles)));
         localStorage.setItem('server_synced_admin', JSON.stringify(Array.from(this.syncedTiles)));
         localStorage.setItem('server_admin_tiles', JSON.stringify(Array.from(this.adminTiles)));
     },
-    
-    renderGrid: function() {
+
+    renderGrid: function(searchQuery) {
         const grid = document.getElementById('grid');
         grid.innerHTML = '';
+
         for (let row = 0; row < 12; row++) {
             for (let col = 0; col < 12; col++) {
                 const id = `${row}_${col}`;
                 const tile = this.tiles[id];
                 if (!tile) continue;
+
+                // Filter logic
+                if (currentFilter !== 'all') {
+                    const isProtected = this.protectedTiles.has(id);
+                    const isActive = this.activeServers.has(id);
+                    const isSynced = this.syncedTiles.has(id);
+                    const isAdmin = this.adminTiles.has(id);
+                    const hasFiles = tile.files && Object.keys(tile.files).length > 0;
+
+                    if (currentFilter === 'active' && !isActive) continue;
+                    if (currentFilter === 'files' && !hasFiles) continue;
+                    if (currentFilter === 'protected' && !isProtected) continue;
+                    if (currentFilter === 'admin' && !isAdmin) continue;
+                    if (currentFilter === 'synced' && !isSynced) continue;
+                }
+
+                // Search logic
+                if (searchQuery) {
+                    const hasMatch = id.includes(searchQuery) || 
+                        (tile.files && Object.keys(tile.files).some(f => f.toLowerCase().includes(searchQuery)));
+                    if (!hasMatch) continue;
+                }
+
                 const isProtected = this.protectedTiles.has(id);
                 const isActive = this.activeServers.has(id);
                 const isSynced = this.syncedTiles.has(id);
                 const isAdminTile = this.adminTiles.has(id);
                 const isGameConnected = (gameTile === id && gameConnected);
                 const fileCount = tile.files ? Object.keys(tile.files).length : 0;
+
                 const div = document.createElement('div');
                 div.className = 'tile';
                 if (fileCount > 0) div.classList.add('has-files');
                 if (isProtected) div.classList.add('protected');
                 if (isAdminTile) div.classList.add('admin-tile');
-                if (isGameConnected) div.classList.add('active-tile');
+                if (isGameConnected) div.classList.add('game-connected');
                 div.dataset.tile = id;
-                let html = `<div class="icon">${isGameConnected ? '🎮' : isAdminTile ? '👑' : '📦'}</div>`;
+
+                let icon = isGameConnected ? '🎮' : isAdminTile ? '👑' : '📦';
+                let html = `<div class="icon">${icon}</div>`;
                 html += `<div class="label">${row},${col}</div>`;
                 html += `<div class="status ${isActive ? 'running' : 'offline'}">${isActive ? '🟢 نشط' : '⚪ متوقف'}</div>`;
                 if (fileCount > 0) html += `<div class="badge">${fileCount}</div>`;
                 if (isSynced) html += `<div class="sync-badge">🔄</div>`;
                 if (isAdminTile) html += `<div class="admin-badge-tile">👑</div>`;
-                if (isGameConnected) html += `<div class="server-indicator">🎮</div>`;
+                if (isGameConnected) html += `<div class="game-badge">🎮</div>`;
                 div.innerHTML = html;
                 div.onclick = () => this.openPanel(id);
                 grid.appendChild(div);
             }
         }
     },
-    
+
     updateStats: function() {
         const total = Object.keys(this.tiles).length;
         const online = this.activeServers.size;
         let files = 0, adminFiles = 0;
         Object.entries(this.tiles).forEach(([id, t]) => {
             if (t && t.files) {
-                const count = Object.keys(t.files).length;
-                files += count;
-                if (this.adminTiles.has(id)) adminFiles += count;
+                const c = Object.keys(t.files).length;
+                files += c;
+                if (this.adminTiles.has(id)) adminFiles += c;
             }
         });
         document.getElementById('totalTiles').textContent = total;
@@ -807,37 +1576,52 @@ const ServerManager = {
         document.getElementById('syncedCount').textContent = this.syncedTiles.size;
         document.getElementById('adminFilesCount').textContent = adminFiles;
     },
-    
+
     openPanel: function(id) {
         if (!isAdminLoggedIn) return;
         this.currentTile = id;
         const tile = this.tiles[id];
         if (!tile) return;
+
         const panel = document.getElementById('tilePanel');
         panel.classList.add('open');
+        document.getElementById('overlayBackdrop').classList.add('open');
+
         const isAdminTile = this.adminTiles.has(id);
         const isGame = (gameTile === id && gameConnected);
-        document.getElementById('panelTitle').innerHTML = `📦 المربع (${tile.row}, ${tile.col}) ${isAdminTile ? '<span class="admin-tag">👑 إدارة</span>' : ''} ${isGame ? '<span class="admin-tag">🎮 متصل</span>' : ''}`;
+
+        document.getElementById('panelTitle').innerHTML = 
+            `📦 المربع (${tile.row}, ${tile.col}) ${isAdminTile ? '<span class="admin-tag">👑 إدارة</span>' : ''} ${isGame ? '<span class="game-tag">🎮 متصل</span>' : ''}`;
         document.getElementById('panelLocation').textContent = `(${tile.row}, ${tile.col})`;
+
         const isActive = this.activeServers.has(id);
         const statusEl = document.getElementById('panelStatus');
         statusEl.textContent = isActive ? '🟢 نشط' : '⚪ غير نشط';
         statusEl.className = `value ${isActive ? 'online' : 'offline'}`;
+
         const isProtected = this.protectedTiles.has(id);
         document.getElementById('panelProtected').textContent = isProtected ? '✅ محمي' : '❌ غير محمي';
         document.getElementById('panelProtected').style.color = isProtected ? '#4ade80' : '#f87171';
+
         const isSynced = this.syncedTiles.has(id);
         document.getElementById('panelSync').textContent = isSynced ? '✅ متزامن' : '❌ غير متزامن';
         document.getElementById('panelSync').style.color = isSynced ? '#4ade80' : '#f87171';
+
         document.getElementById('panelStartBtn').textContent = isActive ? '⏹️ إيقاف' : '▶️ تشغيل';
         document.getElementById('panelProtectBtn').textContent = isProtected ? '🔓 إزالة' : '🛡️ حماية';
         document.getElementById('panelAdminBtn').textContent = isAdminTile ? '🔽 إزالة الإدارة' : '👑 تعيين مربع إدارة';
         document.getElementById('panelRole').textContent = isAdminTile ? '👑 مربع إدارة' : '📂 عادي';
         document.getElementById('panelRole').style.color = isAdminTile ? '#ffd700' : '#888';
+
         this.renderFiles(tile);
         document.getElementById('panelFileCount').textContent = tile.files ? Object.keys(tile.files).length : 0;
+
+        // Terminal
+        const term = document.getElementById('tileTerminal');
+        term.innerHTML = `<div class="line info">💻 طرفية المربع (${tile.row},${tile.col}) جاهزة...</div>`;
+        term.classList.add('open');
     },
-    
+
     renderFiles: function(tile) {
         const container = document.getElementById('panelFiles');
         container.innerHTML = '';
@@ -851,7 +1635,7 @@ const ServerManager = {
             const size = new Blob([content]).size;
             const sizeStr = size < 1024 ? size + ' B' : (size / 1024).toFixed(1) + ' KB';
             div.innerHTML = `
-                <span class="name">${name}</span>
+                <span class="name">📄 ${name}</span>
                 <span class="size">${sizeStr}</span>
                 <span class="actions">
                     <button class="edit" onclick="ServerManager.editFile('${tile.id}', '${name}')" title="تحرير">✏️</button>
@@ -863,53 +1647,94 @@ const ServerManager = {
             container.appendChild(div);
         });
     },
-    
+
     closePanel: function() {
         document.getElementById('tilePanel').classList.remove('open');
+        document.getElementById('overlayBackdrop').classList.remove('open');
         this.currentTile = null;
     },
-    
+
+    setupDropZone: function() {
+        const dz = document.getElementById('dropZone');
+        if (!dz) return;
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dz.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+        dz.addEventListener('dragenter', () => dz.classList.add('drag-over'));
+        dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+        dz.addEventListener('drop', (e) => {
+            dz.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            this.handleFiles(files);
+        });
+    },
+
+    handleFiles: function(files) {
+        if (!this.currentTile || !isAdminLoggedIn) return;
+        let count = 0;
+        for (const file of files) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const tile = this.tiles[this.currentTile];
+                if (!tile.files) tile.files = {};
+                tile.files[file.name] = ev.target.result;
+                this.saveTiles();
+                this.renderGrid();
+                this.updateStats();
+                this.renderFiles(tile);
+                this.addTerminalLine('success', `📄 تم رفع: ${file.name}`);
+                count++;
+                if (count === files.length) {
+                    showToast(`✅ تم رفع ${count} ملف`, 'success');
+                    log('success', `رفع ${count} ملف إلى المربع ${this.currentTile}`);
+                }
+            };
+            reader.readAsText(file);
+        }
+    },
+
     uploadFile: function() {
         if (!this.currentTile || !isAdminLoggedIn) return;
         const input = document.createElement('input');
         input.type = 'file';
         input.multiple = true;
-        input.onchange = (e) => {
-            const files = e.target.files;
-            let count = 0;
-            for (const file of files) {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    const tile = this.tiles[this.currentTile];
-                    if (!tile.files) tile.files = {};
-                    tile.files[file.name] = ev.target.result;
-                    this.saveTiles();
-                    this.renderGrid();
-                    this.updateStats();
-                    this.renderFiles(tile);
-                    count++;
-                    if (count === files.length) {
-                        showToast(`✅ تم رفع ${count} ملف`, 'success');
-                    }
-                };
-                reader.readAsText(file);
-            }
-        };
+        input.onchange = (e) => this.handleFiles(e.target.files);
         input.click();
     },
-    
+
+    addTerminalLine: function(type, text) {
+        const term = document.getElementById('tileTerminal');
+        if (!term) return;
+        const line = document.createElement('div');
+        line.className = 'line ' + type;
+        line.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+        term.appendChild(line);
+        term.scrollTop = term.scrollHeight;
+    },
+
     editFile: function(tileId, fileName) {
         if (!isAdminLoggedIn) return;
         this.currentTile = tileId;
         this.currentFile = fileName;
         const tile = this.tiles[tileId];
         if (!tile || !tile.files || !tile.files[fileName]) return;
+
         const editor = document.getElementById('fileEditor');
         editor.classList.add('open');
+        document.getElementById('overlayBackdrop').classList.add('open');
         document.getElementById('editorTitle').textContent = `📝 تحرير ${fileName}`;
         document.getElementById('editorContent').value = tile.files[fileName];
+
+        editorHistory = [tile.files[fileName]];
+        editorHistoryIndex = 0;
+        updateEditorStats();
     },
-    
+
     saveFile: function() {
         if (!this.currentTile || !this.currentFile || !isAdminLoggedIn) return;
         const content = document.getElementById('editorContent').value;
@@ -919,13 +1744,17 @@ const ServerManager = {
         this.updateStats();
         this.closeEditor();
         showToast(`✅ تم حفظ ${this.currentFile}`, 'success');
+        log('success', `حفظ الملف ${this.currentFile}`);
     },
-    
+
     closeEditor: function() {
         document.getElementById('fileEditor').classList.remove('open');
+        if (!document.getElementById('tilePanel').classList.contains('open')) {
+            document.getElementById('overlayBackdrop').classList.remove('open');
+        }
         this.currentFile = null;
     },
-    
+
     downloadFile: function(tileId, fileName) {
         const tile = this.tiles[tileId];
         if (!tile || !tile.files || !tile.files[fileName]) return;
@@ -936,8 +1765,9 @@ const ServerManager = {
         a.download = fileName;
         a.click();
         URL.revokeObjectURL(url);
+        log('info', `تحميل الملف ${fileName}`);
     },
-    
+
     deleteFile: function(tileId, fileName) {
         if (!isAdminLoggedIn) return;
         if (!confirm(`🗑️ حذف ${fileName}؟`)) return;
@@ -948,16 +1778,20 @@ const ServerManager = {
             this.renderGrid();
             this.updateStats();
             this.renderFiles(tile);
+            this.addTerminalLine('warning', `🗑️ تم حذف: ${fileName}`);
             showToast(`🗑️ تم حذف ${fileName}`, 'warning');
+            log('warning', `حذف الملف ${fileName}`);
         }
     },
-    
+
     toggleServer: function() {
         if (!this.currentTile || !isAdminLoggedIn) return;
         const id = this.currentTile;
         if (this.activeServers.has(id)) {
             this.activeServers.delete(id);
             showToast('⏹️ تم إيقاف الخادم', 'warning');
+            this.addTerminalLine('warning', '⏹️ الخادم متوقف');
+            log('warning', `إيقاف الخادم ${id}`);
         } else {
             this.activeServers.add(id);
             const tile = this.tiles[id];
@@ -965,12 +1799,17 @@ const ServerManager = {
                 try {
                     eval(tile.files['main.js']);
                     showToast(`🟢 تم تشغيل خادم (${tile.row},${tile.col})`, 'success');
+                    this.addTerminalLine('success', '🟢 الخادم يعمل الآن');
+                    log('success', `تشغيل الخادم ${id}`);
                 } catch(e) {
                     showToast('❌ خطأ في تشغيل الخادم', 'error');
+                    this.addTerminalLine('err', '❌ خطأ: ' + e.message);
                     this.activeServers.delete(id);
+                    log('error', `خطأ في تشغيل الخادم ${id}: ${e.message}`);
                 }
             } else {
                 showToast('⚠️ لا يوجد ملف main.js', 'warning');
+                this.addTerminalLine('warning', '⚠️ لا يوجد main.js');
                 this.activeServers.delete(id);
             }
         }
@@ -978,39 +1817,45 @@ const ServerManager = {
         this.updateStats();
         this.openPanel(id);
     },
-    
+
     toggleProtect: function() {
         if (!this.currentTile || !isAdminLoggedIn) return;
         const id = this.currentTile;
         if (this.protectedTiles.has(id)) {
             this.protectedTiles.delete(id);
             showToast('🔓 تم إزالة الحماية', 'warning');
+            this.addTerminalLine('warning', '🔓 الحماية مُلغاة');
+            log('warning', `إزالة حماية المربع ${id}`);
         } else {
             this.protectedTiles.add(id);
             showToast('🛡️ تم تفعيل الحماية', 'success');
+            this.addTerminalLine('success', '🛡️ الحماية مفعلة');
+            log('success', `حماية المربع ${id}`);
         }
         this.saveTiles();
         this.renderGrid();
         this.updateStats();
         this.openPanel(id);
     },
-    
+
     markAsAdminTile: function() {
         if (!this.currentTile || !isAdminLoggedIn) return;
         const id = this.currentTile;
         if (this.adminTiles.has(id)) {
             this.adminTiles.delete(id);
             showToast('🔽 تم إزالة دور الإدارة', 'warning');
+            log('warning', `إزالة إدارة المربع ${id}`);
         } else {
             this.adminTiles.add(id);
             showToast('👑 تم تعيين مربع إدارة', 'admin');
+            log('admin', `تعيين مربع إدارة ${id}`);
         }
         this.saveTiles();
         this.renderGrid();
         this.updateStats();
         this.openPanel(id);
     },
-    
+
     clearTile: function() {
         if (!this.currentTile || !isAdminLoggedIn) return;
         if (!confirm(`🗑️ تفريغ المربع (${this.currentTile})؟`)) return;
@@ -1024,11 +1869,13 @@ const ServerManager = {
             this.renderGrid();
             this.updateStats();
             this.openPanel(this.currentTile);
+            this.addTerminalLine('warning', '🗑️ تم تفريغ المربع');
             showToast('🗑️ تم تفريغ المربع', 'warning');
+            log('warning', `تفريغ المربع ${this.currentTile}`);
         }
     },
-    
-    // ====== نظام التلجرام ======
+
+    // ====== Telegram ======
     loadTelegramSettings: function() {
         const token = localStorage.getItem('telegram_bot_token') || '';
         const chatId = localStorage.getItem('telegram_chat_id') || '';
@@ -1036,7 +1883,7 @@ const ServerManager = {
         document.getElementById('tgChatId').value = chatId;
         this.updateTelegramStatus();
     },
-    
+
     saveTelegramSettings: function() {
         const token = document.getElementById('tgBotToken').value.trim();
         const chatId = document.getElementById('tgChatId').value.trim();
@@ -1048,8 +1895,9 @@ const ServerManager = {
         localStorage.setItem('telegram_chat_id', chatId);
         this.updateTelegramStatus();
         showToast('✅ تم حفظ إعدادات التلجرام', 'success');
+        log('success', 'حفظ إعدادات التلجرام');
     },
-    
+
     testTelegramConnection: async function() {
         const token = document.getElementById('tgBotToken').value.trim();
         if (!token) {
@@ -1063,14 +1911,17 @@ const ServerManager = {
                 showToast(`✅ البوت متصل: @${data.result.username}`, 'success');
                 document.getElementById('tgStatus').className = 'status online';
                 document.getElementById('tgStatus').textContent = '🟢 متصل';
+                log('success', `اتصال تلجرام ناجح: @${data.result.username}`);
             } else {
                 showToast('❌ فشل الاتصال: ' + data.description, 'error');
+                log('error', 'فشل اتصال تلجرام');
             }
         } catch(e) {
             showToast('❌ خطأ في الاتصال', 'error');
+            log('error', 'خطأ اتصال تلجرام');
         }
     },
-    
+
     updateTelegramStatus: function() {
         const token = localStorage.getItem('telegram_bot_token') || '';
         const chatId = localStorage.getItem('telegram_chat_id') || '';
@@ -1083,14 +1934,14 @@ const ServerManager = {
             el.textContent = '🔴 غير متصل';
         }
     },
-    
+
     toggleTelegramSettings: function() {
         const el = document.getElementById('telegramSettings');
         el.classList.toggle('open');
         if (el.classList.contains('open')) this.loadTelegramSettings();
     },
-    
-    // ====== مزامنة الملفات ======
+
+    // ====== Sync ======
     syncFileToChannel: async function(tileId, fileName) {
         if (!isAdminLoggedIn) return;
         const token = localStorage.getItem('telegram_bot_token');
@@ -1125,14 +1976,17 @@ const ServerManager = {
                 this.updateStats();
                 this.openPanel(tileId);
                 showToast(`✅ تم مزامنة ${formattedName}`, 'success');
+                log('success', `مزامنة ${formattedName}`);
             } else {
                 showToast('❌ فشل المزامنة: ' + data.description, 'error');
+                log('error', 'فشل مزامنة ملف');
             }
         } catch(e) {
             showToast('❌ خطأ في المزامنة', 'error');
+            log('error', 'خطأ مزامنة');
         }
     },
-    
+
     syncAllFromChannel: async function() {
         if (!isAdminLoggedIn) return;
         const token = localStorage.getItem('telegram_bot_token');
@@ -1142,6 +1996,7 @@ const ServerManager = {
             return;
         }
         showToast('🔄 جاري المزامنة...', 'warning');
+        log('info', 'بدء مزامنة جميع الملفات');
         try {
             const resp = await fetch(`https://api.telegram.org/bot${token}/getUpdates?limit=100`);
             const data = await resp.json();
@@ -1178,11 +2033,13 @@ const ServerManager = {
             this.updateStats();
             this.loadAdminFiles();
             showToast(`✅ تم مزامنة ${synced} ملف`, 'success');
+            log('success', `مزامنة ${synced} ملف من التلجرام`);
         } catch(e) {
             showToast('❌ فشل المزامنة: ' + e.message, 'error');
+            log('error', 'فشل مزامنة: ' + e.message);
         }
     },
-    
+
     syncTileToChannel: async function() {
         if (!this.currentTile || !isAdminLoggedIn) return;
         const tile = this.tiles[this.currentTile];
@@ -1195,9 +2052,12 @@ const ServerManager = {
             await this.syncFileToChannel(this.currentTile, fileName);
             synced++;
         }
-        if (synced > 0) showToast(`✅ تم مزامنة ${synced} ملف`, 'success');
+        if (synced > 0) {
+            showToast(`✅ تم مزامنة ${synced} ملف`, 'success');
+            log('success', `مزامنة ${synced} ملف من المربع ${this.currentTile}`);
+        }
     },
-    
+
     loadAdminFiles: function() {
         if (!isAdminLoggedIn) return;
         const adminFileMap = {
@@ -1217,26 +2077,20 @@ const ServerManager = {
                 if (adminFileMap[fileName]) {
                     try {
                         const data = JSON.parse(content);
-                        console.log(`📂 تحميل ملف إدارة: ${fileName} (${tileId})`, data);
-                        this.applyAdminData(adminFileMap[fileName], data);
+                        window.adminData = window.adminData || {};
+                        window.adminData[adminFileMap[fileName]] = data;
                         loaded++;
-                    } catch(e) {
-                        console.error(`❌ خطأ في تحميل ${fileName}:`, e);
-                    }
+                    } catch(e) {}
                 }
             }
         }
         if (loaded > 0) {
             showToast(`📂 تم تحميل ${loaded} ملف إدارة`, 'admin');
+            log('admin', `تحميل ${loaded} ملف إدارة`);
         }
         this.updateStats();
     },
-    
-    applyAdminData: function(type, data) {
-        window.adminData = window.adminData || {};
-        window.adminData[type] = data;
-    },
-    
+
     exportAllTiles: function() {
         if (!isAdminLoggedIn) return;
         const data = {
@@ -1245,7 +2099,7 @@ const ServerManager = {
             synced: Array.from(this.syncedTiles),
             adminTiles: Array.from(this.adminTiles),
             exported: Date.now(),
-            version: '3.0-admin'
+            version: '4.0-enhanced'
         };
         const json = JSON.stringify(data, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
@@ -1255,9 +2109,10 @@ const ServerManager = {
         a.download = `servers_admin_backup_${Date.now()}.json`;
         a.click();
         URL.revokeObjectURL(url);
-        showToast('📤 تم تصدير جميع المربعات (مدير)', 'admin');
+        showToast('📤 تم تصدير جميع المربعات', 'admin');
+        log('admin', 'تصدير نسخة احتياطية');
     },
-    
+
     importAllTiles: function(event) {
         if (!isAdminLoggedIn) return;
         const file = event.target.files[0];
@@ -1274,15 +2129,17 @@ const ServerManager = {
                 this.renderGrid();
                 this.updateStats();
                 this.loadAdminFiles();
-                showToast('📥 تم استيراد المربعات (مدير)', 'admin');
+                showToast('📥 تم استيراد المربعات', 'admin');
+                log('admin', 'استيراد نسخة احتياطية');
             } catch(err) {
                 showToast('❌ فشل الاستيراد: ' + err.message, 'error');
+                log('error', 'فشل استيراد: ' + err.message);
             }
         };
         reader.readAsText(file);
         event.target.value = '';
     },
-    
+
     resetAll: function() {
         if (!isAdminLoggedIn) return;
         if (!confirm('⚠️ هل أنت متأكد من إعادة تعيين كل شيء؟')) return;
@@ -1304,11 +2161,12 @@ const ServerManager = {
         this.updateStats();
         this.closePanel();
         showToast('🔄 تم إعادة التعيين', 'warning');
+        log('warning', 'إعادة تعيين النظام');
     }
 };
 
 // ============================================================
-// 🎮 بوابة العوالم - الاتصال بالخوادم
+// 🎮 بوابة العوالم
 // ============================================================
 
 function updateGameCoordDisplay() {
@@ -1330,29 +2188,26 @@ function toggleGamePanel() {
 function connectToGameServer() {
     const row = parseInt(document.getElementById('gameRow').value) || 0;
     const col = parseInt(document.getElementById('gameCol').value) || 0;
-    
+
     if (row < 0 || row > 11 || col < 0 || col > 11) {
         showToast('⚠️ أدخل أرقاماً بين 0 و 11', 'warning');
         return;
     }
-    
+
     gameTile = `${row}_${col}`;
     const status = document.getElementById('gameStatus');
     status.className = 'game-status waiting';
-    status.textContent = `⏳ جاري الاتصال بـ (${row},${col})...`;
+    status.textContent = `⏳ جاري الاتصال...`;
     document.getElementById('gameConnectBtn').textContent = '⏳ جاري...';
     document.getElementById('gameConnectBtn').disabled = true;
-    
-    console.log(`🔍 بحث عن خادم (${gameTile})...`);
-    
+
     if (window.servers && window.servers[gameTile]) {
         gameServer = window.servers[gameTile];
         gameConnected = true;
-        console.log(`✅ تم العثور على الخادم (${gameTile})!`);
         onGameConnected(row, col);
         return;
     }
-    
+
     if (window.ServerManager) {
         try {
             const tile = window.ServerManager.tiles && window.ServerManager.tiles[gameTile];
@@ -1361,20 +2216,19 @@ function connectToGameServer() {
                 if (window.servers && window.servers[gameTile]) {
                     gameServer = window.servers[gameTile];
                     gameConnected = true;
-                    console.log(`✅ تم تحميل الخادم (${gameTile}) من ServerManager!`);
                     onGameConnected(row, col);
                     return;
                 }
             }
         } catch(e) {
-            console.warn(`⚠️ فشل تحميل main.js للمربع (${gameTile}):`, e);
+            console.warn('فشل تحميل main.js:', e);
         }
     }
-    
+
     gameServer = null;
     gameConnected = false;
     status.className = 'game-status offline';
-    status.textContent = `🔴 غير متصل بـ (${row},${col})`;
+    status.textContent = `🔴 غير متصل`;
     document.getElementById('gameConnectBtn').textContent = '🔗 اتصال';
     document.getElementById('gameConnectBtn').disabled = false;
     document.getElementById('gameDisconnectBtn').style.display = 'none';
@@ -1383,70 +2237,68 @@ function connectToGameServer() {
     document.getElementById('gameServerInfo').innerHTML = '<div class="empty-msg">❌ الخادم غير متصل</div>';
     ServerManager.renderGrid();
     showToast(`❌ لا يوجد خادم في المربع (${row},${col})`, 'error');
+    log('error', `فشل الاتصال بالمربع ${gameTile}`);
 }
 
 function onGameConnected(row, col) {
     const status = document.getElementById('gameStatus');
     status.className = 'game-status online';
-    status.textContent = `🟢 متصل بـ (${row},${col})`;
+    status.textContent = `🟢 متصل`;
     document.getElementById('gameConnectBtn').textContent = '🔗 اتصال';
     document.getElementById('gameConnectBtn').disabled = false;
     document.getElementById('gameDisconnectBtn').style.display = 'inline-block';
     ServerManager.renderGrid();
     loadGameData();
     showToast(`✅ متصل بالخادم (${row},${col})`, 'success');
+    log('success', `اتصال بالخادم ${gameTile}`);
 }
 
 function loadGameData() {
     if (!gameServer || !gameConnected) return;
-    
     try {
         if (gameServer.info) {
             const info = gameServer.info();
             document.getElementById('gameServerInfo').innerHTML = `
-                <div class="item-row" style="display:flex;justify-content:space-between;padding:2px 0;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.03);"><span class="label" style="color:#fff;">📛 الاسم</span><span class="value gold" style="color:#ffd700;">${info.name || 'غير معروف'}</span></div>
-                <div class="item-row" style="display:flex;justify-content:space-between;padding:2px 0;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.03);"><span class="label" style="color:#fff;">📌 الحالة</span><span class="value green" style="color:#4ade80;">${info.status || 'نشط'}</span></div>
-                <div class="item-row" style="display:flex;justify-content:space-between;padding:2px 0;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.03);"><span class="label" style="color:#fff;">📦 الإصدار</span><span class="value" style="color:#888;">${info.version || '1.0'}</span></div>
-                <div class="item-row" style="display:flex;justify-content:space-between;padding:2px 0;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.03);"><span class="label" style="color:#fff;">⏱️ وقت التشغيل</span><span class="value" style="color:#888;">${info.uptime || '0 ثانية'}</span></div>
-                <div class="item-row" style="display:flex;justify-content:space-between;padding:2px 0;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.03);"><span class="label" style="color:#fff;">📊 عدد الطلبات</span><span class="value blue" style="color:#60a5fa;">${info.requests || 0}</span></div>
+                <div class="item-row"><span class="label">📛 الاسم</span><span class="value gold">${info.name || 'غير معروف'}</span></div>
+                <div class="item-row"><span class="label">📌 الحالة</span><span class="value green">${info.status || 'نشط'}</span></div>
+                <div class="item-row"><span class="label">📦 الإصدار</span><span class="value">${info.version || '1.0'}</span></div>
+                <div class="item-row"><span class="label">⏱️ وقت التشغيل</span><span class="value">${info.uptime || '0 ثانية'}</span></div>
+                <div class="item-row"><span class="label">📊 الطلبات</span><span class="value blue">${info.requests || 0}</span></div>
             `;
         }
-        
         if (gameServer.getPlayers) {
             const players = gameServer.getPlayers();
             const container = document.getElementById('gamePlayers');
             if (players && players.length > 0) {
                 container.innerHTML = players.map(p => `
-                    <div class="item-row" style="display:flex;justify-content:space-between;padding:2px 0;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.03);">
-                        <span class="label" style="color:#fff;">${p.name || 'لاعب'}</span>
+                    <div class="item-row">
+                        <span class="label">${p.name || 'لاعب'}</span>
                         <span style="display:flex;gap:10px;">
-                            <span class="value gold" style="color:#ffd700;">⭐ ${p.level || 1}</span>
-                            <span class="value green" style="color:#4ade80;">🏆 ${p.score || 0}</span>
+                            <span class="value gold">⭐ ${p.level || 1}</span>
+                            <span class="value green">🏆 ${p.score || 0}</span>
                         </span>
                     </div>
                 `).join('');
             } else {
-                container.innerHTML = '<div class="empty-msg" style="color:#666;font-size:11px;text-align:center;padding:8px;">📭 لا يوجد لاعبون</div>';
+                container.innerHTML = '<div class="empty-msg">📭 لا يوجد لاعبون</div>';
             }
         }
-        
         if (gameServer.getWorlds) {
             const worlds = gameServer.getWorlds();
             const container = document.getElementById('gameWorlds');
             if (worlds && worlds.length > 0) {
                 container.innerHTML = worlds.map(w => `
-                    <div class="item-row" style="display:flex;justify-content:space-between;padding:2px 0;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.03);">
-                        <span class="label" style="color:#fff;">${w.name || 'عالم'}</span>
-                        <span class="value blue" style="color:#60a5fa;">👥 ${w.players || 0}</span>
+                    <div class="item-row">
+                        <span class="label">${w.name || 'عالم'}</span>
+                        <span class="value blue">👥 ${w.players || 0}</span>
                     </div>
                 `).join('');
             } else {
-                container.innerHTML = '<div class="empty-msg" style="color:#666;font-size:11px;text-align:center;padding:8px;">📭 لا توجد عوالم</div>';
+                container.innerHTML = '<div class="empty-msg">📭 لا توجد عوالم</div>';
             }
         }
-        
     } catch(e) {
-        console.error('❌ خطأ في التحميل:', e);
+        console.error('خطأ في التحميل:', e);
     }
 }
 
@@ -1501,6 +2353,25 @@ function gameAddPlayer() {
     }
 }
 
+function gameAddWorld() {
+    if (!gameServer || !gameConnected) {
+        showToast('❌ الخادم غير متصل', 'error');
+        return;
+    }
+    try {
+        if (gameServer.addWorld) {
+            const name = prompt('🌍 أدخل اسم العالم:');
+            if (name && name.trim()) {
+                gameServer.addWorld(name.trim());
+                showToast(`✅ تم إضافة ${name}`, 'success');
+                loadGameData();
+            }
+        }
+    } catch(e) {
+        showToast('❌ خطأ', 'error');
+    }
+}
+
 function disconnectGameServer() {
     gameServer = null;
     gameConnected = false;
@@ -1513,6 +2384,7 @@ function disconnectGameServer() {
     document.getElementById('gameServerInfo').innerHTML = '<div class="empty-msg">⏳ غير متصل</div>';
     ServerManager.renderGrid();
     showToast('🔌 تم قطع الاتصال', 'warning');
+    log('warning', 'قطع اتصال اللعبة');
 }
 
 function connectToTileFromPanel() {
@@ -1524,6 +2396,72 @@ function connectToTileFromPanel() {
     updateGameCoordDisplay();
     closePanel();
     setTimeout(connectToGameServer, 300);
+}
+
+// ============================================================
+// 📝 محرر الملفات المحسّن
+// ============================================================
+
+function editorFormat() {
+    const ta = document.getElementById('editorContent');
+    try {
+        const obj = JSON.parse(ta.value);
+        ta.value = JSON.stringify(obj, null, 4);
+        showToast('🔧 تم التنسيق', 'success');
+    } catch(e) {
+        showToast('⚠️ الملف ليس JSON صالح', 'warning');
+    }
+    updateEditorStats();
+}
+
+function editorMinify() {
+    const ta = document.getElementById('editorContent');
+    try {
+        const obj = JSON.parse(ta.value);
+        ta.value = JSON.stringify(obj);
+        showToast('📦 تم الضغط', 'success');
+    } catch(e) {
+        showToast('⚠️ الملف ليس JSON صالح', 'warning');
+    }
+    updateEditorStats();
+}
+
+function editorWrap() {
+    const ta = document.getElementById('editorContent');
+    ta.wrap = ta.wrap === 'off' ? 'soft' : 'off';
+    showToast(ta.wrap === 'off' ? '↩️ إلغاء التفاف' : '↩️ تفعيل التفاف', 'info');
+}
+
+function editorUndo() {
+    if (editorHistoryIndex > 0) {
+        editorHistoryIndex--;
+        document.getElementById('editorContent').value = editorHistory[editorHistoryIndex];
+        updateEditorStats();
+        showToast('↩️ تم التراجع', 'info');
+    }
+}
+
+function updateEditorStats() {
+    const ta = document.getElementById('editorContent');
+    const val = ta.value;
+    document.getElementById('editorCharCount').textContent = val.length;
+    const lines = val.substring(0, ta.selectionStart).split('\n');
+    document.getElementById('editorCursorPos').textContent = `${lines.length}:${lines[lines.length-1].length + 1}`;
+}
+
+function handleEditorKeydown(e) {
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        const ta = e.target;
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        ta.value = ta.value.substring(0, start) + '    ' + ta.value.substring(end);
+        ta.selectionStart = ta.selectionEnd = start + 4;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        saveFile();
+    }
 }
 
 // ============================================================
@@ -1546,11 +2484,16 @@ function toggleTelegramSettings() { ServerManager.toggleTelegramSettings(); }
 function saveTelegramSettings() { ServerManager.saveTelegramSettings(); }
 function testTelegramConnection() { ServerManager.testTelegramConnection(); }
 
-function showToast(message, type = 'info') {
+function closeAllPanels() {
+    closePanel();
+    closeEditor();
+}
+
+function showToast(message, type) {
     const toast = document.getElementById('toast');
     toast.textContent = message;
     toast.className = 'toast ' + (type || 'info');
-    toast.style.display = 'block';
+    toast.style.display = 'flex';
     clearTimeout(toast._timeout);
     toast._timeout = setTimeout(() => {
         toast.style.display = 'none';
@@ -1558,25 +2501,9 @@ function showToast(message, type = 'info') {
 }
 
 // ============================================================
-// بدء النظام
+// 🧩 دوال ثابتة للخوادم
 // ============================================================
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('👑 نظام إدارة الخوادم + بوابة العوالم');
-    console.log('📌 بيانات الدخول: admin / admin123');
-    console.log('🎮 جميع المربعات تعمل في نفس النافذة');
-    updateGameCoordDisplay();
-});
-
-window.ServerManager = ServerManager;
-window.showToast = showToast;
-</script>
-
-<!-- ============================================================
-     🧩 دوال ثابتة لجميع الخوادم (لا تتغير)
-     ============================================================ -->
-<script>
-// ====== دالة الاتصال العامة ======
 function callServer(tileId, funcName, ...args) {
     const server = window.servers && window.servers[tileId];
     if (server && typeof server[funcName] === 'function') {
@@ -1585,74 +2512,52 @@ function callServer(tileId, funcName, ...args) {
     return null;
 }
 
-// ====== دوال ثابتة ======
 function getData(tileId) {
-    return callServer(tileId, 'getData') || 
-           callServer(tileId, 'getPlayers') || 
-           callServer(tileId, 'getInfo') || 
-           callServer(tileId, 'getBanner') || 
-           callServer(tileId, 'getWorlds') || 
-           null;
+    return callServer(tileId, 'getData') || callServer(tileId, 'getPlayers') || 
+           callServer(tileId, 'getInfo') || callServer(tileId, 'getBanner') || 
+           callServer(tileId, 'getWorlds') || null;
 }
 
 function getPlayers(tileId) {
-    return callServer(tileId, 'getPlayers') || 
-           callServer(tileId, 'getUsers') || 
-           callServer(tileId, 'getMembers') || 
-           null;
+    return callServer(tileId, 'getPlayers') || callServer(tileId, 'getUsers') || 
+           callServer(tileId, 'getMembers') || null;
 }
 
 function getBanner(tileId) {
-    return callServer(tileId, 'getBanner') || 
-           callServer(tileId, 'getCurrentBanner') || 
-           callServer(tileId, 'getMessage') || 
-           null;
+    return callServer(tileId, 'getBanner') || callServer(tileId, 'getCurrentBanner') || 
+           callServer(tileId, 'getMessage') || null;
 }
 
 function getWorlds(tileId) {
-    return callServer(tileId, 'getWorlds') || 
-           callServer(tileId, 'getLevels') || 
-           callServer(tileId, 'getMaps') || 
-           null;
+    return callServer(tileId, 'getWorlds') || callServer(tileId, 'getLevels') || 
+           callServer(tileId, 'getMaps') || null;
 }
 
 function getSettings(tileId) {
-    return callServer(tileId, 'getSettings') || 
-           callServer(tileId, 'getConfig') || 
-           null;
+    return callServer(tileId, 'getSettings') || callServer(tileId, 'getConfig') || null;
 }
 
 function addItem(tileId, name, data) {
-    return callServer(tileId, 'addPlayer', name) || 
-           callServer(tileId, 'addBanner', name, data) || 
-           callServer(tileId, 'addWorld', name) || 
-           callServer(tileId, 'addUser', name) || 
-           null;
+    return callServer(tileId, 'addPlayer', name) || callServer(tileId, 'addBanner', name, data) || 
+           callServer(tileId, 'addWorld', name) || callServer(tileId, 'addUser', name) || null;
 }
 
 function updateItem(tileId, id, value) {
-    return callServer(tileId, 'updateScore', id, value) || 
-           callServer(tileId, 'updateData', id, value) || 
-           callServer(tileId, 'updatePlayer', id, value) || 
-           null;
+    return callServer(tileId, 'updateScore', id, value) || callServer(tileId, 'updateData', id, value) || 
+           callServer(tileId, 'updatePlayer', id, value) || null;
 }
 
 function deleteItem(tileId, id) {
-    return callServer(tileId, 'deletePlayer', id) || 
-           callServer(tileId, 'deleteUser', id) || 
-           callServer(tileId, 'deleteData', id) || 
-           null;
+    return callServer(tileId, 'deletePlayer', id) || callServer(tileId, 'deleteUser', id) || 
+           callServer(tileId, 'deleteData', id) || null;
 }
 
 function pingServer(tileId) {
-    return callServer(tileId, 'ping') || 
-           callServer(tileId, 'test') || 
-           { status: 'unknown' };
+    return callServer(tileId, 'ping') || callServer(tileId, 'test') || { status: 'unknown' };
 }
 
 function getServerInfo(tileId) {
-    return callServer(tileId, 'info') || 
-           callServer(tileId, 'getInfo') || 
+    return callServer(tileId, 'info') || callServer(tileId, 'getInfo') || 
            { name: 'غير معروف', status: 'غير متصل' };
 }
 
@@ -1668,10 +2573,27 @@ function getConnectedServers() {
     return window.servers ? Object.keys(window.servers) : [];
 }
 
-// ====== تشغيل تلقائي ======
+// ============================================================
+// بدء النظام
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('👑 نظام إدارة الخوادم + بوابة العوالم v4.0');
+    console.log('📌 بيانات الدخول: admin / admin123');
+    console.log('🎮 جميع المربعات تعمل في نفس النافذة');
+    updateGameCoordDisplay();
+    loadTheme();
+});
+
+window.ServerManager = ServerManager;
+window.showToast = showToast;
+window.ActivityLog = ActivityLog;
+window.log = log;
+
 console.log('🧩 دوال ثابتة جاهزة للخادم');
 console.log('📌 استخدم: getData("5_3") أو getPlayers("0_0")');
 </script>
 
 </body>
 </html>
+
