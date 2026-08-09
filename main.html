@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎮 نظام الجلب والتوزيع - GitHub-like</title>
+<title>🎮 نظام الجلب والتوزيع - GitHub-like v5</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -36,6 +36,7 @@
   }
   .status-online { background: rgba(0,212,170,0.2); color: #00d4aa; border: 1px solid #00d4aa; }
   .status-offline { background: rgba(255,70,70,0.2); color: #ff4646; border: 1px solid #ff4646; }
+  .status-warning { background: rgba(255,170,0,0.2); color: #ffaa00; border: 1px solid #ffaa00; }
 
   .card {
     background: rgba(255,255,255,0.05);
@@ -114,6 +115,8 @@
   .btn-danger:hover { background: #7c2a2a; color: #fff; }
   .btn-success { background: #1a5c3a; color: #afa; }
   .btn-success:hover { background: #2a7c4a; color: #fff; }
+  .btn-warning { background: #5c4a1a; color: #ffa; }
+  .btn-warning:hover { background: #7c6a2a; color: #fff; }
 
   .result-box {
     margin-top: 14px;
@@ -229,6 +232,58 @@
   .console-log .log-error { color: #ff4646; }
   .console-log .log-warn { color: #ffaa00; }
 
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 3px;
+    margin-top: 10px;
+    overflow: hidden;
+    display: none;
+  }
+  .progress-bar.active { display: block; }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00d4aa, #00a884);
+    border-radius: 3px;
+    transition: width 0.3s;
+    width: 0%;
+  }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-label { font-size: 13px; color: #ccc; }
+  .toggle-desc { font-size: 11px; color: #666; }
+  .toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: #333;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle-switch.on { background: #00d4aa; }
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    top: 2px;
+    right: 2px;
+    transition: transform 0.2s;
+  }
+  .toggle-switch.on::after { transform: translateX(-20px); }
+
   @media (max-width: 600px) {
     .header h1 { font-size: 20px; }
     .btn { width: 100%; margin: 4px 0; justify-content: center; }
@@ -244,14 +299,12 @@
 <body>
 
 <div class="container">
-  <!-- Header -->
   <div class="header">
     <h1>🎮 نظام الجلب والتوزيع</h1>
-    <p>GitHub-like v4.7 | إدارة الملفات والمزامنة مع Telegram</p>
+    <p>GitHub-like v5.0 | إدارة الملفات والمزامنة مع Telegram</p>
     <span class="status-badge status-online" id="serverStatus">🟢 نشط</span>
   </div>
 
-  <!-- Stats Overview -->
   <div class="card">
     <div class="card-title">📊 إحصائيات النظام</div>
     <div class="stats-grid">
@@ -274,7 +327,6 @@
     </div>
   </div>
 
-  <!-- Tabs -->
   <div class="tabs">
     <div class="tab active" onclick="switchTab('sync')">🔄 المزامنة</div>
     <div class="tab" onclick="switchTab('files')">📁 الملفات</div>
@@ -283,19 +335,50 @@
     <div class="tab" onclick="switchTab('logs')">📝 السجل</div>
   </div>
 
-  <!-- Tab: Sync -->
   <div class="tab-content active" id="tab-sync">
     <div class="card">
       <div class="card-title">📥 جلب يدوي من Telegram</div>
+
+      <div style="margin-bottom: 16px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 10px;">
+        <div style="font-size: 12px; color: #888; margin-bottom: 8px;">⚙️ خيارات الجلب:</div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">تخطي التكرار (حسب file_id)</div>
+            <div class="toggle-desc">لا تعالج نفس الملف أكثر من مرة</div>
+          </div>
+          <div class="toggle-switch on" id="toggleDedup" onclick="toggleSwitch('toggleDedup')"></div>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">وضع بدون تحميل (Metadata Only)</div>
+            <div class="toggle-desc">إذا فشل التحميل بسبب CORS، احفظ اسم الملف والمعرف فقط</div>
+          </div>
+          <div class="toggle-switch on" id="toggleMetadataFallback" onclick="toggleSwitch('toggleMetadataFallback')"></div>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">الكتابة فوق الملفات الموجودة</div>
+            <div class="toggle-desc">استبدل الملفات حتى لو كانت موجودة مسبقاً</div>
+          </div>
+          <div class="toggle-switch" id="toggleOverwrite" onclick="toggleSwitch('toggleOverwrite')"></div>
+        </div>
+      </div>
+
       <div class="input-group">
         <label>📋 نتيجة getUpdates (JSON):</label>
         <textarea id="jsonInput" placeholder='{"ok":true,"result":[{"update_id":123,"channel_post":{"message_id":1,"document":{"file_name":"tile_5_3_index.html"}}}]}'></textarea>
       </div>
+
+      <div class="progress-bar" id="syncProgress">
+        <div class="progress-fill" id="syncProgressFill"></div>
+      </div>
+
       <div>
-        <button class="btn btn-primary" onclick="doManualSync()">🚀 جلب الملفات</button>
+        <button class="btn btn-primary" id="btnSync" onclick="doManualSync()">🚀 جلب الملفات</button>
         <button class="btn btn-secondary" onclick="pasteExample()">📄 مثال</button>
         <button class="btn btn-secondary" onclick="clearInput()">🗑️ مسح</button>
         <button class="btn btn-success" onclick="openTelegramApi()">🔗 فتح Telegram API</button>
+        <button class="btn btn-warning" onclick="extractFileList()">📋 استخراج قائمة الملفات فقط</button>
       </div>
       <div class="result-box" id="syncResult"></div>
 
@@ -314,7 +397,6 @@
     </div>
   </div>
 
-  <!-- Tab: Files -->
   <div class="tab-content" id="tab-files">
     <div class="card">
       <div class="card-title">📁 الملفات في المستودع</div>
@@ -328,7 +410,6 @@
     </div>
   </div>
 
-  <!-- Tab: Repo -->
   <div class="tab-content" id="tab-repo">
     <div class="card">
       <div class="card-title">📦 إدارة المستودع</div>
@@ -352,7 +433,6 @@
     </div>
   </div>
 
-  <!-- Tab: Config -->
   <div class="tab-content" id="tab-config">
     <div class="card">
       <div class="card-title">⚙️ إعدادات Telegram</div>
@@ -382,16 +462,19 @@
         4. الصقها في مربع "جلب يدوي"<br>
         5. اضغط "🚀 جلب الملفات"<br><br>
 
+        <strong style="color:#ffaa00;">⚠️ مشكلة CORS:</strong><br>
+        إذا كان التطبيق يعمل على WebView (Android)، قد يفشل تحميل محتوى الملفات بسبب CORS.<br>
+        ✅ الحل: فعّل "وضع بدون تحميل" لحفظ أسماء الملفات ومعرفاتها حتى لو لم يُحمل المحتوى.<br><br>
+
         <strong style="color:#00d4aa;">الرفع:</strong><br>
         أضف ملفات في تبويب "الملفات" ثم اضغط "📤 رفع جميع الملفات"<br><br>
 
-        <strong style="color:#00d4aa;">ملاحظة:</strong><br>
-        إذا كان التطبيق يعمل على WebView (Android)، قد يفشل الجلب التلقائي بسبب CORS. استخدم الجلب اليدوي دائماً.
+        <strong style="color:#00d4aa;">استخراج قائمة الملفات:</strong><br>
+        إذا لم يكن Bot Token متوفراً، استخدم "📋 استخراج قائمة الملفات فقط" لرؤية أسماء الملفات الموجودة في JSON.
       </div>
     </div>
   </div>
 
-  <!-- Tab: Logs -->
   <div class="tab-content" id="tab-logs">
     <div class="card">
       <div class="card-title">📝 سجل العمليات</div>
@@ -402,14 +485,9 @@
 </div>
 
 <script>
-// ============================================================
-// 🎮 نظام الجلب والتوزيع - GitHub-like v4.7 (HTML Edition)
-// ============================================================
-
 (function() {
   'use strict';
 
-  // ========== TILE ID ==========
   let TILE_ID = '5_3';
   if (window.__currentTileId) TILE_ID = window.__currentTileId;
   else if (window.ServerManager && window.ServerManager.currentTile) TILE_ID = window.ServerManager.currentTile;
@@ -419,7 +497,6 @@
     }
   }
 
-  // ========== UTILITIES ==========
   const Utils = {
     uid: () => `${Date.now().toString(36)}_${Math.random().toString(36).substr(2, 9)}`,
     deepClone: (obj) => JSON.parse(JSON.stringify(obj)),
@@ -466,7 +543,6 @@
     }
   };
 
-  // ========== STORAGE ==========
   const Storage = {
     get: (key) => {
       try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; } catch(e) { return null; }
@@ -477,12 +553,11 @@
     remove: (key) => localStorage.removeItem(key)
   };
 
-  // ========== LOGGER ==========
   const logs = [];
   function log(level, msg) {
     const time = new Date().toLocaleTimeString('ar-SA');
     logs.push({ time, level, msg });
-    if (logs.length > 200) logs.shift();
+    if (logs.length > 300) logs.shift();
     updateLogDisplay();
     console.log(`[${TILE_ID}] ${msg}`);
   }
@@ -500,7 +575,6 @@
     box.scrollTop = box.scrollHeight;
   }
 
-  // ========== REPO ==========
   const Repo = {
     files: {},
     history: [],
@@ -528,16 +602,17 @@
     getFile(path) { return this.files[path] || null; },
     getFiles() { return Object.keys(this.files); },
 
-    async addFile(path, content, msg) {
-      if (!path || !content) return { success: false, error: 'مدخلات غير صالحة' };
-      const hash = await Utils.hash(content);
+    async addFile(path, content, msg, meta = null) {
+      if (!path) return { success: false, error: 'اسم الملف مطلوب' };
+      const hash = await Utils.hash(content || '');
       const isUpdate = !!this.files[path];
-      this.files[path] = content;
+      this.files[path] = content || '';
       this.history.push({
         id: Utils.uid(), action: isUpdate ? 'update' : 'add',
         path, message: msg || (isUpdate ? 'تحديث' : 'إضافة'),
         hash, timestamp: new Date().toISOString(),
-        branch: this.currentBranch, size: content.length
+        branch: this.currentBranch, size: (content || '').length,
+        meta: meta
       });
       this.branches[this.currentBranch].head = this.history[this.history.length - 1].id;
       this.save();
@@ -587,7 +662,7 @@
     },
 
     export() {
-      return { files: this.files, history: this.history, branches: this.branches, currentBranch: this.currentBranch, version: '4.7' };
+      return { files: this.files, history: this.history, branches: this.branches, currentBranch: this.currentBranch, version: '5.0' };
     },
 
     import(data) {
@@ -607,7 +682,6 @@
     }
   };
 
-  // ========== CHANNEL ==========
   const Channel = {
     botToken: '',
     chatId: '',
@@ -650,46 +724,124 @@
         const text = await resp.text();
         return { success: true, text, status: resp.status };
       } catch(e) {
-        return { success: false, error: e.message };
+        return { success: false, error: e.message, isCors: e.message.includes('CORS') || e.message.includes('Failed to fetch') || e.message.includes('NetworkError') };
       }
     },
 
-    async processUpdates(updates) {
+    async processUpdates(updates, options = {}) {
       const files = [];
-      for (const update of updates) {
+      const errors = [];
+      const dedup = options.dedup !== false;
+      const metadataFallback = options.metadataFallback !== false;
+      const seenIds = new Set();
+
+      log('info', `🔍 معالجة ${updates.length} تحديث...`);
+
+      for (let i = 0; i < updates.length; i++) {
+        const update = updates[i];
         const msg = update.channel_post || update.message || update.edited_channel_post || update.edited_message;
         if (!msg) continue;
 
+        const progress = Math.round(((i + 1) / updates.length) * 100);
+        const progressFill = document.getElementById('syncProgressFill');
+        if (progressFill) progressFill.style.width = progress + '%';
+
         if (msg.document) {
           const name = msg.document.file_name || `file_${msg.message_id}`;
-          try {
-            const fileResp = await this.safeFetch(`https://api.telegram.org/bot${this.botToken}/getFile?file_id=${msg.document.file_id}`);
-            if (!fileResp.success) continue;
-            const fileData = JSON.parse(fileResp.text);
-            if (!fileData.ok) continue;
-            const contentResp = await this.safeFetch(`https://api.telegram.org/file/bot${this.botToken}/${fileData.result.file_path}`);
-            if (!contentResp.success) continue;
-            files.push({ name, content: contentResp.text, file_id: msg.document.file_id, message_id: msg.message_id });
-            log('success', `📥 جلب: ${name} (${contentResp.text.length} بايت)`);
-          } catch(e) {}
+          const fileId = msg.document.file_id;
+
+          if (dedup && seenIds.has(fileId)) {
+            log('info', `⏭️ تخطي تكرار: ${name}`);
+            continue;
+          }
+          seenIds.add(fileId);
+
+          let content = null;
+          let fetchError = null;
+
+          if (this.hasConfig()) {
+            try {
+              log('info', `📥 جلب محتوى: ${name}...`);
+              const fileResp = await this.safeFetch(`https://api.telegram.org/bot${this.botToken}/getFile?file_id=${fileId}`);
+              if (!fileResp.success) {
+                fetchError = fileResp.error;
+                log('warn', `⚠️ getFile فشل لـ ${name}: ${fileResp.error}`);
+              } else {
+                const fileData = JSON.parse(fileResp.text);
+                if (!fileData.ok) {
+                  fetchError = fileData.description || 'getFile returned not ok';
+                  log('warn', `⚠️ getFile خطأ لـ ${name}: ${fetchError}`);
+                } else {
+                  const contentResp = await this.safeFetch(`https://api.telegram.org/file/bot${this.botToken}/${fileData.result.file_path}`);
+                  if (!contentResp.success) {
+                    fetchError = contentResp.error;
+                    log('warn', `⚠️ تحميل فشل لـ ${name}: ${contentResp.error}`);
+                  } else {
+                    content = contentResp.text;
+                    log('success', `✅ جلب: ${name} (${content.length} بايت)`);
+                  }
+                }
+              }
+            } catch(e) {
+              fetchError = e.message;
+              log('error', `❌ استثناء لـ ${name}: ${e.message}`);
+            }
+          } else {
+            fetchError = 'Bot Token غير محفوظ';
+            log('warn', `⚠️ لا يوجد Bot Token - لا يمكن جلب ${name}`);
+          }
+
+          if (content === null && metadataFallback) {
+            const metaContent = `[METADATA]\nfile_name: ${name}\nfile_id: ${fileId}\nfile_size: ${msg.document.file_size || 'unknown'}\nmime_type: ${msg.document.mime_type || 'unknown'}\nmessage_id: ${msg.message_id || 'unknown'}\nchat_id: ${msg.chat?.id || 'unknown'}\ndate: ${msg.date || 'unknown'}\nfetch_error: ${fetchError || 'none'}\n`;
+            files.push({ 
+              name, 
+              content: metaContent, 
+              file_id: fileId, 
+              message_id: msg.message_id,
+              isMetadata: true,
+              fetchError: fetchError,
+              size: msg.document.file_size || 0
+            });
+            log('info', `💾 metadata محفوظ لـ: ${name}`);
+          } else if (content !== null) {
+            files.push({ name, content, file_id: fileId, message_id: msg.message_id, size: content.length });
+          } else {
+            errors.push({ name, error: fetchError });
+          }
         }
         else if (msg.photo && msg.photo.length > 0) {
           const photo = msg.photo[msg.photo.length - 1];
-          try {
-            const fileResp = await this.safeFetch(`https://api.telegram.org/bot${this.botToken}/getFile?file_id=${photo.file_id}`);
-            if (!fileResp.success) continue;
-            const fileData = JSON.parse(fileResp.text);
-            if (!fileData.ok) continue;
-            const contentResp = await this.safeFetch(`https://api.telegram.org/file/bot${this.botToken}/${fileData.result.file_path}`);
-            if (!contentResp.success) continue;
-            files.push({ name: `photo_${msg.message_id}.jpg`, content: contentResp.text, file_id: photo.file_id });
-          } catch(e) {}
+          const name = `photo_${msg.message_id}.jpg`;
+          let content = null;
+          let fetchError = null;
+
+          if (this.hasConfig()) {
+            try {
+              const fileResp = await this.safeFetch(`https://api.telegram.org/bot${this.botToken}/getFile?file_id=${photo.file_id}`);
+              if (fileResp.success) {
+                const fileData = JSON.parse(fileResp.text);
+                if (fileData.ok) {
+                  const contentResp = await this.safeFetch(`https://api.telegram.org/file/bot${this.botToken}/${fileData.result.file_path}`);
+                  if (contentResp.success) content = contentResp.text;
+                  else fetchError = contentResp.error;
+                } else fetchError = fileData.description;
+              } else fetchError = fileResp.error;
+            } catch(e) { fetchError = e.message; }
+          } else fetchError = 'Bot Token غير محفوظ';
+
+          if (content !== null) {
+            files.push({ name, content, file_id: photo.file_id, isPhoto: true });
+          } else if (metadataFallback) {
+            const metaContent = `[METADATA - PHOTO]\nfile_name: ${name}\nfile_id: ${photo.file_id}\nmessage_id: ${msg.message_id}\nfetch_error: ${fetchError || 'none'}\n`;
+            files.push({ name, content: metaContent, file_id: photo.file_id, isMetadata: true, fetchError });
+          }
         }
       }
-      return { success: true, files, total: updates.length, count: files.length };
+
+      return { success: true, files, total: updates.length, count: files.length, errors };
     },
 
-    async syncManual(jsonText) {
+    async syncManual(jsonText, options = {}) {
       log('info', '📋 بدء الجلب اليدوي...');
       try {
         let json = jsonText;
@@ -698,27 +850,31 @@
         if (firstBrace !== -1 && lastBrace !== -1) json = json.substring(firstBrace, lastBrace + 1);
 
         const data = JSON.parse(json);
-        if (!data.ok) return { success: false, error: data.description };
+        if (!data.ok) return { success: false, error: data.description || 'Telegram returned not ok' };
 
-        const result = await this.processUpdates(data.result);
+        const result = await this.processUpdates(data.result, options);
         if (!result.success) return result;
 
-        return await this.distributeFiles(result.files);
+        return await this.distributeFiles(result.files, options);
       } catch(e) {
         return { success: false, error: 'JSON خطأ: ' + e.message };
       }
     },
 
-    async distributeFiles(files) {
-      let count = 0, skipped = 0, savedToRepo = 0;
+    async distributeFiles(files, options = {}) {
+      let count = 0, skipped = 0, savedToRepo = 0, overwritten = 0;
+      const overwrite = options.overwrite === true;
 
       for (const file of files) {
         const match = file.name.match(/tile_(\d+)_(\d+)_(.+)/);
 
         if (!match) {
           const path = file.name.replace('tile_', '').replace(/_/g, '/');
-          await Repo.addFile(path, file.content, `جلب: ${file.name}`);
+          const exists = !!Repo.getFile(path);
+          if (exists && !overwrite) { skipped++; continue; }
+          await Repo.addFile(path, file.content, `جلب: ${file.name}${file.isMetadata ? ' (metadata)' : ''}`, { file_id: file.file_id, isMetadata: file.isMetadata });
           savedToRepo++;
+          if (exists) overwritten++;
           continue;
         }
 
@@ -729,8 +885,12 @@
 
         const sm = window.ServerManager;
         if (!sm || !sm.tiles) {
-          await Repo.addFile(`${tileId}/${fileName}`, file.content, `جلب: ${file.name}`);
+          const repoPath = `${tileId}/${fileName}`;
+          const exists = !!Repo.getFile(repoPath);
+          if (exists && !overwrite) { skipped++; continue; }
+          await Repo.addFile(repoPath, file.content, `جلب: ${file.name}${file.isMetadata ? ' (metadata)' : ''}`, { file_id: file.file_id, isMetadata: file.isMetadata });
           savedToRepo++;
+          if (exists) overwritten++;
           continue;
         }
 
@@ -739,17 +899,25 @@
         }
 
         const tile = sm.tiles[tileId];
-        if (Object.keys(tile.files || {}).length > 0) { skipped++; continue; }
+        const tileHasFiles = Object.keys(tile.files || {}).length > 0;
+        const fileExists = tile.files && tile.files[fileName];
+
+        if (tileHasFiles && !overwrite) { 
+          skipped++; 
+          log('warn', `⏭️ تخطي (البلاط ${tileId} لديه ملفات): ${fileName}`);
+          continue; 
+        }
 
         tile.files[fileName] = file.content;
         count++;
+        if (fileExists) overwritten++;
         if (sm.renderGrid) sm.renderGrid();
         if (sm.updateStats) sm.updateStats();
         if (sm.saveTiles) sm.saveTiles();
       }
 
-      log('success', `✅ مزامنة: ${count} موزعة + ${savedToRepo} في المستودع`);
-      return { success: true, synced: count, skipped, savedToRepo, total: files.length };
+      log('success', `✅ مزامنة: ${count} موزعة + ${savedToRepo} في المستودع` + (skipped > 0 ? ` | ${skipped} تخطي` : '') + (overwritten > 0 ? ` | ${overwritten} استبدال` : ''));
+      return { success: true, synced: count, skipped, savedToRepo, overwritten, total: files.length };
     },
 
     async pushAll() {
@@ -775,24 +943,31 @@
 
     async diagnostics() {
       const results = { tileId: TILE_ID, hasConfig: this.hasConfig(), tests: [] };
-      if (!this.hasConfig()) { results.tests.push({ name: 'Config', status: '❌' }); return results; }
+      if (!this.hasConfig()) { 
+        results.tests.push({ name: 'Config', status: '❌', error: 'Bot Token أو Chat ID مفقود' }); 
+        return results; 
+      }
 
       const meResult = await this.safeFetch(`https://api.telegram.org/bot${this.botToken}/getMe`);
       if (!meResult.success) {
-        results.tests.push({ name: 'getMe', status: '❌', error: meResult.error });
+        results.tests.push({ name: 'getMe', status: '❌', error: meResult.error, isCors: meResult.isCors });
       } else {
-        try { const data = JSON.parse(meResult.text); results.tests.push({ name: 'getMe', status: data.ok ? '✅' : '❌', bot: data.result?.username }); } catch(e) { results.tests.push({ name: 'getMe', status: '❌', error: e.message }); }
+        try { 
+          const data = JSON.parse(meResult.text); 
+          results.tests.push({ name: 'getMe', status: data.ok ? '✅' : '❌', bot: data.result?.username }); 
+        } catch(e) { 
+          results.tests.push({ name: 'getMe', status: '❌', error: e.message }); 
+        }
       }
       return results;
     }
   };
 
-  // ========== TILE SERVER ==========
   const TileServer = {
     info() {
       const stats = Repo.getStats();
       return {
-        name: `خادم ${TILE_ID}`, version: '4.7.0', status: 'نشط',
+        name: `خادم ${TILE_ID}`, version: '5.0.0', status: 'نشط',
         files: stats.files, commits: stats.commits,
         branches: stats.branches, currentBranch: stats.branch,
         channel: Channel.hasConfig() ? '🟢 متصلة' : '🔴 غير متصلة',
@@ -821,30 +996,27 @@
       saveConfig: (t, c) => Channel.saveConfig(t, c),
       hasConfig: () => Channel.hasConfig(),
       diagnostics: () => Channel.diagnostics(),
-      syncManual: (json) => Channel.syncManual(json)
+      syncManual: (json, opts) => Channel.syncManual(json, opts)
     },
 
-    syncManual: (json) => Channel.syncManual(json),
+    syncManual: (json, opts) => Channel.syncManual(json, opts),
     pushAll: () => Channel.pushAll(),
 
     getPlayers: () => [],
     getWorlds: () => [{ name: 'العالم الرئيسي', players: 0, maxPlayers: 100 }],
-    getBanner: () => ({ title: `خادم ${TILE_ID}`, message: 'نظام الجلب والتوزيع v4.7' }),
+    getBanner: () => ({ title: `خادم ${TILE_ID}`, message: 'نظام الجلب والتوزيع v5.0' }),
 
     test() { return { success: true, message: 'الخادم يعمل', tileId: TILE_ID, repo: Repo.getStats() }; }
   };
 
-  // ========== REGISTER ==========
   window._startTime = Date.now();
   window.servers = window.servers || {};
   window.servers[TILE_ID] = TileServer;
 
-  // ========== INIT ==========
   Repo.load();
   Channel.init();
   log('success', `✅ خادم ${TILE_ID} جاهز!`);
 
-  // ========== UI FUNCTIONS ==========
   window.switchTab = function(tabName) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -853,6 +1025,19 @@
     if (tabName === 'files') updateFileList();
     if (tabName === 'repo') updateHistoryList();
   };
+
+  window.toggleSwitch = function(id) {
+    const el = document.getElementById(id);
+    el.classList.toggle('on');
+  };
+
+  function getSyncOptions() {
+    return {
+      dedup: document.getElementById('toggleDedup').classList.contains('on'),
+      metadataFallback: document.getElementById('toggleMetadataFallback').classList.contains('on'),
+      overwrite: document.getElementById('toggleOverwrite').classList.contains('on')
+    };
+  }
 
   function updateUI() {
     const stats = Repo.getStats();
@@ -873,9 +1058,10 @@
     }
     list.innerHTML = files.map(path => {
       const content = Repo.getFile(path);
+      const isMeta = content.startsWith('[METADATA');
       return `<div class="file-item">
         <div>
-          <div class="file-name">${path}</div>
+          <div class="file-name">${path}${isMeta ? ' <span style="color:#ffaa00;font-size:10px;">[META]</span>' : ''}</div>
           <div class="file-size">${Utils.formatSize(content.length)}</div>
         </div>
         <div class="file-actions">
@@ -898,30 +1084,98 @@
         <div>
           <span style="color:${h.action==='add'?'#00d4aa':h.action==='delete'?'#ff4646':'#ffaa00'}">[${h.action}]</span>
           <span style="color:#ccc;">${h.path}</span>
+          ${h.meta?.isMetadata ? '<span style="color:#ffaa00;font-size:10px;">[META]</span>' : ''}
         </div>
         <div class="file-size">${new Date(h.timestamp).toLocaleTimeString('ar-SA')}</div>
       </div>
     `).join('');
   }
 
-  // ========== ACTIONS ==========
   window.doManualSync = async function() {
+    const input = document.getElementById('jsonInput').value.trim();
+    const resultBox = document.getElementById('syncResult');
+    const btn = document.getElementById('btnSync');
+    const progressBar = document.getElementById('syncProgress');
+
+    if (!input) { showResult('syncResult', '❌ المربع فارغ!', 'error'); return; }
+
+    btn.disabled = true;
+    progressBar.classList.add('active');
+    showResult('syncResult', '🔄 جاري المعالجة...', 'info');
+
+    const options = getSyncOptions();
+    log('info', `⚙️ خيارات: تخطي التكرار=${options.dedup}, metadata fallback=${options.metadataFallback}, overwrite=${options.overwrite}`);
+
+    const result = await Channel.syncManual(input, options);
+
+    btn.disabled = false;
+    progressBar.classList.remove('active');
+    document.getElementById('syncProgressFill').style.width = '0%';
+
+    if (result.success) {
+      const hasErrors = result.errors && result.errors.length > 0;
+
+      let msg = `✅ تمت المعالجة!<br>`;
+      msg += `📦 إجمالي في JSON: ${result.total || 0}<br>`;
+      msg += `🎯 موزعة على بلاطات: ${result.synced || 0}<br>`;
+      msg += `💾 في المستودع: ${result.savedToRepo || 0}<br>`;
+      msg += `⏭️ تخطي: ${result.skipped || 0}<br>`;
+      if (result.overwritten > 0) msg += `🔄 استبدال: ${result.overwritten}<br>`;
+      if (hasErrors) msg += `<br>⚠️ أخطاء: ${result.errors.length} ملف فشل جلبه (قد يكون بسبب CORS أو Bot Token)`;
+
+      const resultType = hasErrors ? 'warning' : 'success';
+      showResult('syncResult', msg, resultType);
+      updateUI();
+    } else {
+      showResult('syncResult', '❌ فشل: ' + (result.error || 'خطأ غير معروف'), 'error');
+    }
+  };
+
+  window.extractFileList = function() {
     const input = document.getElementById('jsonInput').value.trim();
     const resultBox = document.getElementById('syncResult');
     if (!input) { showResult('syncResult', '❌ المربع فارغ!', 'error'); return; }
 
-    showResult('syncResult', '🔄 جاري المعالجة...', 'info');
-    const result = await Channel.syncManual(input);
+    try {
+      let json = input;
+      const firstBrace = json.indexOf('{');
+      const lastBrace = json.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1) json = json.substring(firstBrace, lastBrace + 1);
 
-    if (result.success) {
-      showResult('syncResult', `✅ تمت المزامنة!
-📦 إجمالي: ${result.total || 0}
-🎯 موزعة: ${result.synced || 0}
-💾 في المستودع: ${result.savedToRepo || 0}
-⏭️ تخطي: ${result.skipped || 0}`, 'success');
-      updateUI();
-    } else {
-      showResult('syncResult', '❌ فشل: ' + (result.error || 'خطأ غير معروف'), 'error');
+      const data = JSON.parse(json);
+      if (!data.ok) { showResult('syncResult', '❌ Telegram error: ' + (data.description || 'unknown'), 'error'); return; }
+
+      const files = [];
+      const seen = new Set();
+      for (const update of data.result || []) {
+        const msg = update.channel_post || update.message || update.edited_channel_post || update.edited_message;
+        if (!msg) continue;
+        if (msg.document) {
+          const fid = msg.document.file_id;
+          if (seen.has(fid)) continue;
+          seen.add(fid);
+          files.push({
+            name: msg.document.file_name || `file_${msg.message_id}`,
+            file_id: fid,
+            size: msg.document.file_size,
+            mime_type: msg.document.mime_type,
+            message_id: msg.message_id
+          });
+        }
+      }
+
+      let msg = `<strong>📋 قائمة الملفات المستخرجة (${files.length} ملف فريد):</strong><br><br>`;
+      for (const f of files) {
+        msg += `📄 <strong>${f.name}</strong><br>`;
+        msg += `&nbsp;&nbsp;&nbsp;file_id: ${f.file_id}<br>`;
+        msg += `&nbsp;&nbsp;&nbsp;size: ${f.size || 'unknown'} bytes<br>`;
+        msg += `&nbsp;&nbsp;&nbsp;mime: ${f.mime_type || 'unknown'}<br><br>`;
+      }
+
+      showResult('syncResult', msg, 'info');
+      log('info', `📋 استخراج: ${files.length} ملف فريد من القائمة`);
+    } catch(e) {
+      showResult('syncResult', '❌ JSON خطأ: ' + e.message, 'error');
     }
   };
 
@@ -969,9 +1223,7 @@
 
   window.viewFile = function(path) {
     const content = Repo.getFile(path);
-    alert(`📄 ${path}
-
-${content.substring(0, 2000)}${content.length > 2000 ? '...' : ''}`);
+    alert(`📄 ${path}\n\n${content.substring(0, 2000)}${content.length > 2000 ? '...' : ''}`);
   };
 
   window.deleteFile = async function(path) {
@@ -1011,16 +1263,14 @@ ${content.substring(0, 2000)}${content.length > 2000 ? '...' : ''}`);
     const results = await Channel.diagnostics();
     let html = `<strong>🔍 نتائج الفحص:</strong><br>`;
     results.tests.forEach(t => {
-      html += `${t.status} ${t.name}${t.error ? ': ' + t.error : ''}${t.bot ? ' (@' + t.bot + ')' : ''}<br>`;
+      html += `${t.status} ${t.name}${t.error ? ': ' + t.error : ''}${t.bot ? ' (@' + t.bot + ')' : ''}${t.isCors ? ' [CORS]' : ''}<br>`;
     });
     showResult('diagResult', html, results.tests.every(t => t.status === '✅') ? 'success' : 'warning');
   };
 
   window.testServer = function() {
     const result = TileServer.test();
-    showResult('diagResult', `✅ ${result.message}
-📁 ملفات: ${result.repo.files}
-📝 التزامات: ${result.repo.commits}`, 'success');
+    showResult('diagResult', `✅ ${result.message}\n📁 ملفات: ${result.repo.files}\n📝 التزامات: ${result.repo.commits}`, 'success');
   };
 
   window.pasteExample = function() {
@@ -1083,14 +1333,12 @@ ${content.substring(0, 2000)}${content.length > 2000 ? '...' : ''}`);
     box.className = 'result-box result-' + type;
   }
 
-  // ========== INITIAL UI UPDATE ==========
   updateUI();
   document.getElementById('botToken').value = Channel.botToken;
   document.getElementById('chatId').value = Channel.chatId;
 
 })();
 </script>
+
 </body>
 </html>
-
- 
