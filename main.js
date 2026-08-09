@@ -1,21 +1,25 @@
 // ============================================================
-// 📦 main.js - نظام الجلب والتوزيع مثل GitHub (النسخة المُصلحة v4.1)
+// 📦 main.js - نظام الجلب والتوزيع (GitHub-like v4.2)
 // ============================================================
-// التصحيحات الرئيسية:
-// • إصلاح SyntaxError في console.log
-// • إصلاح Storage.init() - Promise دائماً
-// • إصلاح fetchAll - offset=0 لجلب كل الرسائل
-// • إصلاح uploadFile - FormData جديد في كل محاولة
-// • إصلاح autoSync - arrow function للحفاظ على this
-// • إصلاح init sequence - async/await صحيح
-// • إضافة diagnostics ورسائل خطأ مفصلة
-// • إصلاح التحقق من channel_post vs message
+// التصحيحات والتحسينات:
+// • دعم tileId ديناميكي (لا يقتصر على 5_3)
+// • تكامل كامل مع ServerManager.tiles
+// • إضافة دوال بوابة العوالم (getPlayers, getWorlds, addPlayer...)
+// • إصلاح كل أخطاء v4.1
+// • دعم التشغيل عبر eval() من ServerManager
 // ============================================================
 
 (function(global) {
     'use strict';
 
-    console.log('🔄 نظام الجلب والتوزيع (GitHub-like v4.1) جاهز!');
+    // ============================================================
+    // 🔧 تحديد المربع الحالي
+    // ============================================================
+    // يمكن للنظام الأم (ServerManager) تعيين هذا قبل eval()
+    const TILE_ID = global.__currentTileId || '5_3';
+    const [TILE_ROW, TILE_COL] = TILE_ID.split('_').map(Number);
+
+    console.log(`🔄 نظام الجلب والتوزيع (GitHub-like v4.2) [${TILE_ID}] جاهز!`);
 
     // ============================================================
     // 🔧 0. الأدوات المساعدة (Utilities)
@@ -113,12 +117,12 @@
     };
 
     // ============================================================
-    // 💾 0.2 نظام التخزين المتقدم (Storage Manager) - مُصلح
+    // 💾 0.2 نظام التخزين المتقدم (Storage Manager)
     // ============================================================
     const Storage = {
         mode: 'localStorage',
         db: null,
-        dbName: 'GitLikeDB',
+        dbName: 'GitLikeDB_' + TILE_ID,
         storeName: 'repo',
         version: 1,
         ready: false,
@@ -126,7 +130,7 @@
         init: async function() {
             return new Promise(async (resolve) => {
                 if (!global.indexedDB) {
-                    console.log('ℹ️ IndexedDB غير متوفر، استخدام localStorage');
+                    console.log(`[${TILE_ID}] ℹ️ IndexedDB غير متوفر، استخدام localStorage`);
                     this.ready = true;
                     resolve();
                     return;
@@ -135,9 +139,9 @@
                     await this.initIndexedDB();
                     this.mode = 'indexedDB';
                     this.ready = true;
-                    console.log('✅ IndexedDB متصل');
+                    console.log(`[${TILE_ID}] ✅ IndexedDB متصل`);
                 } catch(e) {
-                    console.warn('⚠️ IndexedDB فشل:', e.message, '- الرجوع إلى localStorage');
+                    console.warn(`[${TILE_ID}] ⚠️ IndexedDB فشل:`, e.message);
                     this.mode = 'localStorage';
                     this.ready = true;
                 }
@@ -264,7 +268,7 @@
 
         save: async function() {
             try {
-                await Storage.set('gitlike_repo', {
+                await Storage.set('gitlike_repo_' + TILE_ID, {
                     files: this.files,
                     history: this.history,
                     branches: this.branches,
@@ -275,14 +279,14 @@
                 });
                 Events.emit('repo:saved', { stats: this.getStats() });
             } catch(e) {
-                console.error('❌ فشل حفظ المستودع:', e);
+                console.error(`[${TILE_ID}] ❌ فشل حفظ المستودع:`, e);
                 Events.emit('repo:error', { action: 'save', error: e.message });
             }
         },
 
         load: async function() {
             try {
-                const data = await Storage.get('gitlike_repo');
+                const data = await Storage.get('gitlike_repo_' + TILE_ID);
                 if (data) {
                     this.files = data.files || {};
                     this.history = data.history || [];
@@ -294,7 +298,7 @@
                     return true;
                 }
             } catch(e) {
-                console.error('❌ فشل تحميل المستودع:', e);
+                console.error(`[${TILE_ID}] ❌ فشل تحميل المستودع:`, e);
                 Events.emit('repo:error', { action: 'load', error: e.message });
             }
             return false;
@@ -320,10 +324,7 @@
             const commit = {
                 id: Utils.uid(),
                 action: oldContent ? 'update' : 'add',
-                path,
-                message: msg,
-                hash,
-                oldHash,
+                path, message: msg, hash, oldHash,
                 timestamp: new Date().toISOString(),
                 branch: this.currentBranch,
                 size: content.length
@@ -519,14 +520,14 @@
                 files: this.files, history: this.history,
                 branches: this.branches, currentBranch: this.currentBranch,
                 stashes: this.stashes, tags: this.tags,
-                exportedAt: new Date().toISOString(), version: '4.1'
+                exportedAt: new Date().toISOString(), version: '4.2'
             };
         },
 
         import: async function(data) {
             try {
                 const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-                await Storage.backup('gitlike_repo');
+                await Storage.backup('gitlike_repo_' + TILE_ID);
                 this.files = parsed.files || {};
                 this.history = parsed.history || [];
                 this.branches = parsed.branches || { main: { files: {}, head: null } };
@@ -550,7 +551,7 @@
     };
 
     // ============================================================
-    // 📡 2. نظام المزامنة مع القناة - مُصلح بالكامل
+    // 📡 2. نظام المزامنة مع القناة
     // ============================================================
     const Channel = {
         botToken: '',
@@ -595,13 +596,12 @@
             Events.emit('channel:configUpdated', { hasConfig: this.hasConfig() });
         },
 
-        // مُصلح: إعادة المحاولة مع إنشاء FormData جديد
         fetchWithRetry: async function(url, options = {}, retries = 0) {
             try {
                 const resp = await fetch(url, options);
                 if (!resp.ok && retries < this.maxRetries) {
                     const delay = Math.pow(2, retries) * 1000;
-                    console.log(`⏳ إعادة المحاولة ${retries + 1}/${this.maxRetries} بعد ${delay}ms`);
+                    console.log(`[${TILE_ID}] ⏳ إعادة المحاولة ${retries + 1}/${this.maxRetries}`);
                     await Utils.sleep(delay);
                     return this.fetchWithRetry(url, options, retries + 1);
                 }
@@ -616,7 +616,6 @@
             }
         },
 
-        // مُصلح: uploadFile مع طابور صحيح
         uploadFile: async function(path, content, priority = false) {
             if (!this.hasConfig()) return { success: false, error: 'إعدادات التلجرام غير مكتملة' };
             if (!Utils.validatePath(path)) return { success: false, error: 'مسار غير صالح' };
@@ -646,7 +645,7 @@
                     this.queue.shift();
                     await Utils.sleep(this.rateLimitDelay);
                 } catch(e) {
-                    console.error('❌ خطأ في معالجة المهمة:', e);
+                    console.error(`[${TILE_ID}] ❌ خطأ في المهمة:`, e);
                     task.retries++;
                     if (task.retries >= this.maxRetries) {
                         task.resolve({ success: false, error: e.message, path: task.path });
@@ -682,18 +681,15 @@
             return { success: false, error: data.description };
         },
 
-        // مُصلح: fetchAll مع offset=0 لجلب كل الرسائل
         fetchAll: async function(options = {}) {
             if (!this.hasConfig()) return { success: false, error: 'إعدادات التلجرام غير مكتملة' };
 
             const limit = options.limit || 100;
-            // ✅ مُصلح: استخدام offset=0 لجلب كل الرسائل من البداية
-            // أو استخدام offset محدد إذا أراد المستخدم الاستمرار
             const offset = options.offset !== undefined ? options.offset : 0;
             const filterPrefix = options.filterPrefix || 'tile_';
 
             try {
-                console.log(`🔍 جلب الرسائل من Telegram (offset=${offset}, limit=${limit})...`);
+                console.log(`[${TILE_ID}] 🔍 جلب الرسائل (offset=${offset}, limit=${limit})...`);
 
                 const resp = await this.fetchWithRetry(
                     `https://api.telegram.org/bot${this.botToken}/getUpdates?limit=${limit}&offset=${offset}`
@@ -701,11 +697,11 @@
                 const data = await resp.json();
 
                 if (!data.ok) {
-                    console.error('❌ Telegram API error:', data.description);
+                    console.error(`[${TILE_ID}] ❌ Telegram API:`, data.description);
                     return { success: false, error: data.description };
                 }
 
-                console.log(`📨 تم استلام ${data.result.length} تحديث من Telegram`);
+                console.log(`[${TILE_ID}] 📨 استلم ${data.result.length} تحديث`);
 
                 const files = [];
                 let maxUpdateId = this.lastUpdateId;
@@ -713,85 +709,60 @@
                 for (const update of data.result) {
                     if (update.update_id > maxUpdateId) maxUpdateId = update.update_id;
 
-                    // ✅ مُصلح: التحقق من channel_post أولاً ثم message
                     const msg = update.channel_post || update.message || update.edited_channel_post || update.edited_message;
-
-                    if (!msg) {
-                        console.log(`⚠️ تحديث ${update.update_id} لا يحتوي على رسالة`);
-                        continue;
-                    }
-
-                    if (!msg.document) {
-                        console.log(`⚠️ رسالة ${msg.message_id} لا تحتوي على مستند`);
-                        continue;
-                    }
+                    if (!msg) continue;
+                    if (!msg.document) continue;
 
                     const name = msg.document.file_name || '';
-                    console.log(`📄 ملف موجود: ${name}`);
-
-                    if (filterPrefix && !name.startsWith(filterPrefix)) {
-                        console.log(`⏭️ تخطي ${name} (لا يبدأ بـ ${filterPrefix})`);
-                        continue;
-                    }
+                    if (filterPrefix && !name.startsWith(filterPrefix)) continue;
 
                     try {
                         const fileResp = await this.fetchWithRetry(
                             `https://api.telegram.org/bot${this.botToken}/getFile?file_id=${msg.document.file_id}`
                         );
                         const fileData = await fileResp.json();
-
-                        if (!fileData.ok) {
-                            console.warn(`⚠️ فشل الحصول على معلومات الملف ${name}:`, fileData.description);
-                            continue;
-                        }
+                        if (!fileData.ok) continue;
 
                         const url = `https://api.telegram.org/file/bot${this.botToken}/${fileData.result.file_path}`;
-                        console.log(`⬇️ جلب محتوى الملف من: ${url}`);
-
                         const contentResp = await this.fetchWithRetry(url);
                         const content = await contentResp.text();
 
                         files.push({
-                            name: name,
-                            content: content,
+                            name: name, content: content,
                             file_id: msg.document.file_id,
                             message_id: msg.message_id,
                             timestamp: msg.date ? msg.date * 1000 : Date.now(),
                             update_id: update.update_id
                         });
-
-                        console.log(`✅ تم جلب ${name} (${content.length} حرف)`);
+                        console.log(`[${TILE_ID}] ✅ جلب ${name} (${content.length} حرف)`);
                     } catch(fileError) {
-                        console.error(`❌ خطأ في جلب ملف ${name}:`, fileError.message);
+                        console.warn(`[${TILE_ID}] ⚠️ فشل جلب ملف:`, fileError.message);
                     }
                 }
 
-                // ✅ مُصلح: تحديث lastUpdateId فقط إذا وجدنا رسائل جديدة
                 if (maxUpdateId > this.lastUpdateId) {
                     this.lastUpdateId = maxUpdateId;
                     localStorage.setItem('telegram_last_update_id', maxUpdateId.toString());
-                    console.log(`📝 تحديث lastUpdateId إلى: ${maxUpdateId}`);
                 }
 
                 Events.emit('channel:fetched', { count: files.length, totalUpdates: data.result.length });
                 return { success: true, files, hasMore: data.result.length === limit, totalUpdates: data.result.length };
 
             } catch(e) {
-                console.error('❌ فشل جلب الملفات:', e);
+                console.error(`[${TILE_ID}] ❌ فشل الجلب:`, e);
                 return { success: false, error: e.message };
             }
         },
 
-        // مُصلح: syncAll مع جلب كل الصفحات ومعالجة أفضل للأخطاء
         syncAll: async function(options = {}) {
             if (!this.hasConfig()) {
-                const err = '⚠️ لا توجد إعدادات تلجرام. استخدم: TileServer.channel.saveConfig(token, chatId)';
+                const err = `⚠️ [${TILE_ID}] لا توجد إعدادات. استخدم: TileServer.channel.saveConfig(token, chatId)`;
                 console.error(err);
                 return { success: false, error: err };
             }
 
             Events.emit('sync:started', {});
-            console.log('🚀 بدء المزامنة الكاملة...');
+            console.log(`[${TILE_ID}] 🚀 بدء المزامنة...`);
 
             try {
                 let allFiles = [];
@@ -800,15 +771,11 @@
                 const maxPages = options.maxPages || 10;
                 let currentOffset = 0;
 
-                // ✅ مُصلح: جلب كل الصفحات حتى نفاد النتائج
                 while (hasMore && page < maxPages) {
-                    console.log(`📄 جلب الصفحة ${page + 1} (offset=${currentOffset})...`);
+                    console.log(`[${TILE_ID}] 📄 صفحة ${page + 1} (offset=${currentOffset})`);
                     const result = await this.fetchAll({ limit: 100, offset: currentOffset });
 
-                    if (!result.success) {
-                        console.error('❌ فشل جلب الصفحة:', result.error);
-                        return result;
-                    }
+                    if (!result.success) return result;
 
                     allFiles = allFiles.concat(result.files);
                     hasMore = result.hasMore;
@@ -822,28 +789,18 @@
                     }
 
                     page++;
-
-                    if (hasMore) {
-                        console.log(`⏳ انتظار قبل الصفحة التالية...`);
-                        await Utils.sleep(500);
-                    }
+                    if (hasMore) await Utils.sleep(500);
                 }
 
-                console.log(`📦 إجمالي الملفات المُجلَبة: ${allFiles.length}`);
+                console.log(`[${TILE_ID}] 📦 إجمالي ملفات: ${allFiles.length}`);
 
                 if (allFiles.length === 0) {
-                    const msg = '⚠️ لم يتم العثور على ملفات tile_ في القناة. تأكد من:';
+                    const msg = `⚠️ [${TILE_ID}] لم يُعثر على ملفات tile_ في القناة`;
                     console.warn(msg);
-                    console.warn('   1. أن البوت عضو في القناة');
-                    console.warn('   2. أن هناك ملفات مرفوعة بتنسيق tile_');
-                    console.warn('   3. أن القناة ليست خاصة (Private) أو أن البوت لديه صلاحيات');
                     return { success: true, synced: 0, skipped: 0, savedToRepo: 0, total: 0, warning: msg };
                 }
 
-                let count = 0;
-                let skipped = 0;
-                let savedToRepo = 0;
-                let conflicts = 0;
+                let count = 0, skipped = 0, savedToRepo = 0, conflicts = 0;
 
                 for (const file of allFiles) {
                     const match = file.name.match(/tile_(\d+)_(\d+)_(.+)/);
@@ -851,20 +808,18 @@
                     if (!match) {
                         const path = file.name.replace('tile_', '').replace(/_/g, '/');
                         const existing = Repo.getFile(path);
-
                         if (existing && existing !== file.content) {
                             if (options.conflictStrategy === 'remote') {
-                                await Repo.updateFile(path, file.content, `مزامنة من القناة: ${file.name}`);
+                                await Repo.updateFile(path, file.content, `مزامنة: ${file.name}`);
                             } else if (options.conflictStrategy === 'local') {
-                                skipped++;
-                                continue;
+                                skipped++; continue;
                             } else {
                                 conflicts++;
                                 Events.emit('sync:conflict', { path, remoteContent: file.content });
                                 continue;
                             }
                         } else {
-                            await Repo.addFile(path, file.content, `جلب من القناة: ${file.name}`);
+                            await Repo.addFile(path, file.content, `جلب: ${file.name}`);
                         }
                         savedToRepo++;
                         continue;
@@ -872,34 +827,33 @@
 
                     const row = parseInt(match[1]);
                     const col = parseInt(match[2]);
-                    const tileId = `${row}_${col}`;
+                    const fileTileId = `${row}_${col}`;
                     const fileName = match[3];
 
-                    // ✅ مُصلح: التحقق من ServerManager بشكل آمن
+                    // ✅ التحقق من ServerManager
                     const sm = global.ServerManager || (typeof window !== 'undefined' ? window.ServerManager : null);
 
                     if (!sm || !sm.tiles) {
-                        const path = `${tileId}/${fileName}`;
-                        await Repo.addFile(path, file.content, `جلب من القناة: ${file.name}`);
+                        const path = `${fileTileId}/${fileName}`;
+                        await Repo.addFile(path, file.content, `جلب: ${file.name}`);
                         savedToRepo++;
-                        console.log(`📁 حفظ في المستودع: ${path}`);
                         continue;
                     }
 
-                    if (!sm.tiles[tileId]) {
-                        sm.tiles[tileId] = {
-                            id: tileId, row: row, col: col,
+                    if (!sm.tiles[fileTileId]) {
+                        sm.tiles[fileTileId] = {
+                            id: fileTileId, row: row, col: col,
                             files: {}, created: Date.now()
                         };
                     }
 
-                    const tile = sm.tiles[tileId];
+                    const tile = sm.tiles[fileTileId];
                     const existingFiles = tile.files || {};
 
                     if (Object.keys(existingFiles).length > 0 && !options.force) {
-                        console.log(`⚠️ المربع (${row},${col}) مملؤ بالفعل (${Object.keys(existingFiles).length} ملفات)`);
+                        console.log(`[${TILE_ID}] ⚠️ المربع (${row},${col}) مملؤ`);
                         if (typeof global.showToast === 'function') {
-                            global.showToast(`⚠️ المربع (${row},${col}) مملؤ بالفعل!`, 'warning');
+                            global.showToast(`⚠️ المربع (${row},${col}) مملؤ!`, 'warning');
                         }
                         skipped++;
                         continue;
@@ -907,25 +861,25 @@
 
                     tile.files[fileName] = file.content;
                     count++;
-                    console.log(`✅ تم حفظ ${fileName} في المربع (${row},${col})`);
+                    console.log(`[${TILE_ID}] ✅ حفظ ${fileName} في (${row},${col})`);
 
                     if (typeof global.showToast === 'function') {
-                        global.showToast(`✅ تم حفظ ${fileName} في (${row},${col})`, 'success');
+                        global.showToast(`✅ حفظ ${fileName} في (${row},${col})`, 'success');
                     }
 
                     if (sm.renderGrid) {
                         sm.renderGrid();
                         sm.updateStats();
                     }
+                    if (sm.saveTiles) sm.saveTiles();
                 }
 
-                const message = `✅ تم مزامنة ${count} ملف إلى المربعات` +
-                    (skipped > 0 ? ` (تخطي ${skipped} مربع مملؤ)` : '') +
-                    (savedToRepo > 0 ? ` + ${savedToRepo} ملف في المستودع` : '') +
+                const message = `✅ [${TILE_ID}] مزامنة: ${count} إلى المربعات` +
+                    (skipped > 0 ? ` (تخطي ${skipped})` : '') +
+                    (savedToRepo > 0 ? ` + ${savedToRepo} في المستودع` : '') +
                     (conflicts > 0 ? ` (${conflicts} تعارض)` : '');
 
                 console.log(message);
-
                 if (typeof global.showToast === 'function') {
                     global.showToast(message, 'success');
                 }
@@ -939,14 +893,14 @@
                 return result;
 
             } catch(e) {
-                console.error('❌ فشل المزامنة:', e);
+                console.error(`[${TILE_ID}] ❌ فشل المزامنة:`, e);
                 Events.emit('sync:error', { error: e.message });
                 return { success: false, error: e.message };
             }
         },
 
         pushAll: async function(options = {}) {
-            if (!this.hasConfig()) return { success: false, error: 'إعدادات التلجرام غير مكتملة' };
+            if (!this.hasConfig()) return { success: false, error: 'إعدادات غير مكتملة' };
 
             Events.emit('push:started', {});
             const paths = Repo.getFiles();
@@ -957,16 +911,16 @@
                 const result = await this.uploadFile(path, content);
                 if (result.success) {
                     uploaded++;
-                    console.log(`📤 رفع ${path} إلى القناة`);
+                    console.log(`[${TILE_ID}] 📤 رفع ${path}`);
                 } else {
                     failed++;
-                    console.error(`❌ فشل رفع ${path}:`, result.error);
+                    console.error(`[${TILE_ID}] ❌ فشل رفع ${path}:`, result.error);
                 }
             }
 
             const result = { success: true, uploaded, failed, total: paths.length };
             Events.emit('push:completed', result);
-            console.log(`📤 تم رفع ${uploaded} ملف إلى القناة`);
+            console.log(`[${TILE_ID}] 📤 رفع ${uploaded} ملف`);
             return result;
         },
 
@@ -988,7 +942,6 @@
             }
         },
 
-        // مُصلح: autoSync مع arrow function للحفاظ على this
         setAutoSync: function(enabled, intervalMs = 300000) {
             if (this.autoSyncInterval) {
                 clearInterval(this.autoSyncInterval);
@@ -996,29 +949,26 @@
             }
 
             if (enabled) {
-                // ✅ مُصلح: استخدام arrow function للحفاظ على سياق this
                 this.autoSyncInterval = setInterval(async () => {
-                    console.log('🔄 مزامنة تلقائية مع القناة...');
+                    console.log(`[${TILE_ID}] 🔄 مزامنة تلقائية...`);
                     try {
                         const result = await this.syncAll({ conflictStrategy: 'remote' });
                         if (result.success) {
-                            console.log('✅ المزامنة التلقائية ناجحة:', result);
-                        } else {
-                            console.warn('⚠️ المزامنة التلقائية:', result.error);
+                            console.log(`[${TILE_ID}] ✅ مزامنة تلقائية ناجحة`);
                         }
                     } catch(e) {
-                        console.error('❌ خطأ في المزامنة التلقائية:', e);
+                        console.error(`[${TILE_ID}] ❌ خطأ في المزامنة التلقائية:`, e);
                     }
                 }, intervalMs);
-                console.log(`⏰ المزامنة التلقائية مفعلة كل ${intervalMs / 1000} ثانية`);
+                console.log(`[${TILE_ID}] ⏰ مزامنة تلقائية: ${intervalMs / 1000}ث`);
             } else {
-                console.log('⏰ المزامنة التلقائية معطلة');
+                console.log(`[${TILE_ID}] ⏰ المزامنة التلقائية معطلة`);
             }
         },
 
-        // ✅ جديد: Diagnostics لفحص الاتصال
         diagnostics: async function() {
             const results = {
+                tileId: TILE_ID,
                 hasConfig: this.hasConfig(),
                 botTokenLength: this.botToken.length,
                 chatId: this.chatId,
@@ -1030,7 +980,6 @@
                 return results;
             }
 
-            // اختبار getMe
             try {
                 const resp = await fetch(`https://api.telegram.org/bot${this.botToken}/getMe`);
                 const data = await resp.json();
@@ -1043,7 +992,6 @@
                 results.tests.push({ name: 'getMe', status: '❌', error: e.message });
             }
 
-            // اختبار getUpdates
             try {
                 const resp = await fetch(`https://api.telegram.org/bot${this.botToken}/getUpdates?limit=1`);
                 const data = await resp.json();
@@ -1061,14 +1009,79 @@
     };
 
     // ============================================================
+    // 🎮 2.1 بيانات اللعبة (Game Data) - للتكامل مع بوابة العوالم
+    // ============================================================
+    const GameData = {
+        players: [],
+        worlds: [
+            { name: 'العالم الرئيسي', players: 0, maxPlayers: 100 },
+            { name: 'عالم المغامرات', players: 0, maxPlayers: 50 }
+        ],
+        requests: 0,
+
+        addPlayer: function(name) {
+            const player = {
+                id: Utils.uid(),
+                name: name,
+                level: 1,
+                score: 0,
+                joinedAt: new Date().toISOString()
+            };
+            this.players.push(player);
+            this.worlds[0].players++;
+            this.requests++;
+            Events.emit('game:playerAdded', player);
+            return player;
+        },
+
+        getPlayers: function() {
+            return this.players;
+        },
+
+        getWorlds: function() {
+            return this.worlds;
+        },
+
+        updateScore: function(playerId, score) {
+            const player = this.players.find(p => p.id === playerId);
+            if (player) {
+                player.score = score;
+                this.requests++;
+                return player;
+            }
+            return null;
+        },
+
+        deletePlayer: function(playerId) {
+            const idx = this.players.findIndex(p => p.id === playerId);
+            if (idx !== -1) {
+                this.players.splice(idx, 1);
+                this.worlds[0].players = Math.max(0, this.worlds[0].players - 1);
+                this.requests++;
+                return true;
+            }
+            return false;
+        },
+
+        getBanner: function() {
+            return {
+                title: `خادم ${TILE_ID}`,
+                message: `نظام الجلب والتوزيع v4.2`,
+                files: Repo.getStats().files,
+                commits: Repo.getStats().commits
+            };
+        }
+    };
+
+    // ============================================================
     // 🧩 3. الخادم الرئيسي (TileServer) - واجهة موحدة
     // ============================================================
     const TileServer = {
         info: function() {
             const stats = Repo.getStats();
             return {
-                name: 'نظام الجلب والتوزيع (GitHub-like)',
-                version: '4.1.0',
+                name: `خادم ${TILE_ID}`,
+                version: '4.2.0',
                 status: 'نشط',
                 files: stats.files,
                 commits: stats.commits,
@@ -1076,12 +1089,17 @@
                 currentBranch: stats.branch,
                 storage: Storage.mode,
                 channel: Channel.hasConfig() ? '🟢 متصلة' : '🔴 غير متصلة',
-                uptime: Math.floor((Date.now() - (global._startTime || Date.now())) / 1000) + ' ثانية'
+                uptime: Math.floor((Date.now() - (global._startTime || Date.now())) / 1000) + ' ثانية',
+                requests: GameData.requests,
+                tileId: TILE_ID,
+                row: TILE_ROW,
+                col: TILE_COL
             };
         },
 
         ping: function() {
-            return { status: 'online', timestamp: Date.now() };
+            GameData.requests++;
+            return { status: 'online', timestamp: Date.now(), tileId: TILE_ID };
         },
 
         repo: {
@@ -1140,6 +1158,35 @@
             };
         },
 
+        // 🎮 دوال بوابة العوالم
+        getPlayers: function() { return GameData.getPlayers(); },
+        getWorlds: function() { return GameData.getWorlds(); },
+        getUsers: function() { return GameData.getPlayers(); },
+        getMembers: function() { return GameData.getPlayers(); },
+        getBanner: function() { return GameData.getBanner(); },
+        getCurrentBanner: function() { return GameData.getBanner(); },
+        getMessage: function() { return GameData.getBanner(); },
+        getLevels: function() { return GameData.getWorlds(); },
+        getMaps: function() { return GameData.getWorlds(); },
+        getSettings: function() { return { tileId: TILE_ID, autoSync: !!Channel.autoSyncInterval }; },
+        getConfig: function() { return { tileId: TILE_ID, storage: Storage.mode }; },
+
+        addPlayer: function(name) { return GameData.addPlayer(name); },
+        addBanner: function(name, data) { return GameData.getBanner(); },
+        addWorld: function(name) {
+            GameData.worlds.push({ name: name, players: 0, maxPlayers: 50 });
+            return { success: true, name };
+        },
+        addUser: function(name) { return GameData.addPlayer(name); },
+
+        updateScore: function(id, value) { return GameData.updateScore(id, value); },
+        updateData: function(id, value) { return GameData.updateScore(id, value); },
+        updatePlayer: function(id, value) { return GameData.updateScore(id, value); },
+
+        deletePlayer: function(id) { return GameData.deletePlayer(id); },
+        deleteUser: function(id) { return GameData.deletePlayer(id); },
+        deleteData: function(id) { return GameData.deletePlayer(id); },
+
         test: async function() {
             const tests = [];
 
@@ -1185,7 +1232,8 @@
                 timestamp: new Date().toISOString(),
                 tests,
                 repo: Repo.getStats(),
-                channel: Channel.hasConfig() ? 'متصل' : 'غير متصل'
+                channel: Channel.hasConfig() ? 'متصل' : 'غير متصل',
+                tileId: TILE_ID
             };
         },
 
@@ -1197,11 +1245,17 @@
 
         reset: async function(hard = true) {
             await Repo.reset(hard);
+            GameData.players = [];
+            GameData.worlds = [
+                { name: 'العالم الرئيسي', players: 0, maxPlayers: 100 },
+                { name: 'عالم المغامرات', players: 0, maxPlayers: 50 }
+            ];
+            GameData.requests = 0;
             return { success: true };
         },
 
         backup: async function() {
-            await Storage.backup('gitlike_repo');
+            await Storage.backup('gitlike_repo_' + TILE_ID);
             return { success: true, message: 'تم إنشاء نسخة احتياطية' };
         },
 
@@ -1219,64 +1273,43 @@
     };
 
     // ============================================================
-    // 📌 التسجيل والتهيئة - مُصلحة
+    // 📌 التسجيل والتهيئة
     // ============================================================
 
     global._startTime = Date.now();
 
-    // ✅ مُصلح: تهيئة متسلسلة صحيحة
     async function initialize() {
         try {
-            // 1. تهيئة التخزين
             await Storage.init();
-
-            // 2. تحميل المستودع
             await Repo.init();
-
-            // 3. تهيئة القناة
             Channel.init();
 
-            // 4. تسجيل الخادم
+            // ✅ تسجيل الخادم في المربع الحالي (ديناميكي)
             global.servers = global.servers || {};
-            global.servers['5_3'] = TileServer;
+            global.servers[TILE_ID] = TileServer;
 
-            // 5. رسائل البداية
             const stats = Repo.getStats();
-            console.log(`✅ نظام الجلب والتوزيع (5_3) v4.1 جاهز!`);
+            console.log(`✅ [${TILE_ID}] نظام الجلب والتوزيع v4.2 جاهز!`);
             console.log(`💾 وضع التخزين: ${Storage.mode}`);
-            console.log(`📁 الملفات في المستودع: ${stats.files}`);
+            console.log(`📁 الملفات: ${stats.files}`);
             console.log(`📝 الالتزامات: ${stats.commits}`);
             console.log(`🌿 الفروع: ${stats.branches} (الحالي: ${stats.branch})`);
-            console.log(`🏷️ الوسوم: ${stats.tags}`);
-            console.log(`📦 المخبأات: ${stats.stashes}`);
             console.log(`📡 القناة: ${Channel.hasConfig() ? '🟢 متصلة' : '🔴 غير متصلة'}`);
 
             if (!Channel.hasConfig()) {
-                console.log('');
-                console.log('⚠️ لتفعيل الاتصال بالقناة، نفذ:');
-                console.log('  TileServer.channel.saveConfig("YOUR_BOT_TOKEN", "YOUR_CHAT_ID")');
+                console.log(`⚠️ [${TILE_ID}] لتفعيل الاتصال:`);
+                console.log(`   TileServer.channel.saveConfig("TOKEN", "CHAT_ID")`);
             }
 
-            console.log('');
-            console.log('📌 الأوامر المتاحة:');
-            console.log('  TileServer.syncAll()              - جلب الملفات من القناة');
-            console.log('  TileServer.pushAll()              - رفع الملفات إلى القناة');
-            console.log('  TileServer.channel.diagnostics()  - فحص الاتصال بالتلجرام');
-            console.log('  TileServer.channel.saveConfig()   - حفظ إعدادات التلجرام');
-            console.log('  TileServer.repo.list()            - قائمة الملفات');
-            console.log('  TileServer.test()                 - اختبار شامل');
-            console.log('  TileServer.info()                 - معلومات النظام');
-            console.log('');
-
-            Events.emit('server:ready', { server: '5_3', version: '4.1.0' });
+            Events.emit('server:ready', { server: TILE_ID, version: '4.2.0' });
 
         } catch(e) {
-            console.error('❌ فشل تهيئة النظام:', e);
+            console.error(`❌ [${TILE_ID}] فشل التهيئة:`, e);
         }
     }
 
-    // تشغيل التهيئة
     initialize();
 
 })(typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : this);
+
 
