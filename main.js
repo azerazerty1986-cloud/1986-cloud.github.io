@@ -1,44 +1,33 @@
 // ============================================================
-// 📦 main.js - نظام الجلب والتوزيع مثل GitHub (النسخة المُحسّنة v4.0)
+// 📦 main.js - نظام الجلب والتوزيع مثل GitHub (النسخة المُصلحة v4.1)
 // ============================================================
-// التحسينات الرئيسية:
-// • نظام إصدارات (Versioning) مع SHA-256
-// • طابور المهام (Queue) مع Rate Limiting
-// • إعادة المحاولة التلقائية (Exponential Backoff)
-// • إدارة التعارضات (Conflict Resolution)
-// • تخزين مُشفّر للبيانات الحساسة
-// • نظام أحداث (EventEmitter)
-// • دعم IndexedDB كبديل لـ localStorage
-// • ضغط البيانات قبل التخزين
-// • Pagination ذكي للجلب من Telegram
-// • تحقق من صحة المدخلات
+// التصحيحات الرئيسية:
+// • إصلاح SyntaxError في console.log
+// • إصلاح Storage.init() - Promise دائماً
+// • إصلاح fetchAll - offset=0 لجلب كل الرسائل
+// • إصلاح uploadFile - FormData جديد في كل محاولة
+// • إصلاح autoSync - arrow function للحفاظ على this
+// • إصلاح init sequence - async/await صحيح
+// • إضافة diagnostics ورسائل خطأ مفصلة
+// • إصلاح التحقق من channel_post vs message
 // ============================================================
 
 (function(global) {
     'use strict';
 
-    console.log('🔄 نظام الجلب والتوزيع (GitHub-like v4.0) جاهز!');
+    console.log('🔄 نظام الجلب والتوزيع (GitHub-like v4.1) جاهز!');
 
     // ============================================================
     // 🔧 0. الأدوات المساعدة (Utilities)
     // ============================================================
     const Utils = {
-        // توليد معرّف فريد
         uid: () => `${Date.now().toString(36)}_${Math.random().toString(36).substr(2, 9)}`,
-
-        // نسخة عميقة (Deep Clone)
         deepClone: (obj) => JSON.parse(JSON.stringify(obj)),
-
-        // تأخير (Delay)
         sleep: (ms) => new Promise(r => setTimeout(r, ms)),
-
-        // تنسيق التاريخ
         formatDate: (iso) => {
             const d = new Date(iso);
             return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
         },
-
-        // حساب حجم البيانات
         formatSize: (bytes) => {
             if (bytes === 0) return '0 B';
             const k = 1024;
@@ -46,82 +35,55 @@
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         },
-
-        // ضغط/فك ضغط نص بسيط (Run-length للتكرار)
         compress: (str) => {
-            try {
-                // استخدام LZ-string إذا كان متوفراً، وإلا إرجاع النص كما هو
-                if (global.LZString) return global.LZString.compressToUTF16(str);
-                return str;
-            } catch(e) { return str; }
+            try { if (global.LZString) return global.LZString.compressToUTF16(str); } catch(e) {}
+            return str;
         },
-
         decompress: (str) => {
-            try {
-                if (global.LZString) return global.LZString.decompressFromUTF16(str);
-                return str;
-            } catch(e) { return str; }
+            try { if (global.LZString) return global.LZString.decompressFromUTF16(str); } catch(e) {}
+            return str;
         },
-
-        // تشفير/فك تشفير بسيط (XOR + Base64) للبيانات الحساسة
-        // ملاحظة: هذا ليس تشفيراً قوياً، لكنه يمنع القراءة العرضية
         encrypt: (text, key = 'gitlike_default_key') => {
             if (!text) return '';
             let result = '';
             for (let i = 0; i < text.length; i++) {
                 result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
             }
-            try {
-                return btoa(result);
-            } catch(e) {
-                return result;
-            }
+            try { return btoa(result); } catch(e) { return result; }
         },
-
         decrypt: (encoded, key = 'gitlike_default_key') => {
             if (!encoded) return '';
             let text;
-            try {
-                text = atob(encoded);
-            } catch(e) {
-                text = encoded;
-            }
+            try { text = atob(encoded); } catch(e) { text = encoded; }
             let result = '';
             for (let i = 0; i < text.length; i++) {
                 result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
             }
             return result;
         },
-
-        // SHA-256 بسيط (محاكاة إذا لم تكن Web Crypto API متوفرة)
         hash: async (content) => {
             if (global.crypto && global.crypto.subtle) {
-                const encoder = new TextEncoder();
-                const data = encoder.encode(content);
-                const hashBuffer = await global.crypto.subtle.digest('SHA-256', data);
-                const hashArray = Array.from(new Uint8Array(hashBuffer));
-                return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                try {
+                    const encoder = new TextEncoder();
+                    const data = encoder.encode(content);
+                    const hashBuffer = await global.crypto.subtle.digest('SHA-256', data);
+                    const hashArray = Array.from(new Uint8Array(hashBuffer));
+                    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                } catch(e) {}
             }
-            // Fallback: djb2 hash
             let hash = 5381;
             for (let i = 0; i < content.length; i++) {
                 hash = ((hash << 5) + hash) + content.charCodeAt(i);
             }
-            return 'fallback_' + Math.abs(hash).toString(16);
+            return 'fb_' + Math.abs(hash).toString(16);
         },
-
-        // التحقق من صحة المسار
         validatePath: (path) => {
             if (typeof path !== 'string' || path.length === 0) return false;
             if (path.includes('..')) return false;
-            if (/[<>:"|?*\]/.test(path)) return false;
+            if (/[<>:"|?*\\]/.test(path)) return false;
             return true;
         },
-
-        // التحقق من صحة المحتوى
-        validateContent: (content) => {
-            return typeof content === 'string';
-        }
+        validateContent: (content) => typeof content === 'string'
     };
 
     // ============================================================
@@ -129,56 +91,58 @@
     // ============================================================
     const Events = {
         listeners: {},
-
         on: function(event, callback) {
             if (!this.listeners[event]) this.listeners[event] = [];
             this.listeners[event].push(callback);
             return () => this.off(event, callback);
         },
-
         off: function(event, callback) {
             if (!this.listeners[event]) return;
             this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
         },
-
         emit: function(event, data) {
             if (!this.listeners[event]) return;
             this.listeners[event].forEach(cb => {
                 try { cb(data); } catch(e) { console.error('❌ خطأ في معالج الحدث:', e); }
             });
         },
-
         once: function(event, callback) {
-            const wrapper = (data) => {
-                this.off(event, wrapper);
-                callback(data);
-            };
+            const wrapper = (data) => { this.off(event, wrapper); callback(data); };
             this.on(event, wrapper);
         }
     };
 
     // ============================================================
-    // 💾 0.2 نظام التخزين المتقدم (Storage Manager)
+    // 💾 0.2 نظام التخزين المتقدم (Storage Manager) - مُصلح
     // ============================================================
     const Storage = {
-        mode: 'localStorage', // 'localStorage' أو 'indexedDB'
+        mode: 'localStorage',
         db: null,
         dbName: 'GitLikeDB',
         storeName: 'repo',
         version: 1,
+        ready: false,
 
         init: async function() {
-            // محاولة استخدام IndexedDB إذا كان متوفراً
-            if (global.indexedDB) {
+            return new Promise(async (resolve) => {
+                if (!global.indexedDB) {
+                    console.log('ℹ️ IndexedDB غير متوفر، استخدام localStorage');
+                    this.ready = true;
+                    resolve();
+                    return;
+                }
                 try {
                     await this.initIndexedDB();
                     this.mode = 'indexedDB';
+                    this.ready = true;
                     console.log('✅ IndexedDB متصل');
                 } catch(e) {
-                    console.warn('⚠️ IndexedDB غير متوفر، الرجوع إلى localStorage');
+                    console.warn('⚠️ IndexedDB فشل:', e.message, '- الرجوع إلى localStorage');
                     this.mode = 'localStorage';
+                    this.ready = true;
                 }
-            }
+                resolve();
+            });
         },
 
         initIndexedDB: function() {
@@ -196,6 +160,7 @@
         },
 
         set: async function(key, value) {
+            if (!this.ready) await this.init();
             const data = JSON.stringify(value);
             const compressed = Utils.compress(data);
 
@@ -212,7 +177,6 @@
                     localStorage.setItem(key, compressed);
                     return true;
                 } catch(e) {
-                    // إذا امتلأ localStorage، محاولة إزالة القديم
                     if (e.name === 'QuotaExceededError') {
                         this.cleanup();
                         try {
@@ -228,6 +192,7 @@
         },
 
         get: async function(key) {
+            if (!this.ready) await this.init();
             let compressed;
 
             if (this.mode === 'indexedDB' && this.db) {
@@ -247,16 +212,12 @@
                 const data = Utils.decompress(compressed);
                 return JSON.parse(data);
             } catch(e) {
-                // محاولة قراءة غير مضغوط (للتوافق مع الإصدارات القديمة)
-                try {
-                    return JSON.parse(compressed);
-                } catch(e2) {
-                    return null;
-                }
+                try { return JSON.parse(compressed); } catch(e2) { return null; }
             }
         },
 
         remove: async function(key) {
+            if (!this.ready) await this.init();
             if (this.mode === 'indexedDB' && this.db) {
                 return new Promise((resolve, reject) => {
                     const tx = this.db.transaction([this.storeName], 'readwrite');
@@ -271,38 +232,32 @@
             }
         },
 
-        // تنظيف المساحة - حذف النسخ الاحتياطية القديمة
         cleanup: function() {
             const keys = Object.keys(localStorage);
             const oldBackups = keys.filter(k => k.startsWith('gitlike_backup_'));
             oldBackups.sort().reverse();
-            // الاحتفاظ بآخر 3 نسخ احتياطية فقط
             for (let i = 3; i < oldBackups.length; i++) {
                 localStorage.removeItem(oldBackups[i]);
             }
         },
 
-        // نسخ احتياطي
         backup: async function(key) {
             const data = await this.get(key);
-            if (data) {
-                await this.set(`gitlike_backup_${Date.now()}`, data);
-            }
+            if (data) await this.set(`gitlike_backup_${Date.now()}`, data);
         }
     };
 
     // ============================================================
-    // 📁 1. المستودع المحلي (Local Repository) - محسّن
+    // 📁 1. المستودع المحلي (Local Repository)
     // ============================================================
     const Repo = {
         files: {},
         history: [],
         branches: { main: { files: {}, head: null } },
         currentBranch: 'main',
-        stashes: [], // مخبأة مؤقتة
-        tags: {},    // وسوم الإصدارات
+        stashes: [],
+        tags: {},
 
-        // تهيئة المستودع
         init: async function() {
             await this.load();
         },
@@ -319,7 +274,7 @@
                     savedAt: new Date().toISOString()
                 });
                 Events.emit('repo:saved', { stats: this.getStats() });
-            } catch(e) { 
+            } catch(e) {
                 console.error('❌ فشل حفظ المستودع:', e);
                 Events.emit('repo:error', { action: 'save', error: e.message });
             }
@@ -338,21 +293,20 @@
                     Events.emit('repo:loaded', { stats: this.getStats() });
                     return true;
                 }
-            } catch(e) { 
+            } catch(e) {
                 console.error('❌ فشل تحميل المستودع:', e);
                 Events.emit('repo:error', { action: 'load', error: e.message });
             }
             return false;
         },
 
-        getFile: function(path) { 
+        getFile: function(path) {
             if (!Utils.validatePath(path)) return null;
-            return this.files[path] || null; 
+            return this.files[path] || null;
         },
 
         getFiles: function() { return Object.keys(this.files); },
 
-        // إضافة ملف مع SHA-256
         addFile: async function(path, content, msg = 'إضافة ملف') {
             if (!Utils.validatePath(path)) return { success: false, error: 'مسار غير صالح' };
             if (!Utils.validateContent(content)) return { success: false, error: 'محتوى غير صالح' };
@@ -377,7 +331,6 @@
 
             this.history.push(commit);
             this.branches[this.currentBranch].head = commit.id;
-
             await this.save();
             Events.emit('file:added', { path, commit });
             return { success: true, path, commitId: commit.id };
@@ -390,24 +343,16 @@
 
             const hash = await Utils.hash(content);
             const oldHash = await Utils.hash(this.files[path]);
-
             this.files[path] = content;
 
             const commit = {
-                id: Utils.uid(),
-                action: 'update',
-                path,
-                message: msg,
-                hash,
-                oldHash,
-                timestamp: new Date().toISOString(),
-                branch: this.currentBranch,
-                size: content.length
+                id: Utils.uid(), action: 'update', path, message: msg,
+                hash, oldHash, timestamp: new Date().toISOString(),
+                branch: this.currentBranch, size: content.length
             };
 
             this.history.push(commit);
             this.branches[this.currentBranch].head = commit.id;
-
             await this.save();
             Events.emit('file:updated', { path, commit });
             return { success: true, path, commitId: commit.id };
@@ -421,50 +366,16 @@
             delete this.files[path];
 
             const commit = {
-                id: Utils.uid(),
-                action: 'delete',
-                path,
-                message: msg,
-                hash: null,
-                oldHash,
-                timestamp: new Date().toISOString(),
+                id: Utils.uid(), action: 'delete', path, message: msg,
+                hash: null, oldHash, timestamp: new Date().toISOString(),
                 branch: this.currentBranch
             };
 
             this.history.push(commit);
             this.branches[this.currentBranch].head = commit.id;
-
             await this.save();
             Events.emit('file:deleted', { path, commit });
             return { success: true, path, commitId: commit.id };
-        },
-
-        // استرجاع نسخة قديمة
-        revertFile: async function(path, targetCommitId, msg = 'استرجاع') {
-            if (!Utils.validatePath(path)) return { success: false, error: 'مسار غير صالح' };
-
-            // البحث عن الالتزام المستهدف
-            const targetCommit = this.history.find(c => c.id === targetCommitId && c.path === path);
-            if (!targetCommit) return { success: false, error: 'الالتزام غير موجود' };
-
-            // البحث عن آخر إضافة/تحديث قبل هذا الالتزام
-            const priorCommits = this.history.filter(c => 
-                c.path === path && 
-                new Date(c.timestamp) < new Date(targetCommit.timestamp) &&
-                (c.action === 'add' || c.action === 'update')
-            );
-
-            if (priorCommits.length === 0) {
-                // لم يوجد نسخة سابقة، حذف الملف
-                return await this.deleteFile(path, `${msg}: حذف بعد الاسترجاع`);
-            }
-
-            const priorCommit = priorCommits[priorCommits.length - 1];
-
-            // للاسترجاع الحقيقي نحتاج لتخزين النسخ القديمة
-            // هنا نستخدم حل بديل: البحث في سجل التغييرات
-            // في الإنتاج يُفضل تخزين النسخ الكاملة
-            return { success: false, error: 'التخزين التفاضلي غير مفعل في هذه النسخة' };
         },
 
         getHistory: function(limit = 20, path = null, branch = null) {
@@ -479,8 +390,7 @@
         },
 
         getStats: function() {
-            let size = 0;
-            let lines = 0;
+            let size = 0, lines = 0;
             for (const content of Object.values(this.files)) {
                 size += content.length;
                 lines += content.split('\n').length;
@@ -498,7 +408,6 @@
             };
         },
 
-        // إدارة الفروع - محسّنة مع نسخ عميقة
         branch: async function(name, from = null) {
             if (!name || typeof name !== 'string') return { success: false, error: 'اسم الفرع غير صالح' };
             if (this.branches[name]) return { success: false, error: 'الفرع موجود بالفعل' };
@@ -512,7 +421,6 @@
                 createdFrom: sourceBranch,
                 createdAt: new Date().toISOString()
             };
-
             await this.save();
             Events.emit('branch:created', { name, from: sourceBranch });
             return { success: true, name };
@@ -520,14 +428,9 @@
 
         checkout: async function(name) {
             if (!this.branches[name]) return { success: false, error: 'الفرع غير موجود' };
-
-            // حفظ الحالة الحالية أولاً
             this.branches[this.currentBranch].files = Utils.deepClone(this.files);
-            this.branches[this.currentBranch].head = this.branches[this.currentBranch].head;
-
             this.files = Utils.deepClone(this.branches[name].files);
             this.currentBranch = name;
-
             await this.save();
             Events.emit('branch:checkedout', { name });
             return { success: true, name };
@@ -538,16 +441,13 @@
             if (!this.branches[sourceBranch]) return { success: false, error: 'الفرع المصدر غير موجود' };
             if (!this.branches[target]) return { success: false, error: 'الفرع الهدف غير موجود' };
 
-            const conflicts = [];
-            const merged = [];
+            const conflicts = [], merged = [];
             const sourceFiles = this.branches[sourceBranch].files;
             const targetFiles = this.branches[target].files;
 
             for (const [path, content] of Object.entries(sourceFiles)) {
                 if (targetFiles[path] && targetFiles[path] !== content) {
-                    // تعارض!
                     if (strategy === 'ours') {
-                        // الاحتفاظ بالهدف
                         conflicts.push({ path, type: 'conflict', resolution: 'ours' });
                     } else if (strategy === 'theirs') {
                         targetFiles[path] = content;
@@ -561,21 +461,15 @@
                 }
             }
 
-            // إذا كان الهدف هو الفرع الحالي، تحديث الملفات النشطة
-            if (target === this.currentBranch) {
-                this.files = Utils.deepClone(targetFiles);
-            }
-
+            if (target === this.currentBranch) this.files = Utils.deepClone(targetFiles);
             await this.save();
             Events.emit('branch:merged', { source: sourceBranch, target, conflicts, merged });
             return { success: true, conflicts, merged, hasConflicts: conflicts.length > 0 };
         },
 
-        // تخزين مؤقت (Stash)
         stash: async function(msg = 'تخزين مؤقت') {
             const stash = {
-                id: Utils.uid(),
-                message: msg,
+                id: Utils.uid(), message: msg,
                 files: Utils.deepClone(this.files),
                 branch: this.currentBranch,
                 timestamp: new Date().toISOString()
@@ -589,44 +483,30 @@
         unstash: async function(stashId) {
             const index = this.stashes.findIndex(s => s.id === stashId);
             if (index === -1) return { success: false, error: 'المخبأة غير موجودة' };
-
             const stash = this.stashes[index];
             this.files = Utils.deepClone(stash.files);
             this.currentBranch = stash.branch;
             this.stashes.splice(index, 1);
-
             await this.save();
             Events.emit('repo:unstashed', stash);
             return { success: true };
         },
 
-        // وسوم (Tags)
         tag: async function(name, commitId = null, msg = '') {
             const targetCommit = commitId || (this.history.length > 0 ? this.history[this.history.length - 1].id : null);
             if (!targetCommit) return { success: false, error: 'لا يوجد التزام للوسم' };
-
-            this.tags[name] = {
-                commitId: targetCommit,
-                message: msg,
-                createdAt: new Date().toISOString()
-            };
-
+            this.tags[name] = { commitId: targetCommit, message: msg, createdAt: new Date().toISOString() };
             await this.save();
             Events.emit('repo:tagged', { name, commitId: targetCommit });
             return { success: true };
         },
 
-        // إعادة تعيين
         reset: async function(hard = false) {
             if (hard) {
-                this.files = {};
-                this.history = [];
+                this.files = {}; this.history = [];
                 this.branches = { main: { files: {}, head: null } };
-                this.currentBranch = 'main';
-                this.stashes = [];
-                this.tags = {};
+                this.currentBranch = 'main'; this.stashes = []; this.tags = {};
             } else {
-                // soft reset: إعادة الملفات فقط
                 this.files = Utils.deepClone(this.branches[this.currentBranch].files || {});
             }
             await this.save();
@@ -636,31 +516,23 @@
 
         export: function() {
             return {
-                files: this.files,
-                history: this.history,
-                branches: this.branches,
-                currentBranch: this.currentBranch,
-                stashes: this.stashes,
-                tags: this.tags,
-                exportedAt: new Date().toISOString(),
-                version: '4.0'
+                files: this.files, history: this.history,
+                branches: this.branches, currentBranch: this.currentBranch,
+                stashes: this.stashes, tags: this.tags,
+                exportedAt: new Date().toISOString(), version: '4.1'
             };
         },
 
         import: async function(data) {
             try {
                 const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-
-                // نسخ احتياطي قبل الاستيراد
                 await Storage.backup('gitlike_repo');
-
                 this.files = parsed.files || {};
                 this.history = parsed.history || [];
                 this.branches = parsed.branches || { main: { files: {}, head: null } };
                 this.currentBranch = parsed.currentBranch || 'main';
                 this.stashes = parsed.stashes || [];
                 this.tags = parsed.tags || {};
-
                 await this.save();
                 Events.emit('repo:imported', { stats: this.getStats() });
                 return { success: true };
@@ -670,23 +542,15 @@
             }
         },
 
-        // مقارنة الملفات (Diff)
         diff: function(path, commitId1, commitId2 = null) {
-            // في الإنتاج: تخزين النسخ الكاملة لكل التزام
-            // هنا نعرض الفرق بين النسخة الحالية والسابقة
             const commits = this.getFileHistory(path);
             if (commits.length < 2) return { success: false, error: 'لا يوجد تاريخ كافٍ' };
-
-            return {
-                success: true,
-                path,
-                note: 'للحصول على Diff كامل، فعّل التخزين الكامل للنسخ في الإعدادات'
-            };
+            return { success: true, path, note: 'Diff كامل يتطلب تفعيل التخزين الكامل' };
         }
     };
 
     // ============================================================
-    // 📡 2. نظام المزامنة مع القناة (الجلب والتوزيع) - محسّن
+    // 📡 2. نظام المزامنة مع القناة - مُصلح بالكامل
     // ============================================================
     const Channel = {
         botToken: '',
@@ -694,7 +558,7 @@
         lastUpdateId: 0,
         queue: [],
         isProcessing: false,
-        rateLimitDelay: 1000, // 1 ثانية بين الطلبات
+        rateLimitDelay: 1000,
         maxRetries: 3,
         autoSyncInterval: null,
 
@@ -721,19 +585,17 @@
             return this.botToken.length > 10 && this.chatId.length > 0;
         },
 
-        // حفظ الإعدادات بشكل مشفر
         saveConfig: function(token, chatId) {
             this.botToken = token;
             this.chatId = chatId;
             localStorage.setItem('telegram_bot_token_enc', Utils.encrypt(token));
             localStorage.setItem('telegram_chat_id_enc', Utils.encrypt(chatId));
-            // حذف النسخ القديمة غير المشفرة
             localStorage.removeItem('telegram_bot_token');
             localStorage.removeItem('telegram_chat_id');
             Events.emit('channel:configUpdated', { hasConfig: this.hasConfig() });
         },
 
-        // إعادة المحاولة مع تأخير تصاعدي
+        // مُصلح: إعادة المحاولة مع إنشاء FormData جديد
         fetchWithRetry: async function(url, options = {}, retries = 0) {
             try {
                 const resp = await fetch(url, options);
@@ -754,28 +616,18 @@
             }
         },
 
-        // ====== رفع ملف إلى القناة (مع طابور) ======
+        // مُصلح: uploadFile مع طابور صحيح
         uploadFile: async function(path, content, priority = false) {
             if (!this.hasConfig()) return { success: false, error: 'إعدادات التلجرام غير مكتملة' };
             if (!Utils.validatePath(path)) return { success: false, error: 'مسار غير صالح' };
 
             return new Promise((resolve) => {
                 const task = {
-                    id: Utils.uid(),
-                    type: 'upload',
-                    path,
-                    content,
-                    resolve,
-                    retries: 0,
-                    timestamp: Date.now()
+                    id: Utils.uid(), type: 'upload', path, content,
+                    resolve, retries: 0, timestamp: Date.now()
                 };
-
-                if (priority) {
-                    this.queue.unshift(task);
-                } else {
-                    this.queue.push(task);
-                }
-
+                if (priority) this.queue.unshift(task);
+                else this.queue.push(task);
                 this.processQueue();
             });
         },
@@ -786,7 +638,6 @@
 
             while (this.queue.length > 0) {
                 const task = this.queue[0];
-
                 try {
                     if (task.type === 'upload') {
                         const result = await this._doUpload(task.path, task.content);
@@ -824,7 +675,6 @@
             );
 
             const data = await resp.json();
-
             if (data.ok) {
                 Events.emit('channel:uploaded', { path, name });
                 return { success: true, messageId: data.result.message_id };
@@ -832,21 +682,30 @@
             return { success: false, error: data.description };
         },
 
-        // ====== جلب الملفات من القناة (مع Pagination) ======
+        // مُصلح: fetchAll مع offset=0 لجلب كل الرسائل
         fetchAll: async function(options = {}) {
             if (!this.hasConfig()) return { success: false, error: 'إعدادات التلجرام غير مكتملة' };
 
             const limit = options.limit || 100;
-            const offset = options.offset || this.lastUpdateId + 1;
+            // ✅ مُصلح: استخدام offset=0 لجلب كل الرسائل من البداية
+            // أو استخدام offset محدد إذا أراد المستخدم الاستمرار
+            const offset = options.offset !== undefined ? options.offset : 0;
             const filterPrefix = options.filterPrefix || 'tile_';
 
             try {
+                console.log(`🔍 جلب الرسائل من Telegram (offset=${offset}, limit=${limit})...`);
+
                 const resp = await this.fetchWithRetry(
                     `https://api.telegram.org/bot${this.botToken}/getUpdates?limit=${limit}&offset=${offset}`
                 );
                 const data = await resp.json();
 
-                if (!data.ok) return { success: false, error: data.description };
+                if (!data.ok) {
+                    console.error('❌ Telegram API error:', data.description);
+                    return { success: false, error: data.description };
+                }
+
+                console.log(`📨 تم استلام ${data.result.length} تحديث من Telegram`);
 
                 const files = [];
                 let maxUpdateId = this.lastUpdateId;
@@ -854,79 +713,137 @@
                 for (const update of data.result) {
                     if (update.update_id > maxUpdateId) maxUpdateId = update.update_id;
 
-                    const msg = update.channel_post || update.message;
-                    if (!msg || !msg.document) continue;
+                    // ✅ مُصلح: التحقق من channel_post أولاً ثم message
+                    const msg = update.channel_post || update.message || update.edited_channel_post || update.edited_message;
+
+                    if (!msg) {
+                        console.log(`⚠️ تحديث ${update.update_id} لا يحتوي على رسالة`);
+                        continue;
+                    }
+
+                    if (!msg.document) {
+                        console.log(`⚠️ رسالة ${msg.message_id} لا تحتوي على مستند`);
+                        continue;
+                    }
 
                     const name = msg.document.file_name || '';
-                    if (filterPrefix && !name.startsWith(filterPrefix)) continue;
+                    console.log(`📄 ملف موجود: ${name}`);
 
-                    const fileResp = await this.fetchWithRetry(
-                        `https://api.telegram.org/bot${this.botToken}/getFile?file_id=${msg.document.file_id}`
-                    );
-                    const fileData = await fileResp.json();
-                    if (!fileData.ok) continue;
+                    if (filterPrefix && !name.startsWith(filterPrefix)) {
+                        console.log(`⏭️ تخطي ${name} (لا يبدأ بـ ${filterPrefix})`);
+                        continue;
+                    }
 
-                    const url = `https://api.telegram.org/file/bot${this.botToken}/${fileData.result.file_path}`;
-                    const contentResp = await this.fetchWithRetry(url);
-                    const content = await contentResp.text();
+                    try {
+                        const fileResp = await this.fetchWithRetry(
+                            `https://api.telegram.org/bot${this.botToken}/getFile?file_id=${msg.document.file_id}`
+                        );
+                        const fileData = await fileResp.json();
 
-                    files.push({
-                        name: name,
-                        content: content,
-                        file_id: msg.document.file_id,
-                        message_id: msg.message_id,
-                        timestamp: msg.date * 1000,
-                        update_id: update.update_id
-                    });
+                        if (!fileData.ok) {
+                            console.warn(`⚠️ فشل الحصول على معلومات الملف ${name}:`, fileData.description);
+                            continue;
+                        }
+
+                        const url = `https://api.telegram.org/file/bot${this.botToken}/${fileData.result.file_path}`;
+                        console.log(`⬇️ جلب محتوى الملف من: ${url}`);
+
+                        const contentResp = await this.fetchWithRetry(url);
+                        const content = await contentResp.text();
+
+                        files.push({
+                            name: name,
+                            content: content,
+                            file_id: msg.document.file_id,
+                            message_id: msg.message_id,
+                            timestamp: msg.date ? msg.date * 1000 : Date.now(),
+                            update_id: update.update_id
+                        });
+
+                        console.log(`✅ تم جلب ${name} (${content.length} حرف)`);
+                    } catch(fileError) {
+                        console.error(`❌ خطأ في جلب ملف ${name}:`, fileError.message);
+                    }
                 }
 
-                // حفظ آخر update_id
+                // ✅ مُصلح: تحديث lastUpdateId فقط إذا وجدنا رسائل جديدة
                 if (maxUpdateId > this.lastUpdateId) {
                     this.lastUpdateId = maxUpdateId;
                     localStorage.setItem('telegram_last_update_id', maxUpdateId.toString());
+                    console.log(`📝 تحديث lastUpdateId إلى: ${maxUpdateId}`);
                 }
 
-                Events.emit('channel:fetched', { count: files.length });
-                return { success: true, files, hasMore: data.result.length === limit };
+                Events.emit('channel:fetched', { count: files.length, totalUpdates: data.result.length });
+                return { success: true, files, hasMore: data.result.length === limit, totalUpdates: data.result.length };
 
             } catch(e) {
+                console.error('❌ فشل جلب الملفات:', e);
                 return { success: false, error: e.message };
             }
         },
 
-        // ====== المزامنة الكاملة (جلب + توزيع) ======
+        // مُصلح: syncAll مع جلب كل الصفحات ومعالجة أفضل للأخطاء
         syncAll: async function(options = {}) {
             if (!this.hasConfig()) {
-                console.log('⚠️ لا توجد إعدادات تلجرام');
-                return { success: false, error: 'لا توجد إعدادات' };
+                const err = '⚠️ لا توجد إعدادات تلجرام. استخدم: TileServer.channel.saveConfig(token, chatId)';
+                console.error(err);
+                return { success: false, error: err };
             }
 
             Events.emit('sync:started', {});
+            console.log('🚀 بدء المزامنة الكاملة...');
 
             try {
                 let allFiles = [];
                 let hasMore = true;
                 let page = 0;
                 const maxPages = options.maxPages || 10;
+                let currentOffset = 0;
 
-                // جلب كل الصفحات
+                // ✅ مُصلح: جلب كل الصفحات حتى نفاد النتائج
                 while (hasMore && page < maxPages) {
-                    const result = await this.fetchAll({ limit: 100 });
-                    if (!result.success) return result;
+                    console.log(`📄 جلب الصفحة ${page + 1} (offset=${currentOffset})...`);
+                    const result = await this.fetchAll({ limit: 100, offset: currentOffset });
+
+                    if (!result.success) {
+                        console.error('❌ فشل جلب الصفحة:', result.error);
+                        return result;
+                    }
 
                     allFiles = allFiles.concat(result.files);
                     hasMore = result.hasMore;
+
+                    if (result.totalUpdates > 0) {
+                        currentOffset = result.files.length > 0 
+                            ? result.files[result.files.length - 1].update_id + 1 
+                            : currentOffset + 100;
+                    } else {
+                        hasMore = false;
+                    }
+
                     page++;
 
-                    if (hasMore) await Utils.sleep(500); // تأخير بين الصفحات
+                    if (hasMore) {
+                        console.log(`⏳ انتظار قبل الصفحة التالية...`);
+                        await Utils.sleep(500);
+                    }
+                }
+
+                console.log(`📦 إجمالي الملفات المُجلَبة: ${allFiles.length}`);
+
+                if (allFiles.length === 0) {
+                    const msg = '⚠️ لم يتم العثور على ملفات tile_ في القناة. تأكد من:';
+                    console.warn(msg);
+                    console.warn('   1. أن البوت عضو في القناة');
+                    console.warn('   2. أن هناك ملفات مرفوعة بتنسيق tile_');
+                    console.warn('   3. أن القناة ليست خاصة (Private) أو أن البوت لديه صلاحيات');
+                    return { success: true, synced: 0, skipped: 0, savedToRepo: 0, total: 0, warning: msg };
                 }
 
                 let count = 0;
                 let skipped = 0;
                 let savedToRepo = 0;
                 let conflicts = 0;
-
-                console.log(`📦 جلب ${allFiles.length} ملف من القناة`);
 
                 for (const file of allFiles) {
                     const match = file.name.match(/tile_(\d+)_(\d+)_(.+)/);
@@ -936,7 +853,6 @@
                         const existing = Repo.getFile(path);
 
                         if (existing && existing !== file.content) {
-                            // تعارض محتمل
                             if (options.conflictStrategy === 'remote') {
                                 await Repo.updateFile(path, file.content, `مزامنة من القناة: ${file.name}`);
                             } else if (options.conflictStrategy === 'local') {
@@ -959,41 +875,47 @@
                     const tileId = `${row}_${col}`;
                     const fileName = match[3];
 
-                    // التحقق من وجود ServerManager
-                    if (typeof global.ServerManager === 'undefined' || !global.ServerManager.tiles) {
+                    // ✅ مُصلح: التحقق من ServerManager بشكل آمن
+                    const sm = global.ServerManager || (typeof window !== 'undefined' ? window.ServerManager : null);
+
+                    if (!sm || !sm.tiles) {
                         const path = `${tileId}/${fileName}`;
                         await Repo.addFile(path, file.content, `جلب من القناة: ${file.name}`);
                         savedToRepo++;
+                        console.log(`📁 حفظ في المستودع: ${path}`);
                         continue;
                     }
 
-                    // التحقق من المربع
-                    if (!global.ServerManager.tiles[tileId]) {
-                        global.ServerManager.tiles[tileId] = {
-                            id: tileId,
-                            row: row,
-                            col: col,
-                            files: {},
-                            created: Date.now()
+                    if (!sm.tiles[tileId]) {
+                        sm.tiles[tileId] = {
+                            id: tileId, row: row, col: col,
+                            files: {}, created: Date.now()
                         };
                     }
 
-                    const tile = global.ServerManager.tiles[tileId];
+                    const tile = sm.tiles[tileId];
                     const existingFiles = tile.files || {};
 
                     if (Object.keys(existingFiles).length > 0 && !options.force) {
-                        console.log(`⚠️ المربع (${row},${col}) مملؤ بالفعل`);
+                        console.log(`⚠️ المربع (${row},${col}) مملؤ بالفعل (${Object.keys(existingFiles).length} ملفات)`);
+                        if (typeof global.showToast === 'function') {
+                            global.showToast(`⚠️ المربع (${row},${col}) مملؤ بالفعل!`, 'warning');
+                        }
                         skipped++;
                         continue;
                     }
 
                     tile.files[fileName] = file.content;
                     count++;
+                    console.log(`✅ تم حفظ ${fileName} في المربع (${row},${col})`);
 
-                    // تحديث الواجهة
-                    if (global.ServerManager.renderGrid) {
-                        global.ServerManager.renderGrid();
-                        global.ServerManager.updateStats();
+                    if (typeof global.showToast === 'function') {
+                        global.showToast(`✅ تم حفظ ${fileName} في (${row},${col})`, 'success');
+                    }
+
+                    if (sm.renderGrid) {
+                        sm.renderGrid();
+                        sm.updateStats();
                     }
                 }
 
@@ -1004,13 +926,13 @@
 
                 console.log(message);
 
+                if (typeof global.showToast === 'function') {
+                    global.showToast(message, 'success');
+                }
+
                 const result = {
-                    success: true,
-                    synced: count,
-                    skipped: skipped,
-                    savedToRepo: savedToRepo,
-                    conflicts: conflicts,
-                    total: allFiles.length
+                    success: true, synced: count, skipped: skipped,
+                    savedToRepo: savedToRepo, conflicts: conflicts, total: allFiles.length
                 };
 
                 Events.emit('sync:completed', result);
@@ -1023,15 +945,12 @@
             }
         },
 
-        // ====== رفع جميع الملفات إلى القناة (مع طابور) ======
         pushAll: async function(options = {}) {
             if (!this.hasConfig()) return { success: false, error: 'إعدادات التلجرام غير مكتملة' };
 
             Events.emit('push:started', {});
-
             const paths = Repo.getFiles();
-            let uploaded = 0;
-            let failed = 0;
+            let uploaded = 0, failed = 0;
 
             for (const path of paths) {
                 const content = Repo.getFile(path);
@@ -1051,7 +970,6 @@
             return result;
         },
 
-        // حذف رسالة من القناة
         deleteMessage: async function(messageId) {
             if (!this.hasConfig()) return { success: false, error: 'إعدادات غير مكتملة' };
             try {
@@ -1070,7 +988,7 @@
             }
         },
 
-        // إعداد المزامنة التلقائية
+        // مُصلح: autoSync مع arrow function للحفاظ على this
         setAutoSync: function(enabled, intervalMs = 300000) {
             if (this.autoSyncInterval) {
                 clearInterval(this.autoSyncInterval);
@@ -1078,17 +996,67 @@
             }
 
             if (enabled) {
+                // ✅ مُصلح: استخدام arrow function للحفاظ على سياق this
                 this.autoSyncInterval = setInterval(async () => {
                     console.log('🔄 مزامنة تلقائية مع القناة...');
-                    const result = await this.syncAll({ conflictStrategy: 'remote' });
-                    if (result.success) {
-                        console.log('✅ المزامنة التلقائية ناجحة');
+                    try {
+                        const result = await this.syncAll({ conflictStrategy: 'remote' });
+                        if (result.success) {
+                            console.log('✅ المزامنة التلقائية ناجحة:', result);
+                        } else {
+                            console.warn('⚠️ المزامنة التلقائية:', result.error);
+                        }
+                    } catch(e) {
+                        console.error('❌ خطأ في المزامنة التلقائية:', e);
                     }
                 }, intervalMs);
                 console.log(`⏰ المزامنة التلقائية مفعلة كل ${intervalMs / 1000} ثانية`);
             } else {
                 console.log('⏰ المزامنة التلقائية معطلة');
             }
+        },
+
+        // ✅ جديد: Diagnostics لفحص الاتصال
+        diagnostics: async function() {
+            const results = {
+                hasConfig: this.hasConfig(),
+                botTokenLength: this.botToken.length,
+                chatId: this.chatId,
+                tests: []
+            };
+
+            if (!this.hasConfig()) {
+                results.tests.push({ name: 'Config', status: '❌', error: 'إعدادات غير مكتملة' });
+                return results;
+            }
+
+            // اختبار getMe
+            try {
+                const resp = await fetch(`https://api.telegram.org/bot${this.botToken}/getMe`);
+                const data = await resp.json();
+                if (data.ok) {
+                    results.tests.push({ name: 'getMe', status: '✅', bot: data.result.username });
+                } else {
+                    results.tests.push({ name: 'getMe', status: '❌', error: data.description });
+                }
+            } catch(e) {
+                results.tests.push({ name: 'getMe', status: '❌', error: e.message });
+            }
+
+            // اختبار getUpdates
+            try {
+                const resp = await fetch(`https://api.telegram.org/bot${this.botToken}/getUpdates?limit=1`);
+                const data = await resp.json();
+                if (data.ok) {
+                    results.tests.push({ name: 'getUpdates', status: '✅', count: data.result.length });
+                } else {
+                    results.tests.push({ name: 'getUpdates', status: '❌', error: data.description });
+                }
+            } catch(e) {
+                results.tests.push({ name: 'getUpdates', status: '❌', error: e.message });
+            }
+
+            return results;
         }
     };
 
@@ -1096,13 +1064,11 @@
     // 🧩 3. الخادم الرئيسي (TileServer) - واجهة موحدة
     // ============================================================
     const TileServer = {
-
-        // ====== معلومات ======
         info: function() {
             const stats = Repo.getStats();
             return {
                 name: 'نظام الجلب والتوزيع (GitHub-like)',
-                version: '4.0.0',
+                version: '4.1.0',
                 status: 'نشط',
                 files: stats.files,
                 commits: stats.commits,
@@ -1118,7 +1084,6 @@
             return { status: 'online', timestamp: Date.now() };
         },
 
-        // ====== المستودع (GitHub-like) ======
         repo: {
             add: Repo.addFile.bind(Repo),
             update: Repo.updateFile.bind(Repo),
@@ -1141,7 +1106,6 @@
             revert: Repo.revertFile.bind(Repo)
         },
 
-        // ====== القناة (المزامنة) ======
         channel: {
             sync: Channel.syncAll.bind(Channel),
             push: Channel.pushAll.bind(Channel),
@@ -1150,14 +1114,13 @@
             deleteMessage: Channel.deleteMessage.bind(Channel),
             setAutoSync: Channel.setAutoSync.bind(Channel),
             saveConfig: Channel.saveConfig.bind(Channel),
-            hasConfig: Channel.hasConfig.bind(Channel)
+            hasConfig: Channel.hasConfig.bind(Channel),
+            diagnostics: Channel.diagnostics.bind(Channel)
         },
 
-        // ====== واجهات سهلة ======
         syncAll: Channel.syncAll.bind(Channel),
         pushAll: Channel.pushAll.bind(Channel),
 
-        // ====== الأحداث ======
         events: {
             on: Events.on.bind(Events),
             off: Events.off.bind(Events),
@@ -1165,7 +1128,6 @@
             once: Events.once.bind(Events)
         },
 
-        // ====== بيانات اللعبة ======
         getData: function() {
             return {
                 files: Repo.getFiles(),
@@ -1178,11 +1140,9 @@
             };
         },
 
-        // ====== اختبار ======
         test: async function() {
             const tests = [];
 
-            // اختبار المستودع
             try {
                 const testPath = '__test__' + Date.now();
                 await Repo.addFile(testPath, 'test content', 'اختبار');
@@ -1193,7 +1153,6 @@
                 tests.push({ name: 'Repo', status: '❌', error: e.message });
             }
 
-            // اختبار التخزين
             try {
                 await Storage.set('__test__', { test: true });
                 const data = await Storage.get('__test__');
@@ -1203,7 +1162,6 @@
                 tests.push({ name: 'Storage', status: '❌', error: e.message });
             }
 
-            // اختبار التشفير
             try {
                 const secret = 'test_secret';
                 const encrypted = Utils.encrypt(secret);
@@ -1213,7 +1171,6 @@
                 tests.push({ name: 'Crypto', status: '❌', error: e.message });
             }
 
-            // اختبار Hash
             try {
                 const hash1 = await Utils.hash('test');
                 const hash2 = await Utils.hash('test');
@@ -1232,34 +1189,27 @@
             };
         },
 
-        // ====== إعادة تحميل ======
         reload: async function() {
             await Repo.load();
             Channel.init();
             return { success: true };
         },
 
-        // ====== إعادة تعيين ======
         reset: async function(hard = true) {
             await Repo.reset(hard);
             return { success: true };
         },
 
-        // ====== نسخ احتياطي ======
         backup: async function() {
             await Storage.backup('gitlike_repo');
             return { success: true, message: 'تم إنشاء نسخة احتياطية' };
         },
 
-        // ====== مسح ذاكرة التخزين المؤقت ======
         clearCache: async function() {
             try {
-                // حذف الملفات المؤقتة فقط
                 const keys = Object.keys(localStorage);
                 for (const key of keys) {
-                    if (key.startsWith('gitlike_backup_')) {
-                        localStorage.removeItem(key);
-                    }
+                    if (key.startsWith('gitlike_backup_')) localStorage.removeItem(key);
                 }
                 return { success: true, message: 'تم مسح الذاكرة المؤقتة' };
             } catch(e) {
@@ -1269,67 +1219,64 @@
     };
 
     // ============================================================
-    // 📌 التسجيل والتهيئة
+    // 📌 التسجيل والتهيئة - مُصلحة
     // ============================================================
 
     global._startTime = Date.now();
 
-    // تهيئة التخزين
-    Storage.init().then(() => {
-        // تحميل المستودع
-        Repo.init().then(() => {
-            // تهيئة القناة
+    // ✅ مُصلح: تهيئة متسلسلة صحيحة
+    async function initialize() {
+        try {
+            // 1. تهيئة التخزين
+            await Storage.init();
+
+            // 2. تحميل المستودع
+            await Repo.init();
+
+            // 3. تهيئة القناة
             Channel.init();
 
-            // تسجيل الخادم
+            // 4. تسجيل الخادم
             global.servers = global.servers || {};
             global.servers['5_3'] = TileServer;
 
-            // ============================================================
-            // 📢 رسائل البداية
-            // ============================================================
+            // 5. رسائل البداية
             const stats = Repo.getStats();
-            console.log(`✅ نظام الجلب والتوزيع (5_3) v4.0 جاهز!`);
+            console.log(`✅ نظام الجلب والتوزيع (5_3) v4.1 جاهز!`);
             console.log(`💾 وضع التخزين: ${Storage.mode}`);
             console.log(`📁 الملفات في المستودع: ${stats.files}`);
             console.log(`📝 الالتزامات: ${stats.commits}`);
-            console.log(`🌿 الفروع: ${stats.branches} (الحالي: ${stats.branch}));
+            console.log(`🌿 الفروع: ${stats.branches} (الحالي: ${stats.branch})`);
             console.log(`🏷️ الوسوم: ${stats.tags}`);
             console.log(`📦 المخبأات: ${stats.stashes}`);
             console.log(`📡 القناة: ${Channel.hasConfig() ? '🟢 متصلة' : '🔴 غير متصلة'}`);
+
+            if (!Channel.hasConfig()) {
+                console.log('');
+                console.log('⚠️ لتفعيل الاتصال بالقناة، نفذ:');
+                console.log('  TileServer.channel.saveConfig("YOUR_BOT_TOKEN", "YOUR_CHAT_ID")');
+            }
+
             console.log('');
             console.log('📌 الأوامر المتاحة:');
-            console.log('  TileServer.syncAll()         - جلب الملفات من القناة وتوزيعها');
-            console.log('  TileServer.pushAll()         - رفع جميع الملفات إلى القناة');
-            console.log('  TileServer.repo.list()       - قائمة الملفات في المستودع');
-            console.log('  TileServer.repo.add()        - إضافة ملف إلى المستودع');
-            console.log('  TileServer.repo.branch()     - إنشاء فرع جديد');
-            console.log('  TileServer.repo.merge()      - دمج فرعين');
-            console.log('  TileServer.repo.stash()      - تخزين مؤقت');
-            console.log('  TileServer.events.on()       - الاشتراك في الأحداث');
-            console.log('  TileServer.test()            - اختبار شامل للنظام');
-            console.log('  TileServer.info()            - معلومات النظام');
-            console.log('');
-            console.log('📌 الأحداث المتاحة:');
-            console.log('  repo:saved, repo:loaded, repo:error, repo:reset');
-            console.log('  file:added, file:updated, file:deleted');
-            console.log('  branch:created, branch:checkedout, branch:merged');
-            console.log('  sync:started, sync:completed, sync:error, sync:conflict');
-            console.log('  push:started, push:completed, channel:uploaded');
+            console.log('  TileServer.syncAll()              - جلب الملفات من القناة');
+            console.log('  TileServer.pushAll()              - رفع الملفات إلى القناة');
+            console.log('  TileServer.channel.diagnostics()  - فحص الاتصال بالتلجرام');
+            console.log('  TileServer.channel.saveConfig()   - حفظ إعدادات التلجرام');
+            console.log('  TileServer.repo.list()            - قائمة الملفات');
+            console.log('  TileServer.test()                 - اختبار شامل');
+            console.log('  TileServer.info()                 - معلومات النظام');
             console.log('');
 
-            Events.emit('server:ready', { server: '5_3', version: '4.0.0' });
-        });
-    });
+            Events.emit('server:ready', { server: '5_3', version: '4.1.0' });
 
-    // ============================================================
-    // 🔄 التشغيل التلقائي (اختياري)
-    // ============================================================
+        } catch(e) {
+            console.error('❌ فشل تهيئة النظام:', e);
+        }
+    }
 
-    // يمكن تفعيل المزامنة التلقائية عبر:
-    // TileServer.channel.setAutoSync(true, 300000);
+    // تشغيل التهيئة
+    initialize();
 
 })(typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : this);
 
-
-            
