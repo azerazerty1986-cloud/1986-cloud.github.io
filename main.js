@@ -1293,7 +1293,7 @@
             console.log(`💾 وضع التخزين: ${Storage.mode}`);
             console.log(`📁 الملفات في المستودع: ${stats.files}`);
             console.log(`📝 الالتزامات: ${stats.commits}`);
-            console.log(`🌿 الفروع: ${stats.branches} (الحالي: ${stats.branch})`);
+            console.log(`🌿 الفروع: ${stats.branches} (الحالي: ${stats.branch}));
             console.log(`🏷️ الوسوم: ${stats.tags}`);
             console.log(`📦 المخبأات: ${stats.stashes}`);
             console.log(`📡 القناة: ${Channel.hasConfig() ? '🟢 متصلة' : '🔴 غير متصلة'}`);
@@ -1331,3 +1331,5 @@
 
 })(typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : this);
 
+
+            
