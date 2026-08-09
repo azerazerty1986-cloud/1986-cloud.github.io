@@ -1,12 +1,10 @@
 // ============================================================
-// 📦 main.js - نظام الجلب والتوزيع (GitHub-like v4.6)
+// 📦 main.js - نظام الجلب والتوزيع (GitHub-like v4.7)
 // ============================================================
-// تركيز: إصلاح جلب الملفات من Telegram
-// • offset=-1 لجلب آخر 100 رسالة (حتى المقروءة)
-// • دعم جميع أنواع الملفات (مستندات، صور، فيديو، نص)
-// • تسجيل مفصل (verbose) لكل خطوة
+// • وضع جلب يدوي (تجاوز CORS): لصق JSON من Telegram API
+// • XMLHttpRequest كبديل لـ fetch
+// • تسجيل مفصل لكل خطوة
 // • كشف تلقائي للإعدادات المعكوسة
-// • عرض عدد الرسائل والملفات المُرجعة
 // ============================================================
 
 (function(global) {
@@ -25,7 +23,7 @@
     }
     const [TILE_ROW, TILE_COL] = TILE_ID.split('_').map(Number);
 
-    console.log(`🔄 [${TILE_ID}] نظام الجلب والتوزيع v4.6 يُحمّل...`);
+    console.log(`🔄 [${TILE_ID}] نظام الجلب والتوزيع v4.7 يُحمّل...`);
 
     // ============================================================
     // 🔧 Utilities
@@ -225,7 +223,7 @@
             return {
                 files: this.files, history: this.history,
                 branches: this.branches, currentBranch: this.currentBranch,
-                exportedAt: new Date().toISOString(), version: '4.6'
+                exportedAt: new Date().toISOString(), version: '4.7'
             };
         },
 
@@ -245,12 +243,13 @@
     };
 
     // ============================================================
-    // 📡 Channel - مُصلح للجلب
+    // 📡 Channel - مُصلح مع دعم الجلب اليدوي
     // ============================================================
     const Channel = {
         botToken: '',
         chatId: '',
         lastUpdateId: 0,
+        manualMode: false, // وضع الجلب اليدوي
 
         init: function() {
             const encToken = localStorage.getItem('telegram_bot_token_enc');
@@ -264,7 +263,6 @@
             return this.botToken.length > 10 && this.chatId.length > 0;
         },
 
-        // ✅ كشف تلقائي للعكس
         fixConfig: function() {
             let token = this.botToken;
             let chatId = this.chatId;
@@ -297,16 +295,58 @@
             localStorage.removeItem('telegram_chat_id');
         },
 
-        safeFetch: async function(url, options) {
-            try {
-                const resp = await fetch(url, options);
-                return { success: true, response: resp };
-            } catch(e) {
-                return { success: false, error: e.message || 'Network error' };
-            }
+        // ✅ XMLHttpRequest كبديل لـ fetch
+        xhrFetch: function(url, method, data) {
+            return new Promise((resolve) => {
+                try {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open(method || 'GET', url, true);
+                    xhr.onload = function() {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            resolve({ success: true, text: xhr.responseText, status: xhr.status });
+                        } else {
+                            resolve({ success: false, error: `HTTP ${xhr.status}: ${xhr.statusText}` });
+                        }
+                    };
+                    xhr.onerror = function() {
+                        resolve({ success: false, error: 'XMLHttpRequest failed (CORS?)' });
+                    };
+                    xhr.ontimeout = function() {
+                        resolve({ success: false, error: 'Request timeout' });
+                    };
+                    xhr.timeout = 30000;
+                    if (data) {
+                        xhr.send(data);
+                    } else {
+                        xhr.send();
+                    }
+                } catch(e) {
+                    resolve({ success: false, error: e.message });
+                }
+            });
         },
 
-        // ✅ جلب الرسائل مع تسجيل مفصل
+        // ✅ محاولة fetch ثم XMLHttpRequest
+        safeFetch: async function(url, options) {
+            // محاولة 1: fetch
+            try {
+                const resp = await fetch(url, options);
+                const text = await resp.text();
+                return { success: true, text: text, status: resp.status };
+            } catch(e) {
+                console.log(`[${TILE_ID}] ⚠️ fetch فشل: ${e.message}, محاولة XMLHttpRequest...`);
+            }
+
+            // محاولة 2: XMLHttpRequest
+            const xhrResult = await this.xhrFetch(url, options && options.method, options && options.body);
+            if (xhrResult.success) {
+                return { success: true, text: xhrResult.text, status: xhrResult.status };
+            }
+
+            return { success: false, error: xhrResult.error };
+        },
+
+        // ✅ جلب الرسائل (تلقائي)
         fetchAll: async function(options) {
             if (!this.hasConfig()) {
                 console.error(`[${TILE_ID}] ❌ إعدادات التلجرام غير مكتملة`);
@@ -316,175 +356,148 @@
             const fix = this.fixConfig();
             if (!fix.success) return fix;
 
-            // ✅ مُصلح: offset=-1 لجلب آخر 100 رسالة (حتى المقروءة)
             const limit = options && options.limit ? options.limit : 100;
             const offset = (options && options.offset !== undefined) ? options.offset : -1;
             const url = `https://api.telegram.org/bot${this.botToken}/getUpdates?limit=${limit}&offset=${offset}`;
 
-            console.log(`[${TILE_ID}] 🔍 جلب الرسائل من Telegram...`);
+            console.log(`[${TILE_ID}] 🔍 جلب الرسائل...`);
             console.log(`[${TILE_ID}] 🌐 URL: ${url.replace(this.botToken, 'BOT_TOKEN_HIDDEN')}`);
 
             const result = await this.safeFetch(url);
             if (!result.success) {
                 console.error(`[${TILE_ID}] ❌ فشل الاتصال:`, result.error);
-                return { success: false, error: result.error };
+                return { 
+                    success: false, 
+                    error: result.error,
+                    manualHelp: `⚠️ جرب الوضع اليدوي:\n1. افتح في متصفح:\nhttps://api.telegram.org/bot${this.botToken}/getUpdates?limit=100\n2. انسخ النتيجة JSON\n3. استخدم: TileServer.channel.syncManual(jsonText)`
+                };
             }
 
             try {
-                const data = await result.response.json();
+                const data = JSON.parse(result.text);
                 console.log(`[${TILE_ID}] 📨 Telegram رد: ok=${data.ok}, updates=${data.result ? data.result.length : 0}`);
 
                 if (!data.ok) {
-                    console.error(`[${TILE_ID}] ❌ Telegram API error:`, data.description);
                     return { success: false, error: data.description };
                 }
 
-                if (!data.result || data.result.length === 0) {
-                    console.warn(`[${TILE_ID}] ⚠️ لا توجد رسائل في القناة. تأكد من:`);
-                    console.warn(`   1. أن البوت عضو في القناة`);
-                    console.warn(`   2. أن هناك رسائل مرسلة (أي رسائل، ليس شرطاً ملفات)`);
-                    console.warn(`   3. أن Chat ID صحيح: ${this.chatId}`);
-                    return { success: true, files: [], totalUpdates: 0, warning: 'لا توجد رسائل' };
-                }
-
-                const files = [];
-                let docsFound = 0;
-                let msgsFound = 0;
-
-                for (const update of data.result) {
-                    const msg = update.channel_post || update.message || update.edited_channel_post || update.edited_message;
-                    if (!msg) continue;
-                    msgsFound++;
-
-                    console.log(`[${TILE_ID}] 📄 رسالة #${msg.message_id}:`, msg.document ? `مستند (${msg.document.file_name || 'بدون اسم'})` : (msg.text ? `نص: ${msg.text.substring(0, 50)}` : `نوع: ${Object.keys(msg).join(', ')}`));
-
-                    // ✅ جلب المستندات (document)
-                    if (msg.document) {
-                        docsFound++;
-                        const name = msg.document.file_name || `file_${msg.message_id}`;
-
-                        try {
-                            const fileResp = await this.safeFetch(
-                                `https://api.telegram.org/bot${this.botToken}/getFile?file_id=${msg.document.file_id}`
-                            );
-                            if (!fileResp.success) {
-                                console.warn(`[${TILE_ID}] ⚠️ فشل getFile لـ ${name}:`, fileResp.error);
-                                continue;
-                            }
-
-                            const fileData = await fileResp.response.json();
-                            if (!fileData.ok) {
-                                console.warn(`[${TILE_ID}] ⚠️ getFile error:`, fileData.description);
-                                continue;
-                            }
-
-                            const fileUrl = `https://api.telegram.org/file/bot${this.botToken}/${fileData.result.file_path}`;
-                            console.log(`[${TILE_ID}] ⬇️ جلب محتوى: ${fileUrl.replace(this.botToken, 'BOT_TOKEN_HIDDEN')}`);
-
-                            const contentResp = await this.safeFetch(fileUrl);
-                            if (!contentResp.success) {
-                                console.warn(`[${TILE_ID}] ⚠️ فشل جلب المحتوى:`, contentResp.error);
-                                continue;
-                            }
-
-                            const content = await contentResp.response.text();
-                            files.push({
-                                name: name, content: content,
-                                file_id: msg.document.file_id,
-                                message_id: msg.message_id,
-                                size: content.length
-                            });
-                            console.log(`[${TILE_ID}] ✅ تم جلب ${name} (${content.length} بايت)`);
-                        } catch(e) {
-                            console.error(`[${TILE_ID}] ❌ خطأ في جلب ملف:`, e.message);
-                        }
-                    }
-
-                    // ✅ جلب الصور (photo) - آخر حجم (الأكبر)
-                    else if (msg.photo && msg.photo.length > 0) {
-                        const photo = msg.photo[msg.photo.length - 1];
-                        const name = `photo_${msg.message_id}.jpg`;
-                        try {
-                            const fileResp = await this.safeFetch(
-                                `https://api.telegram.org/bot${this.botToken}/getFile?file_id=${photo.file_id}`
-                            );
-                            if (!fileResp.success) continue;
-                            const fileData = await fileResp.response.json();
-                            if (!fileData.ok) continue;
-                            const fileUrl = `https://api.telegram.org/file/bot${this.botToken}/${fileData.result.file_path}`;
-                            const contentResp = await this.safeFetch(fileUrl);
-                            if (!contentResp.success) continue;
-                            const content = await contentResp.response.text();
-                            files.push({ name: name, content: content, file_id: photo.file_id, message_id: msg.message_id, size: content.length });
-                            console.log(`[${TILE_ID}] ✅ تم جلب صورة ${name} (${content.length} بايت)`);
-                        } catch(e) {}
-                    }
-
-                    // ✅ جلب النصوص الطويلة كملفات
-                    else if (msg.text && msg.text.length > 100) {
-                        const name = `text_${msg.message_id}.txt`;
-                        files.push({
-                            name: name, content: msg.text,
-                            message_id: msg.message_id,
-                            size: msg.text.length
-                        });
-                        console.log(`[${TILE_ID}] ✅ تم جلب نص ${name} (${msg.text.length} حرف)`);
-                    }
-                }
-
-                console.log(`[${TILE_ID}] 📊 ملخص: ${data.result.length} تحديث, ${msgsFound} رسالة, ${docsFound} مستند, ${files.length} ملف جُلب`);
-
-                return {
-                    success: true,
-                    files: files,
-                    totalUpdates: data.result.length,
-                    msgsFound: msgsFound,
-                    docsFound: docsFound,
-                    filesCount: files.length
-                };
-
+                return await this.processUpdates(data.result);
             } catch(e) {
-                console.error(`[${TILE_ID}] ❌ خطأ في معالجة الرد:`, e);
-                return { success: false, error: e.message };
+                return { success: false, error: 'JSON parse error: ' + e.message };
             }
         },
 
-        // ✅ مزامنة مع تسجيل مفصل
-        syncAll: async function(options) {
-            console.log(`[${TILE_ID}] 🚀 بدء المزامنة الكاملة...`);
-
-            if (!this.hasConfig()) {
-                console.error(`[${TILE_ID}] ❌ لا توجد إعدادات`);
-                return { success: false, error: 'لا توجد إعدادات تلجرام' };
+        // ✅ معالجة updates (مشترك بين التلقائي واليدوي)
+        processUpdates: async function(updates) {
+            if (!updates || updates.length === 0) {
+                return { success: true, files: [], totalUpdates: 0, warning: 'لا توجد رسائل' };
             }
 
-            const result = await this.fetchAll(options);
+            const files = [];
+            let docsFound = 0;
+            let msgsFound = 0;
 
-            if (!result.success) {
-                console.error(`[${TILE_ID}] ❌ فشل الجلب:`, result.error);
-                return result;
+            for (const update of updates) {
+                const msg = update.channel_post || update.message || update.edited_channel_post || update.edited_message;
+                if (!msg) continue;
+                msgsFound++;
+
+                // جلب المستندات
+                if (msg.document) {
+                    docsFound++;
+                    const name = msg.document.file_name || `file_${msg.message_id}`;
+
+                    try {
+                        const fileUrl = `https://api.telegram.org/bot${this.botToken}/getFile?file_id=${msg.document.file_id}`;
+                        const fileResp = await this.safeFetch(fileUrl);
+                        if (!fileResp.success) continue;
+
+                        const fileData = JSON.parse(fileResp.text);
+                        if (!fileData.ok) continue;
+
+                        const contentUrl = `https://api.telegram.org/file/bot${this.botToken}/${fileData.result.file_path}`;
+                        const contentResp = await this.safeFetch(contentUrl);
+                        if (!contentResp.success) continue;
+
+                        files.push({
+                            name: name, content: contentResp.text,
+                            file_id: msg.document.file_id,
+                            message_id: msg.message_id,
+                            size: contentResp.text.length
+                        });
+                        console.log(`[${TILE_ID}] ✅ جلب ${name} (${contentResp.text.length} بايت)`);
+                    } catch(e) {
+                        console.warn(`[${TILE_ID}] ⚠️ فشل جلب ملف:`, e.message);
+                    }
+                }
+                // جلب الصور
+                else if (msg.photo && msg.photo.length > 0) {
+                    const photo = msg.photo[msg.photo.length - 1];
+                    const name = `photo_${msg.message_id}.jpg`;
+                    try {
+                        const fileResp = await this.safeFetch(`https://api.telegram.org/bot${this.botToken}/getFile?file_id=${photo.file_id}`);
+                        if (!fileResp.success) continue;
+                        const fileData = JSON.parse(fileResp.text);
+                        if (!fileData.ok) continue;
+                        const contentResp = await this.safeFetch(`https://api.telegram.org/file/bot${this.botToken}/${fileData.result.file_path}`);
+                        if (!contentResp.success) continue;
+                        files.push({ name: name, content: contentResp.text, file_id: photo.file_id, message_id: msg.message_id, size: contentResp.text.length });
+                    } catch(e) {}
+                }
+                // جلب النصوص الطويلة
+                else if (msg.text && msg.text.length > 100) {
+                    files.push({
+                        name: `text_${msg.message_id}.txt`, content: msg.text,
+                        message_id: msg.message_id, size: msg.text.length
+                    });
+                }
             }
 
-            if (result.warning) {
-                console.warn(`[${TILE_ID}] ⚠️ ${result.warning}`);
-                return result;
-            }
+            console.log(`[${TILE_ID}] 📊 ملخص: ${updates.length} تحديث, ${msgsFound} رسالة, ${docsFound} مستند, ${files.length} ملف`);
 
-            if (result.files.length === 0) {
-                console.warn(`[${TILE_ID}] ⚠️ لم يُعثر على ملفات قابلة للجلب`);
-                return { success: true, synced: 0, skipped: 0, savedToRepo: 0, total: 0, warning: 'لا توجد ملفات' };
-            }
+            return {
+                success: true,
+                files: files,
+                totalUpdates: updates.length,
+                msgsFound: msgsFound,
+                docsFound: docsFound,
+                filesCount: files.length
+            };
+        },
 
+        // ✅ جلب يدوي (تجاوز CORS)
+        syncManual: async function(jsonText) {
+            console.log(`[${TILE_ID}] 📋 وضع الجلب اليدوي...`);
+
+            try {
+                const data = typeof jsonText === 'string' ? JSON.parse(jsonText) : jsonText;
+
+                if (!data.ok) {
+                    return { success: false, error: data.description || 'Telegram API error' };
+                }
+
+                console.log(`[${TILE_ID}] 📋 معالجة ${data.result.length} تحديث يدوي...`);
+                const result = await this.processUpdates(data.result);
+
+                if (!result.success) return result;
+
+                // توزيع الملفات
+                return await this.distributeFiles(result.files);
+
+            } catch(e) {
+                return { success: false, error: 'خطأ في معالجة JSON: ' + e.message };
+            }
+        },
+
+        // ✅ توزيع الملفات على المربعات
+        distributeFiles: async function(files) {
             let count = 0, skipped = 0, savedToRepo = 0;
 
-            for (const file of result.files) {
-                console.log(`[${TILE_ID}] 📦 معالجة: ${file.name}`);
-
+            for (const file of files) {
                 const match = file.name.match(/tile_(\d+)_(\d+)_(.+)/);
 
                 if (!match) {
                     const path = file.name.replace('tile_', '').replace(/_/g, '/');
-                    console.log(`[${TILE_ID}] 💾 حفظ في المستودع: ${path}`);
                     await Repo.addFile(path, file.content, `جلب: ${file.name}`);
                     savedToRepo++;
                     continue;
@@ -495,12 +508,9 @@
                 const tileId = `${row}_${col}`;
                 const fileName = match[3];
 
-                console.log(`[${TILE_ID}] 🎯 توزيع على المربع (${row},${col}): ${fileName}`);
-
                 const sm = global.ServerManager || (typeof window !== 'undefined' ? window.ServerManager : null);
 
                 if (!sm || !sm.tiles) {
-                    console.log(`[${TILE_ID}] 💾 ServerManager غير متوفر، حفظ في المستودع`);
                     await Repo.addFile(`${tileId}/${fileName}`, file.content, `جلب: ${file.name}`);
                     savedToRepo++;
                     continue;
@@ -508,21 +518,18 @@
 
                 if (!sm.tiles[tileId]) {
                     sm.tiles[tileId] = { id: tileId, row, col, files: {}, created: Date.now() };
-                    console.log(`[${TILE_ID}] ➕ إنشاء مربع جديد: ${tileId}`);
                 }
 
                 const tile = sm.tiles[tileId];
                 const existing = tile.files || {};
 
-                if (Object.keys(existing).length > 0 && !(options && options.force)) {
-                    console.log(`[${TILE_ID}] ⏭️ تخطي (${row},${col}): المربع مملؤ`);
+                if (Object.keys(existing).length > 0) {
                     skipped++;
                     continue;
                 }
 
                 tile.files[fileName] = file.content;
                 count++;
-                console.log(`[${TILE_ID}] ✅ تم توزيع ${fileName} على (${row},${col})`);
 
                 if (sm.renderGrid) sm.renderGrid();
                 if (sm.updateStats) sm.updateStats();
@@ -536,10 +543,32 @@
                 global.showToast(summary, 'success');
             }
 
-            return {
-                success: true, synced: count, skipped, savedToRepo,
-                total: result.files.length
-            };
+            return { success: true, synced: count, skipped, savedToRepo, total: files.length };
+        },
+
+        // ✅ المزامنة التلقائية
+        syncAll: async function(options) {
+            console.log(`[${TILE_ID}] 🚀 بدء المزامنة...`);
+
+            if (!this.hasConfig()) {
+                return { success: false, error: 'لا توجد إعدادات تلجرام' };
+            }
+
+            const result = await this.fetchAll(options);
+
+            if (!result.success) {
+                return result;
+            }
+
+            if (result.warning) {
+                return result;
+            }
+
+            if (result.files.length === 0) {
+                return { success: true, synced: 0, skipped: 0, savedToRepo: 0, total: 0, warning: 'لا توجد ملفات' };
+            }
+
+            return await this.distributeFiles(result.files);
         },
 
         pushAll: async function() {
@@ -559,8 +588,10 @@
                     { method: 'POST', body: form }
                 );
                 if (result.success) {
-                    const data = await result.response.json();
-                    if (data.ok) uploaded++;
+                    try {
+                        const data = JSON.parse(result.text);
+                        if (data.ok) uploaded++;
+                    } catch(e) {}
                 }
             }
             return { success: true, uploaded, total: paths.length };
@@ -577,25 +608,13 @@
 
             const meResult = await this.safeFetch(`https://api.telegram.org/bot${this.botToken}/getMe`);
             if (!meResult.success) {
-                results.tests.push({ name: 'getMe', status: '❌', error: meResult.error });
+                results.tests.push({ name: 'getMe', status: '❌', error: meResult.error, manual: true });
             } else {
                 try {
-                    const data = await meResult.response.json();
+                    const data = JSON.parse(meResult.text);
                     results.tests.push({ name: 'getMe', status: data.ok ? '✅' : '❌', bot: data.result?.username });
                 } catch(e) {
                     results.tests.push({ name: 'getMe', status: '❌', error: e.message });
-                }
-            }
-
-            const upResult = await this.safeFetch(`https://api.telegram.org/bot${this.botToken}/getUpdates?limit=1`);
-            if (!upResult.success) {
-                results.tests.push({ name: 'getUpdates', status: '❌', error: upResult.error });
-            } else {
-                try {
-                    const data = await upResult.response.json();
-                    results.tests.push({ name: 'getUpdates', status: data.ok ? '✅' : '❌', count: data.result?.length });
-                } catch(e) {
-                    results.tests.push({ name: 'getUpdates', status: '❌', error: e.message });
                 }
             }
 
@@ -634,7 +653,7 @@
             return false;
         },
         getBanner: function() {
-            return { title: `خادم ${TILE_ID}`, message: 'نظام الجلب والتوزيع v4.6', files: Repo.getStats().files, commits: Repo.getStats().commits };
+            return { title: `خادم ${TILE_ID}`, message: 'نظام الجلب والتوزيع v4.7', files: Repo.getStats().files, commits: Repo.getStats().commits };
         }
     };
 
@@ -645,7 +664,7 @@
         info: function() {
             const stats = Repo.getStats();
             return {
-                name: `خادم ${TILE_ID}`, version: '4.6.0', status: 'نشط',
+                name: `خادم ${TILE_ID}`, version: '4.7.0', status: 'نشط',
                 files: stats.files, commits: stats.commits,
                 branches: stats.branches, currentBranch: stats.branch,
                 channel: Channel.hasConfig() ? '🟢 متصلة' : '🔴 غير متصلة',
@@ -680,11 +699,13 @@
             saveConfig: function(t, c) { return Channel.saveConfig(t, c); },
             hasConfig: function() { return Channel.hasConfig(); },
             diagnostics: function() { return Channel.diagnostics(); },
-            fixConfig: function() { return Channel.fixConfig(); }
+            fixConfig: function() { return Channel.fixConfig(); },
+            syncManual: function(json) { return Channel.syncManual(json); }  // ✅ جديد
         },
 
         syncAll: function(o) { return Channel.syncAll(o); },
         pushAll: function() { return Channel.pushAll(); },
+        syncManual: function(json) { return Channel.syncManual(json); },  // ✅ جديد
 
         events: {
             on: function(e, c) { return Events.on(e, c); },
@@ -760,15 +781,18 @@
     Repo.load();
     Channel.init();
 
-    console.log(`✅ [${TILE_ID}] نظام الجلب والتوزيع v4.6 جاهز!`);
+    console.log(`✅ [${TILE_ID}] نظام الجلب والتوزيع v4.7 جاهز!`);
     console.log(`📁 ملفات: ${Repo.getStats().files} | 📝 التزامات: ${Repo.getStats().commits}`);
     console.log(`📡 القناة: ${Channel.hasConfig() ? '🟢' : '🔴'}`);
+    console.log(`💡 إذا فشل الجلب التلقائي، استخدم الوضع اليدوي:`);
+    console.log(`   TileServer.syncManual('{"ok":true,"result":[...]}')`);
 
     if (typeof global.showToast === 'function') {
         global.showToast(`✅ خادم ${TILE_ID} جاهز`, 'success');
     }
 
-    Events.emit('server:ready', { server: TILE_ID, version: '4.6.0' });
+    Events.emit('server:ready', { server: TILE_ID, version: '4.7.0' });
 
 })(typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : this);
+
 
