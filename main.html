@@ -15,7 +15,6 @@
   }
   .container { max-width: 900px; margin: 0 auto; }
 
-  /* Header */
   .header {
     text-align: center;
     padding: 24px 16px;
@@ -38,7 +37,6 @@
   .status-online { background: rgba(0,212,170,0.2); color: #00d4aa; border: 1px solid #00d4aa; }
   .status-offline { background: rgba(255,70,70,0.2); color: #ff4646; border: 1px solid #ff4646; }
 
-  /* Cards */
   .card {
     background: rgba(255,255,255,0.05);
     border-radius: 16px;
@@ -56,7 +54,6 @@
     gap: 8px;
   }
 
-  /* Inputs */
   .input-group { margin-bottom: 12px; }
   .input-group label {
     display: block;
@@ -92,7 +89,6 @@
   .input-group input::placeholder,
   .input-group textarea::placeholder { color: #555; }
 
-  /* Buttons */
   .btn {
     padding: 12px 20px;
     border: none;
@@ -119,7 +115,6 @@
   .btn-success { background: #1a5c3a; color: #afa; }
   .btn-success:hover { background: #2a7c4a; color: #fff; }
 
-  /* Results */
   .result-box {
     margin-top: 14px;
     padding: 14px;
@@ -133,7 +128,6 @@
   .result-info { background: rgba(70,130,255,0.1); border: 1px solid #4682ff; color: #4682ff; display: block; }
   .result-warning { background: rgba(255,170,0,0.1); border: 1px solid #ffaa00; color: #ffaa00; display: block; }
 
-  /* Stats Grid */
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -157,7 +151,6 @@
     margin-top: 4px;
   }
 
-  /* File List */
   .file-list {
     max-height: 300px;
     overflow-y: auto;
@@ -190,7 +183,6 @@
   }
   .file-actions button:hover { color: #ff4646; }
 
-  /* Tabs */
   .tabs {
     display: flex;
     gap: 4px;
@@ -219,7 +211,6 @@
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
-  /* Console Log */
   .console-log {
     background: #0a0a1a;
     border-radius: 10px;
@@ -238,14 +229,12 @@
   .console-log .log-error { color: #ff4646; }
   .console-log .log-warn { color: #ffaa00; }
 
-  /* Responsive */
   @media (max-width: 600px) {
     .header h1 { font-size: 20px; }
     .btn { width: 100%; margin: 4px 0; justify-content: center; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
   }
 
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 3px; }
@@ -350,7 +339,7 @@
       </div>
       <div class="input-group" style="margin-top:14px;">
         <label>📋 بيانات JSON للاستيراد:</label>
-        <textarea id="importData" placeholder="{"files":{},"history":[],"branches":{}}"></textarea>
+        <textarea id="importData" placeholder='{"files":{},"history":[],"branches":{}}'></textarea>
       </div>
       <div class="result-box" id="repoResult"></div>
     </div>
@@ -1101,7 +1090,7 @@ ${content.substring(0, 2000)}${content.length > 2000 ? '...' : ''}`);
 
 })();
 </script>
-
 </body>
 </html>
 
+ 
