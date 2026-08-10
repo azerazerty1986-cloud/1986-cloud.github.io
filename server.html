@@ -3,16 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🚀 النظام المتكامل النهائي</title>
+<title>🚀 CDN المتكامل - Git + مربعات</title>
 <style>
 /* ====== الأنماط الأساسية ====== */
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:100vh;padding:15px;direction:rtl}
 .container{max-width:1400px;margin:0 auto}
 
-/* ====== الهيدر ====== */
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:10px;background:rgba(255,255,255,0.03);padding:12px 20px;border-radius:12px;border:1px solid rgba(255,255,255,0.06)}
-.header h1{font-size:20px;background:linear-gradient(135deg,#ffd700,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header h1{font-size:20px;background:linear-gradient(135deg,#00d4aa,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .header .admin-name{color:#ffd700;font-size:12px}
 .header-controls{display:flex;gap:6px;flex-wrap:wrap}
 .header-controls button{padding:4px 12px;border:1px solid rgba(139,92,246,0.3);border-radius:6px;background:rgba(139,92,246,0.1);color:#a78bfa;cursor:pointer;font-size:10px;transition:all .3s;font-family:inherit}
@@ -58,9 +57,11 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .auto-sync-bar .btn-now:hover{background:rgba(96,165,250,0.2)}
 .auto-sync-bar .btn-gist{background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);color:#ffd700}
 .auto-sync-bar .btn-gist:hover{background:rgba(255,215,0,0.2)}
+.auto-sync-bar .btn-git{background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);color:#00d4aa}
+.auto-sync-bar .btn-git:hover{background:rgba(0,212,170,0.2)}
 
 /* ====== الإحصائيات ====== */
-.stats{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:12px}
+.stats{display:grid;grid-template-columns:repeat(9,1fr);gap:6px;margin-bottom:12px}
 .stat-box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:8px;text-align:center}
 .stat-box .num{font-size:18px;font-weight:800;display:block}
 .stat-box .num.green{color:#4ade80}
@@ -70,31 +71,33 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .stat-box .num.orange{color:#fb923c}
 .stat-box .num.gold{color:#ffd700}
 .stat-box .num.cyan{color:#00d4aa}
+.stat-box .num.red{color:#f87171}
 .stat-box .label{font-size:8px;color:#888}
 
 /* ====== الشبكة ====== */
 .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:2px;margin-bottom:12px}
 .tile{aspect-ratio:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:3px;cursor:pointer;transition:all .3s;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:7px;padding:1px;position:relative;min-height:30px}
-.tile:hover{background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.4);transform:scale(1.05);z-index:10}
+.tile:hover{background:rgba(0,212,170,0.15);border-color:rgba(0,212,170,0.4);transform:scale(1.05);z-index:10}
 .tile .icon{font-size:14px}
 .tile .label{color:#888;font-size:5px}
 .tile .status{font-size:5px;margin-top:1px}
 .tile .status.online{color:#4ade80}
 .tile .status.offline{color:#666}
 .tile .status.running{color:#00d4aa;animation:pulse 1s infinite}
-.tile.has-files{border-color:rgba(139,92,246,0.3);background:rgba(139,92,246,0.08)}
+.tile.has-files{border-color:rgba(0,212,170,0.3);background:rgba(0,212,170,0.08)}
 .tile.protected{border-color:rgba(74,222,128,0.4);box-shadow:0 0 10px rgba(74,222,128,0.1)}
 .tile.admin-tile{border-color:rgba(255,215,0,0.5);background:rgba(255,215,0,0.08)}
-.tile .badge{position:absolute;top:-2px;right:-2px;background:#8b5cf6;color:#fff;font-size:5px;padding:1px 3px;border-radius:4px;font-weight:700}
-.tile .sync-badge{position:absolute;bottom:-2px;right:-2px;background:rgba(74,222,128,0.8);color:#fff;font-size:4px;padding:1px 3px;border-radius:3px}
+.tile .badge{position:absolute;top:-2px;right:-2px;background:#00d4aa;color:#fff;font-size:5px;padding:1px 3px;border-radius:4px;font-weight:700}
+.tile .sync-badge{position:absolute;bottom:-2px;right:-2px;background:rgba(0,212,170,0.8);color:#fff;font-size:4px;padding:1px 3px;border-radius:3px}
 .tile .admin-badge-tile{position:absolute;top:-2px;left:-2px;background:#ffd700;color:#111;font-size:4px;padding:1px 4px;border-radius:3px;font-weight:800}
+.tile .gist-badge{position:absolute;bottom:-2px;left:-2px;background:#ffd700;color:#111;font-size:4px;padding:1px 4px;border-radius:3px;font-weight:800}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 
 /* ====== لوحة المربع ====== */
-.tile-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(10,10,30,0.97);border:1px solid rgba(139,92,246,0.3);border-radius:12px;padding:16px;width:92%;max-width:520px;max-height:80vh;overflow-y:auto;z-index:9999;backdrop-filter:blur(20px);display:none;box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+.tile-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(10,10,30,0.97);border:1px solid rgba(0,212,170,0.3);border-radius:12px;padding:16px;width:92%;max-width:520px;max-height:80vh;overflow-y:auto;z-index:9999;backdrop-filter:blur(20px);display:none;box-shadow:0 20px 60px rgba(0,0,0,0.6)}
 .tile-panel.open{display:block}
 .tile-panel .panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:8px}
-.tile-panel .panel-header h3{color:#a78bfa;font-size:14px}
+.tile-panel .panel-header h3{color:#00d4aa;font-size:14px}
 .tile-panel .panel-header h3 .admin-tag{color:#ffd700;font-size:10px}
 .tile-panel .panel-header button{background:rgba(239,68,68,0.15);color:#f87171;border:none;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:11px}
 .tile-panel .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;margin-bottom:8px}
@@ -103,9 +106,10 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .tile-panel .info-item .value.online{color:#4ade80}
 .tile-panel .info-item .value.offline{color:#f87171}
 .tile-panel .info-item .value.admin{color:#ffd700}
+.tile-panel .info-item .value.cyan{color:#00d4aa}
 .tile-panel .file-list{margin:8px 0;max-height:150px;overflow-y:auto}
 .tile-panel .file-item{display:flex;justify-content:space-between;align-items:center;padding:3px 6px;background:rgba(255,255,255,0.03);border-radius:3px;margin-bottom:2px;font-size:9px}
-.tile-panel .file-item .name{color:#a78bfa;font-weight:600}
+.tile-panel .file-item .name{color:#00d4aa;font-weight:600}
 .tile-panel .file-item .size{color:#666;font-size:7px}
 .tile-panel .file-item .actions button{background:none;border:none;color:#888;cursor:pointer;font-size:10px;padding:0 2px}
 .tile-panel .file-item .actions button:hover{color:#fff}
@@ -117,45 +121,70 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .tile-panel .actions button{padding:4px 10px;border:none;border-radius:4px;font-size:9px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
 .tile-panel .actions button:hover{transform:scale(1.03)}
 .tile-panel .actions .btn-upload{background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.2)}
-.tile-panel .actions .btn-start{background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2)}
+.tile-panel .actions .btn-start{background:rgba(0,212,170,0.15);color:#00d4aa;border:1px solid rgba(0,212,170,0.2)}
 .tile-panel .actions .btn-protect{background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.2)}
 .tile-panel .actions .btn-delete{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.2)}
 .tile-panel .actions .btn-sync{background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.2);grid-column:span 2}
 .tile-panel .actions .btn-admin{background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2)}
-.tile-panel .actions .btn-gist{background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2);grid-column:span 2}
-.tile-panel .actions .btn-fetch{background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);grid-column:span 2}
+.tile-panel .actions .btn-gist{background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2)}
+.tile-panel .actions .btn-git{background:rgba(0,212,170,0.15);color:#00d4aa;border:1px solid rgba(0,212,170,0.2)}
 
 /* ====== محرر الملفات ====== */
-.file-editor{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(10,10,30,0.97);border:1px solid rgba(251,191,36,0.3);border-radius:12px;padding:16px;width:92%;max-width:600px;max-height:80vh;z-index:99999;display:none;backdrop-filter:blur(20px)}
+.file-editor{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(10,10,30,0.97);border:1px solid rgba(0,212,170,0.3);border-radius:12px;padding:16px;width:92%;max-width:600px;max-height:80vh;z-index:99999;display:none;backdrop-filter:blur(20px)}
 .file-editor.open{display:block}
 .file-editor .editor-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.file-editor .editor-header h4{color:#fbbf24;font-size:12px}
+.file-editor .editor-header h4{color:#00d4aa;font-size:12px}
 .file-editor .editor-header button{background:rgba(239,68,68,0.15);color:#f87171;border:none;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:11px}
 .file-editor textarea{width:100%;height:200px;background:rgba(0,0,0,0.5);color:#fff;border:1px solid rgba(255,255,255,0.08);border-radius:4px;padding:8px;font-family:'Courier New',monospace;font-size:10px;resize:vertical;direction:ltr;text-align:left}
 .file-editor .editor-actions{display:flex;gap:6px;margin-top:8px}
 .file-editor .editor-actions button{padding:4px 12px;border:none;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;flex:1}
-.file-editor .editor-actions .btn-save{background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.2)}
+.file-editor .editor-actions .btn-save{background:rgba(0,212,170,0.2);color:#00d4aa;border:1px solid rgba(0,212,170,0.2)}
 .file-editor .editor-actions .btn-close{background:rgba(255,255,255,0.06);color:#888;border:none}
 
 /* ====== إعدادات القناة ====== */
-.telegram-settings{background:rgba(255,255,255,0.03);border:1px solid rgba(139,92,246,0.15);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:none}
+.telegram-settings{background:rgba(255,255,255,0.03);border:1px solid rgba(0,212,170,0.15);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:none}
 .telegram-settings.open{display:block}
 .telegram-settings .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .telegram-settings input{flex:1;min-width:120px;padding:4px 10px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#fff;font-size:11px;font-family:inherit}
-.telegram-settings input:focus{outline:none;border-color:rgba(139,92,246,0.4)}
+.telegram-settings input:focus{outline:none;border-color:rgba(0,212,170,0.4)}
 .telegram-settings .status{font-size:10px;padding:3px 10px;border-radius:4px}
 .telegram-settings .status.online{background:rgba(74,222,128,0.2);color:#4ade80}
 .telegram-settings .status.offline{background:rgba(239,68,68,0.2);color:#f87171}
 
-/* ====== لوحة Gist ====== */
-#gistPanel{background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);border-radius:12px;padding:12px 16px;margin-bottom:12px;display:none}
+/* ====== لوحة Git ====== */
+.git-panel{background:rgba(0,212,170,0.03);border:1px solid rgba(0,212,170,0.15);border-radius:12px;padding:16px;margin-bottom:12px;display:none}
+.git-panel.open{display:block}
+.git-panel .git-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.git-panel .git-header h3{color:#00d4aa;font-size:16px}
+.git-panel .git-header button{background:rgba(239,68,68,0.15);color:#f87171;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:11px}
+.git-panel .git-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.git-panel .git-row input{flex:1;min-width:100px;padding:8px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#fff;font-size:11px;font-family:inherit}
+.git-panel .git-row input:focus{outline:none;border-color:rgba(0,212,170,0.4)}
+.git-panel .git-row button{padding:6px 16px;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+.git-panel .git-row .btn-primary{background:rgba(0,212,170,0.2);color:#00d4aa;border:1px solid rgba(0,212,170,0.3)}
+.git-panel .git-row .btn-primary:hover{background:rgba(0,212,170,0.3)}
+.git-panel .git-row .btn-success{background:rgba(74,222,128,0.2);color:#4ade80;border:1px solid rgba(74,222,128,0.3)}
+.git-panel .git-row .btn-success:hover{background:rgba(74,222,128,0.3)}
+.git-panel .git-row .btn-danger{background:rgba(239,68,68,0.2);color:#f87171;border:1px solid rgba(239,68,68,0.3)}
+.git-panel .git-row .btn-danger:hover{background:rgba(239,68,68,0.3)}
+.git-panel .git-row .btn-gold{background:rgba(255,215,0,0.2);color:#ffd700;border:1px solid rgba(255,215,0,0.3)}
+.git-panel .git-row .btn-gold:hover{background:rgba(255,215,0,0.3)}
+.git-file-list{max-height:200px;overflow-y:auto;margin-top:8px}
+.git-file-item{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:rgba(255,255,255,0.03);border-radius:4px;margin-bottom:3px;font-size:11px}
+.git-file-item .name{color:#00d4aa;font-weight:600}
+.git-file-item .size{color:#666;font-size:9px}
+.git-file-item .actions button{background:none;border:none;color:#888;cursor:pointer;font-size:12px;padding:0 4px}
+.git-file-item .actions button:hover{color:#fff}
+.git-file-item .actions .delete:hover{color:#f87171}
+.git-file-item .actions .edit:hover{color:#fbbf24}
 
 /* ====== توست ====== */
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(10,10,30,0.95);color:#fff;padding:6px 16px;border-radius:6px;border:1px solid rgba(139,92,246,0.2);z-index:999999;font-size:11px;display:none;animation:fadeIn .3s ease;max-width:90%;text-align:center}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(10,10,30,0.95);color:#fff;padding:6px 16px;border-radius:6px;border:1px solid rgba(0,212,170,0.2);z-index:999999;font-size:11px;display:none;animation:fadeIn .3s ease;max-width:90%;text-align:center}
 .toast.success{border-color:rgba(74,222,128,0.3)}
 .toast.error{border-color:rgba(239,68,68,0.3)}
 .toast.warning{border-color:rgba(251,191,36,0.3)}
 .toast.admin{border-color:rgba(255,215,0,0.3)}
+.toast.cyan{border-color:rgba(0,212,170,0.3)}
 @keyframes fadeIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
 ::-webkit-scrollbar{width:6px}
@@ -167,7 +196,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
     .grid{gap:1px}
     .tile{min-height:25px;font-size:6px}
     .tile .icon{font-size:10px}
-    .stats{grid-template-columns:repeat(4,1fr)}
+    .stats{grid-template-columns:repeat(5,1fr)}
     .header h1{font-size:16px}
     .header-controls button{font-size:8px;padding:3px 8px}
 }
@@ -177,8 +206,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
     .tile .icon{font-size:8px}
     .tile .label{font-size:4px}
     .stats{grid-template-columns:repeat(3,1fr)}
-    .header{padding:6px 10px}
-    .header h1{font-size:14px}
 }
 </style>
 </head>
@@ -192,7 +219,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
         <div class="field"><label>🔑 كلمة المرور</label><input type="password" id="admin-password" value="admin123" onkeydown="if(event.key==='Enter')adminLogin()"></div>
         <div class="auth-error" id="auth-error"></div>
         <button class="auth-btn primary" onclick="adminLogin()">🚀 دخول</button>
-        <div class="auth-info">🔐 admin / admin123</div>
+        <div class="auth-info">🔐 admin / admin123 | 📦 Git + مربعات</div>
     </div>
 </div>
 
@@ -201,11 +228,11 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
     <div class="container">
         <!-- الهيدر -->
         <div class="header">
-            <div><h1>🌐 النظام المتكامل النهائي</h1><span class="admin-name">المدير: <span id="admin-name-display">مدير</span></span></div>
+            <div><h1>🚀 CDN المتكامل</h1><span class="admin-name">المدير: <span id="admin-name-display">مدير</span></span></div>
             <div class="header-controls">
                 <button class="btn-warning" onclick="toggleTelegramSettings()">📡 القناة</button>
+                <button class="btn-cyan" onclick="toggleGitPanel()">📦 Git</button>
                 <button class="btn-success" onclick="syncAllFromChannel()">🔄 مزامنة</button>
-                <button class="btn-gold" onclick="toggleGistPanel()">📦 Gist</button>
                 <button onclick="exportAllTiles()">📤 تصدير</button>
                 <button onclick="document.getElementById('importFile').click()">📥 استيراد</button>
                 <button class="btn-danger" onclick="resetAll()">🔄 إعادة تعيين</button>
@@ -223,14 +250,14 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
             <button class="btn-toggle off" id="btnToggleAutoSync" onclick="toggleAutoSync()">▶️ تشغيل</button>
             <button class="btn-now" onclick="forceSyncNow()">⚡ فوري</button>
             <button class="btn-now" onclick="uploadTestFile()">📤 اختبار</button>
-            <button class="btn-gist" onclick="syncAllToGist()">📦 رفع الكل إلى Gist</button>
-            <button class="btn-now" onclick="fetchAllContent()">📥 جلب كل المحتوى</button>
+            <button class="btn-git" onclick="gitPushAll()">📦 رفع Git</button>
+            <button class="btn-gist" onclick="gitPullAll()">📥 جلب Git</button>
         </div>
 
         <!-- إعدادات القناة -->
         <div class="telegram-settings" id="telegramSettings">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                <span style="color:#a78bfa;font-size:12px;font-weight:600;">📡 إعدادات القناة</span>
+                <span style="color:#00d4aa;font-size:12px;font-weight:600;">📡 إعدادات القناة</span>
                 <span class="status offline" id="tgStatus">🔴 غير متصل</span>
             </div>
             <div class="row">
@@ -240,27 +267,31 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
                 <button onclick="testTelegramConnection()" style="padding:4px 12px;background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;">🧪 اختبار</button>
             </div>
             <div style="margin-top:6px;font-size:9px;color:#666;">
-                💡 أرسل ملفاً إلى القناة باسم: <code style="color:#a78bfa;">tile_5_3_index.html</code>
+                💡 أرسل ملفاً إلى القناة باسم: <code style="color:#00d4aa;">tile_5_3_index.html</code>
             </div>
         </div>
 
-        <!-- لوحة Gist -->
-        <div id="gistPanel">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                <span style="color:#ffd700;font-size:12px;font-weight:700;">📦 Gist CDN</span>
-                <button onclick="document.getElementById('gistPanel').style.display='none'" style="background:rgba(239,68,68,0.15);color:#f87171;border:none;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:10px;">✖</button>
+        <!-- لوحة Git -->
+        <div class="git-panel" id="gitPanel">
+            <div class="git-header">
+                <h3>📦 مستودع Git</h3>
+                <button onclick="toggleGitPanel()">✖</button>
             </div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-                <input type="text" id="gistToken" placeholder="GitHub Token" value="" style="flex:1;min-width:150px;padding:4px 10px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#fff;font-size:10px;font-family:inherit;">
-                <button onclick="saveGistConfig()" style="padding:4px 12px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.2);border-radius:4px;cursor:pointer;font-size:10px;font-family:inherit;">💾 حفظ</button>
-                <button onclick="GistCDN.testConnection()" style="padding:4px 12px;background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);border-radius:4px;cursor:pointer;font-size:10px;font-family:inherit;">🔌 اختبار</button>
+            <div class="git-row">
+                <input type="text" id="gitToken" placeholder="GitHub Token" style="flex:2;">
+                <input type="text" id="gitGistId" placeholder="Gist ID" style="flex:1;">
+                <button class="btn-primary" onclick="gitSaveConfig()">💾 حفظ</button>
+                <button class="btn-success" onclick="gitTestConnection()">🔌 اختبار</button>
             </div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                <button onclick="syncCurrentTileToGist()" style="padding:4px 12px;background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2);border-radius:4px;cursor:pointer;font-size:10px;font-family:inherit;">📤 رفع المربع</button>
-                <button onclick="promptImportFromGist()" style="padding:4px 12px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.2);border-radius:4px;cursor:pointer;font-size:10px;font-family:inherit;">📥 استيراد</button>
-                <button onclick="listGistFiles()" style="padding:4px 12px;background:rgba(167,139,250,0.15);color:#a78bfa;border:1px solid rgba(167,139,250,0.2);border-radius:4px;cursor:pointer;font-size:10px;font-family:inherit;">📋 القائمة</button>
+            <div class="git-row">
+                <button class="btn-gold" onclick="gitPushAll()">📤 رفع الكل</button>
+                <button class="btn-success" onclick="gitPullAll()">📥 جلب الكل</button>
+                <button class="btn-primary" onclick="gitListFiles()">📋 قائمة</button>
             </div>
-            <div id="gistResult" style="margin-top:8px;font-size:10px;color:#888;"></div>
+            <div class="git-file-list" id="gitFileList">
+                <div style="text-align:center;color:#666;padding:20px;font-size:12px;">📭 لا توجد ملفات</div>
+            </div>
+            <div id="gitResult" style="margin-top:8px;font-size:10px;color:#888;"></div>
         </div>
 
         <!-- الإحصائيات -->
@@ -270,9 +301,10 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
             <div class="stat-box"><span class="num blue" id="filesCount">0</span><span class="label">📄 ملفات</span></div>
             <div class="stat-box"><span class="num yellow" id="protectedCount">0</span><span class="label">🛡️ محمية</span></div>
             <div class="stat-box"><span class="num green" id="syncedCount">0</span><span class="label">🔄 مزامنة</span></div>
-            <div class="stat-box"><span class="num gold" id="gistCount">0</span><span class="label">📦 Gist</span></div>
+            <div class="stat-box"><span class="num gold" id="gistCount">0</span><span class="label">📦 Git</span></div>
             <div class="stat-box"><span class="num cyan" id="adminCount">0</span><span class="label">👑 إدارة</span></div>
             <div class="stat-box"><span class="num orange" id="serverCount">0</span><span class="label">🚀 خوادم</span></div>
+            <div class="stat-box"><span class="num red" id="errorCount">0</span><span class="label">❌ أخطاء</span></div>
         </div>
 
         <!-- الشبكة -->
@@ -289,18 +321,17 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
         <div class="info-item"><span>🛡️ الحماية</span><span class="value" id="panelProtected">❌</span></div>
         <div class="info-item"><span>📄 الملفات</span><span class="value" id="panelFileCount">0</span></div>
         <div class="info-item"><span>🔄 المزامنة</span><span class="value" id="panelSync">❌</span></div>
-        <div class="info-item"><span>📦 Gist</span><span class="value" id="panelGist">❌</span></div>
+        <div class="info-item"><span>📦 Git</span><span class="value" id="panelGit">❌</span></div>
     </div>
     <div class="file-list" id="panelFiles"></div>
-    <div id="tileLinksContainer"></div>
     <div class="actions">
         <button class="btn-upload" onclick="uploadFile()">📤 رفع</button>
         <button class="btn-start" onclick="toggleServer()" id="panelStartBtn">▶️ تشغيل</button>
         <button class="btn-protect" onclick="toggleProtect()" id="panelProtectBtn">🛡️ حماية</button>
         <button class="btn-delete" onclick="clearTile()">🗑️ تفريغ</button>
         <button class="btn-sync" onclick="syncTileToChannel()">🔄 مزامنة</button>
-        <button class="btn-gist" onclick="syncCurrentTileToGist()">📦 رفع إلى Gist</button>
-        <button class="btn-fetch" onclick="fetchCurrentTileContent()">📥 جلب المحتوى</button>
+        <button class="btn-gist" onclick="syncTileToGit()">📦 رفع Git</button>
+        <button class="btn-git" onclick="fetchTileFromGit()">📥 جلب Git</button>
     </div>
 </div>
 
@@ -315,7 +346,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 <div class="toast" id="toast"></div>
 
 <!-- ============================================================ -->
-<!-- 🚀 جافا سكريبت - النظام الكامل 100%                          -->
+<!-- 🚀 جافا سكريبت - النظام الكامل                               -->
 <!-- ============================================================ -->
 <script>
 // ============================================================
@@ -333,7 +364,7 @@ function adminLogin() {
         document.getElementById('admin-container').style.display = 'block';
         document.getElementById('admin-name-display').textContent = u;
         showToast('👑 مرحباً!', 'admin');
-        setTimeout(() => ServerManager.init(), 100);
+        setTimeout(() => { ServerManager.init(); GitManager.init(); }, 100);
     } else {
         document.getElementById('auth-error').textContent = '❌ خطأ';
         document.getElementById('auth-error').style.display = 'block';
@@ -362,39 +393,39 @@ function showToast(msg, type = 'info') {
 }
 
 // ============================================================
-// 🗄️ ServerManager - النظام الكامل
+// 🗄️ ServerManager
 // ============================================================
 const ServerManager = {
     tiles: {},
     protectedTiles: new Set(),
     activeServers: new Set(),
     syncedTiles: new Set(),
-    gistTiles: new Set(),
+    gitTiles: new Set(),
     adminTiles: new Set(['0_0', '0_1', '0_2']),
     currentTile: null,
     currentFile: null,
+    errors: [],
 
     init() {
         this.loadTiles();
         this.loadTelegramSettings();
         this.renderGrid();
         this.updateStats();
-        if (window.GistCDN) GistCDN.init();
         showToast('✅ جاهز', 'success');
     },
 
     loadTiles() {
-        const saved = localStorage.getItem('tiles');
+        const saved = localStorage.getItem('cdn_tiles');
         if (saved) {
             try {
                 this.tiles = JSON.parse(saved);
-                const p = localStorage.getItem('protected');
+                const p = localStorage.getItem('cdn_protected');
                 if (p) this.protectedTiles = new Set(JSON.parse(p));
-                const s = localStorage.getItem('synced');
+                const s = localStorage.getItem('cdn_synced');
                 if (s) this.syncedTiles = new Set(JSON.parse(s));
-                const g = localStorage.getItem('gist_tiles');
-                if (g) this.gistTiles = new Set(JSON.parse(g));
-                const a = localStorage.getItem('admin_tiles');
+                const g = localStorage.getItem('cdn_git');
+                if (g) this.gitTiles = new Set(JSON.parse(g));
+                const a = localStorage.getItem('cdn_admin');
                 if (a) this.adminTiles = new Set(JSON.parse(a));
                 return;
             } catch(e) {}
@@ -402,7 +433,7 @@ const ServerManager = {
         for (let r = 0; r < 12; r++) {
             for (let c = 0; c < 12; c++) {
                 const id = r + '_' + c;
-                this.tiles[id] = { id, row: r, col: c, files: {}, gistLinks: {}, created: Date.now() };
+                this.tiles[id] = { id, row: r, col: c, files: {}, gitLinks: {}, created: Date.now() };
             }
         }
         this.adminTiles = new Set(['0_0', '0_1', '0_2']);
@@ -410,11 +441,11 @@ const ServerManager = {
     },
 
     saveTiles() {
-        localStorage.setItem('tiles', JSON.stringify(this.tiles));
-        localStorage.setItem('protected', JSON.stringify(Array.from(this.protectedTiles)));
-        localStorage.setItem('synced', JSON.stringify(Array.from(this.syncedTiles)));
-        localStorage.setItem('gist_tiles', JSON.stringify(Array.from(this.gistTiles)));
-        localStorage.setItem('admin_tiles', JSON.stringify(Array.from(this.adminTiles)));
+        localStorage.setItem('cdn_tiles', JSON.stringify(this.tiles));
+        localStorage.setItem('cdn_protected', JSON.stringify(Array.from(this.protectedTiles)));
+        localStorage.setItem('cdn_synced', JSON.stringify(Array.from(this.syncedTiles)));
+        localStorage.setItem('cdn_git', JSON.stringify(Array.from(this.gitTiles)));
+        localStorage.setItem('cdn_admin', JSON.stringify(Array.from(this.adminTiles)));
     },
 
     renderGrid() {
@@ -428,7 +459,7 @@ const ServerManager = {
                 const isProtected = this.protectedTiles.has(id);
                 const isActive = this.activeServers.has(id);
                 const isSynced = this.syncedTiles.has(id);
-                const isGist = this.gistTiles.has(id);
+                const isGit = this.gitTiles.has(id);
                 const isAdmin = this.adminTiles.has(id);
                 const fileCount = tile.files ? Object.keys(tile.files).length : 0;
                 const div = document.createElement('div');
@@ -437,12 +468,12 @@ const ServerManager = {
                 if (isProtected) div.classList.add('protected');
                 if (isAdmin) div.classList.add('admin-tile');
                 div.dataset.tile = id;
-                let html = `<div class="icon">${isGist ? '📦' : '📦'}</div>`;
+                let html = `<div class="icon">${isGit ? '📦' : '📦'}</div>`;
                 html += `<div class="label">${r},${c}</div>`;
                 html += `<div class="status ${isActive ? 'running' : 'offline'}">${isActive ? '🟢' : '⚪'}</div>`;
                 if (fileCount > 0) html += `<div class="badge">${fileCount}</div>`;
                 if (isSynced) html += `<div class="sync-badge">🔄</div>`;
-                if (isGist) html += `<div class="gist-badge">G</div>`;
+                if (isGit) html += `<div class="gist-badge">G</div>`;
                 if (isAdmin) html += `<div class="admin-badge-tile">👑</div>`;
                 div.innerHTML = html;
                 div.onclick = () => this.openPanel(id);
@@ -455,13 +486,12 @@ const ServerManager = {
     updateStats() {
         const total = Object.keys(this.tiles).length;
         const online = this.activeServers.size;
-        let files = 0, gistFiles = 0;
-        let adminFiles = 0;
+        let files = 0, gitFiles = 0, adminFiles = 0;
         for (const [id, t] of Object.entries(this.tiles)) {
             if (t && t.files) {
                 const count = Object.keys(t.files).length;
                 files += count;
-                if (this.gistTiles.has(id)) gistFiles += count;
+                if (this.gitTiles.has(id)) gitFiles += count;
                 if (this.adminTiles.has(id)) adminFiles += count;
             }
         }
@@ -470,9 +500,10 @@ const ServerManager = {
         document.getElementById('filesCount').textContent = files;
         document.getElementById('protectedCount').textContent = this.protectedTiles.size;
         document.getElementById('syncedCount').textContent = this.syncedTiles.size;
-        document.getElementById('gistCount').textContent = gistFiles;
+        document.getElementById('gistCount').textContent = gitFiles;
         document.getElementById('adminCount').textContent = adminFiles;
         document.getElementById('serverCount').textContent = this.activeServers.size;
+        document.getElementById('errorCount').textContent = this.errors.length;
     },
 
     openPanel(id) {
@@ -482,9 +513,9 @@ const ServerManager = {
         this.currentTile = id;
         const panel = document.getElementById('tilePanel');
         panel.classList.add('open');
-        const isGist = this.gistTiles.has(id);
+        const isGit = this.gitTiles.has(id);
         const isAdmin = this.adminTiles.has(id);
-        document.getElementById('panelTitle').innerHTML = `📦 المربع (${tile.row}, ${tile.col}) ${isGist ? '<span class="admin-tag">📦 Gist</span>' : ''} ${isAdmin ? '<span class="admin-tag">👑 إدارة</span>' : ''}`;
+        document.getElementById('panelTitle').innerHTML = `📦 المربع (${tile.row}, ${tile.col}) ${isGit ? '<span class="admin-tag">📦 Git</span>' : ''} ${isAdmin ? '<span class="admin-tag">👑 إدارة</span>' : ''}`;
         document.getElementById('panelLocation').textContent = `(${tile.row}, ${tile.col})`;
         const isActive = this.activeServers.has(id);
         const st = document.getElementById('panelStatus');
@@ -496,15 +527,12 @@ const ServerManager = {
         const isSynced = this.syncedTiles.has(id);
         document.getElementById('panelSync').textContent = isSynced ? '✅' : '❌';
         document.getElementById('panelSync').style.color = isSynced ? '#4ade80' : '#f87171';
-        document.getElementById('panelGist').textContent = isGist ? '✅' : '❌';
-        document.getElementById('panelGist').style.color = isGist ? '#ffd700' : '#f87171';
+        document.getElementById('panelGit').textContent = isGit ? '✅' : '❌';
+        document.getElementById('panelGit').style.color = isGit ? '#ffd700' : '#f87171';
         document.getElementById('panelStartBtn').textContent = isActive ? '⏹️ إيقاف' : '▶️ تشغيل';
         document.getElementById('panelProtectBtn').textContent = isProtected ? '🔓 إزالة' : '🛡️ حماية';
         this.renderFiles(tile);
         document.getElementById('panelFileCount').textContent = tile.files ? Object.keys(tile.files).length : 0;
-        if (window.TileLinkSystem) {
-            TileLinkSystem.renderTileLinks(id);
-        }
     },
 
     renderFiles(tile) {
@@ -518,16 +546,16 @@ const ServerManager = {
             const div = document.createElement('div');
             div.className = 'file-item';
             const isMeta = content && content.trim().startsWith('[METADATA]');
-            const hasGist = tile.gistLinks && tile.gistLinks[name];
+            const hasGit = tile.gitLinks && tile.gitLinks[name];
             const size = new Blob([content]).size;
             const sizeStr = size < 1024 ? size + 'B' : (size / 1024).toFixed(1) + 'KB';
             div.innerHTML = `
-                <span class="name">${name}${isMeta ? ' ⚠️' : ''}${hasGist ? ' 📦' : ''}</span>
+                <span class="name">${name}${isMeta ? ' ⚠️' : ''}${hasGit ? ' 📦' : ''}</span>
                 <span class="size">${sizeStr}</span>
                 <span class="actions">
                     <button class="edit" onclick="ServerManager.editFile('${tile.id}','${name}')">✏️</button>
                     <button class="sync" onclick="ServerManager.syncFile('${tile.id}','${name}')">🔄</button>
-                    <button class="gist" onclick="GistCDN.syncTileToGist('${tile.id}','${name}')">📦</button>
+                    <button class="gist" onclick="GitManager.syncTileToGit('${tile.id}','${name}')">📦</button>
                     <button onclick="ServerManager.downloadFile('${tile.id}','${name}')">⬇️</button>
                     <button class="delete" onclick="ServerManager.deleteFile('${tile.id}','${name}')">🗑️</button>
                 </span>
@@ -581,7 +609,7 @@ const ServerManager = {
         const tile = this.tiles[tileId];
         if (tile && tile.files) {
             delete tile.files[fileName];
-            if (tile.gistLinks) delete tile.gistLinks[fileName];
+            if (tile.gitLinks) delete tile.gitLinks[fileName];
             this.saveTiles();
             this.renderGrid();
             this.updateStats();
@@ -633,6 +661,7 @@ const ServerManager = {
                 } catch(e) {
                     showToast('❌ فشل التشغيل', 'error');
                     this.activeServers.delete(id);
+                    this.errors.push({ tile: id, error: e.message });
                 }
             } else {
                 showToast('⚠️ لا يوجد main.js', 'warning');
@@ -665,11 +694,11 @@ const ServerManager = {
         const tile = this.tiles[this.currentTile];
         if (tile) {
             tile.files = {};
-            tile.gistLinks = {};
+            tile.gitLinks = {};
             this.activeServers.delete(this.currentTile);
             this.protectedTiles.delete(this.currentTile);
             this.syncedTiles.delete(this.currentTile);
-            this.gistTiles.delete(this.currentTile);
+            this.gitTiles.delete(this.currentTile);
             this.saveTiles();
             this.renderGrid();
             this.updateStats();
@@ -679,8 +708,8 @@ const ServerManager = {
     },
 
     syncFile: async function(tileId, fileName) {
-        const token = localStorage.getItem('bot_token');
-        const chatId = localStorage.getItem('chat_id');
+        const token = localStorage.getItem('cdn_bot_token');
+        const chatId = localStorage.getItem('cdn_chat_id');
         if (!token || !chatId) {
             showToast('⚠️ قم بإعداد القناة', 'warning');
             return;
@@ -735,8 +764,8 @@ const ServerManager = {
     },
 
     syncAllFromChannel: async function() {
-        const token = localStorage.getItem('bot_token');
-        const chatId = localStorage.getItem('chat_id');
+        const token = localStorage.getItem('cdn_bot_token');
+        const chatId = localStorage.getItem('cdn_chat_id');
         if (!token || !chatId) {
             showToast('⚠️ قم بإعداد القناة', 'warning');
             return;
@@ -768,7 +797,7 @@ const ServerManager = {
                     } catch(e) {}
                 }
                 if (!this.tiles[id]) {
-                    this.tiles[id] = { id, row: r, col: c, files: {}, gistLinks: {}, created: Date.now() };
+                    this.tiles[id] = { id, row: r, col: c, files: {}, gitLinks: {}, created: Date.now() };
                 }
                 if (content !== null) {
                     this.tiles[id].files[actual] = content;
@@ -788,8 +817,8 @@ const ServerManager = {
     },
 
     loadTelegramSettings() {
-        document.getElementById('tgBotToken').value = localStorage.getItem('bot_token') || '';
-        document.getElementById('tgChatId').value = localStorage.getItem('chat_id') || '';
+        document.getElementById('tgBotToken').value = localStorage.getItem('cdn_bot_token') || '';
+        document.getElementById('tgChatId').value = localStorage.getItem('cdn_chat_id') || '';
     },
 
     saveTelegramSettings() {
@@ -799,8 +828,8 @@ const ServerManager = {
             showToast('⚠️ أكمل الحقول', 'warning');
             return;
         }
-        localStorage.setItem('bot_token', token);
-        localStorage.setItem('chat_id', chatId);
+        localStorage.setItem('cdn_bot_token', token);
+        localStorage.setItem('cdn_chat_id', chatId);
         showToast('✅ تم الحفظ', 'success');
     },
 
@@ -830,14 +859,14 @@ const ServerManager = {
             tiles: this.tiles,
             protected: Array.from(this.protectedTiles),
             synced: Array.from(this.syncedTiles),
-            gistTiles: Array.from(this.gistTiles),
-            adminTiles: Array.from(this.adminTiles)
+            git: Array.from(this.gitTiles),
+            admin: Array.from(this.adminTiles)
         };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'backup_' + Date.now() + '.json';
+        a.download = 'cdn_backup_' + Date.now() + '.json';
         a.click();
         URL.revokeObjectURL(url);
         showToast('📤 تم التصدير', 'admin');
@@ -853,8 +882,8 @@ const ServerManager = {
                 this.tiles = data.tiles || this.tiles;
                 this.protectedTiles = new Set(data.protected || []);
                 this.syncedTiles = new Set(data.synced || []);
-                this.gistTiles = new Set(data.gistTiles || []);
-                this.adminTiles = new Set(data.adminTiles || ['0_0', '0_1', '0_2']);
+                this.gitTiles = new Set(data.git || []);
+                this.adminTiles = new Set(data.admin || ['0_0', '0_1', '0_2']);
                 this.saveTiles();
                 this.renderGrid();
                 this.updateStats();
@@ -869,27 +898,27 @@ const ServerManager = {
 
     resetAll() {
         if (!confirm('⚠️ إعادة تعيين كل شيء؟')) return;
-        localStorage.removeItem('tiles');
-        localStorage.removeItem('protected');
-        localStorage.removeItem('synced');
-        localStorage.removeItem('gist_tiles');
-        localStorage.removeItem('admin_tiles');
-        localStorage.removeItem('bot_token');
-        localStorage.removeItem('chat_id');
-        localStorage.removeItem('github_token');
-        localStorage.removeItem('gist_id');
+        localStorage.removeItem('cdn_tiles');
+        localStorage.removeItem('cdn_protected');
+        localStorage.removeItem('cdn_synced');
+        localStorage.removeItem('cdn_git');
+        localStorage.removeItem('cdn_admin');
+        localStorage.removeItem('cdn_bot_token');
+        localStorage.removeItem('cdn_chat_id');
+        localStorage.removeItem('cdn_git_token');
+        localStorage.removeItem('cdn_gist_id');
         this.tiles = {};
         this.protectedTiles = new Set();
         this.activeServers = new Set();
         this.syncedTiles = new Set();
-        this.gistTiles = new Set();
+        this.gitTiles = new Set();
         this.adminTiles = new Set();
+        this.errors = [];
         this.loadTiles();
         this.saveTiles();
         this.renderGrid();
         this.updateStats();
         this.closePanel();
-        if (window.GistCDN) GistCDN.clearConfig();
         showToast('🔄 تم إعادة التعيين', 'warning');
     },
 
@@ -899,120 +928,248 @@ const ServerManager = {
 };
 
 // ============================================================
-// 📦 GistCDN
+// 📦 GitManager - نظام Git كامل
 // ============================================================
-const GistCDN = {
-    config: { token: '', gistId: '' },
+const GitManager = {
+    files: {},
+    history: [],
+    gistToken: '',
+    gistId: '',
 
     init() {
-        this.config.token = localStorage.getItem('github_token') || '';
-        this.config.gistId = localStorage.getItem('gist_id') || '';
-        document.getElementById('gistToken').value = this.config.token;
+        this.load();
+        this.loadConfig();
+        this.updateUI();
+        console.log('📦 GitManager جاهز');
     },
 
-    clearConfig() {
-        localStorage.removeItem('github_token');
-        localStorage.removeItem('gist_id');
-        this.config.token = '';
-        this.config.gistId = '';
+    load() {
+        const data = localStorage.getItem('cdn_git_repo');
+        if (data) {
+            try {
+                const parsed = JSON.parse(data);
+                this.files = parsed.files || {};
+                this.history = parsed.history || [];
+            } catch(e) {}
+        }
     },
 
-    saveConfig(token, gistId = '') {
-        localStorage.setItem('github_token', token);
-        if (gistId) localStorage.setItem('gist_id', gistId);
-        this.config.token = token;
-        this.config.gistId = gistId;
-        showToast('✅ تم حفظ إعدادات GitHub', 'success');
+    save() {
+        localStorage.setItem('cdn_git_repo', JSON.stringify({
+            files: this.files,
+            history: this.history,
+            savedAt: new Date().toISOString()
+        }));
+        this.updateUI();
     },
 
-    async uploadToGist(content, filename) {
-        if (!this.config.token) {
-            showToast('⚠️ أدخل GitHub Token أولاً', 'warning');
-            return null;
+    loadConfig() {
+        this.gistToken = localStorage.getItem('cdn_git_token') || '';
+        this.gistId = localStorage.getItem('cdn_gist_id') || '';
+        document.getElementById('gitToken').value = this.gistToken;
+        document.getElementById('gitGistId').value = this.gistId;
+    },
+
+    saveConfig(token, gistId) {
+        this.gistToken = token;
+        this.gistId = gistId || this.gistId;
+        localStorage.setItem('cdn_git_token', token);
+        if (gistId) localStorage.setItem('cdn_gist_id', gistId);
+        showToast('✅ تم حفظ إعدادات Git', 'success');
+    },
+
+    getFiles() { return Object.keys(this.files); },
+
+    addFile(path, content) {
+        if (!path) return showToast('❌ اسم الملف مطلوب', 'error');
+        const isUpdate = !!this.files[path];
+        this.files[path] = content || '';
+        this.history.push({
+            action: isUpdate ? 'update' : 'add',
+            path: path,
+            timestamp: new Date().toLocaleString('ar-SA'),
+            size: (content || '').length
+        });
+        this.save();
+        showToast(`✅ ${isUpdate ? 'تحديث' : 'إضافة'}: ${path}`, 'success');
+        return true;
+    },
+
+    deleteFile(path) {
+        if (!this.files[path]) return showToast('❌ الملف غير موجود', 'error');
+        delete this.files[path];
+        this.history.push({
+            action: 'delete',
+            path: path,
+            timestamp: new Date().toLocaleString('ar-SA')
+        });
+        this.save();
+        showToast(`🗑️ حذف: ${path}`, 'warning');
+        return true;
+    },
+
+    getStats() {
+        let size = 0;
+        for (const c of Object.values(this.files)) size += c.length;
+        return {
+            files: Object.keys(this.files).length,
+            size: size,
+            formattedSize: this.formatSize(size),
+            commits: this.history.length
+        };
+    },
+
+    formatSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    },
+
+    updateUI() {
+        const stats = this.getStats();
+        document.getElementById('gistCount').textContent = stats.files;
+        this.renderFileList();
+    },
+
+    renderFileList() {
+        const list = document.getElementById('gitFileList');
+        const files = this.getFiles();
+        if (files.length === 0) {
+            list.innerHTML = '<div style="text-align:center;color:#666;padding:20px;font-size:12px;">📭 لا توجد ملفات</div>';
+            return;
+        }
+        list.innerHTML = files.map(path => {
+            const content = this.files[path];
+            const size = this.formatSize(content ? content.length : 0);
+            return `<div class="git-file-item">
+                <span class="name">${path}</span>
+                <span class="size">${size}</span>
+                <span class="actions">
+                    <button onclick="GitManager.viewFile('${path}')" title="عرض">👁️</button>
+                    <button onclick="GitManager.downloadFile('${path}')" title="تحميل">⬇️</button>
+                    <button class="delete" onclick="GitManager.deleteFile('${path}')" title="حذف">🗑️</button>
+                </span>
+            </div>`;
+        }).join('');
+    },
+
+    viewFile(path) {
+        const content = this.files[path];
+        if (!content) return;
+        alert(`📄 ${path}\n\n${content.substring(0, 2000)}${content.length > 2000 ? '...' : ''}`);
+    },
+
+    downloadFile(path) {
+        const content = this.files[path];
+        if (!content) return;
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = path;
+        a.click();
+        URL.revokeObjectURL(url);
+    },
+
+    // ====== GitHub Gist ======
+    async pushToGist() {
+        if (!this.gistToken) return showToast('⚠️ أدخل GitHub Token أولاً', 'warning');
+        const data = {
+            description: '📦 CDN Backup',
+            public: false,
+            files: {}
+        };
+        for (const [path, content] of Object.entries(this.files)) {
+            data.files[path] = { content: content };
         }
         try {
-            const url = this.config.gistId 
-                ? `https://api.github.com/gists/${this.config.gistId}`
-                : 'https://api.github.com/gists';
-            const method = this.config.gistId ? 'PATCH' : 'POST';
-            const body = {
-                description: '📦 TileCDN Files',
-                public: false,
-                files: {
-                    [filename]: { content: content }
-                }
-            };
-            if (this.config.gistId) {
-                const existing = await this.getGistFiles();
-                for (const [key, value] of Object.entries(existing)) {
-                    if (key !== filename) {
-                        body.files[key] = { content: value };
-                    }
-                }
-            }
-            const response = await fetch(url, {
+            const url = this.gistId ? 
+                `https://api.github.com/gists/${this.gistId}` :
+                'https://api.github.com/gists';
+            const method = this.gistId ? 'PATCH' : 'POST';
+            const resp = await fetch(url, {
                 method: method,
                 headers: {
-                    'Authorization': `token ${this.config.token}`,
+                    'Authorization': `token ${this.gistToken}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(body)
+                body: JSON.stringify(data)
             });
-            const data = await response.json();
-            if (data.id) {
-                if (!this.config.gistId) {
-                    this.config.gistId = data.id;
-                    localStorage.setItem('gist_id', data.id);
+            const result = await resp.json();
+            if (result.id) {
+                if (!this.gistId) {
+                    this.gistId = result.id;
+                    localStorage.setItem('cdn_gist_id', result.id);
                 }
-                const rawUrl = `https://gist.githubusercontent.com/raw/${data.id}/${filename}`;
-                return rawUrl;
+                showToast(`✅ تم رفع ${Object.keys(this.files).length} ملف`, 'success');
+                document.getElementById('gitResult').innerHTML = `✅ Gist ID: ${result.id}`;
+                this.updateUI();
             } else {
-                console.error('❌ فشل الرفع:', data);
-                return null;
+                showToast('❌ فشل الرفع: ' + (result.message || 'خطأ'), 'error');
             }
-        } catch(error) {
-            console.error('❌ خطأ:', error);
-            return null;
+        } catch(e) {
+            showToast('❌ خطأ: ' + e.message, 'error');
         }
     },
 
-    async downloadFromGist(filename) {
-        if (!this.config.gistId) {
-            showToast('⚠️ لا يوجد Gist محفوظ', 'warning');
-            return null;
-        }
+    async pullFromGist() {
+        if (!this.gistId) return showToast('⚠️ لا يوجد Gist ID', 'warning');
         try {
-            const rawUrl = `https://gist.githubusercontent.com/raw/${this.config.gistId}/${filename}`;
-            const response = await fetch(rawUrl);
-            if (!response.ok) return null;
-            return await response.text();
-        } catch(error) {
-            console.error('❌ فشل التحميل:', error);
-            return null;
-        }
-    },
-
-    async getGistFiles() {
-        if (!this.config.gistId || !this.config.token) return {};
-        try {
-            const response = await fetch(`https://api.github.com/gists/${this.config.gistId}`, {
-                headers: { 'Authorization': `token ${this.config.token}` }
-            });
-            const data = await response.json();
-            const files = {};
+            const resp = await fetch(`https://api.github.com/gists/${this.gistId}`);
+            const data = await resp.json();
             if (data.files) {
-                for (const [key, value] of Object.entries(data.files)) {
-                    files[key] = value.content;
+                let count = 0;
+                for (const [path, file] of Object.entries(data.files)) {
+                    this.files[path] = file.content || '';
+                    count++;
                 }
+                this.save();
+                showToast(`✅ تم جلب ${count} ملف`, 'success');
+                this.updateUI();
+            } else {
+                showToast('❌ فشل الجلب', 'error');
             }
-            return files;
-        } catch(error) {
-            console.error('❌ فشل جلب الملفات:', error);
-            return {};
+        } catch(e) {
+            showToast('❌ خطأ: ' + e.message, 'error');
         }
     },
 
-    async syncTileToGist(tileId, fileName) {
+    async listGist() {
+        if (!this.gistId) return showToast('⚠️ لا يوجد Gist ID', 'warning');
+        try {
+            const resp = await fetch(`https://api.github.com/gists/${this.gistId}`);
+            const data = await resp.json();
+            if (data.files) {
+                const names = Object.keys(data.files);
+                document.getElementById('gitResult').innerHTML = 
+                    `📋 ${names.length} ملفات:<br>${names.map(n => `📄 ${n}`).join('<br>')}`;
+            }
+        } catch(e) {
+            showToast('❌ خطأ: ' + e.message, 'error');
+        }
+    },
+
+    async testConnection() {
+        if (!this.gistToken) return showToast('⚠️ أدخل GitHub Token', 'warning');
+        try {
+            const resp = await fetch('https://api.github.com/user', {
+                headers: { 'Authorization': `token ${this.gistToken}` }
+            });
+            const data = await resp.json();
+            if (resp.ok) {
+                showToast(`✅ متصل: ${data.login}`, 'success');
+            } else {
+                showToast('❌ فشل: ' + data.message, 'error');
+            }
+        } catch(e) {
+            showToast('❌ خطأ: ' + e.message, 'error');
+        }
+    },
+
+    // ====== مزامنة مع المربعات ======
+    syncTileToGit(tileId, fileName) {
         const sm = ServerManager;
         const tile = sm.tiles[tileId];
         if (!tile || !tile.files || !tile.files[fileName]) {
@@ -1020,351 +1177,91 @@ const GistCDN = {
             return;
         }
         const content = tile.files[fileName];
-        const gistFileName = `tile_${tileId}_${fileName}`;
-        const gistUrl = await this.uploadToGist(content, gistFileName);
-        if (gistUrl) {
-            if (!tile.gistLinks) tile.gistLinks = {};
-            tile.gistLinks[fileName] = gistUrl;
-            sm.gistTiles.add(tileId);
-            sm.saveTiles();
-            sm.renderGrid();
-            sm.updateStats();
-            showToast(`✅ تم رفع ${fileName} إلى Gist`, 'success');
-            const token = localStorage.getItem('bot_token');
-            const chatId = localStorage.getItem('chat_id');
-            if (token && chatId) {
-                const message = `📦 **${fileName}**\n🔗 ${gistUrl}\n📍 tile_${tileId}\n\n#Gist #CDN`;
-                await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: chatId,
-                        text: message,
-                        parse_mode: 'Markdown'
-                    })
-                });
-            }
-        }
-        return gistUrl;
+        const gitPath = `tile_${tileId}_${fileName}`;
+        this.addFile(gitPath, content);
+        sm.gitTiles.add(tileId);
+        if (!tile.gitLinks) tile.gitLinks = {};
+        tile.gitLinks[fileName] = gitPath;
+        sm.saveTiles();
+        sm.renderGrid();
+        sm.updateStats();
+        showToast(`✅ تم رفع ${fileName} إلى Git`, 'success');
     },
 
-    async importFromGist(gistUrl, tileId, fileName) {
-        try {
-            const content = await this.downloadFromGist(fileName);
-            if (!content) {
-                showToast('❌ فشل تحميل الملف من Gist', 'error');
-                return;
-            }
-            const sm = ServerManager;
-            if (!sm.tiles[tileId]) {
-                const [r, c] = tileId.split('_');
-                sm.tiles[tileId] = {
-                    id: tileId,
-                    row: parseInt(r),
-                    col: parseInt(c),
-                    files: {},
-                    gistLinks: {},
-                    created: Date.now()
-                };
-            }
-            sm.tiles[tileId].files[fileName] = content;
-            sm.tiles[tileId].gistLinks[fileName] = gistUrl;
-            sm.syncedTiles.add(tileId);
-            sm.gistTiles.add(tileId);
-            sm.saveTiles();
-            sm.renderGrid();
-            sm.updateStats();
-            showToast(`✅ تم استيراد ${fileName} من Gist`, 'success');
-        } catch(error) {
-            showToast('❌ فشل الاستيراد: ' + error.message, 'error');
-        }
-    },
-
-    async testConnection() {
-        if (!this.config.token) {
-            showToast('⚠️ أدخل GitHub Token', 'warning');
-            return;
-        }
-        try {
-            const response = await fetch('https://api.github.com/user', {
-                headers: { 'Authorization': `token ${this.config.token}` }
-            });
-            const data = await response.json();
-            if (response.ok) {
-                showToast(`✅ متصل بـ GitHub: ${data.login}`, 'success');
-            } else {
-                showToast('❌ فشل الاتصال: ' + data.message, 'error');
-            }
-        } catch(error) {
-            showToast('❌ خطأ في الاتصال', 'error');
-        }
-    }
-};
-
-// ============================================================
-// 🔗 TileLinkSystem
-// ============================================================
-const TileLinkSystem = {
-    generateTileLink(tileId) {
-        const baseUrl = window.location.origin + window.location.pathname;
-        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-        return `${cleanBase}/tile/${tileId}`;
-    },
-
-    generateFileLink(tileId, fileName) {
-        const baseUrl = window.location.origin + window.location.pathname;
-        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-        return `${cleanBase}/tile/${tileId}/${encodeURIComponent(fileName)}`;
-    },
-
-    copyTileLink(tileId) {
-        const link = this.generateTileLink(tileId);
-        navigator.clipboard.writeText(link).then(() => {
-            showToast(`✅ تم نسخ رابط المربع (${tileId})`, 'success');
-        }).catch(() => {
-            const input = document.createElement('input');
-            input.value = link;
-            document.body.appendChild(input);
-            input.select();
-            document.execCommand('copy');
-            document.body.removeChild(input);
-            showToast(`✅ تم نسخ رابط المربع (${tileId})`, 'success');
-        });
-        return link;
-    },
-
-    copyFileLink(tileId, fileName) {
-        const link = this.generateFileLink(tileId, fileName);
-        navigator.clipboard.writeText(link).then(() => {
-            showToast(`✅ تم نسخ رابط ${fileName}`, 'success');
-        }).catch(() => {
-            const input = document.createElement('input');
-            input.value = link;
-            document.body.appendChild(input);
-            input.select();
-            document.execCommand('copy');
-            document.body.removeChild(input);
-            showToast(`✅ تم نسخ رابط ${fileName}`, 'success');
-        });
-        return link;
-    },
-
-    renderTileLinks(tileId) {
-        const tile = ServerManager.tiles[tileId];
-        if (!tile) return;
-        const container = document.getElementById('tileLinksContainer');
-        if (!container) return;
-        const tileLink = this.generateTileLink(tileId);
-        let html = `
-            <div style="margin-top:8px;padding:8px;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);border-radius:6px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-                    <span style="color:#ffd700;font-size:10px;font-weight:600;">🔗 روابط المربع (${tileId})</span>
-                    <button onclick="TileLinkSystem.copyTileLink('${tileId}')" style="padding:2px 8px;background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2);border-radius:4px;cursor:pointer;font-size:9px;font-family:inherit;">📋 نسخ</button>
-                </div>
-                <div style="font-size:9px;color:#888;word-break:break-all;direction:ltr;text-align:left;">
-                    ${tileLink}
-                </div>
-            </div>
-        `;
-        if (tile.files && Object.keys(tile.files).length > 0) {
-            html += `<div style="margin-top:4px;padding:6px;background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.1);border-radius:4px;">
-                <div style="color:#4ade80;font-size:9px;font-weight:600;margin-bottom:4px;">📄 روابط الملفات:</div>`;
-            for (const [fileName, content] of Object.entries(tile.files)) {
-                const fileLink = this.generateFileLink(tileId, fileName);
-                const isMeta = content && content.trim().startsWith('[METADATA]');
-                html += `
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.03);">
-                        <span style="font-size:9px;color:#ccc;">${fileName}${isMeta ? ' ⚠️' : ''}</span>
-                        <button onclick="TileLinkSystem.copyFileLink('${tileId}','${fileName}')" style="padding:1px 6px;background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);border-radius:3px;cursor:pointer;font-size:8px;font-family:inherit;">📋</button>
-                    </div>
-                `;
-            }
-            html += `</div>`;
-        }
-        container.innerHTML = html;
-    },
-
-    showTileInfo(tileId) {
+    fetchTileFromGit(tileId, fileName) {
         const sm = ServerManager;
-        const tile = sm.tiles[tileId];
-        if (!tile) {
-            showToast('❌ المربع غير موجود', 'error');
+        const gitPath = `tile_${tileId}_${fileName}`;
+        const content = this.files[gitPath];
+        if (!content) {
+            showToast('❌ الملف غير موجود في Git', 'error');
             return;
         }
-        const fileCount = tile.files ? Object.keys(tile.files).length : 0;
-        const tileLink = this.generateTileLink(tileId);
-        let message = `📦 **معلومات المربع (${tileId})**\n\n`;
-        message += `📍 **الموقع:** (${tile.row}, ${tile.col})\n`;
-        message += `📄 **الملفات:** ${fileCount}\n`;
-        message += `🔄 **مزامنة:** ${sm.syncedTiles.has(tileId) ? '✅' : '❌'}\n`;
-        message += `🛡️ **حماية:** ${sm.protectedTiles.has(tileId) ? '✅' : '❌'}\n\n`;
-        message += `🔗 **الرابط:**\n${tileLink}\n\n`;
-        if (fileCount > 0) {
-            message += `📄 **الملفات:**\n`;
-            for (const fileName of Object.keys(tile.files)) {
-                const fileLink = this.generateFileLink(tileId, fileName);
-                message += `• ${fileName}\n  ${fileLink}\n`;
-            }
+        if (!sm.tiles[tileId]) {
+            const [r, c] = tileId.split('_');
+            sm.tiles[tileId] = {
+                id: tileId,
+                row: parseInt(r),
+                col: parseInt(c),
+                files: {},
+                gitLinks: {},
+                created: Date.now()
+            };
         }
-        const overlay = document.createElement('div');
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 999999;
-            padding: 20px;
-            backdrop-filter: blur(5px);
-        `;
-        overlay.innerHTML = `
-            <div style="background:#1a1a2e;border:1px solid #ffd700;border-radius:12px;padding:20px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;color:#fff;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                    <h3 style="color:#ffd700;margin:0;">📦 معلومات المربع (${tileId})</h3>
-                    <button onclick="this.closest('div').parentElement.remove()" style="background:#f87171;border:none;color:#fff;padding:4px 12px;border-radius:4px;cursor:pointer;font-family:inherit;">✖</button>
-                </div>
-                <div style="font-size:12px;line-height:1.8;white-space:pre-wrap;word-break:break-all;direction:ltr;text-align:left;">
-                    ${message}
-                </div>
-                <button onclick="navigator.clipboard.writeText('${tileLink}')" style="margin-top:12px;padding:6px 16px;background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2);border-radius:4px;cursor:pointer;font-family:inherit;width:100%;font-size:12px;">
-                    📋 نسخ الرابط
-                </button>
-            </div>
-        `;
-        document.body.appendChild(overlay);
+        sm.tiles[tileId].files[fileName] = content;
+        if (!sm.tiles[tileId].gitLinks) sm.tiles[tileId].gitLinks = {};
+        sm.tiles[tileId].gitLinks[fileName] = gitPath;
+        sm.gitTiles.add(tileId);
+        sm.saveTiles();
+        sm.renderGrid();
+        sm.updateStats();
+        showToast(`✅ تم جلب ${fileName} من Git`, 'success');
     }
 };
 
 // ============================================================
-// 📥 FileFetcher
+// دوال Git
 // ============================================================
-const FileFetcher = {
-    extractFileId(content) {
-        const match = content.match(/file_id:\s*(.+)/);
-        return match ? match[1].trim() : null;
-    },
+function toggleGitPanel() {
+    const panel = document.getElementById('gitPanel');
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) GitManager.updateUI();
+}
 
-    async fetchRealContent(fileId, tileId, fileName) {
-        const token = localStorage.getItem('bot_token');
-        if (!token) {
-            showToast('⚠️ Bot Token غير موجود!', 'warning');
-            return null;
-        }
-        try {
-            const fileRes = await fetch(`https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`);
-            const fileData = await fileRes.json();
-            if (!fileData.ok) {
-                showToast('❌ فشل الحصول على الملف: ' + fileData.description, 'error');
-                return null;
-            }
-            const fileUrl = `https://api.telegram.org/file/bot${token}/${fileData.result.file_path}`;
-            const contentRes = await fetch(fileUrl);
-            const content = await contentRes.text();
-            const sm = ServerManager;
-            if (!sm.tiles[tileId]) {
-                const [r, c] = tileId.split('_');
-                sm.tiles[tileId] = {
-                    id: tileId,
-                    row: parseInt(r),
-                    col: parseInt(c),
-                    files: {},
-                    gistLinks: {},
-                    created: Date.now()
-                };
-            }
-            sm.tiles[tileId].files[fileName] = content;
-            sm.syncedTiles.add(tileId);
-            sm.saveTiles();
-            sm.renderGrid();
-            sm.updateStats();
-            showToast(`✅ تم جلب المحتوى الفعلي لـ ${fileName}`, 'success');
-            return content;
-        } catch(error) {
-            showToast('❌ فشل جلب المحتوى: ' + error.message, 'error');
-            return null;
-        }
-    },
+function gitSaveConfig() {
+    const token = document.getElementById('gitToken').value.trim();
+    const gistId = document.getElementById('gitGistId').value.trim();
+    if (!token) return showToast('⚠️ أدخل GitHub Token', 'warning');
+    GitManager.saveConfig(token, gistId);
+}
 
-    async fetchCurrentTileContent() {
-        const tileId = ServerManager.currentTile;
-        if (!tileId) {
-            showToast('⚠️ اختر مربعاً أولاً', 'warning');
-            return;
-        }
-        const tile = ServerManager.tiles[tileId];
-        if (!tile || !tile.files) {
-            showToast('❌ لا توجد ملفات في هذا المربع', 'error');
-            return;
-        }
-        let fetched = 0;
-        for (const [fileName, content] of Object.entries(tile.files)) {
-            if (content.trim().startsWith('[METADATA]')) {
-                const fileId = this.extractFileId(content);
-                if (fileId) {
-                    const result = await this.fetchRealContent(fileId, tileId, fileName);
-                    if (result) fetched++;
-                }
-            }
-        }
-        if (fetched > 0) {
-            showToast(`✅ تم جلب ${fetched} ملفات`, 'success');
-        } else {
-            showToast('📭 لا توجد ملفات Metadata في هذا المربع', 'info');
-        }
-    },
+function gitTestConnection() { GitManager.testConnection(); }
+function gitPushAll() { GitManager.pushToGist(); }
+function gitPullAll() { GitManager.pullFromGist(); }
+function gitListFiles() { GitManager.listGist(); }
 
-    async getFileLink(fileId) {
-        const token = localStorage.getItem('bot_token');
-        if (!token) {
-            showToast('⚠️ Bot Token غير موجود!', 'warning');
-            return null;
-        }
-        try {
-            const fileRes = await fetch(`https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`);
-            const fileData = await fileRes.json();
-            if (!fileData.ok) {
-                showToast('❌ فشل الحصول على الرابط: ' + fileData.description, 'error');
-                return null;
-            }
-            const fileUrl = `https://api.telegram.org/file/bot${token}/${fileData.result.file_path}`;
-            navigator.clipboard.writeText(fileUrl).then(() => {
-                showToast('✅ تم نسخ الرابط!', 'success');
-            });
-            return fileUrl;
-        } catch(error) {
-            showToast('❌ فشل جلب الرابط: ' + error.message, 'error');
-            return null;
-        }
-    },
-
-    async copyCurrentFileLink() {
-        const tileId = ServerManager.currentTile;
-        if (!tileId) {
-            showToast('⚠️ اختر مربعاً أولاً', 'warning');
-            return;
-        }
-        const tile = ServerManager.tiles[tileId];
-        if (!tile || !tile.files) {
-            showToast('❌ لا توجد ملفات', 'error');
-            return;
-        }
-        for (const [fileName, content] of Object.entries(tile.files)) {
-            if (content.trim().startsWith('[METADATA]')) {
-                const fileId = this.extractFileId(content);
-                if (fileId) {
-                    const link = await this.getFileLink(fileId);
-                    if (link) {
-                        showToast(`🔗 ${link}`, 'success');
-                        return;
-                    }
-                }
-            }
-        }
-        showToast('❌ لا يوجد ملف Metadata مع file_id', 'error');
+function syncTileToGit() {
+    const tileId = ServerManager.currentTile;
+    if (!tileId) return showToast('⚠️ اختر مربعاً أولاً', 'warning');
+    const tile = ServerManager.tiles[tileId];
+    if (!tile || !tile.files || Object.keys(tile.files).length === 0) {
+        return showToast('❌ لا توجد ملفات', 'error');
     }
-};
+    for (const fileName of Object.keys(tile.files)) {
+        GitManager.syncTileToGit(tileId, fileName);
+    }
+    showToast(`✅ تم رفع المربع ${tileId} إلى Git`, 'success');
+}
+
+function fetchTileFromGit() {
+    const tileId = ServerManager.currentTile;
+    if (!tileId) return showToast('⚠️ اختر مربعاً أولاً', 'warning');
+    const tile = ServerManager.tiles[tileId];
+    if (!tile || !tile.files) return showToast('❌ لا توجد ملفات', 'error');
+    for (const fileName of Object.keys(tile.files)) {
+        GitManager.fetchTileFromGit(tileId, fileName);
+    }
+    showToast(`✅ تم جلب المربع ${tileId} من Git`, 'success');
+}
 
 // ============================================================
 // 🔄 AutoReceiver
@@ -1376,16 +1273,16 @@ const AutoReceiver = {
     seenIds: new Set(),
 
     init() {
-        const saved = localStorage.getItem('receiver_last_id');
+        const saved = localStorage.getItem('cdn_receiver_last_id');
         if (saved) this.lastUpdateId = parseInt(saved) || 0;
-        const ids = localStorage.getItem('receiver_seen_ids');
+        const ids = localStorage.getItem('cdn_receiver_seen_ids');
         if (ids) this.seenIds = new Set(JSON.parse(ids));
     },
 
     start() {
         if (this.isRunning) return;
-        const token = localStorage.getItem('bot_token');
-        const chatId = localStorage.getItem('chat_id');
+        const token = localStorage.getItem('cdn_bot_token');
+        const chatId = localStorage.getItem('cdn_chat_id');
         if (!token || !chatId) {
             showToast('⚠️ إعدادات القناة مطلوبة', 'warning');
             return;
@@ -1408,8 +1305,8 @@ const AutoReceiver = {
 
     async doSync() {
         if (!this.isRunning) return;
-        const token = localStorage.getItem('bot_token');
-        const chatId = localStorage.getItem('chat_id');
+        const token = localStorage.getItem('cdn_bot_token');
+        const chatId = localStorage.getItem('cdn_chat_id');
         if (!token || !chatId) return;
         try {
             const url = 'https://api.telegram.org/bot' + token + '/getUpdates?limit=100' +
@@ -1440,7 +1337,7 @@ const AutoReceiver = {
                     } catch(e) {}
                 }
                 if (!ServerManager.tiles[id]) {
-                    ServerManager.tiles[id] = { id, row: r, col: c, files: {}, gistLinks: {}, created: Date.now() };
+                    ServerManager.tiles[id] = { id, row: r, col: c, files: {}, gitLinks: {}, created: Date.now() };
                 }
                 if (content !== null) {
                     ServerManager.tiles[id].files[actual] = content;
@@ -1450,8 +1347,8 @@ const AutoReceiver = {
                 ServerManager.syncedTiles.add(id);
                 newFiles++;
             }
-            localStorage.setItem('receiver_last_id', this.lastUpdateId);
-            localStorage.setItem('receiver_seen_ids', JSON.stringify(Array.from(this.seenIds)));
+            localStorage.setItem('cdn_receiver_last_id', this.lastUpdateId);
+            localStorage.setItem('cdn_receiver_seen_ids', JSON.stringify(Array.from(this.seenIds)));
             if (newFiles > 0) {
                 ServerManager.saveTiles();
                 ServerManager.renderGrid();
@@ -1497,14 +1394,14 @@ const AutoReceiver = {
         this.stop();
         this.lastUpdateId = 0;
         this.seenIds.clear();
-        localStorage.removeItem('receiver_last_id');
-        localStorage.removeItem('receiver_seen_ids');
+        localStorage.removeItem('cdn_receiver_last_id');
+        localStorage.removeItem('cdn_receiver_seen_ids');
         this.updateUI();
     }
 };
 
 // ============================================================
-// دوال الواجهة
+// دوال الواجهة العامة
 // ============================================================
 function closePanel() { ServerManager.closePanel(); }
 function closeEditor() { ServerManager.closeEditor(); }
@@ -1520,114 +1417,19 @@ function resetAll() { ServerManager.resetAll(); }
 function toggleTelegramSettings() { document.getElementById('telegramSettings').classList.toggle('open'); }
 function saveTelegramSettings() { ServerManager.saveTelegramSettings(); }
 function testTelegramConnection() { ServerManager.testTelegramConnection(); }
-function toggleGistPanel() {
-    const panel = document.getElementById('gistPanel');
-    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-    if (panel.style.display === 'block') {
-        document.getElementById('gistToken').value = GistCDN.config.token;
-    }
-}
-function saveGistConfig() {
-    const token = document.getElementById('gistToken').value.trim();
-    if (!token) {
-        showToast('⚠️ أدخل GitHub Token', 'warning');
-        return;
-    }
-    GistCDN.saveConfig(token);
-}
-function syncCurrentTileToGist() {
-    const tileId = ServerManager.currentTile;
-    if (!tileId) {
-        showToast('⚠️ اختر مربعاً أولاً', 'warning');
-        return;
-    }
-    const tile = ServerManager.tiles[tileId];
-    if (!tile || !tile.files || Object.keys(tile.files).length === 0) {
-        showToast('❌ لا توجد ملفات في هذا المربع', 'error');
-        return;
-    }
-    let synced = 0;
-    for (const fileName of Object.keys(tile.files)) {
-        GistCDN.syncTileToGist(tileId, fileName);
-        synced++;
-    }
-    showToast(`✅ تم رفع ${synced} ملف إلى Gist`, 'success');
-}
-function syncAllToGist() {
-    const sm = ServerManager;
-    let total = 0;
-    for (const [tileId, tile] of Object.entries(sm.tiles)) {
-        if (!tile.files || Object.keys(tile.files).length === 0) continue;
-        for (const fileName of Object.keys(tile.files)) {
-            GistCDN.syncTileToGist(tileId, fileName);
-            total++;
-        }
-    }
-    showToast(`✅ تم رفع ${total} ملف إلى Gist`, 'success');
-}
-function promptImportFromGist() {
-    const gistUrl = prompt('📥 أدخل رابط Gist (أو اسم الملف):');
-    if (!gistUrl) return;
-    const tileId = prompt('📍 أدخل ID المربع (مثال: 5_3):');
-    if (!tileId) return;
-    const fileName = prompt('📄 أدخل اسم الملف:');
-    if (!fileName) return;
-    GistCDN.importFromGist(gistUrl, tileId, fileName);
-}
-async function listGistFiles() {
-    const resultEl = document.getElementById('gistResult');
-    if (!resultEl) return;
-    resultEl.innerHTML = '<span style="color:#60a5fa;">🔄 جاري...</span>';
-    const files = await GistCDN.getGistFiles();
-    const fileNames = Object.keys(files);
-    if (fileNames.length === 0) {
-        resultEl.innerHTML = '<span style="color:#888;">📭 لا توجد ملفات في Gist</span>';
-        return;
-    }
-    let html = `<span style="color:#4ade80;">📋 ${fileNames.length} ملفات:</span><br>`;
-    for (const name of fileNames) {
-        const size = files[name]?.length || 0;
-        const sizeStr = size < 1024 ? size + 'B' : (size / 1024).toFixed(1) + 'KB';
-        html += `<span style="color:#ccc;font-size:9px;">📄 ${name} (${sizeStr})</span><br>`;
-    }
-    resultEl.innerHTML = html;
-}
-function fetchCurrentTileContent() { FileFetcher.fetchCurrentTileContent(); }
-function fetchAllContent() {
-    const sm = ServerManager;
-    let total = 0;
-    for (const [tileId, tile] of Object.entries(sm.tiles)) {
-        if (!tile.files) continue;
-        for (const [fileName, content] of Object.entries(tile.files)) {
-            if (content.trim().startsWith('[METADATA]')) {
-                const fileId = FileFetcher.extractFileId(content);
-                if (fileId) {
-                    FileFetcher.fetchRealContent(fileId, tileId, fileName);
-                    total++;
-                }
-            }
-        }
-    }
-    if (total > 0) showToast(`✅ جاري جلب ${total} ملف...`, 'info');
-}
-function showTileLinks() {
-    const tileId = ServerManager.currentTile;
-    if (tileId) TileLinkSystem.showTileInfo(tileId);
-}
+function toggleAutoSync() { AutoReceiver.toggle(); }
+function forceSyncNow() { AutoReceiver.doSync(); }
+
 function uploadTestFile() {
     const sm = ServerManager;
     const id = '5_3';
     const html = `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"><title>تجربة</title></head>
-<body>
-<h1 style="color:#4ade80;">✅ مرحباً!</h1>
-<p>ملف تجريبي من TileCDN</p>
-<button onclick="alert('🚀 يعمل!')">اضغط</button>
-</body>
+<body><h1 style="color:#4ade80;">✅ مرحباً!</h1><p>ملف تجريبي من CDN</p></body>
 </html>`;
     if (!sm.tiles[id]) {
-        sm.tiles[id] = { id, row: 5, col: 3, files: {}, gistLinks: {}, created: Date.now() };
+        sm.tiles[id] = { id, row: 5, col: 3, files: {}, gitLinks: {}, created: Date.now() };
     }
     sm.tiles[id].files['test.html'] = html;
     sm.saveTiles();
@@ -1635,29 +1437,22 @@ function uploadTestFile() {
     sm.updateStats();
     showToast('✅ تم رفع test.html إلى (5,3)', 'success');
 }
-function toggleAutoSync() { AutoReceiver.toggle(); }
-function forceSyncNow() { AutoReceiver.doSync(); }
 
 // ============================================================
 // 🚀 التهيئة
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     AutoReceiver.init();
-    GistCDN.init();
-    console.log('🌐 النظام المتكامل النهائي جاهز!');
+    GitManager.init();
+    console.log('🚀 CDN المتكامل جاهز!');
     console.log('📖 admin / admin123');
-    console.log('📦 GistCDN: استخدم زر 📦 Gist للإعداد');
-    console.log('🔗 لكل مربع رابط خاص: /tile/5_3');
+    console.log('📦 Git + مربعات + قناة');
 });
 
 window.ServerManager = ServerManager;
 window.AutoReceiver = AutoReceiver;
-window.GistCDN = GistCDN;
-window.FileFetcher = FileFetcher;
-window.TileLinkSystem = TileLinkSystem;
+window.GitManager = GitManager;
 window.showToast = showToast;
 </script>
 </body>
 </html>
-
-            
