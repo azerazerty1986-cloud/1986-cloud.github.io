@@ -830,7 +830,15 @@ function testTelegramConnection() { ServerManager.testTelegramConnection(); }
 const AutoReceiver = {
     interval: null,
     isRunning: false,
+    lastUpdateId: 0,
     seenIds: new Set(),
+
+    init() {
+        const saved = localStorage.getItem('receiver_last_id');
+        if (saved) this.lastUpdateId = parseInt(saved) || 0;
+        const ids = localStorage.getItem('receiver_seen_ids');
+        if (ids) this.seenIds = new Set(JSON.parse(ids));
+    },
 
     start() {
         if (this.isRunning) return;
@@ -862,11 +870,14 @@ const AutoReceiver = {
         const chatId = localStorage.getItem('chat_id');
         if (!token || !chatId) return;
         try {
-            const resp = await fetch('https://api.telegram.org/bot' + token + '/getUpdates?limit=100');
+            const url = 'https://api.telegram.org/bot' + token + '/getUpdates?limit=100' +
+                        (this.lastUpdateId > 0 ? '&offset=' + (this.lastUpdateId + 1) : '');
+            const resp = await fetch(url);
             const data = await resp.json();
             if (!data.ok) { this.setError(true); return; }
             let newFiles = 0;
             for (const update of data.result) {
+                if (update.update_id > this.lastUpdateId) this.lastUpdateId = update.update_id;
                 const msg = update.channel_post || update.message;
                 if (!msg || !msg.document) continue;
                 const fileId = msg.document.file_id;
@@ -898,6 +909,8 @@ const AutoReceiver = {
                 ServerManager.syncedTiles.add(id);
                 newFiles++;
             }
+            localStorage.setItem('receiver_last_id', this.lastUpdateId);
+            localStorage.setItem('receiver_seen_ids', JSON.stringify(Array.from(this.seenIds)));
             if (newFiles > 0) {
                 ServerManager.saveTiles();
                 ServerManager.renderGrid();
@@ -1198,3 +1211,4 @@ window.showToast = showToast;
 </script>
 </body>
 </html>
+            
