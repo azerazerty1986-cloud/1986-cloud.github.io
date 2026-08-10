@@ -3,14 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🌐 TileCDN - النظام المتكامل</title>
+<title>🌐 TileCDN + Gist</title>
 <style>
-/* ====== الأنماط الأساسية ====== */
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:100vh;padding:15px;direction:rtl}
 .container{max-width:1400px;margin:0 auto}
 
-/* ====== الهيدر ====== */
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:10px;background:rgba(255,255,255,0.03);padding:12px 20px;border-radius:12px;border:1px solid rgba(255,255,255,0.06)}
 .header h1{font-size:20px;background:linear-gradient(135deg,#a78bfa,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .header .admin-name{color:#ffd700;font-size:12px}
@@ -26,7 +24,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .header-controls .btn-gold{border-color:rgba(255,215,0,0.3);color:#ffd700}
 .header-controls .btn-gold:hover{background:rgba(255,215,0,0.2)}
 
-/* ====== المصادقة ====== */
 #auth-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.95);display:flex;justify-content:center;align-items:center;flex-direction:column;backdrop-filter:blur(20px)}
 #auth-overlay .auth-box{background:rgba(10,10,30,0.97);border:2px solid rgba(255,215,0,0.3);border-radius:20px;padding:32px;width:90%;max-width:380px}
 #auth-overlay .auth-box h2{color:#ffd700;text-align:center;font-size:22px;margin-bottom:20px}
@@ -40,7 +37,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 #auth-overlay .auth-box .auth-error{color:#ef4444;font-size:11px;text-align:center;margin-top:8px;display:none}
 #auth-overlay .auth-box .auth-info{color:#666;font-size:11px;text-align:center;margin-top:12px;padding:8px;background:rgba(255,215,0,0.05);border-radius:8px;border:1px solid rgba(255,215,0,0.08)}
 
-/* ====== شريط المزامنة ====== */
 .auto-sync-bar{background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.15);border-radius:12px;padding:12px 18px;margin-bottom:12px;display:flex;flex-wrap:wrap;align-items:center;gap:12px}
 .sync-dot{width:10px;height:10px;border-radius:50%;background:#666;display:inline-block}
 .sync-dot.active{background:#4ade80;box-shadow:0 0 10px rgba(74,222,128,0.5);animation:blink 1.5s infinite}
@@ -57,7 +53,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .auto-sync-bar .btn-gist{background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);color:#ffd700}
 .auto-sync-bar .btn-gist:hover{background:rgba(255,215,0,0.2)}
 
-/* ====== الإحصائيات ====== */
 .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:12px}
 .stat-box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:8px;text-align:center}
 .stat-box .num{font-size:18px;font-weight:800;display:block}
@@ -68,7 +63,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .stat-box .num.orange{color:#fb923c}
 .stat-box .label{font-size:8px;color:#888}
 
-/* ====== الشبكة ====== */
 .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:2px;margin-bottom:12px}
 .tile{aspect-ratio:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:3px;cursor:pointer;transition:all .3s;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:7px;padding:1px;position:relative;min-height:30px}
 .tile:hover{background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.4);transform:scale(1.05);z-index:10}
@@ -83,7 +77,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .tile .sync-badge{position:absolute;bottom:-2px;right:-2px;background:rgba(74,222,128,0.8);color:#fff;font-size:4px;padding:1px 3px;border-radius:3px}
 .tile .gist-badge{position:absolute;top:-2px;left:-2px;background:#ffd700;color:#111;font-size:4px;padding:1px 4px;border-radius:3px;font-weight:800}
 
-/* ====== لوحة المربع ====== */
 .tile-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(10,10,30,0.97);border:1px solid rgba(139,92,246,0.3);border-radius:12px;padding:16px;width:92%;max-width:520px;max-height:80vh;overflow-y:auto;z-index:9999;backdrop-filter:blur(20px);display:none;box-shadow:0 20px 60px rgba(0,0,0,0.6)}
 .tile-panel.open{display:block}
 .tile-panel .panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:8px}
@@ -115,10 +108,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .tile-panel .actions .btn-delete{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.2)}
 .tile-panel .actions .btn-sync{background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.2);grid-column:span 2}
 .tile-panel .actions .btn-gist{background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2);grid-column:span 2}
-.tile-panel .actions .btn-fetch{background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);grid-column:span 2}
-.tile-panel .actions .btn-link{background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2);grid-column:span 2}
 
-/* ====== محرر الملفات ====== */
 .file-editor{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(10,10,30,0.97);border:1px solid rgba(251,191,36,0.3);border-radius:12px;padding:16px;width:92%;max-width:600px;max-height:80vh;z-index:99999;display:none;backdrop-filter:blur(20px)}
 .file-editor.open{display:block}
 .file-editor .editor-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
@@ -130,7 +120,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .file-editor .editor-actions .btn-save{background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.2)}
 .file-editor .editor-actions .btn-close{background:rgba(255,255,255,0.06);color:#888;border:none}
 
-/* ====== إعدادات القناة ====== */
 .telegram-settings{background:rgba(255,255,255,0.03);border:1px solid rgba(139,92,246,0.15);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:none}
 .telegram-settings.open{display:block}
 .telegram-settings .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -140,10 +129,8 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .telegram-settings .status.online{background:rgba(74,222,128,0.2);color:#4ade80}
 .telegram-settings .status.offline{background:rgba(239,68,68,0.2);color:#f87171}
 
-/* ====== لوحة Gist ====== */
 #gistPanel{background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);border-radius:12px;padding:12px 16px;margin-bottom:12px;display:none}
 
-/* ====== توست ====== */
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(10,10,30,0.95);color:#fff;padding:6px 16px;border-radius:6px;border:1px solid rgba(139,92,246,0.2);z-index:999999;font-size:11px;display:none;animation:fadeIn .3s ease;max-width:90%;text-align:center}
 .toast.success{border-color:rgba(74,222,128,0.3)}
 .toast.error{border-color:rgba(239,68,68,0.3)}
@@ -158,7 +145,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 </head>
 <body>
 
-<!-- ====== المصادقة ====== -->
+<!-- المصادقة -->
 <div id="auth-overlay">
     <div class="auth-box">
         <h2>👑 دخول المدير</h2>
@@ -170,12 +157,11 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
     </div>
 </div>
 
-<!-- ====== لوحة التحكم ====== -->
+<!-- لوحة التحكم -->
 <div id="admin-container" style="display:none;">
     <div class="container">
-        <!-- الهيدر -->
         <div class="header">
-            <div><h1>🌐 TileCDN المتكامل</h1><span class="admin-name">المدير: <span id="admin-name-display">مدير</span></span></div>
+            <div><h1>🌐 TileCDN + Gist</h1><span class="admin-name">المدير: <span id="admin-name-display">مدير</span></span></div>
             <div class="header-controls">
                 <button class="btn-warning" onclick="toggleTelegramSettings()">📡 القناة</button>
                 <button class="btn-success" onclick="syncAllFromChannel()">🔄 مزامنة</button>
@@ -188,7 +174,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
             </div>
         </div>
 
-        <!-- شريط المزامنة -->
         <div class="auto-sync-bar">
             <div style="display:flex;align-items:center;gap:8px;">
                 <div class="sync-dot" id="syncDot"></div>
@@ -198,10 +183,8 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
             <button class="btn-now" onclick="forceSyncNow()">⚡ فوري</button>
             <button class="btn-now" onclick="uploadTestFile()">📤 اختبار</button>
             <button class="btn-gist" onclick="syncAllToGist()">📦 رفع الكل إلى Gist</button>
-            <button class="btn-now" onclick="fetchAllContent()">📥 جلب كل المحتوى</button>
         </div>
 
-        <!-- إعدادات القناة -->
         <div class="telegram-settings" id="telegramSettings">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                 <span style="color:#a78bfa;font-size:12px;font-weight:600;">📡 إعدادات القناة</span>
@@ -237,7 +220,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
             <div id="gistResult" style="margin-top:8px;font-size:10px;color:#888;"></div>
         </div>
 
-        <!-- الإحصائيات -->
         <div class="stats" id="stats">
             <div class="stat-box"><span class="num purple" id="totalTiles">0</span><span class="label">📦 إجمالي</span></div>
             <div class="stat-box"><span class="num green" id="onlineTiles">0</span><span class="label">🟢 نشطة</span></div>
@@ -247,12 +229,11 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
             <div class="stat-box"><span class="num orange" id="gistCount">0</span><span class="label">📦 Gist</span></div>
         </div>
 
-        <!-- الشبكة -->
         <div class="grid" id="grid"></div>
     </div>
 </div>
 
-<!-- ====== لوحة المربع ====== -->
+<!-- لوحة المربع -->
 <div class="tile-panel" id="tilePanel">
     <div class="panel-header"><h3 id="panelTitle">📦 المربع</h3><button onclick="closePanel()">✖</button></div>
     <div class="info-grid">
@@ -264,7 +245,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
         <div class="info-item"><span>📦 Gist</span><span class="value" id="panelGist">❌</span></div>
     </div>
     <div class="file-list" id="panelFiles"></div>
-    <div id="tileLinksContainer"></div>
     <div class="actions">
         <button class="btn-upload" onclick="uploadFile()">📤 رفع</button>
         <button class="btn-start" onclick="toggleServer()" id="panelStartBtn">▶️ تشغيل</button>
@@ -272,24 +252,19 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
         <button class="btn-delete" onclick="clearTile()">🗑️ تفريغ</button>
         <button class="btn-sync" onclick="syncTileToChannel()">🔄 مزامنة</button>
         <button class="btn-gist" onclick="syncCurrentTileToGist()">📦 رفع إلى Gist</button>
-        <button class="btn-fetch" onclick="fetchCurrentTileContent()">📥 جلب المحتوى</button>
-        <button class="btn-link" onclick="showTileLinks()">🔗 روابط المربع</button>
     </div>
 </div>
 
-<!-- ====== محرر الملفات ====== -->
+<!-- محرر الملفات -->
 <div class="file-editor" id="fileEditor">
     <div class="editor-header"><h4 id="editorTitle">📝 تحرير</h4><button onclick="closeEditor()">✖</button></div>
     <textarea id="editorContent" spellcheck="false"></textarea>
     <div class="editor-actions"><button class="btn-save" onclick="saveFile()">💾 حفظ</button><button class="btn-close" onclick="closeEditor()">✖ إلغاء</button></div>
 </div>
 
-<!-- ====== توست ====== -->
+<!-- توست -->
 <div class="toast" id="toast"></div>
 
-<!-- ====================================================================== -->
-<!-- جافا سكريبت - الكود الكامل                                             -->
-<!-- ====================================================================== -->
 <script>
 // ============================================================
 // 🔐 المصادقة
@@ -343,8 +318,6 @@ const ServerManager = {
     activeServers: new Set(),
     syncedTiles: new Set(),
     gistTiles: new Set(),
-    currentTile: null,
-    currentFile: null,
 
     init() {
         this.loadTiles();
@@ -462,12 +435,6 @@ const ServerManager = {
         document.getElementById('panelProtectBtn').textContent = isProtected ? '🔓 إزالة' : '🛡️ حماية';
         this.renderFiles(tile);
         document.getElementById('panelFileCount').textContent = tile.files ? Object.keys(tile.files).length : 0;
-        // عرض روابط المربع
-        setTimeout(() => {
-            if (window.TileLinkSystem) {
-                TileLinkSystem.renderTileLinks(id);
-            }
-        }, 50);
     },
 
     renderFiles(tile) {
@@ -477,6 +444,7 @@ const ServerManager = {
             container.innerHTML = '<div style="color:#666;font-size:11px;text-align:center;padding:10px;">📭 لا توجد ملفات</div>';
             return;
         }
+        const isGist = this.gistTiles.has(tile.id);
         for (const [name, content] of Object.entries(tile.files)) {
             const div = document.createElement('div');
             div.className = 'file-item';
@@ -1223,301 +1191,7 @@ const GistCDN = {
 };
 
 // ============================================================
-// 🔗 TileLinkSystem - نظام الروابط لكل مربع
-// ============================================================
-const TileLinkSystem = {
-    generateTileLink(tileId) {
-        const baseUrl = window.location.origin + window.location.pathname;
-        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-        return `${cleanBase}/tile/${tileId}`;
-    },
-
-    generateFileLink(tileId, fileName) {
-        const baseUrl = window.location.origin + window.location.pathname;
-        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-        return `${cleanBase}/tile/${tileId}/${encodeURIComponent(fileName)}`;
-    },
-
-    copyTileLink(tileId) {
-        const link = this.generateTileLink(tileId);
-        navigator.clipboard.writeText(link).then(() => {
-            showToast(`✅ تم نسخ رابط المربع (${tileId})`, 'success');
-        }).catch(() => {
-            const input = document.createElement('input');
-            input.value = link;
-            document.body.appendChild(input);
-            input.select();
-            document.execCommand('copy');
-            document.body.removeChild(input);
-            showToast(`✅ تم نسخ رابط المربع (${tileId})`, 'success');
-        });
-        return link;
-    },
-
-    copyFileLink(tileId, fileName) {
-        const link = this.generateFileLink(tileId, fileName);
-        navigator.clipboard.writeText(link).then(() => {
-            showToast(`✅ تم نسخ رابط ${fileName}`, 'success');
-        }).catch(() => {
-            const input = document.createElement('input');
-            input.value = link;
-            document.body.appendChild(input);
-            input.select();
-            document.execCommand('copy');
-            document.body.removeChild(input);
-            showToast(`✅ تم نسخ رابط ${fileName}`, 'success');
-        });
-        return link;
-    },
-
-    renderTileLinks(tileId) {
-        const tile = ServerManager.tiles[tileId];
-        if (!tile) return;
-
-        const container = document.getElementById('tileLinksContainer');
-        if (!container) return;
-
-        const tileLink = this.generateTileLink(tileId);
-        let html = `
-            <div style="margin-top:8px;padding:8px;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);border-radius:6px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-                    <span style="color:#ffd700;font-size:10px;font-weight:600;">🔗 روابط المربع (${tileId})</span>
-                    <button onclick="TileLinkSystem.copyTileLink('${tileId}')" style="padding:2px 8px;background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2);border-radius:4px;cursor:pointer;font-size:9px;font-family:inherit;">📋 نسخ</button>
-                </div>
-                <div style="font-size:9px;color:#888;word-break:break-all;direction:ltr;text-align:left;">
-                    ${tileLink}
-                </div>
-            </div>
-        `;
-
-        if (tile.files && Object.keys(tile.files).length > 0) {
-            html += `<div style="margin-top:4px;padding:6px;background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.1);border-radius:4px;">
-                <div style="color:#4ade80;font-size:9px;font-weight:600;margin-bottom:4px;">📄 روابط الملفات:</div>`;
-            
-            for (const [fileName, content] of Object.entries(tile.files)) {
-                const fileLink = this.generateFileLink(tileId, fileName);
-                const isMeta = content && content.trim().startsWith('[METADATA]');
-                html += `
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.03);">
-                        <span style="font-size:9px;color:#ccc;">${fileName}${isMeta ? ' ⚠️' : ''}</span>
-                        <button onclick="TileLinkSystem.copyFileLink('${tileId}','${fileName}')" style="padding:1px 6px;background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);border-radius:3px;cursor:pointer;font-size:8px;font-family:inherit;">📋</button>
-                    </div>
-                `;
-            }
-            html += `</div>`;
-        }
-
-        container.innerHTML = html;
-    },
-
-    showTileInfo(tileId) {
-        const sm = ServerManager;
-        const tile = sm.tiles[tileId];
-        if (!tile) {
-            showToast('❌ المربع غير موجود', 'error');
-            return;
-        }
-
-        const fileCount = tile.files ? Object.keys(tile.files).length : 0;
-        const tileLink = this.generateTileLink(tileId);
-        
-        let message = `📦 **معلومات المربع (${tileId})**\n\n`;
-        message += `📍 **الموقع:** (${tile.row}, ${tile.col})\n`;
-        message += `📄 **الملفات:** ${fileCount}\n`;
-        message += `🔄 **مزامنة:** ${sm.syncedTiles.has(tileId) ? '✅' : '❌'}\n`;
-        message += `🛡️ **حماية:** ${sm.protectedTiles.has(tileId) ? '✅' : '❌'}\n\n`;
-        message += `🔗 **الرابط:**\n${tileLink}\n\n`;
-        
-        if (fileCount > 0) {
-            message += `📄 **الملفات:**\n`;
-            for (const fileName of Object.keys(tile.files)) {
-                const fileLink = this.generateFileLink(tileId, fileName);
-                message += `• ${fileName}\n  ${fileLink}\n`;
-            }
-        }
-        
-        const overlay = document.createElement('div');
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 999999;
-            padding: 20px;
-            backdrop-filter: blur(5px);
-        `;
-        
-        overlay.innerHTML = `
-            <div style="background:#1a1a2e;border:1px solid #ffd700;border-radius:12px;padding:20px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;color:#fff;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                    <h3 style="color:#ffd700;margin:0;">📦 معلومات المربع (${tileId})</h3>
-                    <button onclick="this.closest('div').parentElement.remove()" style="background:#f87171;border:none;color:#fff;padding:4px 12px;border-radius:4px;cursor:pointer;font-family:inherit;">✖</button>
-                </div>
-                <div style="font-size:12px;line-height:1.8;white-space:pre-wrap;word-break:break-all;direction:ltr;text-align:left;">
-                    ${message}
-                </div>
-                <button onclick="navigator.clipboard.writeText('${tileLink}')" style="margin-top:12px;padding:6px 16px;background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2);border-radius:4px;cursor:pointer;font-family:inherit;width:100%;font-size:12px;">
-                    📋 نسخ الرابط
-                </button>
-            </div>
-        `;
-        
-        document.body.appendChild(overlay);
-    }
-};
-
-// ============================================================
-// 📥 FileFetcher - جلب المحتوى الفعلي
-// ============================================================
-const FileFetcher = {
-    extractFileId(content) {
-        const match = content.match(/file_id:\s*(.+)/);
-        return match ? match[1].trim() : null;
-    },
-
-    async fetchRealContent(fileId, tileId, fileName) {
-        const token = localStorage.getItem('bot_token');
-        if (!token) {
-            showToast('⚠️ Bot Token غير موجود!', 'warning');
-            return null;
-        }
-
-        try {
-            const fileRes = await fetch(`https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`);
-            const fileData = await fileRes.json();
-            
-            if (!fileData.ok) {
-                showToast('❌ فشل الحصول على الملف: ' + fileData.description, 'error');
-                return null;
-            }
-            
-            const fileUrl = `https://api.telegram.org/file/bot${token}/${fileData.result.file_path}`;
-            const contentRes = await fetch(fileUrl);
-            const content = await contentRes.text();
-            
-            const sm = ServerManager;
-            if (!sm.tiles[tileId]) {
-                const [r, c] = tileId.split('_');
-                sm.tiles[tileId] = {
-                    id: tileId,
-                    row: parseInt(r),
-                    col: parseInt(c),
-                    files: {},
-                    gistLinks: {},
-                    created: Date.now()
-                };
-            }
-            
-            sm.tiles[tileId].files[fileName] = content;
-            sm.syncedTiles.add(tileId);
-            sm.saveTiles();
-            sm.renderGrid();
-            sm.updateStats();
-            
-            showToast(`✅ تم جلب المحتوى الفعلي لـ ${fileName}`, 'success');
-            return content;
-            
-        } catch(error) {
-            showToast('❌ فشل جلب المحتوى: ' + error.message, 'error');
-            return null;
-        }
-    },
-
-    async fetchCurrentTileContent() {
-        const tileId = ServerManager.currentTile;
-        if (!tileId) {
-            showToast('⚠️ اختر مربعاً أولاً', 'warning');
-            return;
-        }
-
-        const tile = ServerManager.tiles[tileId];
-        if (!tile || !tile.files) {
-            showToast('❌ لا توجد ملفات في هذا المربع', 'error');
-            return;
-        }
-
-        let fetched = 0;
-        for (const [fileName, content] of Object.entries(tile.files)) {
-            if (content.trim().startsWith('[METADATA]')) {
-                const fileId = this.extractFileId(content);
-                if (fileId) {
-                    const result = await this.fetchRealContent(fileId, tileId, fileName);
-                    if (result) fetched++;
-                }
-            }
-        }
-
-        if (fetched > 0) {
-            showToast(`✅ تم جلب ${fetched} ملفات`, 'success');
-        } else {
-            showToast('📭 لا توجد ملفات Metadata في هذا المربع', 'info');
-        }
-    },
-
-    async getFileLink(fileId) {
-        const token = localStorage.getItem('bot_token');
-        if (!token) {
-            showToast('⚠️ Bot Token غير موجود!', 'warning');
-            return null;
-        }
-
-        try {
-            const fileRes = await fetch(`https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`);
-            const fileData = await fileRes.json();
-            
-            if (!fileData.ok) {
-                showToast('❌ فشل الحصول على الرابط: ' + fileData.description, 'error');
-                return null;
-            }
-            
-            const fileUrl = `https://api.telegram.org/file/bot${token}/${fileData.result.file_path}`;
-            navigator.clipboard.writeText(fileUrl).then(() => {
-                showToast('✅ تم نسخ الرابط!', 'success');
-            });
-            
-            return fileUrl;
-            
-        } catch(error) {
-            showToast('❌ فشل جلب الرابط: ' + error.message, 'error');
-            return null;
-        }
-    },
-
-    async copyCurrentFileLink() {
-        const tileId = ServerManager.currentTile;
-        if (!tileId) {
-            showToast('⚠️ اختر مربعاً أولاً', 'warning');
-            return;
-        }
-
-        const tile = ServerManager.tiles[tileId];
-        if (!tile || !tile.files) {
-            showToast('❌ لا توجد ملفات', 'error');
-            return;
-        }
-
-        for (const [fileName, content] of Object.entries(tile.files)) {
-            if (content.trim().startsWith('[METADATA]')) {
-                const fileId = this.extractFileId(content);
-                if (fileId) {
-                    const link = await this.getFileLink(fileId);
-                    if (link) {
-                        showToast(`🔗 ${link}`, 'success');
-                        return;
-                    }
-                }
-            }
-        }
-
-        showToast('❌ لا يوجد ملف Metadata مع file_id', 'error');
-    }
-};
-
-// ============================================================
-// 🖥️ دوال الواجهة (Gist, Fetcher, Links)
+// 🖥️ Gist واجهة
 // ============================================================
 function toggleGistPanel() {
     const panel = document.getElementById('gistPanel');
@@ -1597,33 +1271,9 @@ async function listGistFiles() {
     resultEl.innerHTML = html;
 }
 
-function fetchCurrentTileContent() {
-    FileFetcher.fetchCurrentTileContent();
-}
-
-function fetchAllContent() {
-    const sm = ServerManager;
-    let total = 0;
-    for (const [tileId, tile] of Object.entries(sm.tiles)) {
-        if (!tile.files) continue;
-        for (const [fileName, content] of Object.entries(tile.files)) {
-            if (content.trim().startsWith('[METADATA]')) {
-                const fileId = FileFetcher.extractFileId(content);
-                if (fileId) {
-                    FileFetcher.fetchRealContent(fileId, tileId, fileName);
-                    total++;
-                }
-            }
-        }
-    }
-    if (total > 0) showToast(`✅ جاري جلب ${total} ملف...`, 'info');
-}
-
-function showTileLinks() {
-    const tileId = ServerManager.currentTile;
-    if (tileId) TileLinkSystem.showTileInfo(tileId);
-}
-
+// ============================================================
+// 🧪 اختبار
+// ============================================================
 function uploadTestFile() {
     const sm = ServerManager;
     const id = '5_3';
@@ -1632,7 +1282,7 @@ function uploadTestFile() {
 <head><meta charset="UTF-8"><title>تجربة</title></head>
 <body>
 <h1 style="color:#4ade80;">✅ مرحباً!</h1>
-<p>ملف تجريبي من TileCDN</p>
+<p>ملف تجريبي من TileCDN + Gist</p>
 <button onclick="alert('🚀 يعمل!')">اضغط</button>
 </body>
 </html>`;
@@ -1653,20 +1303,18 @@ function uploadTestFile() {
 document.addEventListener('DOMContentLoaded', function() {
     AutoReceiver.init();
     GistCDN.init();
-    console.log('🌐 TileCDN المتكامل جاهز!');
+    console.log('🌐 TileCDN + Gist جاهز!');
     console.log('📖 admin / admin123');
     console.log('📦 GistCDN: استخدم زر 📦 Gist للإعداد');
-    console.log('🔗 لكل مربع رابط خاص: /tile/5_3');
 });
 
 window.ServerManager = ServerManager;
 window.AutoReceiver = AutoReceiver;
 window.GistCDN = GistCDN;
-window.FileFetcher = FileFetcher;
-window.TileLinkSystem = TileLinkSystem;
 window.showToast = showToast;
 </script>
 </body>
 </html>
 
-     
+
+                                                    
