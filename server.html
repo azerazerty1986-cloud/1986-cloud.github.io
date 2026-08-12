@@ -22,6 +22,8 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .header-controls .btn-warning:hover{background:rgba(251,191,36,0.2)}
 .header-controls .btn-gold{border-color:rgba(255,215,0,0.3);color:#ffd700}
 .header-controls .btn-gold:hover{background:rgba(255,215,0,0.2)}
+.header-controls .btn-cyan{border-color:rgba(96,165,250,0.3);color:#60a5fa}
+.header-controls .btn-cyan:hover{background:rgba(96,165,250,0.2)}
 #auth-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.95);display:flex;justify-content:center;align-items:center;flex-direction:column;backdrop-filter:blur(20px)}
 #auth-overlay .auth-box{background:rgba(10,10,30,0.97);border:2px solid rgba(255,215,0,0.3);border-radius:20px;padding:32px;width:90%;max-width:380px}
 #auth-overlay .auth-box h2{color:#ffd700;text-align:center;font-size:22px;margin-bottom:20px}
@@ -106,6 +108,8 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .tile-panel .actions .btn-link{background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2);grid-column:span 2}
 .tile-panel .actions .btn-run{background:rgba(139,92,246,0.15);color:#a78bfa;border:1px solid rgba(139,92,246,0.2);grid-column:span 2}
 .tile-panel .actions .btn-preview{background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);grid-column:span 2}
+.tile-panel .actions .btn-url{background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);grid-column:span 2}
+.tile-panel .actions .btn-private-link{background:rgba(255,215,0,0.2);color:#ffd700;border:1px solid rgba(255,215,0,0.3);grid-column:span 2}
 .file-editor{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(10,10,30,0.97);border:1px solid rgba(251,191,36,0.3);border-radius:12px;padding:16px;width:92%;max-width:600px;max-height:80vh;z-index:99999;display:none;backdrop-filter:blur(20px)}
 .file-editor.open{display:block}
 .file-editor .editor-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
@@ -134,6 +138,48 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#2a2a4a;border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:#3a3a6a}
+.url-fetcher-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;z-index:999999;backdrop-filter:blur(10px);animation:fadeIn .3s ease}
+.url-fetcher-box{background:#1a1a2e;border:2px solid rgba(139,92,246,0.3);border-radius:16px;padding:28px 32px;max-width:550px;width:95%;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+.url-fetcher-box .header-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.url-fetcher-box .header-row h3{color:#a78bfa;margin:0;font-size:18px}
+.url-fetcher-box .header-row .close-btn{background:rgba(239,68,68,0.15);border:none;color:#f87171;padding:4px 14px;border-radius:6px;cursor:pointer;font-size:14px;font-family:inherit}
+.url-fetcher-box .tile-info{color:#888;font-size:13px;margin-bottom:12px}
+.url-fetcher-box .tile-info strong{color:#a78bfa}
+.url-fetcher-box .field{margin-bottom:12px}
+.url-fetcher-box .field label{color:#888;font-size:12px;display:block;margin-bottom:4px}
+.url-fetcher-box .field input{width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(139,92,246,0.2);border-radius:8px;color:#fff;font-size:14px;font-family:inherit}
+.url-fetcher-box .field input:focus{outline:none;border-color:#8b5cf6}
+.url-fetcher-box .field input::placeholder{color:#555}
+.url-fetcher-box .btn-group{display:flex;gap:8px;flex-wrap:wrap}
+.url-fetcher-box .btn-group button{padding:12px 20px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;transition:all .3s ease;border:none}
+.url-fetcher-box .btn-group .btn-primary{flex:1;background:linear-gradient(135deg,#8b5cf6,#a78bfa);color:#fff;min-width:120px}
+.url-fetcher-box .btn-group .btn-primary:hover{transform:scale(1.02)}
+.url-fetcher-box .btn-group .btn-preview{background:rgba(96,165,250,0.15);border:1px solid rgba(96,165,250,0.3);color:#60a5fa}
+.url-fetcher-box .btn-group .btn-preview:hover{background:rgba(96,165,250,0.25)}
+.url-fetcher-box .btn-group .btn-cancel{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.15);color:#f87171}
+.url-fetcher-box .examples-bar{margin-top:12px;padding:10px;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.1);border-radius:6px}
+.url-fetcher-box .examples-bar .examples-label{color:#ffd700;font-size:11px;font-weight:600}
+.url-fetcher-box .examples-bar .examples-btns{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.url-fetcher-box .examples-bar .examples-btns button{padding:2px 8px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.15);border-radius:4px;color:#a78bfa;cursor:pointer;font-size:9px;font-family:inherit}
+.url-fetcher-box .examples-bar .examples-btns button:hover{background:rgba(139,92,246,0.2)}
+.private-links-container{background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);border-radius:8px;padding:12px;margin:8px 0}
+.private-links-container .title{color:#ffd700;font-size:12px;font-weight:600;margin-bottom:8px}
+.private-links-container .link-row{display:flex;gap:4px;align-items:center;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+.private-links-container .link-row .label{color:#888;font-size:9px;min-width:60px}
+.private-links-container .link-row input{flex:1;padding:3px 6px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,215,0,0.1);border-radius:3px;color:#60a5fa;font-size:9px;font-family:monospace;direction:ltr;text-align:left;min-width:80px}
+.private-links-container .link-row button{padding:1px 8px;border-radius:3px;cursor:pointer;font-size:8px;font-family:inherit;border:none}
+.private-links-container .link-row .copy-btn{background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.15)}
+.private-links-container .link-row .copy-btn:hover{background:rgba(255,215,0,0.25)}
+.private-links-container .link-row .open-btn{background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.15)}
+.private-links-container .link-row .open-btn:hover{background:rgba(74,222,128,0.25)}
+.private-links-container .actions-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+.private-links-container .actions-row button{padding:3px 12px;border-radius:4px;cursor:pointer;font-size:9px;font-family:inherit;border:none}
+.private-links-container .actions-row .copy-all{background:rgba(255,215,0,0.08);color:#ffd700;border:1px solid rgba(255,215,0,0.12)}
+.private-links-container .actions-row .copy-all:hover{background:rgba(255,215,0,0.15)}
+.private-links-container .actions-row .share-btn{background:rgba(96,165,250,0.08);color:#60a5fa;border:1px solid rgba(96,165,250,0.12)}
+.private-links-container .actions-row .share-btn:hover{background:rgba(96,165,250,0.15)}
+.private-links-container .actions-row .download-btn{background:rgba(74,222,128,0.08);color:#4ade80;border:1px solid rgba(74,222,128,0.12)}
+.private-links-container .actions-row .download-btn:hover{background:rgba(74,222,128,0.15)}
 </style>
 </head>
 <body>
@@ -156,6 +202,8 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
                 <button class="btn-warning" onclick="toggleTelegramSettings()">📡 القناة</button>
                 <button class="btn-success" onclick="syncAllFromChannel()">🔄 مزامنة</button>
                 <button class="btn-gold" onclick="toggleGistPanel()">📦 Gist</button>
+                <button class="btn-cyan" onclick="URLFetcher.showURLUploadDialog()">📥 رابط</button>
+                <button class="btn-gold" onclick="GistToPrivateLink.showImportDialog()">📦 Gist→رابط</button>
                 <button onclick="exportAllTiles()">📤 تصدير</button>
                 <button onclick="document.getElementById('importFile').click()">📥 استيراد</button>
                 <button class="btn-danger" onclick="resetAll()">🔄 إعادة تعيين</button>
@@ -237,6 +285,9 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
     <div id="tileLinksContainer"></div>
     <div class="actions">
         <button class="btn-upload" onclick="uploadFile()">📤 رفع</button>
+        <button class="btn-url" onclick="URLFetcher.showURLUploadDialog()">📥 رابط</button>
+        <button class="btn-gist" onclick="GistToPrivateLink.showImportDialog()">📦 Gist→رابط</button>
+        <button class="btn-private-link" onclick="showPrivateLinks()">🔗 روابط خاصة</button>
         <button class="btn-start" onclick="toggleServer()" id="panelStartBtn">▶️ تشغيل</button>
         <button class="btn-protect" onclick="toggleProtect()" id="panelProtectBtn">🛡️ حماية</button>
         <button class="btn-delete" onclick="clearTile()">🗑️ تفريغ</button>
@@ -258,6 +309,9 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 <div class="toast" id="toast"></div>
 
 <script>
+// ============================================================
+// المصادقة والإدارة الأساسية
+// ============================================================
 const ADMIN = { username: 'admin', password: 'admin123' };
 let isAdmin = false;
 
@@ -296,6 +350,507 @@ function showToast(msg, type) {
     t._timeout = setTimeout(() => t.style.display = 'none', 4000);
 }
 
+// ============================================================
+// 📥 URL Fetcher - رفع المحتوى من رابط
+// ============================================================
+const URLFetcher = {
+    async fetchAndSaveToTile(tileId, url, fileName) {
+        if (!tileId) {
+            showToast('⚠️ اختر مربعاً أولاً', 'warning');
+            return false;
+        }
+        if (!url) {
+            showToast('⚠️ أدخل رابطاً صحيحاً', 'warning');
+            return false;
+        }
+        try {
+            new URL(url);
+        } catch {
+            showToast('⚠️ الرابط غير صحيح', 'error');
+            return false;
+        }
+        if (!fileName) {
+            const parts = url.split('/');
+            const lastPart = parts[parts.length - 1];
+            if (lastPart && lastPart.includes('.')) {
+                fileName = lastPart;
+            } else {
+                const urlObj = new URL(url);
+                const pathParts = urlObj.pathname.split('/').filter(p => p);
+                fileName = pathParts.length > 0 ? pathParts[pathParts.length - 1] + '.html' : 'index.html';
+                if (!fileName.includes('.')) fileName += '.html';
+            }
+        }
+        showToast('🔄 جاري جلب المحتوى...', 'info');
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+            }
+            const content = await response.text();
+            const sm = ServerManager;
+            if (!sm.tiles[tileId]) {
+                const parts = tileId.split('_');
+                sm.tiles[tileId] = {
+                    id: tileId,
+                    row: parseInt(parts[0]),
+                    col: parseInt(parts[1]),
+                    files: {},
+                    gistLinks: {},
+                    created: Date.now()
+                };
+            }
+            sm.tiles[tileId].files[fileName] = content;
+            sm.saveTiles();
+            sm.renderGrid();
+            sm.updateStats();
+            sm.openPanel(tileId);
+            showToast(`✅ تم رفع ${fileName} بنجاح!`, 'success');
+            return true;
+        } catch (error) {
+            showToast(`❌ فشل جلب المحتوى: ${error.message}`, 'error');
+            return false;
+        }
+    },
+
+    async previewURL(url) {
+        if (!url) {
+            showToast('⚠️ أدخل رابطاً', 'warning');
+            return;
+        }
+        try {
+            new URL(url);
+        } catch {
+            showToast('⚠️ الرابط غير صحيح', 'error');
+            return;
+        }
+        showToast('🔄 جاري التحميل...', 'info');
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            const content = await response.text();
+            const win = window.open('', '_blank');
+            if (!win) {
+                showToast('❌ تم حظر النافذة المنبثقة!', 'error');
+                return;
+            }
+            win.document.write(content);
+            win.document.close();
+            showToast('👁️ تم فتح المعاينة', 'success');
+        } catch (error) {
+            showToast(`❌ فشل التحميل: ${error.message}`, 'error');
+        }
+    },
+
+    showURLUploadDialog() {
+        const tileId = ServerManager.currentTile || '5_3';
+        const overlay = document.createElement('div');
+        overlay.className = 'url-fetcher-overlay';
+        overlay.innerHTML = `
+            <div class="url-fetcher-box">
+                <div class="header-row">
+                    <h3>📥 رفع من رابط</h3>
+                    <button class="close-btn" onclick="this.closest('.url-fetcher-overlay').remove()">✖</button>
+                </div>
+                <div class="tile-info">📍 المربع: <strong id="urlFetcherTileId">${tileId}</strong>
+                    <button onclick="const newId=prompt('📍 أدخل ID المربع:',document.getElementById('urlFetcherTileId').textContent);if(newId)document.getElementById('urlFetcherTileId').textContent=newId;" style="padding:2px 8px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.15);border-radius:4px;color:#a78bfa;cursor:pointer;font-size:9px;font-family:inherit;margin-right:6px;">تغيير</button>
+                </div>
+                <div class="field">
+                    <label>🔗 رابط الملف</label>
+                    <input type="text" id="urlFetcherInput" placeholder="https://raw.githubusercontent.com/user/repo/main/index.html" onkeydown="if(event.key==='Enter') document.getElementById('urlFetchConfirm').click()" />
+                </div>
+                <div class="field">
+                    <label>📄 اسم الملف (اختياري)</label>
+                    <input type="text" id="urlFetcherFileName" placeholder="index.html" />
+                </div>
+                <div class="btn-group">
+                    <button class="btn-primary" id="urlFetchConfirm" onclick="const tileId=document.getElementById('urlFetcherTileId').textContent;const url=document.getElementById('urlFetcherInput').value.trim();const fileName=document.getElementById('urlFetcherFileName').value.trim()||undefined;this.closest('.url-fetcher-overlay').remove();URLFetcher.fetchAndSaveToTile(tileId,url,fileName);">📥 رفع وحفظ</button>
+                    <button class="btn-preview" onclick="const url=document.getElementById('urlFetcherInput').value.trim();this.closest('.url-fetcher-overlay').remove();URLFetcher.previewURL(url);">👁️ معاينة فقط</button>
+                    <button class="btn-cancel" onclick="this.closest('.url-fetcher-overlay').remove()">✖ إلغاء</button>
+                </div>
+                <div class="examples-bar">
+                    <div class="examples-label">💡 أمثلة:</div>
+                    <div class="examples-btns">
+                        <button onclick="document.getElementById('urlFetcherInput').value='https://raw.githubusercontent.com/twbs/bootstrap/main/index.html'">Bootstrap</button>
+                        <button onclick="document.getElementById('urlFetcherInput').value='https://raw.githubusercontent.com/facebook/react/main/index.html'">React</button>
+                        <button onclick="document.getElementById('urlFetcherInput').value='https://raw.githubusercontent.com/vuejs/core/main/index.html'">Vue</button>
+                        <button onclick="document.getElementById('urlFetcherInput').value='https://gist.githubusercontent.com/raw/example/index.html'">Gist</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        setTimeout(() => {
+            const input = document.getElementById('urlFetcherInput');
+            if (input) input.focus();
+        }, 100);
+    }
+};
+
+// ============================================================
+// 📦 Gist to Private Link - تحويل Gist إلى رابط خاص
+// ============================================================
+const GistToPrivateLink = {
+    extractGistId(url) {
+        const patterns = [
+            /gist\.github\.com\/([^\/]+)\/([a-f0-9]+)/i,
+            /gist\.github\.com\/([a-f0-9]+)/i,
+            /gist\.githubusercontent\.com\/([^\/]+)\/([a-f0-9]+)/i,
+            /gist\.githubusercontent\.com\/([a-f0-9]+)/i,
+            /github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)/i
+        ];
+        for (const pattern of patterns) {
+            const match = url.match(pattern);
+            if (match) {
+                return match[2] || match[1];
+            }
+        }
+        try {
+            const urlObj = new URL(url);
+            const pathParts = urlObj.pathname.split('/').filter(p => p);
+            if (urlObj.hostname.includes('gist')) {
+                return pathParts[pathParts.length - 1];
+            }
+        } catch(e) {}
+        return null;
+    },
+
+    async fetchGistContent(gistId, fileName) {
+        const urls = [
+            `https://gist.githubusercontent.com/raw/${gistId}/${fileName || ''}`,
+            `https://gist.githubusercontent.com/raw/${gistId}/`,
+            `https://api.github.com/gists/${gistId}`
+        ];
+        for (const url of urls) {
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    const content = await response.text();
+                    if (url.includes('api.github.com')) {
+                        const data = JSON.parse(content);
+                        if (data.files) {
+                            const firstFile = Object.values(data.files)[0];
+                            if (firstFile && firstFile.content) {
+                                return { fileName: Object.keys(data.files)[0], content: firstFile.content };
+                            }
+                        }
+                    }
+                    if (content && content.length > 0) {
+                        return { fileName: fileName || 'index.html', content: content };
+                    }
+                }
+            } catch(e) {}
+        }
+        return null;
+    },
+
+    async importGistToTile(gistUrl, tileId, fileName) {
+        const gistId = this.extractGistId(gistUrl);
+        if (!gistId) {
+            showToast('❌ لم نتمكن من استخراج معرف Gist', 'error');
+            return null;
+        }
+        showToast('🔄 جاري جلب المحتوى من Gist...', 'info');
+        const result = await this.fetchGistContent(gistId, fileName);
+        if (!result) {
+            showToast('❌ فشل جلب المحتوى من Gist', 'error');
+            return null;
+        }
+        const actualFileName = fileName || result.fileName || 'index.html';
+        const content = result.content;
+        const sm = ServerManager;
+        if (!sm.tiles[tileId]) {
+            const parts = tileId.split('_');
+            sm.tiles[tileId] = {
+                id: tileId,
+                row: parseInt(parts[0]),
+                col: parseInt(parts[1]),
+                files: {},
+                gistLinks: {},
+                created: Date.now()
+            };
+        }
+        sm.tiles[tileId].files[actualFileName] = content;
+        if (!sm.tiles[tileId].gistLinks) sm.tiles[tileId].gistLinks = {};
+        sm.tiles[tileId].gistLinks[actualFileName] = gistUrl;
+        sm.gistTiles.add(tileId);
+        sm.syncedTiles.add(tileId);
+        sm.saveTiles();
+        sm.renderGrid();
+        sm.updateStats();
+        sm.openPanel(tileId);
+        const baseUrl = window.location.origin + window.location.pathname;
+        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        const privateLink = `${cleanBase}/tile/${tileId}/${encodeURIComponent(actualFileName)}`;
+        showToast(`✅ تم استيراد ${actualFileName} بنجاح!`, 'success');
+        setTimeout(() => {
+            if (confirm(`✅ تم استيراد الملف بنجاح!\n\n🔗 الرابط الخاص:\n${privateLink}\n\n📋 هل تريد نسخ الرابط الآن؟`)) {
+                navigator.clipboard.writeText(privateLink);
+                showToast('✅ تم نسخ الرابط الخاص!', 'success');
+            }
+        }, 500);
+        return { fileName: actualFileName, content, privateLink, gistUrl, tileId };
+    },
+
+    showImportDialog() {
+        const tileId = ServerManager.currentTile || '5_3';
+        const overlay = document.createElement('div');
+        overlay.className = 'url-fetcher-overlay';
+        overlay.innerHTML = `
+            <div class="url-fetcher-box" style="max-width:600px;">
+                <div class="header-row">
+                    <h3>📦 استيراد من Gist → رابط خاص</h3>
+                    <button class="close-btn" onclick="this.closest('.url-fetcher-overlay').remove()">✖</button>
+                </div>
+                <div class="tile-info">📍 المربع: <strong id="gistTileId">${tileId}</strong>
+                    <button onclick="const newId=prompt('📍 أدخل ID المربع:',document.getElementById('gistTileId').textContent);if(newId)document.getElementById('gistTileId').textContent=newId;" style="padding:2px 8px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.15);border-radius:4px;color:#a78bfa;cursor:pointer;font-size:9px;font-family:inherit;margin-right:6px;">تغيير</button>
+                </div>
+                <div class="field">
+                    <label>🔗 رابط Gist</label>
+                    <input type="text" id="gistUrlInput" placeholder="https://gist.github.com/username/gist-id" onkeydown="if(event.key==='Enter') document.getElementById('gistImportConfirm').click()" />
+                </div>
+                <div class="field">
+                    <label>📄 اسم الملف (اختياري)</label>
+                    <input type="text" id="gistFileNameInput" placeholder="index.html" />
+                </div>
+                <div style="padding:8px 12px;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.1);border-radius:6px;margin-bottom:12px;color:#ffd700;font-size:11px;">
+                    💡 بعد الاستيراد، سيتم إنشاء رابط خاص للمربع يمكن مشاركته
+                </div>
+                <div class="btn-group">
+                    <button class="btn-primary" id="gistImportConfirm" onclick="const tileId=document.getElementById('gistTileId').textContent;const gistUrl=document.getElementById('gistUrlInput').value.trim();const fileName=document.getElementById('gistFileNameInput').value.trim()||undefined;this.closest('.url-fetcher-overlay').remove();GistToPrivateLink.importGistToTile(gistUrl,tileId,fileName);">📥 استيراد وإنشاء رابط</button>
+                    <button class="btn-cancel" onclick="this.closest('.url-fetcher-overlay').remove()">✖ إلغاء</button>
+                </div>
+                <div class="examples-bar">
+                    <div class="examples-label">💡 أمثلة Gist:</div>
+                    <div class="examples-btns">
+                        <button onclick="document.getElementById('gistUrlInput').value='https://gist.github.com/username/4c7f9d7f2f7e4d8e6f5a4b3c2d1e0f9a8b7c6d5e'">Gist مثال</button>
+                        <button onclick="document.getElementById('gistUrlInput').value='https://gist.githubusercontent.com/raw/4c7f9d7f2f7e4d8e6f5a4b3c2d1e0f9a8b7c6d5e/index.html'">Raw Gist</button>
+                        <button onclick="document.getElementById('gistUrlInput').value='https://github.com/user/repo/blob/main/index.html'">GitHub File</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        setTimeout(() => {
+            const input = document.getElementById('gistUrlInput');
+            if (input) input.focus();
+        }, 100);
+    }
+};
+
+// ============================================================
+// 🔗 Private Links System - نظام الروابط الخاصة
+// ============================================================
+const PrivateLinks = {
+    generateFileLink(tileId, fileName) {
+        const baseUrl = window.location.origin + window.location.pathname;
+        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        return `${cleanBase}/tile/${tileId}/${encodeURIComponent(fileName)}`;
+    },
+
+    generateTileLink(tileId) {
+        const baseUrl = window.location.origin + window.location.pathname;
+        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        return `${cleanBase}/tile/${tileId}`;
+    },
+
+    copyLink(link) {
+        navigator.clipboard.writeText(link).then(() => {
+            showToast('✅ تم نسخ الرابط', 'success');
+        }).catch(() => {
+            const input = document.createElement('input');
+            input.value = link;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            showToast('✅ تم نسخ الرابط', 'success');
+        });
+    },
+
+    showTilePrivateLinks(tileId) {
+        const tile = ServerManager.tiles[tileId];
+        if (!tile) {
+            return '<div style="color:#888;font-size:11px;text-align:center;padding:10px;">❌ المربع غير موجود</div>';
+        }
+        const tileLink = this.generateTileLink(tileId);
+        let html = `
+            <div class="private-links-container">
+                <div class="title">🔗 الروابط الخاصة للمربع (${tileId})</div>
+                <div class="link-row">
+                    <span class="label">📦 المربع:</span>
+                    <input type="text" value="${tileLink}" readonly id="tileLinkInput">
+                    <button class="copy-btn" onclick="PrivateLinks.copyLink(document.getElementById('tileLinkInput').value)">📋</button>
+                    <button class="open-btn" onclick="window.open(document.getElementById('tileLinkInput').value,'_blank')">🔗</button>
+                </div>
+        `;
+        if (tile.files && Object.keys(tile.files).length > 0) {
+            for (const fileName in tile.files) {
+                const fileLink = this.generateFileLink(tileId, fileName);
+                const isUrl = typeof tile.files[fileName] === 'string' && 
+                             tile.files[fileName].startsWith('{') && 
+                             tile.files[fileName].includes('"type":"url"');
+                html += `
+                    <div class="link-row">
+                        <span class="label">${isUrl ? '🔗' : '📄'} ${fileName}:</span>
+                        <input type="text" value="${fileLink}" readonly id="link_${fileName}">
+                        <button class="copy-btn" onclick="PrivateLinks.copyLink(document.getElementById('link_${fileName}').value)">📋</button>
+                        <button class="open-btn" onclick="window.open(document.getElementById('link_${fileName}').value,'_blank')">🔗</button>
+                    </div>
+                `;
+            }
+        }
+        html += `
+                <div class="actions-row">
+                    <button class="copy-all" onclick="PrivateLinks.copyAllLinks('${tileId}')">📋 نسخ الكل</button>
+                    <button class="share-btn" onclick="PrivateLinks.shareTile('${tileId}')">📤 مشاركة</button>
+                    <button class="download-btn" onclick="PrivateLinks.downloadTile('${tileId}')">⬇️ تحميل</button>
+                </div>
+            </div>
+        `;
+        return html;
+    },
+
+    copyAllLinks(tileId) {
+        const tile = ServerManager.tiles[tileId];
+        if (!tile) return;
+        let text = `🔗 روابط المربع (${tileId}):\n`;
+        text += `📦 ${this.generateTileLink(tileId)}\n\n📄 الملفات:\n`;
+        for (const fileName in tile.files) {
+            const link = this.generateFileLink(tileId, fileName);
+            text += `• ${fileName}: ${link}\n`;
+        }
+        this.copyLink(text);
+        showToast('✅ تم نسخ جميع الروابط', 'success');
+    },
+
+    shareTile(tileId) {
+        const tileLink = this.generateTileLink(tileId);
+        const tile = ServerManager.tiles[tileId];
+        const fileCount = tile.files ? Object.keys(tile.files).length : 0;
+        const shareText = `📦 مربع ${tileId}\n📄 ${fileCount} ملفات\n🔗 ${tileLink}`;
+        if (navigator.share) {
+            navigator.share({ title: `مربع TileCDN - ${tileId}`, text: shareText, url: tileLink }).catch(() => {});
+        } else {
+            this.copyLink(shareText);
+            showToast('✅ تم نسخ معلومات المشاركة', 'success');
+        }
+    },
+
+    downloadTile(tileId) {
+        const tile = ServerManager.tiles[tileId];
+        if (!tile) {
+            showToast('❌ المربع غير موجود', 'error');
+            return;
+        }
+        const data = { id: tileId, row: tile.row, col: tile.col, files: tile.files, gistLinks: tile.gistLinks || {}, created: tile.created };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `tile_${tileId}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('✅ تم تحميل المربع', 'success');
+    }
+};
+
+function showPrivateLinks() {
+    const tileId = ServerManager.currentTile;
+    if (!tileId) {
+        showToast('⚠️ اختر مربعاً أولاً', 'warning');
+        return;
+    }
+    const container = document.getElementById('tileLinksContainer');
+    if (container) {
+        container.innerHTML = PrivateLinks.showTilePrivateLinks(tileId);
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+// ============================================================
+// 🌐 Private Link Handler - معالج الروابط الخاصة
+// ============================================================
+const PrivateLinkHandler = {
+    init() {
+        const path = window.location.pathname;
+        const match = path.match(/\/tile\/(\d+_\d+)\/(.+)$/);
+        if (match) {
+            this.handlePrivateLink(match[1], decodeURIComponent(match[2]));
+            return true;
+        }
+        return false;
+    },
+
+    handlePrivateLink(tileId, fileName) {
+        // محاولة جلب البيانات من localStorage
+        const tiles = JSON.parse(localStorage.getItem('tiles') || '{}');
+        const tile = tiles[tileId];
+        if (!tile || !tile.files || !tile.files[fileName]) {
+            document.body.innerHTML = `
+                <div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#0a0a1a;color:#fff;flex-direction:column;text-align:center;">
+                    <div style="font-size:60px;margin-bottom:20px;">🔍</div>
+                    <h2 style="color:#f87171;">⚠️ الملف غير موجود</h2>
+                    <p style="color:#888;margin-top:10px;">${fileName} غير موجود في المربع ${tileId}</p>
+                    <a href="/" style="color:#a78bfa;margin-top:20px;">← العودة للصفحة الرئيسية</a>
+                </div>
+            `;
+            return;
+        }
+        const content = tile.files[fileName];
+        const ext = fileName.split('.').pop().toLowerCase();
+        if (['html', 'htm'].includes(ext)) {
+            document.documentElement.innerHTML = content;
+        } else if (['png', 'jpg', 'jpeg', 'gif', 'svg'].includes(ext)) {
+            document.body.innerHTML = `
+                <div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#0a0a1a;flex-direction:column;">
+                    <img src="data:image/${ext};base64,${btoa(content)}" style="max-width:90%;max-height:80vh;border-radius:8px;box-shadow:0 0 30px rgba(139,92,246,0.3);">
+                </div>
+            `;
+        } else {
+            document.body.innerHTML = `
+                <div style="padding:20px;background:#0a0a1a;color:#fff;font-family:monospace;min-height:100vh;">
+                    <div style="border-bottom:1px solid rgba(139,92,246,0.2);padding-bottom:10px;margin-bottom:20px;">
+                        <h2 style="color:#a78bfa;">📄 ${fileName}</h2>
+                        <div style="color:#888;font-size:12px;">📦 ${tileId}</div>
+                    </div>
+                    <pre style="white-space:pre-wrap;word-break:break-all;color:#ccc;font-size:12px;">${content}</pre>
+                </div>
+            `;
+        }
+        const bar = document.createElement('div');
+        bar.style.cssText = `
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10,10,30,0.9);
+            color: #888;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 11px;
+            border: 1px solid rgba(139,92,246,0.2);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        `;
+        bar.innerHTML = `
+            <span>📦 ${tileId}</span>
+            <span>📄 ${fileName}</span>
+            <span style="color:#a78bfa;">🌐 TileCDN</span>
+            <button onclick="navigator.clipboard.writeText(window.location.href)" style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.2);color:#4ade80;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:10px;font-family:inherit;">📋 نسخ الرابط</button>
+        `;
+        document.body.appendChild(bar);
+    }
+};
+
+// ============================================================
+// ServerManager - المدير الأساسي
+// ============================================================
 const ServerManager = {
     tiles: {},
     protectedTiles: new Set(),
@@ -312,6 +867,8 @@ const ServerManager = {
         this.updateStats();
         if (window.GistCDN) GistCDN.init();
         showToast('✅ جاهز', 'success');
+        // معالجة الروابط الخاصة
+        PrivateLinkHandler.init();
     },
 
     loadTiles() {
@@ -364,7 +921,7 @@ const ServerManager = {
                 div.dataset.tile = id;
                 let html = '<div class="icon">' + (isGist ? '📦' : '📦') + '</div>';
                 html += '<div class="label">' + r + ',' + c + '</div>';
-                html += '<div class="status ' + (isActive ? 'running' : 'offline') + '">' + (isActive ? '🟢' : '⚪') + '</div>';
+                html += '<div class="status ' + (isActive ? 'online' : 'offline') + '">' + (isActive ? '🟢' : '⚪') + '</div>';
                 if (fileCount > 0) html += '<div class="badge">' + fileCount + '</div>';
                 if (isSynced) html += '<div class="sync-badge">🔄</div>';
                 if (isGist) html += '<div class="gist-badge">G</div>';
@@ -423,7 +980,10 @@ const ServerManager = {
         this.renderFiles(tile);
         document.getElementById('panelFileCount').textContent = tile.files ? Object.keys(tile.files).length : 0;
         setTimeout(() => {
-            if (window.TileLinkSystem) TileLinkSystem.renderTileLinks(id);
+            const container = document.getElementById('tileLinksContainer');
+            if (container) {
+                container.innerHTML = PrivateLinks.showTilePrivateLinks(id);
+            }
         }, 50);
     },
 
@@ -817,7 +1377,7 @@ function saveTelegramSettings() { ServerManager.saveTelegramSettings(); }
 function testTelegramConnection() { ServerManager.testTelegramConnection(); }
 
 // ============================================================
-// 🚀 TileRuntime - تشغيل المربع كتطبيق متكامل
+// 🚀 TileRuntime - تشغيل المربع كتطبيق
 // ============================================================
 const TileRuntime = {
     blobUrls: {},
@@ -861,64 +1421,46 @@ const TileRuntime = {
 
     rewriteContent(content, fileName, urlMap) {
         const self = this;
-
-        // 1. HTML attributes: href, src, action, data, poster, background
         content = content.replace(/\b(href|src|action|data|poster|background)\s*=\s*["']([^"']+)["']/gi, function(m, attr, url) {
             const resolved = self.resolvePath(url, fileName);
             const blob = urlMap[resolved] || urlMap[url];
             return blob ? attr + '="' + blob + '"' : m;
         });
-
-        // 2. url() in CSS
         content = content.replace(/url\s*\(\s*["']?([^"')]+)["']?\s*\)/gi, function(m, url) {
             const resolved = self.resolvePath(url, fileName);
             const blob = urlMap[resolved] || urlMap[url];
             return blob ? 'url("' + blob + '")' : m;
         });
-
-        // 3. fetch() in JavaScript
         content = content.replace(/fetch\s*\(\s*["']([^"']+)["']\s*\)/gi, function(m, url) {
             const resolved = self.resolvePath(url, fileName);
             const blob = urlMap[resolved] || urlMap[url];
             return blob ? 'fetch("' + blob + '")' : m;
         });
-
-        // 4. XMLHttpRequest.open()
         content = content.replace(/\.open\s*\(\s*["'](GET|POST)["']\s*,\s*["']([^"']+)["']/gi, function(m, method, url) {
             const resolved = self.resolvePath(url, fileName);
             const blob = urlMap[resolved] || urlMap[url];
             return blob ? '.open("' + method + '","' + blob + '"' : m;
         });
-
-        // 5. import / export in JS
         content = content.replace(/from\s+["']([^"']+)["']/gi, function(m, url) {
             const resolved = self.resolvePath(url, fileName);
             const blob = urlMap[resolved] || urlMap[url];
             return blob ? 'from "' + blob + '"' : m;
         });
-
-        // 6. window.open()
         content = content.replace(/window\.open\s*\(\s*["']([^"']+)["']/gi, function(m, url) {
             const resolved = self.resolvePath(url, fileName);
             const blob = urlMap[resolved] || urlMap[url];
             return blob ? 'window.open("' + blob + '"' : m;
         });
-
-        // 7. location.href / location.replace / location.assign
         content = content.replace(/location\.(href|replace|assign)\s*=\s*["']([^"']+)["']/gi, function(m, method, url) {
             const resolved = self.resolvePath(url, fileName);
             const blob = urlMap[resolved] || urlMap[url];
             return blob ? 'location.' + method + '="' + blob + '"' : m;
         });
-
-        // 8. @import in CSS
         content = content.replace(/@import\s+["']([^"']+)["']/gi, function(m, url) {
             const resolved = self.resolvePath(url, fileName);
             const blob = urlMap[resolved] || urlMap[url];
             return blob ? '@import "' + blob + '"' : m;
         });
-
-        // 9. srcset in img
         content = content.replace(/srcset\s*=\s*["']([^"']+)["']/gi, function(m, srcset) {
             const parts = srcset.split(',');
             const newParts = parts.map(function(part) {
@@ -932,7 +1474,6 @@ const TileRuntime = {
             });
             return 'srcset="' + newParts.join(', ') + '"';
         });
-
         return content;
     },
 
@@ -942,64 +1483,49 @@ const TileRuntime = {
             showToast('❌ لا توجد ملفات في هذا المربع', 'error');
             return;
         }
-
         const files = Object.keys(tile.files);
         const mainFile = targetFile || files.find(function(f) { return f.match(/^index\.html?$/i); }) || files.find(function(f) { return f.endsWith('.html'); }) || files[0];
-
         const urlMap = {};
         for (const name of files) {
             urlMap[name] = this.createFileUrl(tileId, name);
         }
-
         let content = tile.files[mainFile];
         content = this.rewriteContent(content, mainFile, urlMap);
-
         const win = window.open('', '_blank');
         if (!win) {
-            showToast('❌ تم حظر النافذة المنبثقة! اسمح بالنوافذ المنبثقة.', 'error');
+            showToast('❌ تم حظر النافذة المنبثقة!', 'error');
             return;
         }
-
         win.document.open();
         win.document.write(content);
         win.document.close();
         win.document.title = '🚀 Tile ' + tileId + ' - ' + mainFile;
-
-        showToast('🚀 تم تشغيل ' + mainFile + ' مع ' + files.length + ' ملف مرتبط', 'success');
+        showToast('🚀 تم تشغيل ' + mainFile, 'success');
     },
 
     previewTile(tileId, containerId) {
         containerId = containerId || 'tilePreview';
         const tile = ServerManager.tiles[tileId];
         if (!tile || !tile.files) return;
-
         let container = document.getElementById(containerId);
         if (!container) {
             container = document.createElement('div');
             container.id = containerId;
             container.style.cssText = 'position:fixed;top:10%;left:10%;width:80%;height:80%;background:#000;z-index:999999;border:2px solid #8b5cf6;border-radius:12px;overflow:hidden;';
-            container.innerHTML = '<div style="display:flex;justify-content:space-between;padding:8px;background:#1a1a2e;border-bottom:1px solid #333;">' +
-                '<span style="color:#a78bfa;font-size:12px;">👁️ معاينة المربع (' + tileId + ')</span>' +
-                '<button onclick="this.parentElement.parentElement.remove()" style="background:#f87171;border:none;color:#fff;padding:2px 10px;border-radius:4px;cursor:pointer;">✖ إغلاق</button>' +
-                '</div>';
+            container.innerHTML = '<div style="display:flex;justify-content:space-between;padding:8px;background:#1a1a2e;border-bottom:1px solid #333;"><span style="color:#a78bfa;font-size:12px;">👁️ معاينة المربع (' + tileId + ')</span><button onclick="this.parentElement.parentElement.remove()" style="background:#f87171;border:none;color:#fff;padding:2px 10px;border-radius:4px;cursor:pointer;">✖ إغلاق</button></div>';
             document.body.appendChild(container);
         }
-
         const files = Object.keys(tile.files);
         const mainFile = files.find(function(f) { return f.match(/^index\.html?$/i); }) || files.find(function(f) { return f.endsWith('.html'); }) || files[0];
         const urlMap = {};
         for (const name of files) urlMap[name] = this.createFileUrl(tileId, name);
-
         let content = tile.files[mainFile];
         content = this.rewriteContent(content, mainFile, urlMap);
-
         const existingIframe = container.querySelector('iframe');
         if (existingIframe) existingIframe.remove();
-
         const iframe = document.createElement('iframe');
         iframe.style.cssText = 'width:100%;height:calc(100% - 40px);border:none;background:#fff;';
         container.appendChild(iframe);
-
         iframe.srcdoc = content;
         showToast('👁️ تم فتح المعاينة', 'success');
     },
@@ -1060,14 +1586,12 @@ const AutoReceiver = {
         const token = localStorage.getItem('bot_token');
         const chatId = localStorage.getItem('chat_id');
         if (!token || !chatId) return;
-
         try {
             const url = 'https://api.telegram.org/bot' + token + '/getUpdates?limit=100' +
                         (this.lastUpdateId > 0 ? '&offset=' + (this.lastUpdateId + 1) : '');
             const resp = await fetch(url);
             const data = await resp.json();
             if (!data.ok) { this.setError(true); return; }
-
             let newFiles = 0;
             for (const update of data.result) {
                 if (update.update_id > this.lastUpdateId) this.lastUpdateId = update.update_id;
@@ -1189,21 +1713,13 @@ const GistCDN = {
             showToast('⚠️ أدخل GitHub Token أولاً', 'warning');
             return null;
         }
-
         try {
             const url = this.config.gistId 
                 ? 'https://api.github.com/gists/' + this.config.gistId
                 : 'https://api.github.com/gists';
-
             const method = this.config.gistId ? 'PATCH' : 'POST';
-
-            const body = {
-                description: '📦 TileCDN Files',
-                public: false,
-                files: {}
-            };
+            const body = { description: '📦 TileCDN Files', public: false, files: {} };
             body.files[filename] = { content: content };
-
             if (this.config.gistId) {
                 const existing = await this.getGistFiles();
                 for (const key in existing) {
@@ -1212,25 +1728,18 @@ const GistCDN = {
                     }
                 }
             }
-
             const response = await fetch(url, {
                 method: method,
-                headers: {
-                    'Authorization': 'token ' + this.config.token,
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Authorization': 'token ' + this.config.token, 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
-
             const data = await response.json();
-
             if (data.id) {
                 if (!this.config.gistId) {
                     this.config.gistId = data.id;
                     localStorage.setItem('gist_id', data.id);
                 }
-                const rawUrl = 'https://gist.githubusercontent.com/raw/' + data.id + '/' + filename;
-                return rawUrl;
+                return 'https://gist.githubusercontent.com/raw/' + data.id + '/' + filename;
             } else {
                 console.error('❌ فشل الرفع:', data);
                 return null;
@@ -1246,7 +1755,6 @@ const GistCDN = {
             showToast('⚠️ لا يوجد Gist محفوظ', 'warning');
             return null;
         }
-
         try {
             const rawUrl = 'https://gist.githubusercontent.com/raw/' + this.config.gistId + '/' + filename;
             const response = await fetch(rawUrl);
@@ -1260,7 +1768,6 @@ const GistCDN = {
 
     async getGistFiles() {
         if (!this.config.gistId || !this.config.token) return {};
-
         try {
             const response = await fetch('https://api.github.com/gists/' + this.config.gistId, {
                 headers: { 'Authorization': 'token ' + this.config.token }
@@ -1286,12 +1793,9 @@ const GistCDN = {
             showToast('❌ الملف غير موجود', 'error');
             return;
         }
-
         const content = tile.files[fileName];
         const gistFileName = 'tile_' + tileId + '_' + fileName;
-
         const gistUrl = await this.uploadToGist(content, gistFileName);
-
         if (gistUrl) {
             if (!tile.gistLinks) tile.gistLinks = {};
             tile.gistLinks[fileName] = gistUrl;
@@ -1300,21 +1804,6 @@ const GistCDN = {
             sm.renderGrid();
             sm.updateStats();
             showToast('✅ تم رفع ' + fileName + ' إلى Gist', 'success');
-
-            const token = localStorage.getItem('bot_token');
-            const chatId = localStorage.getItem('chat_id');
-            if (token && chatId) {
-                const message = '📦 **' + fileName + '**\n🔗 ' + gistUrl + '\n📍 tile_' + tileId + '\n\n#Gist #CDN';
-                await fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: chatId,
-                        text: message,
-                        parse_mode: 'Markdown'
-                    })
-                });
-            }
         }
         return gistUrl;
     },
@@ -1326,20 +1815,11 @@ const GistCDN = {
                 showToast('❌ فشل تحميل الملف من Gist', 'error');
                 return;
             }
-
             const sm = ServerManager;
             if (!sm.tiles[tileId]) {
                 const parts = tileId.split('_');
-                sm.tiles[tileId] = {
-                    id: tileId,
-                    row: parseInt(parts[0]),
-                    col: parseInt(parts[1]),
-                    files: {},
-                    gistLinks: {},
-                    created: Date.now()
-                };
+                sm.tiles[tileId] = { id: tileId, row: parseInt(parts[0]), col: parseInt(parts[1]), files: {}, gistLinks: {}, created: Date.now() };
             }
-
             sm.tiles[tileId].files[fileName] = content;
             sm.tiles[tileId].gistLinks[fileName] = gistUrl;
             sm.syncedTiles.add(tileId);
@@ -1347,7 +1827,6 @@ const GistCDN = {
             sm.saveTiles();
             sm.renderGrid();
             sm.updateStats();
-
             showToast('✅ تم استيراد ' + fileName + ' من Gist', 'success');
         } catch(error) {
             showToast('❌ فشل الاستيراد: ' + error.message, 'error');
@@ -1359,7 +1838,6 @@ const GistCDN = {
             showToast('⚠️ أدخل GitHub Token', 'warning');
             return;
         }
-
         try {
             const response = await fetch('https://api.github.com/user', {
                 headers: { 'Authorization': 'token ' + this.config.token }
@@ -1373,133 +1851,6 @@ const GistCDN = {
         } catch(error) {
             showToast('❌ خطأ في الاتصال', 'error');
         }
-    }
-};
-
-// ============================================================
-// 🔗 TileLinkSystem
-// ============================================================
-const TileLinkSystem = {
-    generateTileLink(tileId) {
-        const baseUrl = window.location.origin + window.location.pathname;
-        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-        return cleanBase + '/tile/' + tileId;
-    },
-
-    generateFileLink(tileId, fileName) {
-        const baseUrl = window.location.origin + window.location.pathname;
-        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-        return cleanBase + '/tile/' + tileId + '/' + encodeURIComponent(fileName);
-    },
-
-    copyTileLink(tileId) {
-        const link = this.generateTileLink(tileId);
-        navigator.clipboard.writeText(link).then(function() {
-            showToast('✅ تم نسخ رابط المربع (' + tileId + ')', 'success');
-        }).catch(function() {
-            const input = document.createElement('input');
-            input.value = link;
-            document.body.appendChild(input);
-            input.select();
-            document.execCommand('copy');
-            document.body.removeChild(input);
-            showToast('✅ تم نسخ رابط المربع (' + tileId + ')', 'success');
-        });
-        return link;
-    },
-
-    copyFileLink(tileId, fileName) {
-        const link = this.generateFileLink(tileId, fileName);
-        navigator.clipboard.writeText(link).then(function() {
-            showToast('✅ تم نسخ رابط ' + fileName, 'success');
-        }).catch(function() {
-            const input = document.createElement('input');
-            input.value = link;
-            document.body.appendChild(input);
-            input.select();
-            document.execCommand('copy');
-            document.body.removeChild(input);
-            showToast('✅ تم نسخ رابط ' + fileName, 'success');
-        });
-        return link;
-    },
-
-    renderTileLinks(tileId) {
-        const tile = ServerManager.tiles[tileId];
-        if (!tile) return;
-
-        const container = document.getElementById('tileLinksContainer');
-        if (!container) return;
-
-        const tileLink = this.generateTileLink(tileId);
-        let html = '<div style="margin-top:8px;padding:8px;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);border-radius:6px;">' +
-            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">' +
-            '<span style="color:#ffd700;font-size:10px;font-weight:600;">🔗 روابط المربع (' + tileId + ')</span>' +
-            '<button onclick="TileLinkSystem.copyTileLink(' + "'" + tileId + "'" + ')" style="padding:2px 8px;background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2);border-radius:4px;cursor:pointer;font-size:9px;font-family:inherit;">📋 نسخ</button>' +
-            '</div>' +
-            '<div style="font-size:9px;color:#888;word-break:break-all;direction:ltr;text-align:left;">' + tileLink + '</div>' +
-            '</div>';
-
-        if (tile.files && Object.keys(tile.files).length > 0) {
-            html += '<div style="margin-top:4px;padding:6px;background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.1);border-radius:4px;">' +
-                '<div style="color:#4ade80;font-size:9px;font-weight:600;margin-bottom:4px;">📄 روابط الملفات:</div>';
-
-            for (const fileName in tile.files) {
-                const content = tile.files[fileName];
-                const fileLink = this.generateFileLink(tileId, fileName);
-                const isMeta = content && content.trim().startsWith('[METADATA]');
-                html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.03);">' +
-                    '<span style="font-size:9px;color:#ccc;">' + fileName + (isMeta ? ' ⚠️' : '') + '</span>' +
-                    '<button onclick="TileLinkSystem.copyFileLink(' + "'" + tileId + "','" + fileName + "'" + ')" style="padding:1px 6px;background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);border-radius:3px;cursor:pointer;font-size:8px;font-family:inherit;">📋</button>' +
-                    '</div>';
-            }
-            html += '</div>';
-        }
-
-        container.innerHTML = html;
-    },
-
-    showTileInfo(tileId) {
-        const sm = ServerManager;
-        const tile = sm.tiles[tileId];
-        if (!tile) {
-            showToast('❌ المربع غير موجود', 'error');
-            return;
-        }
-
-        const fileCount = tile.files ? Object.keys(tile.files).length : 0;
-        const tileLink = this.generateTileLink(tileId);
-
-        let message = '📦 **معلومات المربع (' + tileId + ')**\n\n';
-        message += '📍 **الموقع:** (' + tile.row + ', ' + tile.col + ')\n';
-        message += '📄 **الملفات:** ' + fileCount + '\n';
-        message += '🔄 **مزامنة:** ' + (sm.syncedTiles.has(tileId) ? '✅' : '❌') + '\n';
-        message += '🛡️ **حماية:** ' + (sm.protectedTiles.has(tileId) ? '✅' : '❌') + '\n\n';
-        message += '🔗 **الرابط:**\n' + tileLink + '\n\n';
-
-        if (fileCount > 0) {
-            message += '📄 **الملفات:**\n';
-            for (const fileName in tile.files) {
-                const fileLink = this.generateFileLink(tileId, fileName);
-                message += '• ' + fileName + '\n  ' + fileLink + '\n';
-            }
-        }
-
-        const overlay = document.createElement('div');
-        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;z-index:999999;padding:20px;backdrop-filter:blur(5px);';
-
-        overlay.innerHTML = '<div style="background:#1a1a2e;border:1px solid #ffd700;border-radius:12px;padding:20px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;color:#fff;">' +
-            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
-            '<h3 style="color:#ffd700;margin:0;">📦 معلومات المربع (' + tileId + ')</h3>' +
-            '<button onclick="this.closest(\'div\').parentElement.remove()" style="background:#f87171;border:none;color:#fff;padding:4px 12px;border-radius:4px;cursor:pointer;font-family:inherit;">✖</button>' +
-            '</div>' +
-            '<div style="font-size:12px;line-height:1.8;white-space:pre-wrap;word-break:break-all;direction:ltr;text-align:left;">' + message + '</div>' +
-            '<button onclick="navigator.clipboard.writeText(\'' + tileLink + '\')" style="margin-top:12px;padding:6px 16px;background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2);border-radius:4px;cursor:pointer;font-family:inherit;width:100%;font-size:12px;">' +
-            '📋 نسخ الرابط' +
-            '</button>' +
-            '</div>';
-
-        document.body.appendChild(overlay);
     }
 };
 
@@ -1518,42 +1869,28 @@ const FileFetcher = {
             showToast('⚠️ Bot Token غير موجود!', 'warning');
             return null;
         }
-
         try {
             const fileRes = await fetch('https://api.telegram.org/bot' + token + '/getFile?file_id=' + fileId);
             const fileData = await fileRes.json();
-
             if (!fileData.ok) {
                 showToast('❌ فشل الحصول على الملف: ' + fileData.description, 'error');
                 return null;
             }
-
             const fileUrl = 'https://api.telegram.org/file/bot' + token + '/' + fileData.result.file_path;
             const contentRes = await fetch(fileUrl);
             const content = await contentRes.text();
-
             const sm = ServerManager;
             if (!sm.tiles[tileId]) {
                 const parts = tileId.split('_');
-                sm.tiles[tileId] = {
-                    id: tileId,
-                    row: parseInt(parts[0]),
-                    col: parseInt(parts[1]),
-                    files: {},
-                    gistLinks: {},
-                    created: Date.now()
-                };
+                sm.tiles[tileId] = { id: tileId, row: parseInt(parts[0]), col: parseInt(parts[1]), files: {}, gistLinks: {}, created: Date.now() };
             }
-
             sm.tiles[tileId].files[fileName] = content;
             sm.syncedTiles.add(tileId);
             sm.saveTiles();
             sm.renderGrid();
             sm.updateStats();
-
             showToast('✅ تم جلب المحتوى الفعلي لـ ' + fileName, 'success');
             return content;
-
         } catch(error) {
             showToast('❌ فشل جلب المحتوى: ' + error.message, 'error');
             return null;
@@ -1566,13 +1903,11 @@ const FileFetcher = {
             showToast('⚠️ اختر مربعاً أولاً', 'warning');
             return;
         }
-
         const tile = ServerManager.tiles[tileId];
         if (!tile || !tile.files) {
             showToast('❌ لا توجد ملفات في هذا المربع', 'error');
             return;
         }
-
         let fetched = 0;
         for (const fileName in tile.files) {
             const content = tile.files[fileName];
@@ -1584,73 +1919,34 @@ const FileFetcher = {
                 }
             }
         }
-
         if (fetched > 0) {
             showToast('✅ تم جلب ' + fetched + ' ملفات', 'success');
         } else {
             showToast('📭 لا توجد ملفات Metadata في هذا المربع', 'info');
         }
-    },
+    }
+};
 
-    async getFileLink(fileId) {
-        const token = localStorage.getItem('bot_token');
-        if (!token) {
-            showToast('⚠️ Bot Token غير موجود!', 'warning');
-            return null;
-        }
-
-        try {
-            const fileRes = await fetch('https://api.telegram.org/bot' + token + '/getFile?file_id=' + fileId);
-            const fileData = await fileRes.json();
-
-            if (!fileData.ok) {
-                showToast('❌ فشل الحصول على الرابط: ' + fileData.description, 'error');
-                return null;
-            }
-
-            const fileUrl = 'https://api.telegram.org/file/bot' + token + '/' + fileData.result.file_path;
-            navigator.clipboard.writeText(fileUrl).then(function() {
-                showToast('✅ تم نسخ الرابط!', 'success');
-            });
-
-            return fileUrl;
-
-        } catch(error) {
-            showToast('❌ فشل جلب الرابط: ' + error.message, 'error');
-            return null;
-        }
-    },
-
-    async copyCurrentFileLink() {
-        const tileId = ServerManager.currentTile;
-        if (!tileId) {
-            showToast('⚠️ اختر مربعاً أولاً', 'warning');
-            return;
-        }
-
-        const tile = ServerManager.tiles[tileId];
-        if (!tile || !tile.files) {
-            showToast('❌ لا توجد ملفات', 'error');
-            return;
-        }
-
+function fetchCurrentTileContent() { FileFetcher.fetchCurrentTileContent(); }
+function fetchAllContent() {
+    const sm = ServerManager;
+    let total = 0;
+    for (const tileId in sm.tiles) {
+        const tile = sm.tiles[tileId];
+        if (!tile.files) continue;
         for (const fileName in tile.files) {
             const content = tile.files[fileName];
             if (content.trim().startsWith('[METADATA]')) {
-                const fileId = this.extractFileId(content);
+                const fileId = FileFetcher.extractFileId(content);
                 if (fileId) {
-                    const link = await this.getFileLink(fileId);
-                    if (link) {
-                        showToast('🔗 ' + link, 'success');
-                        return;
-                    }
+                    FileFetcher.fetchRealContent(fileId, tileId, fileName);
+                    total++;
                 }
             }
         }
-
-        showToast('❌ لا يوجد ملف Metadata مع file_id', 'error');
     }
-};
+    if (total > 0) showToast('✅ جاري جلب ' + total + ' ملف...', 'info');
+}
 
 // ============================================================
 // 🖥️ دوال الواجهة
@@ -1734,40 +2030,21 @@ async function listGistFiles() {
     resultEl.innerHTML = html;
 }
 
-function fetchCurrentTileContent() {
-    FileFetcher.fetchCurrentTileContent();
-}
-
-function fetchAllContent() {
-    const sm = ServerManager;
-    let total = 0;
-    for (const tileId in sm.tiles) {
-        const tile = sm.tiles[tileId];
-        if (!tile.files) continue;
-        for (const fileName in tile.files) {
-            const content = tile.files[fileName];
-            if (content.trim().startsWith('[METADATA]')) {
-                const fileId = FileFetcher.extractFileId(content);
-                if (fileId) {
-                    FileFetcher.fetchRealContent(fileId, tileId, fileName);
-                    total++;
-                }
-            }
-        }
-    }
-    if (total > 0) showToast('✅ جاري جلب ' + total + ' ملف...', 'info');
-}
-
 function showTileLinks() {
     const tileId = ServerManager.currentTile;
-    if (tileId) TileLinkSystem.showTileInfo(tileId);
+    if (tileId) {
+        const container = document.getElementById('tileLinksContainer');
+        if (container) {
+            container.innerHTML = PrivateLinks.showTilePrivateLinks(tileId);
+            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
 }
 
 function uploadTestFile() {
     const sm = ServerManager;
     const id = '5_3';
     const html = '<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8"><title>تجربة</title></head>\n<body>\n<h1 style="color:#4ade80;">✅ مرحباً!</h1>\n<p>ملف تجريبي من TileCDN</p>\n<button onclick="alert(\'🚀 يعمل!\')">اضغط</button>\n</body>\n</html>';
-
     if (!sm.tiles[id]) {
         sm.tiles[id] = { id, row: 5, col: 3, files: {}, gistLinks: {}, created: Date.now() };
     }
@@ -1788,15 +2065,22 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('📖 admin / admin123');
     console.log('📦 GistCDN: استخدم زر 📦 Gist للإعداد');
     console.log('🔗 لكل مربع رابط خاص: /tile/5_3');
+    console.log('📥 URL Fetcher: استخدم زر 📥 رابط لرفع المحتوى من رابط');
+    console.log('📦 Gist→رابط: استخدم زر 📦 Gist→رابط لتحويل Gist إلى رابط خاص');
 });
 
 window.ServerManager = ServerManager;
 window.AutoReceiver = AutoReceiver;
 window.GistCDN = GistCDN;
 window.FileFetcher = FileFetcher;
-window.TileLinkSystem = TileLinkSystem;
+window.URLFetcher = URLFetcher;
+window.GistToPrivateLink = GistToPrivateLink;
+window.PrivateLinks = PrivateLinks;
+window.PrivateLinkHandler = PrivateLinkHandler;
 window.TileRuntime = TileRuntime;
 window.showToast = showToast;
+window.showPrivateLinks = showPrivateLinks;
 </script>
 </body>
 </html>
+    
