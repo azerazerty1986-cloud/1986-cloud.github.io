@@ -1,13 +1,818 @@
 <!DOCTYPE html>
-<html>
+<html dir="rtl" lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>تطبيق متكامل</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌐 HTML Preview - TileCDN</title>
+    <style>
+        /* ====== الأساسيات ====== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a1a;
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        /* ====== الهيدر ====== */
+        .header {
+            text-align: center;
+            padding: 30px 0 20px;
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6, #6d28d9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .sub-header {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .sub-header span {
+            color: #a78bfa;
+        }
+        
+        /* ====== الصناديق ====== */
+        .box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 16px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .box:hover {
+            border-color: rgba(139, 92, 246, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .box-title {
+            color: #a78bfa;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* ====== حقول الإدخال ====== */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        
+        .input-group input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
+        }
+        
+        .input-group input::placeholder {
+            color: #555;
+        }
+        
+        /* ====== الأزرار ====== */
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        
+        .btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 25px rgba(139, 92, 246, 0.3);
+        }
+        
+        .btn:active {
+            transform: scale(0.97);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: none;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4ade80, #22d3ee);
+        }
+        
+        .btn-success:hover {
+            box-shadow: 0 4px 25px rgba(74, 222, 128, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+        }
+        
+        .btn-danger:hover {
+            box-shadow: 0 4px 25px rgba(239, 68, 68, 0.3);
+        }
+        
+        /* ====== أزرار الأمثلة ====== */
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+            margin: 12px 0;
+        }
+        
+        .example-btn {
+            padding: 10px 14px;
+            background: rgba(139, 92, 246, 0.08);
+            border: 1px solid rgba(139, 92, 246, 0.12);
+            border-radius: 6px;
+            color: #a78bfa;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            text-align: center;
+        }
+        
+        .example-btn:hover {
+            background: rgba(139, 92, 246, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .example-btn .icon {
+            font-size: 16px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        /* ====== معلومات ====== */
+        .info {
+            color: #666;
+            font-size: 12px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin: 10px 0;
+            border-right: 3px solid #8b5cf6;
+        }
+        
+        .info code {
+            background: rgba(139, 92, 246, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #a78bfa;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+        
+        /* ====== إطار المعاينة ====== */
+        .iframe-container {
+            display: none;
+            margin: 16px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        
+        .iframe-container iframe {
+            width: 100%;
+            height: 550px;
+            border: none;
+            background: #ffffff;
+        }
+        
+        .iframe-footer {
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.4);
+            font-size: 11px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .iframe-footer .url-display {
+            color: #a78bfa;
+            word-break: break-all;
+            font-size: 11px;
+        }
+        
+        .iframe-footer .close-btn {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        .iframe-footer .close-btn:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+        
+        /* ====== قسم الروابط ====== */
+        .links-section {
+            margin-top: 20px;
+            padding: 16px 20px;
+            background: rgba(255, 215, 0, 0.04);
+            border: 1px solid rgba(255, 215, 0, 0.12);
+            border-radius: 10px;
+        }
+        
+        .links-section .title {
+            color: #ffd700;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .links-section .link-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+            font-size: 11px;
+            color: #888;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .links-section .link-row .link-value {
+            color: #a78bfa;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+        
+        .links-section .copy-all-btn {
+            margin-top: 8px;
+            padding: 6px 16px;
+            background: rgba(255, 215, 0, 0.08);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            border-radius: 4px;
+            color: #ffd700;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        .links-section .copy-all-btn:hover {
+            background: rgba(255, 215, 0, 0.15);
+        }
+        
+        /* ====== حالة التحميل ====== */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #a78bfa;
+            font-size: 14px;
+        }
+        
+        .loading .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(139, 92, 246, 0.2);
+            border-top: 2px solid #8b5cf6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* ====== التوست ====== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10, 10, 30, 0.95);
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 8px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            font-size: 13px;
+            z-index: 9999;
+            display: none;
+            animation: fadeInUp 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .toast.success {
+            border-color: rgba(74, 222, 128, 0.3);
+        }
+        
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        
+        /* ====== التجاوب ====== */
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+            .header {
+                font-size: 24px;
+                padding: 20px 0;
+            }
+            .box {
+                padding: 16px;
+            }
+            .input-group input {
+                min-width: 150px;
+                font-size: 13px;
+            }
+            .btn {
+                padding: 10px 18px;
+                font-size: 13px;
+            }
+            .iframe-container iframe {
+                height: 350px;
+            }
+            .examples {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+        }
+        
+        /* ====== شريط التمرير ====== */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a4a;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3a3a6a;
+        }
+    </style>
 </head>
 <body>
-    <h1>مرحباً!</h1>
-    <button onclick="sayHello()">اضغط</button>
-    <script src="script.js"></script>
+    <div class="container">
+        <!-- ====== الهيدر ====== -->
+        <div class="header">🌐 HTML Preview</div>
+        <div class="sub-header">
+            🖥️ عرض أي صفحة HTML مباشرة عبر <span>TileCDN</span>
+        </div>
+        
+        <!-- ====== صندوق الإدخال ====== -->
+        <div class="box">
+            <div class="box-title">📥 أدخل رابط الملف للمعاينة</div>
+            
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="urlInput" 
+                    placeholder="https://raw.githubusercontent.com/username/repo/main/index.html"
+                    onkeydown="if(event.key==='Enter') preview()"
+                />
+                <button class="btn" onclick="preview()">👁️ معاينة</button>
+                <button class="btn btn-secondary" onclick="clearInput()">✖️ مسح</button>
+            </div>
+            
+            <div class="info">
+                💡 أدخل رابط <strong>Raw</strong> من GitHub، أو أي رابط HTML مباشر لعرضه في الإطار
+            </div>
+            
+            <div style="margin: 8px 0; color: #888; font-size: 12px;">
+                📌 أمثلة سريعة:
+            </div>
+            <div class="examples">
+                <button class="example-btn" onclick="setExample('https://raw.githubusercontent.com/twbs/bootstrap/main/index.html')">
+                    <span class="icon">🅱️</span>
+                    Bootstrap
+                </button>
+                <button class="example-btn" onclick="setExample('https://raw.githubusercontent.com/facebook/react/main/index.html')">
+                    <span class="icon">⚛️</span>
+                    React
+                </button>
+                <button class="example-btn" onclick="setExample('https://raw.githubusercontent.com/vuejs/core/main/index.html')">
+                    <span class="icon">🟢</span>
+                    Vue.js
+                </button>
+                <button class="example-btn" onclick="setExample('https://raw.githubusercontent.com/tailwindlabs/tailwindcss/main/index.html')">
+                    <span class="icon">🎨</span>
+                    Tailwind
+                </button>
+                <button class="example-btn" onclick="setExample('https://gist.githubusercontent.com/raw/4c7f9d7f2f7e4d8e6f5a4b3c2d1e0f9a8b7c6d5e/index.html')">
+                    <span class="icon">📦</span>
+                    Gist
+                </button>
+                <button class="example-btn" onclick="setExample('https://example.com')">
+                    <span class="icon">🌐</span>
+                    Example
+                </button>
+            </div>
+        </div>
+        
+        <!-- ====== حالة التحميل ====== -->
+        <div class="loading" id="loadingIndicator">
+            <span class="spinner"></span>
+            جاري تحميل المحتوى...
+        </div>
+        
+        <!-- ====== إطار المعاينة ====== -->
+        <div class="iframe-container" id="iframeContainer">
+            <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+            <div class="iframe-footer">
+                <span>🔗 <span class="url-display" id="currentUrl">-</span></span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <button onclick="openInNewTab()" style="background:rgba(96,165,250,0.15);border:1px solid rgba(96,165,250,0.2);color:#60a5fa;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:11px;font-family:inherit;">📤 فتح في تبويب جديد</button>
+                    <button onclick="copyCurrentUrl()" style="background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.2);color:#4ade80;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:11px;font-family:inherit;">📋 نسخ الرابط</button>
+                    <button class="close-btn" onclick="closePreview()">✖ إغلاق</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ====== روابط المربع ====== -->
+        <div class="links-section" id="linksSection">
+            <div class="title">🔗 روابط هذا المربع</div>
+            <div class="link-row">
+                <span>📍 رابط المربع:</span>
+                <span class="link-value" id="tileLink">-</span>
+                <button onclick="copyText('tileLink')" style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.15);color:#a78bfa;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:10px;font-family:inherit;">📋</button>
+            </div>
+            <div class="link-row">
+                <span>📄 رابط هذه الصفحة:</span>
+                <span class="link-value" id="thisPageLink">-</span>
+                <button onclick="copyText('thisPageLink')" style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.15);color:#a78bfa;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:10px;font-family:inherit;">📋</button>
+            </div>
+            <button class="copy-all-btn" onclick="copyAllLinks()">📋 نسخ كل الروابط</button>
+        </div>
+        
+        <!-- ====== تاريخ المعاينة ====== -->
+        <div class="box" style="margin-top:10px;">
+            <div class="box-title">📋 آخر الروابط المعروضة</div>
+            <div id="historyList" style="color:#666;font-size:12px;">
+                <span style="color:#888;">لا يوجد تاريخ بعد</span>
+            </div>
+            <button onclick="clearHistory()" style="margin-top:8px;padding:4px 12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.15);color:#f87171;border-radius:4px;cursor:pointer;font-size:10px;font-family:inherit;">🗑️ مسح التاريخ</button>
+        </div>
+    </div>
+    
+    <!-- ====== التوست ====== -->
+    <div class="toast" id="toast"></div>
+    
+    <script>
+        // ============================================================
+        // 🧠 JavaScript - الملف الكامل
+        // ============================================================
+        
+        // ====== استخراج معلومات المربع ======
+        function getTileInfo() {
+            const path = window.location.pathname;
+            const match = path.match(/\/tile\/(\d+)_(\d+)/);
+            if (match) {
+                return {
+                    row: parseInt(match[1]),
+                    col: parseInt(match[2]),
+                    id: match[1] + '_' + match[2]
+                };
+            }
+            // افتراضي إذا لم يتم العثور على مربع
+            return { row: 5, col: 3, id: '5_3' };
+        }
+        
+        const tile = getTileInfo();
+        
+        // ====== عرض الروابط ======
+        function updateLinks() {
+            const baseUrl = window.location.origin + window.location.pathname.replace(/\/tile\/[\d_]+.*$/, '');
+            const tileLink = baseUrl + '/tile/' + tile.id;
+            const pageLink = window.location.href;
+            
+            document.getElementById('tileLink').textContent = tileLink;
+            document.getElementById('thisPageLink').textContent = pageLink;
+        }
+        
+        // ====== التاريخ ======
+        function loadHistory() {
+            try {
+                const history = JSON.parse(localStorage.getItem('preview_history') || '[]');
+                return history;
+            } catch {
+                return [];
+            }
+        }
+        
+        function saveHistory(url) {
+            const history = loadHistory();
+            // إزالة المكرر
+            const filtered = history.filter(item => item !== url);
+            filtered.unshift(url);
+            // الاحتفاظ بآخر 10 روابط
+            const limited = filtered.slice(0, 10);
+            localStorage.setItem('preview_history', JSON.stringify(limited));
+            renderHistory();
+        }
+        
+        function renderHistory() {
+            const history = loadHistory();
+            const container = document.getElementById('historyList');
+            if (history.length === 0) {
+                container.innerHTML = '<span style="color:#888;">لا يوجد تاريخ بعد</span>';
+                return;
+            }
+            container.innerHTML = history.map((url, index) => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.03);">
+                    <span style="color:#a78bfa;font-size:11px;word-break:break-all;flex:1;cursor:pointer;" onclick="setExample('${url}')">${index + 1}. ${url}</span>
+                    <button onclick="removeHistoryItem(${index})" style="background:rgba(239,68,68,0.1);border:none;color:#f87171;padding:2px 8px;border-radius:4px;cursor:pointer;font-size:9px;">✖</button>
+                </div>
+            `).join('');
+        }
+        
+        function removeHistoryItem(index) {
+            const history = loadHistory();
+            history.splice(index, 1);
+            localStorage.setItem('preview_history', JSON.stringify(history));
+            renderHistory();
+        }
+        
+        function clearHistory() {
+            if (confirm('🗑️ مسح كل التاريخ؟')) {
+                localStorage.removeItem('preview_history');
+                renderHistory();
+                showToast('🗑️ تم مسح التاريخ', 'success');
+            }
+        }
+        
+        // ====== دوال المعاينة ======
+        function setExample(url) {
+            document.getElementById('urlInput').value = url;
+            preview();
+        }
+        
+        function clearInput() {
+            document.getElementById('urlInput').value = '';
+            document.getElementById('urlInput').focus();
+        }
+        
+        function preview() {
+            const url = document.getElementById('urlInput').value.trim();
+            if (!url) {
+                showToast('⚠️ الرجاء إدخال رابط', 'error');
+                return;
+            }
+            
+            // التحقق من صحة الرابط
+            try {
+                new URL(url);
+            } catch {
+                showToast('⚠️ الرابط غير صحيح', 'error');
+                return;
+            }
+            
+            // حفظ في التاريخ
+            saveHistory(url);
+            
+            // إظهار التحميل
+            const loading = document.getElementById('loadingIndicator');
+            loading.style.display = 'block';
+            
+            const container = document.getElementById('iframeContainer');
+            const iframe = document.getElementById('previewFrame');
+            
+            // إخفاء الإطار مؤقتاً
+            container.style.display = 'none';
+            
+            // محاولة جلب المحتوى وعرضه
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    // إضافة تنسيق للصفحة المعروضة
+                    const baseUrl = url.substring(0, url.lastIndexOf('/') + 1);
+                    const styledHtml = `
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <base href="${baseUrl}">
+                            <style>
+                                body { 
+                                    margin: 0;
+                                    padding: 0;
+                                    font-family: 'Segoe UI', sans-serif;
+                                }
+                                .preview-bar {
+                                    background: #0a0a1a;
+                                    color: #888;
+                                    padding: 6px 16px;
+                                    font-size: 11px;
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: center;
+                                    border-bottom: 1px solid rgba(139,92,246,0.2);
+                                    position: sticky;
+                                    top: 0;
+                                    z-index: 1000;
+                                    backdrop-filter: blur(10px);
+                                }
+                                .preview-bar a {
+                                    color: #a78bfa;
+                                    text-decoration: none;
+                                }
+                                .preview-bar a:hover {
+                                    text-decoration: underline;
+                                }
+                                .preview-content {
+                                    padding: 0;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="preview-bar">
+                                <span>📥 <a href="${url}" target="_blank">${url}</a></span>
+                                <span>📦 TileCDN Preview</span>
+                            </div>
+                            <div class="preview-content">
+                                ${html}
+                            </div>
+                        </body>
+                        </html>
+                    `;
+                    
+                    // عرض المحتوى المصمم
+                    iframe.srcdoc = styledHtml;
+                    container.style.display = 'block';
+                    document.getElementById('currentUrl').textContent = url;
+                    loading.style.display = 'none';
+                    showToast('✅ تم تحميل الصفحة بنجاح', 'success');
+                })
+                .catch(error => {
+                    // في حالة فشل الجلب، استخدام iframe مباشر
+                    iframe.src = url;
+                    container.style.display = 'block';
+                    document.getElementById('currentUrl').textContent = url + ' (مباشر)';
+                    loading.style.display = 'none';
+                    showToast('⚠️ تم عرض الصفحة مباشرة (قد لا تعمل بعض الروابط)', 'warning');
+                });
+                
+            // تحديث الرابط الحالي
+            document.getElementById('currentUrl').textContent = url;
+        }
+        
+        function closePreview() {
+            const container = document.getElementById('iframeContainer');
+            const iframe = document.getElementById('previewFrame');
+            container.style.display = 'none';
+            iframe.src = '';
+            iframe.srcdoc = '';
+            document.getElementById('currentUrl').textContent = '-';
+        }
+        
+        function openInNewTab() {
+            const url = document.getElementById('currentUrl').textContent;
+            if (url && url !== '-') {
+                window.open(url, '_blank');
+            }
+        }
+        
+        function copyCurrentUrl() {
+            const url = document.getElementById('currentUrl').textContent;
+            if (url && url !== '-') {
+                copyToClipboard(url);
+                showToast('✅ تم نسخ الرابط', 'success');
+            }
+        }
+        
+        // ====== دوال النسخ ======
+        function copyToClipboard(text) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).catch(() => {
+                    fallbackCopy(text);
+                });
+            } else {
+                fallbackCopy(text);
+            }
+        }
+        
+        function fallbackCopy(text) {
+            const input = document.createElement('textarea');
+            input.value = text;
+            input.style.position = 'fixed';
+            input.style.opacity = '0';
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+        }
+        
+        function copyText(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                copyToClipboard(element.textContent);
+                showToast('✅ تم نسخ الرابط', 'success');
+            }
+        }
+        
+        function copyAllLinks() {
+            const tileLink = document.getElementById('tileLink').textContent;
+            const pageLink = document.getElementById('thisPageLink').textContent;
+            const text = `📍 رابط المربع: ${tileLink}\n📄 رابط الصفحة: ${pageLink}`;
+            copyToClipboard(text);
+            showToast('✅ تم نسخ كل الروابط', 'success');
+        }
+        
+        // ====== التوست ======
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+            toast.style.display = 'block';
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.style.display = 'none';
+            }, 4000);
+        }
+        
+        // ====== التهيئة ======
+        function init() {
+            updateLinks();
+            renderHistory();
+            console.log('🌐 TileCDN HTML Preview');
+            console.log('📍 المربع:', tile.id);
+            console.log('📦 استخدم "معاينة" لعرض أي صفحة HTML');
+        }
+        
+        // تشغيل عند التحميل
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 </html>
