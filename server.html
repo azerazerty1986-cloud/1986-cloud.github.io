@@ -3,12 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🌐 TileCDN + Gist</title>
+<title>TileCDN - النظام المتكامل</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:100vh;padding:15px;direction:rtl}
 .container{max-width:1400px;margin:0 auto}
-
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:10px;background:rgba(255,255,255,0.03);padding:12px 20px;border-radius:12px;border:1px solid rgba(255,255,255,0.06)}
 .header h1{font-size:20px;background:linear-gradient(135deg,#a78bfa,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .header .admin-name{color:#ffd700;font-size:12px}
@@ -23,7 +22,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .header-controls .btn-warning:hover{background:rgba(251,191,36,0.2)}
 .header-controls .btn-gold{border-color:rgba(255,215,0,0.3);color:#ffd700}
 .header-controls .btn-gold:hover{background:rgba(255,215,0,0.2)}
-
 #auth-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.95);display:flex;justify-content:center;align-items:center;flex-direction:column;backdrop-filter:blur(20px)}
 #auth-overlay .auth-box{background:rgba(10,10,30,0.97);border:2px solid rgba(255,215,0,0.3);border-radius:20px;padding:32px;width:90%;max-width:380px}
 #auth-overlay .auth-box h2{color:#ffd700;text-align:center;font-size:22px;margin-bottom:20px}
@@ -36,7 +34,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 #auth-overlay .auth-box .auth-btn.primary:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(255,215,0,0.3)}
 #auth-overlay .auth-box .auth-error{color:#ef4444;font-size:11px;text-align:center;margin-top:8px;display:none}
 #auth-overlay .auth-box .auth-info{color:#666;font-size:11px;text-align:center;margin-top:12px;padding:8px;background:rgba(255,215,0,0.05);border-radius:8px;border:1px solid rgba(255,215,0,0.08)}
-
 .auto-sync-bar{background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.15);border-radius:12px;padding:12px 18px;margin-bottom:12px;display:flex;flex-wrap:wrap;align-items:center;gap:12px}
 .sync-dot{width:10px;height:10px;border-radius:50%;background:#666;display:inline-block}
 .sync-dot.active{background:#4ade80;box-shadow:0 0 10px rgba(74,222,128,0.5);animation:blink 1.5s infinite}
@@ -52,7 +49,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .auto-sync-bar .btn-now:hover{background:rgba(96,165,250,0.2)}
 .auto-sync-bar .btn-gist{background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);color:#ffd700}
 .auto-sync-bar .btn-gist:hover{background:rgba(255,215,0,0.2)}
-
 .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:12px}
 .stat-box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:8px;text-align:center}
 .stat-box .num{font-size:18px;font-weight:800;display:block}
@@ -62,7 +58,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .stat-box .num.yellow{color:#fbbf24}
 .stat-box .num.orange{color:#fb923c}
 .stat-box .label{font-size:8px;color:#888}
-
 .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:2px;margin-bottom:12px}
 .tile{aspect-ratio:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:3px;cursor:pointer;transition:all .3s;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:7px;padding:1px;position:relative;min-height:30px}
 .tile:hover{background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.4);transform:scale(1.05);z-index:10}
@@ -76,7 +71,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .tile .badge{position:absolute;top:-2px;right:-2px;background:#8b5cf6;color:#fff;font-size:5px;padding:1px 3px;border-radius:4px;font-weight:700}
 .tile .sync-badge{position:absolute;bottom:-2px;right:-2px;background:rgba(74,222,128,0.8);color:#fff;font-size:4px;padding:1px 3px;border-radius:3px}
 .tile .gist-badge{position:absolute;top:-2px;left:-2px;background:#ffd700;color:#111;font-size:4px;padding:1px 4px;border-radius:3px;font-weight:800}
-
 .tile-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(10,10,30,0.97);border:1px solid rgba(139,92,246,0.3);border-radius:12px;padding:16px;width:92%;max-width:520px;max-height:80vh;overflow-y:auto;z-index:9999;backdrop-filter:blur(20px);display:none;box-shadow:0 20px 60px rgba(0,0,0,0.6)}
 .tile-panel.open{display:block}
 .tile-panel .panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:8px}
@@ -108,7 +102,10 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .tile-panel .actions .btn-delete{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.2)}
 .tile-panel .actions .btn-sync{background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.2);grid-column:span 2}
 .tile-panel .actions .btn-gist{background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2);grid-column:span 2}
-
+.tile-panel .actions .btn-fetch{background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);grid-column:span 2}
+.tile-panel .actions .btn-link{background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2);grid-column:span 2}
+.tile-panel .actions .btn-run{background:rgba(139,92,246,0.15);color:#a78bfa;border:1px solid rgba(139,92,246,0.2);grid-column:span 2}
+.tile-panel .actions .btn-preview{background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);grid-column:span 2}
 .file-editor{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(10,10,30,0.97);border:1px solid rgba(251,191,36,0.3);border-radius:12px;padding:16px;width:92%;max-width:600px;max-height:80vh;z-index:99999;display:none;backdrop-filter:blur(20px)}
 .file-editor.open{display:block}
 .file-editor .editor-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
@@ -119,7 +116,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .file-editor .editor-actions button{padding:4px 12px;border:none;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;flex:1}
 .file-editor .editor-actions .btn-save{background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.2)}
 .file-editor .editor-actions .btn-close{background:rgba(255,255,255,0.06);color:#888;border:none}
-
 .telegram-settings{background:rgba(255,255,255,0.03);border:1px solid rgba(139,92,246,0.15);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:none}
 .telegram-settings.open{display:block}
 .telegram-settings .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -128,15 +124,12 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .telegram-settings .status{font-size:10px;padding:3px 10px;border-radius:4px}
 .telegram-settings .status.online{background:rgba(74,222,128,0.2);color:#4ade80}
 .telegram-settings .status.offline{background:rgba(239,68,68,0.2);color:#f87171}
-
 #gistPanel{background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);border-radius:12px;padding:12px 16px;margin-bottom:12px;display:none}
-
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(10,10,30,0.95);color:#fff;padding:6px 16px;border-radius:6px;border:1px solid rgba(139,92,246,0.2);z-index:999999;font-size:11px;display:none;animation:fadeIn .3s ease;max-width:90%;text-align:center}
 .toast.success{border-color:rgba(74,222,128,0.3)}
 .toast.error{border-color:rgba(239,68,68,0.3)}
 .toast.warning{border-color:rgba(251,191,36,0.3)}
 @keyframes fadeIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#2a2a4a;border-radius:3px}
@@ -144,8 +137,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 </style>
 </head>
 <body>
-
-<!-- المصادقة -->
 <div id="auth-overlay">
     <div class="auth-box">
         <h2>👑 دخول المدير</h2>
@@ -157,11 +148,10 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
     </div>
 </div>
 
-<!-- لوحة التحكم -->
 <div id="admin-container" style="display:none;">
     <div class="container">
         <div class="header">
-            <div><h1>🌐 TileCDN + Gist</h1><span class="admin-name">المدير: <span id="admin-name-display">مدير</span></span></div>
+            <div><h1>🌐 TileCDN المتكامل</h1><span class="admin-name">المدير: <span id="admin-name-display">مدير</span></span></div>
             <div class="header-controls">
                 <button class="btn-warning" onclick="toggleTelegramSettings()">📡 القناة</button>
                 <button class="btn-success" onclick="syncAllFromChannel()">🔄 مزامنة</button>
@@ -183,6 +173,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
             <button class="btn-now" onclick="forceSyncNow()">⚡ فوري</button>
             <button class="btn-now" onclick="uploadTestFile()">📤 اختبار</button>
             <button class="btn-gist" onclick="syncAllToGist()">📦 رفع الكل إلى Gist</button>
+            <button class="btn-now" onclick="fetchAllContent()">📥 جلب كل المحتوى</button>
         </div>
 
         <div class="telegram-settings" id="telegramSettings">
@@ -201,7 +192,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
             </div>
         </div>
 
-        <!-- لوحة Gist -->
         <div id="gistPanel">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                 <span style="color:#ffd700;font-size:12px;font-weight:700;">📦 Gist CDN</span>
@@ -233,7 +223,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
     </div>
 </div>
 
-<!-- لوحة المربع -->
 <div class="tile-panel" id="tilePanel">
     <div class="panel-header"><h3 id="panelTitle">📦 المربع</h3><button onclick="closePanel()">✖</button></div>
     <div class="info-grid">
@@ -245,30 +234,30 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
         <div class="info-item"><span>📦 Gist</span><span class="value" id="panelGist">❌</span></div>
     </div>
     <div class="file-list" id="panelFiles"></div>
+    <div id="tileLinksContainer"></div>
     <div class="actions">
         <button class="btn-upload" onclick="uploadFile()">📤 رفع</button>
         <button class="btn-start" onclick="toggleServer()" id="panelStartBtn">▶️ تشغيل</button>
         <button class="btn-protect" onclick="toggleProtect()" id="panelProtectBtn">🛡️ حماية</button>
         <button class="btn-delete" onclick="clearTile()">🗑️ تفريغ</button>
+        <button class="btn-run" onclick="runCurrentTile()">🚀 تشغيل كتطبيق</button>
+        <button class="btn-preview" onclick="previewCurrentTile()">👁️ معاينة</button>
         <button class="btn-sync" onclick="syncTileToChannel()">🔄 مزامنة</button>
         <button class="btn-gist" onclick="syncCurrentTileToGist()">📦 رفع إلى Gist</button>
+        <button class="btn-fetch" onclick="fetchCurrentTileContent()">📥 جلب المحتوى</button>
+        <button class="btn-link" onclick="showTileLinks()">🔗 روابط المربع</button>
     </div>
 </div>
 
-<!-- محرر الملفات -->
 <div class="file-editor" id="fileEditor">
     <div class="editor-header"><h4 id="editorTitle">📝 تحرير</h4><button onclick="closeEditor()">✖</button></div>
     <textarea id="editorContent" spellcheck="false"></textarea>
     <div class="editor-actions"><button class="btn-save" onclick="saveFile()">💾 حفظ</button><button class="btn-close" onclick="closeEditor()">✖ إلغاء</button></div>
 </div>
 
-<!-- توست -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ============================================================
-// 🔐 المصادقة
-// ============================================================
 const ADMIN = { username: 'admin', password: 'admin123' };
 let isAdmin = false;
 
@@ -297,10 +286,8 @@ function logoutAdmin() {
     }
 }
 
-// ============================================================
-// 💬 توست
-// ============================================================
-function showToast(msg, type = 'info') {
+function showToast(msg, type) {
+    type = type || 'info';
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.className = 'toast ' + type;
@@ -309,15 +296,14 @@ function showToast(msg, type = 'info') {
     t._timeout = setTimeout(() => t.style.display = 'none', 4000);
 }
 
-// ============================================================
-// 🗄️ ServerManager
-// ============================================================
 const ServerManager = {
     tiles: {},
     protectedTiles: new Set(),
     activeServers: new Set(),
     syncedTiles: new Set(),
     gistTiles: new Set(),
+    currentTile: null,
+    currentFile: null,
 
     init() {
         this.loadTiles();
@@ -376,12 +362,12 @@ const ServerManager = {
                 if (fileCount > 0) div.classList.add('has-files');
                 if (isProtected) div.classList.add('protected');
                 div.dataset.tile = id;
-                let html = `<div class="icon">${isGist ? '📦' : '📦'}</div>`;
-                html += `<div class="label">${r},${c}</div>`;
-                html += `<div class="status ${isActive ? 'running' : 'offline'}">${isActive ? '🟢' : '⚪'}</div>`;
-                if (fileCount > 0) html += `<div class="badge">${fileCount}</div>`;
-                if (isSynced) html += `<div class="sync-badge">🔄</div>`;
-                if (isGist) html += `<div class="gist-badge">G</div>`;
+                let html = '<div class="icon">' + (isGist ? '📦' : '📦') + '</div>';
+                html += '<div class="label">' + r + ',' + c + '</div>';
+                html += '<div class="status ' + (isActive ? 'running' : 'offline') + '">' + (isActive ? '🟢' : '⚪') + '</div>';
+                if (fileCount > 0) html += '<div class="badge">' + fileCount + '</div>';
+                if (isSynced) html += '<div class="sync-badge">🔄</div>';
+                if (isGist) html += '<div class="gist-badge">G</div>';
                 div.innerHTML = html;
                 div.onclick = () => this.openPanel(id);
                 grid.appendChild(div);
@@ -394,7 +380,8 @@ const ServerManager = {
         const total = Object.keys(this.tiles).length;
         const online = this.activeServers.size;
         let files = 0, gistFiles = 0;
-        for (const [id, t] of Object.entries(this.tiles)) {
+        for (const id in this.tiles) {
+            const t = this.tiles[id];
             if (t && t.files) {
                 const count = Object.keys(t.files).length;
                 files += count;
@@ -417,8 +404,8 @@ const ServerManager = {
         const panel = document.getElementById('tilePanel');
         panel.classList.add('open');
         const isGist = this.gistTiles.has(id);
-        document.getElementById('panelTitle').innerHTML = `📦 المربع (${tile.row}, ${tile.col}) ${isGist ? '<span class="admin-tag">📦 Gist</span>' : ''}`;
-        document.getElementById('panelLocation').textContent = `(${tile.row}, ${tile.col})`;
+        document.getElementById('panelTitle').innerHTML = '📦 المربع (' + tile.row + ', ' + tile.col + ') ' + (isGist ? '<span class="admin-tag">📦 Gist</span>' : '');
+        document.getElementById('panelLocation').textContent = '(' + tile.row + ', ' + tile.col + ')';
         const isActive = this.activeServers.has(id);
         const st = document.getElementById('panelStatus');
         st.textContent = isActive ? '🟢 نشط' : '⚪ غير نشط';
@@ -435,6 +422,9 @@ const ServerManager = {
         document.getElementById('panelProtectBtn').textContent = isProtected ? '🔓 إزالة' : '🛡️ حماية';
         this.renderFiles(tile);
         document.getElementById('panelFileCount').textContent = tile.files ? Object.keys(tile.files).length : 0;
+        setTimeout(() => {
+            if (window.TileLinkSystem) TileLinkSystem.renderTileLinks(id);
+        }, 50);
     },
 
     renderFiles(tile) {
@@ -444,25 +434,23 @@ const ServerManager = {
             container.innerHTML = '<div style="color:#666;font-size:11px;text-align:center;padding:10px;">📭 لا توجد ملفات</div>';
             return;
         }
-        const isGist = this.gistTiles.has(tile.id);
-        for (const [name, content] of Object.entries(tile.files)) {
+        for (const name in tile.files) {
+            const content = tile.files[name];
             const div = document.createElement('div');
             div.className = 'file-item';
             const isMeta = content && content.trim().startsWith('[METADATA]');
             const hasGist = tile.gistLinks && tile.gistLinks[name];
             const size = new Blob([content]).size;
             const sizeStr = size < 1024 ? size + 'B' : (size / 1024).toFixed(1) + 'KB';
-            div.innerHTML = `
-                <span class="name">${name}${isMeta ? ' ⚠️' : ''}${hasGist ? ' 📦' : ''}</span>
-                <span class="size">${sizeStr}</span>
-                <span class="actions">
-                    <button class="edit" onclick="ServerManager.editFile('${tile.id}','${name}')">✏️</button>
-                    <button class="sync" onclick="ServerManager.syncFile('${tile.id}','${name}')">🔄</button>
-                    <button class="gist" onclick="GistCDN.syncTileToGist('${tile.id}','${name}')">📦</button>
-                    <button onclick="ServerManager.downloadFile('${tile.id}','${name}')">⬇️</button>
-                    <button class="delete" onclick="ServerManager.deleteFile('${tile.id}','${name}')">🗑️</button>
-                </span>
-            `;
+            div.innerHTML = '<span class="name">' + name + (isMeta ? ' ⚠️' : '') + (hasGist ? ' 📦' : '') + '</span>' +
+                '<span class="size">' + sizeStr + '</span>' +
+                '<span class="actions">' +
+                '<button class="edit" onclick="ServerManager.editFile(' + "'" + tile.id + "','" + name + "'" + ')">✏️</button>' +
+                '<button class="sync" onclick="ServerManager.syncFile(' + "'" + tile.id + "','" + name + "'" + ')">🔄</button>' +
+                '<button class="gist" onclick="GistCDN.syncTileToGist(' + "'" + tile.id + "','" + name + "'" + ')">📦</button>' +
+                '<button onclick="ServerManager.downloadFile(' + "'" + tile.id + "','" + name + "'" + ')">⬇️</button>' +
+                '<button class="delete" onclick="ServerManager.deleteFile(' + "'" + tile.id + "','" + name + "'" + ')">🗑️</button>' +
+                '</span>';
             container.appendChild(div);
         }
     },
@@ -610,8 +598,8 @@ const ServerManager = {
             return;
         }
         try {
-            const [r, c] = tileId.split('_');
-            const name = 'tile_' + r + '_' + c + '_' + fileName;
+            const parts = tileId.split('_');
+            const name = 'tile_' + parts[0] + '_' + parts[1] + '_' + fileName;
             const content = tile.files[fileName];
             const blob = new Blob([content], { type: 'text/plain' });
             const file = new File([blob], name);
@@ -646,7 +634,7 @@ const ServerManager = {
             return;
         }
         let synced = 0;
-        for (const f of Object.keys(tile.files)) {
+        for (const f in tile.files) {
             await this.syncFile(this.currentTile, f);
             synced++;
         }
@@ -813,7 +801,6 @@ const ServerManager = {
     }
 };
 
-// دوال واجهة
 function closePanel() { ServerManager.closePanel(); }
 function closeEditor() { ServerManager.closeEditor(); }
 function uploadFile() { ServerManager.uploadFile(); }
@@ -828,6 +815,205 @@ function resetAll() { ServerManager.resetAll(); }
 function toggleTelegramSettings() { document.getElementById('telegramSettings').classList.toggle('open'); }
 function saveTelegramSettings() { ServerManager.saveTelegramSettings(); }
 function testTelegramConnection() { ServerManager.testTelegramConnection(); }
+
+// ============================================================
+// 🚀 TileRuntime - تشغيل المربع كتطبيق متكامل
+// ============================================================
+const TileRuntime = {
+    blobUrls: {},
+
+    getMimeType(fileName) {
+        const ext = fileName.split('.').pop().toLowerCase();
+        const map = {
+            html: 'text/html', htm: 'text/html',
+            js: 'application/javascript', mjs: 'application/javascript',
+            css: 'text/css', json: 'application/json',
+            png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
+            gif: 'image/gif', svg: 'image/svg+xml', ico: 'image/x-icon',
+            txt: 'text/plain', md: 'text/markdown',
+            xml: 'application/xml', pdf: 'application/pdf'
+        };
+        return map[ext] || 'text/plain';
+    },
+
+    createFileUrl(tileId, fileName) {
+        const tile = ServerManager.tiles[tileId];
+        if (!tile || !tile.files || !tile.files[fileName]) return null;
+        const blob = new Blob([tile.files[fileName]], { type: this.getMimeType(fileName) });
+        const url = URL.createObjectURL(blob);
+        if (!this.blobUrls[tileId]) this.blobUrls[tileId] = {};
+        this.blobUrls[tileId][fileName] = url;
+        return url;
+    },
+
+    resolvePath(url, currentFile) {
+        if (!url || url.match(/^(https?|data|blob|#|javascript|mailto|tel):/i)) return url;
+        const dir = currentFile.includes('/') ? currentFile.substring(0, currentFile.lastIndexOf('/') + 1) : '';
+        if (url.startsWith('./')) return dir + url.slice(2);
+        if (url.startsWith('../')) {
+            const parts = dir.replace(/\/$/, '').split('/');
+            parts.pop();
+            return parts.join('/') + '/' + url.slice(3);
+        }
+        if (url.startsWith('/')) return url.slice(1);
+        return dir + url;
+    },
+
+    rewriteContent(content, fileName, urlMap) {
+        const self = this;
+
+        // 1. HTML attributes: href, src, action, data, poster, background
+        content = content.replace(/\b(href|src|action|data|poster|background)\s*=\s*["']([^"']+)["']/gi, function(m, attr, url) {
+            const resolved = self.resolvePath(url, fileName);
+            const blob = urlMap[resolved] || urlMap[url];
+            return blob ? attr + '="' + blob + '"' : m;
+        });
+
+        // 2. url() in CSS
+        content = content.replace(/url\s*\(\s*["']?([^"')]+)["']?\s*\)/gi, function(m, url) {
+            const resolved = self.resolvePath(url, fileName);
+            const blob = urlMap[resolved] || urlMap[url];
+            return blob ? 'url("' + blob + '")' : m;
+        });
+
+        // 3. fetch() in JavaScript
+        content = content.replace(/fetch\s*\(\s*["']([^"']+)["']\s*\)/gi, function(m, url) {
+            const resolved = self.resolvePath(url, fileName);
+            const blob = urlMap[resolved] || urlMap[url];
+            return blob ? 'fetch("' + blob + '")' : m;
+        });
+
+        // 4. XMLHttpRequest.open()
+        content = content.replace(/\.open\s*\(\s*["'](GET|POST)["']\s*,\s*["']([^"']+)["']/gi, function(m, method, url) {
+            const resolved = self.resolvePath(url, fileName);
+            const blob = urlMap[resolved] || urlMap[url];
+            return blob ? '.open("' + method + '","' + blob + '"' : m;
+        });
+
+        // 5. import / export in JS
+        content = content.replace(/from\s+["']([^"']+)["']/gi, function(m, url) {
+            const resolved = self.resolvePath(url, fileName);
+            const blob = urlMap[resolved] || urlMap[url];
+            return blob ? 'from "' + blob + '"' : m;
+        });
+
+        // 6. window.open()
+        content = content.replace(/window\.open\s*\(\s*["']([^"']+)["']/gi, function(m, url) {
+            const resolved = self.resolvePath(url, fileName);
+            const blob = urlMap[resolved] || urlMap[url];
+            return blob ? 'window.open("' + blob + '"' : m;
+        });
+
+        // 7. location.href / location.replace / location.assign
+        content = content.replace(/location\.(href|replace|assign)\s*=\s*["']([^"']+)["']/gi, function(m, method, url) {
+            const resolved = self.resolvePath(url, fileName);
+            const blob = urlMap[resolved] || urlMap[url];
+            return blob ? 'location.' + method + '="' + blob + '"' : m;
+        });
+
+        // 8. @import in CSS
+        content = content.replace(/@import\s+["']([^"']+)["']/gi, function(m, url) {
+            const resolved = self.resolvePath(url, fileName);
+            const blob = urlMap[resolved] || urlMap[url];
+            return blob ? '@import "' + blob + '"' : m;
+        });
+
+        // 9. srcset in img
+        content = content.replace(/srcset\s*=\s*["']([^"']+)["']/gi, function(m, srcset) {
+            const parts = srcset.split(',');
+            const newParts = parts.map(function(part) {
+                const trimmed = part.trim();
+                const spaceIdx = trimmed.indexOf(' ');
+                const url = spaceIdx > -1 ? trimmed.substring(0, spaceIdx) : trimmed;
+                const descriptor = spaceIdx > -1 ? trimmed.substring(spaceIdx) : '';
+                const resolved = self.resolvePath(url, fileName);
+                const blob = urlMap[resolved] || urlMap[url];
+                return blob ? blob + descriptor : part;
+            });
+            return 'srcset="' + newParts.join(', ') + '"';
+        });
+
+        return content;
+    },
+
+    runTile(tileId, targetFile) {
+        const tile = ServerManager.tiles[tileId];
+        if (!tile || !tile.files || Object.keys(tile.files).length === 0) {
+            showToast('❌ لا توجد ملفات في هذا المربع', 'error');
+            return;
+        }
+
+        const files = Object.keys(tile.files);
+        const mainFile = targetFile || files.find(function(f) { return f.match(/^index\.html?$/i); }) || files.find(function(f) { return f.endsWith('.html'); }) || files[0];
+
+        const urlMap = {};
+        for (const name of files) {
+            urlMap[name] = this.createFileUrl(tileId, name);
+        }
+
+        let content = tile.files[mainFile];
+        content = this.rewriteContent(content, mainFile, urlMap);
+
+        const win = window.open('', '_blank');
+        if (!win) {
+            showToast('❌ تم حظر النافذة المنبثقة! اسمح بالنوافذ المنبثقة.', 'error');
+            return;
+        }
+
+        win.document.open();
+        win.document.write(content);
+        win.document.close();
+        win.document.title = '🚀 Tile ' + tileId + ' - ' + mainFile;
+
+        showToast('🚀 تم تشغيل ' + mainFile + ' مع ' + files.length + ' ملف مرتبط', 'success');
+    },
+
+    previewTile(tileId, containerId) {
+        containerId = containerId || 'tilePreview';
+        const tile = ServerManager.tiles[tileId];
+        if (!tile || !tile.files) return;
+
+        let container = document.getElementById(containerId);
+        if (!container) {
+            container = document.createElement('div');
+            container.id = containerId;
+            container.style.cssText = 'position:fixed;top:10%;left:10%;width:80%;height:80%;background:#000;z-index:999999;border:2px solid #8b5cf6;border-radius:12px;overflow:hidden;';
+            container.innerHTML = '<div style="display:flex;justify-content:space-between;padding:8px;background:#1a1a2e;border-bottom:1px solid #333;">' +
+                '<span style="color:#a78bfa;font-size:12px;">👁️ معاينة المربع (' + tileId + ')</span>' +
+                '<button onclick="this.parentElement.parentElement.remove()" style="background:#f87171;border:none;color:#fff;padding:2px 10px;border-radius:4px;cursor:pointer;">✖ إغلاق</button>' +
+                '</div>';
+            document.body.appendChild(container);
+        }
+
+        const files = Object.keys(tile.files);
+        const mainFile = files.find(function(f) { return f.match(/^index\.html?$/i); }) || files.find(function(f) { return f.endsWith('.html'); }) || files[0];
+        const urlMap = {};
+        for (const name of files) urlMap[name] = this.createFileUrl(tileId, name);
+
+        let content = tile.files[mainFile];
+        content = this.rewriteContent(content, mainFile, urlMap);
+
+        const existingIframe = container.querySelector('iframe');
+        if (existingIframe) existingIframe.remove();
+
+        const iframe = document.createElement('iframe');
+        iframe.style.cssText = 'width:100%;height:calc(100% - 40px);border:none;background:#fff;';
+        container.appendChild(iframe);
+
+        iframe.srcdoc = content;
+        showToast('👁️ تم فتح المعاينة', 'success');
+    },
+
+    revokeTileUrls(tileId) {
+        if (this.blobUrls[tileId]) {
+            Object.values(this.blobUrls[tileId]).forEach(function(url) { URL.revokeObjectURL(url); });
+            delete this.blobUrls[tileId];
+        }
+    }
+};
+
+function runCurrentTile() { TileRuntime.runTile(ServerManager.currentTile); }
+function previewCurrentTile() { TileRuntime.previewTile(ServerManager.currentTile); }
 
 // ============================================================
 // 🔄 AutoReceiver
@@ -989,7 +1175,8 @@ const GistCDN = {
         this.config.gistId = '';
     },
 
-    saveConfig(token, gistId = '') {
+    saveConfig(token, gistId) {
+        gistId = gistId || '';
         localStorage.setItem('github_token', token);
         if (gistId) localStorage.setItem('gist_id', gistId);
         this.config.token = token;
@@ -1005,24 +1192,23 @@ const GistCDN = {
 
         try {
             const url = this.config.gistId 
-                ? `https://api.github.com/gists/${this.config.gistId}`
+                ? 'https://api.github.com/gists/' + this.config.gistId
                 : 'https://api.github.com/gists';
 
             const method = this.config.gistId ? 'PATCH' : 'POST';
-            
+
             const body = {
                 description: '📦 TileCDN Files',
                 public: false,
-                files: {
-                    [filename]: { content: content }
-                }
+                files: {}
             };
+            body.files[filename] = { content: content };
 
             if (this.config.gistId) {
                 const existing = await this.getGistFiles();
-                for (const [key, value] of Object.entries(existing)) {
+                for (const key in existing) {
                     if (key !== filename) {
-                        body.files[key] = { content: value };
+                        body.files[key] = { content: existing[key] };
                     }
                 }
             }
@@ -1030,7 +1216,7 @@ const GistCDN = {
             const response = await fetch(url, {
                 method: method,
                 headers: {
-                    'Authorization': `token ${this.config.token}`,
+                    'Authorization': 'token ' + this.config.token,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(body)
@@ -1043,7 +1229,7 @@ const GistCDN = {
                     this.config.gistId = data.id;
                     localStorage.setItem('gist_id', data.id);
                 }
-                const rawUrl = `https://gist.githubusercontent.com/raw/${data.id}/${filename}`;
+                const rawUrl = 'https://gist.githubusercontent.com/raw/' + data.id + '/' + filename;
                 return rawUrl;
             } else {
                 console.error('❌ فشل الرفع:', data);
@@ -1062,7 +1248,7 @@ const GistCDN = {
         }
 
         try {
-            const rawUrl = `https://gist.githubusercontent.com/raw/${this.config.gistId}/${filename}`;
+            const rawUrl = 'https://gist.githubusercontent.com/raw/' + this.config.gistId + '/' + filename;
             const response = await fetch(rawUrl);
             if (!response.ok) return null;
             return await response.text();
@@ -1076,14 +1262,14 @@ const GistCDN = {
         if (!this.config.gistId || !this.config.token) return {};
 
         try {
-            const response = await fetch(`https://api.github.com/gists/${this.config.gistId}`, {
-                headers: { 'Authorization': `token ${this.config.token}` }
+            const response = await fetch('https://api.github.com/gists/' + this.config.gistId, {
+                headers: { 'Authorization': 'token ' + this.config.token }
             });
             const data = await response.json();
             const files = {};
             if (data.files) {
-                for (const [key, value] of Object.entries(data.files)) {
-                    files[key] = value.content;
+                for (const key in data.files) {
+                    files[key] = data.files[key].content;
                 }
             }
             return files;
@@ -1102,10 +1288,10 @@ const GistCDN = {
         }
 
         const content = tile.files[fileName];
-        const gistFileName = `tile_${tileId}_${fileName}`;
-        
+        const gistFileName = 'tile_' + tileId + '_' + fileName;
+
         const gistUrl = await this.uploadToGist(content, gistFileName);
-        
+
         if (gistUrl) {
             if (!tile.gistLinks) tile.gistLinks = {};
             tile.gistLinks[fileName] = gistUrl;
@@ -1113,13 +1299,13 @@ const GistCDN = {
             sm.saveTiles();
             sm.renderGrid();
             sm.updateStats();
-            showToast(`✅ تم رفع ${fileName} إلى Gist`, 'success');
-            
+            showToast('✅ تم رفع ' + fileName + ' إلى Gist', 'success');
+
             const token = localStorage.getItem('bot_token');
             const chatId = localStorage.getItem('chat_id');
             if (token && chatId) {
-                const message = `📦 **${fileName}**\n🔗 ${gistUrl}\n📍 tile_${tileId}\n\n#Gist #CDN`;
-                await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                const message = '📦 **' + fileName + '**\n🔗 ' + gistUrl + '\n📍 tile_' + tileId + '\n\n#Gist #CDN';
+                await fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1140,20 +1326,20 @@ const GistCDN = {
                 showToast('❌ فشل تحميل الملف من Gist', 'error');
                 return;
             }
-            
+
             const sm = ServerManager;
             if (!sm.tiles[tileId]) {
-                const [r, c] = tileId.split('_');
+                const parts = tileId.split('_');
                 sm.tiles[tileId] = {
                     id: tileId,
-                    row: parseInt(r),
-                    col: parseInt(c),
+                    row: parseInt(parts[0]),
+                    col: parseInt(parts[1]),
                     files: {},
                     gistLinks: {},
                     created: Date.now()
                 };
             }
-            
+
             sm.tiles[tileId].files[fileName] = content;
             sm.tiles[tileId].gistLinks[fileName] = gistUrl;
             sm.syncedTiles.add(tileId);
@@ -1161,8 +1347,8 @@ const GistCDN = {
             sm.saveTiles();
             sm.renderGrid();
             sm.updateStats();
-            
-            showToast(`✅ تم استيراد ${fileName} من Gist`, 'success');
+
+            showToast('✅ تم استيراد ' + fileName + ' من Gist', 'success');
         } catch(error) {
             showToast('❌ فشل الاستيراد: ' + error.message, 'error');
         }
@@ -1173,14 +1359,14 @@ const GistCDN = {
             showToast('⚠️ أدخل GitHub Token', 'warning');
             return;
         }
-        
+
         try {
             const response = await fetch('https://api.github.com/user', {
-                headers: { 'Authorization': `token ${this.config.token}` }
+                headers: { 'Authorization': 'token ' + this.config.token }
             });
             const data = await response.json();
             if (response.ok) {
-                showToast(`✅ متصل بـ GitHub: ${data.login}`, 'success');
+                showToast('✅ متصل بـ GitHub: ' + data.login, 'success');
             } else {
                 showToast('❌ فشل الاتصال: ' + data.message, 'error');
             }
@@ -1191,7 +1377,283 @@ const GistCDN = {
 };
 
 // ============================================================
-// 🖥️ Gist واجهة
+// 🔗 TileLinkSystem
+// ============================================================
+const TileLinkSystem = {
+    generateTileLink(tileId) {
+        const baseUrl = window.location.origin + window.location.pathname;
+        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        return cleanBase + '/tile/' + tileId;
+    },
+
+    generateFileLink(tileId, fileName) {
+        const baseUrl = window.location.origin + window.location.pathname;
+        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        return cleanBase + '/tile/' + tileId + '/' + encodeURIComponent(fileName);
+    },
+
+    copyTileLink(tileId) {
+        const link = this.generateTileLink(tileId);
+        navigator.clipboard.writeText(link).then(function() {
+            showToast('✅ تم نسخ رابط المربع (' + tileId + ')', 'success');
+        }).catch(function() {
+            const input = document.createElement('input');
+            input.value = link;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            showToast('✅ تم نسخ رابط المربع (' + tileId + ')', 'success');
+        });
+        return link;
+    },
+
+    copyFileLink(tileId, fileName) {
+        const link = this.generateFileLink(tileId, fileName);
+        navigator.clipboard.writeText(link).then(function() {
+            showToast('✅ تم نسخ رابط ' + fileName, 'success');
+        }).catch(function() {
+            const input = document.createElement('input');
+            input.value = link;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            showToast('✅ تم نسخ رابط ' + fileName, 'success');
+        });
+        return link;
+    },
+
+    renderTileLinks(tileId) {
+        const tile = ServerManager.tiles[tileId];
+        if (!tile) return;
+
+        const container = document.getElementById('tileLinksContainer');
+        if (!container) return;
+
+        const tileLink = this.generateTileLink(tileId);
+        let html = '<div style="margin-top:8px;padding:8px;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);border-radius:6px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">' +
+            '<span style="color:#ffd700;font-size:10px;font-weight:600;">🔗 روابط المربع (' + tileId + ')</span>' +
+            '<button onclick="TileLinkSystem.copyTileLink(' + "'" + tileId + "'" + ')" style="padding:2px 8px;background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2);border-radius:4px;cursor:pointer;font-size:9px;font-family:inherit;">📋 نسخ</button>' +
+            '</div>' +
+            '<div style="font-size:9px;color:#888;word-break:break-all;direction:ltr;text-align:left;">' + tileLink + '</div>' +
+            '</div>';
+
+        if (tile.files && Object.keys(tile.files).length > 0) {
+            html += '<div style="margin-top:4px;padding:6px;background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.1);border-radius:4px;">' +
+                '<div style="color:#4ade80;font-size:9px;font-weight:600;margin-bottom:4px;">📄 روابط الملفات:</div>';
+
+            for (const fileName in tile.files) {
+                const content = tile.files[fileName];
+                const fileLink = this.generateFileLink(tileId, fileName);
+                const isMeta = content && content.trim().startsWith('[METADATA]');
+                html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.03);">' +
+                    '<span style="font-size:9px;color:#ccc;">' + fileName + (isMeta ? ' ⚠️' : '') + '</span>' +
+                    '<button onclick="TileLinkSystem.copyFileLink(' + "'" + tileId + "','" + fileName + "'" + ')" style="padding:1px 6px;background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);border-radius:3px;cursor:pointer;font-size:8px;font-family:inherit;">📋</button>' +
+                    '</div>';
+            }
+            html += '</div>';
+        }
+
+        container.innerHTML = html;
+    },
+
+    showTileInfo(tileId) {
+        const sm = ServerManager;
+        const tile = sm.tiles[tileId];
+        if (!tile) {
+            showToast('❌ المربع غير موجود', 'error');
+            return;
+        }
+
+        const fileCount = tile.files ? Object.keys(tile.files).length : 0;
+        const tileLink = this.generateTileLink(tileId);
+
+        let message = '📦 **معلومات المربع (' + tileId + ')**\n\n';
+        message += '📍 **الموقع:** (' + tile.row + ', ' + tile.col + ')\n';
+        message += '📄 **الملفات:** ' + fileCount + '\n';
+        message += '🔄 **مزامنة:** ' + (sm.syncedTiles.has(tileId) ? '✅' : '❌') + '\n';
+        message += '🛡️ **حماية:** ' + (sm.protectedTiles.has(tileId) ? '✅' : '❌') + '\n\n';
+        message += '🔗 **الرابط:**\n' + tileLink + '\n\n';
+
+        if (fileCount > 0) {
+            message += '📄 **الملفات:**\n';
+            for (const fileName in tile.files) {
+                const fileLink = this.generateFileLink(tileId, fileName);
+                message += '• ' + fileName + '\n  ' + fileLink + '\n';
+            }
+        }
+
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;z-index:999999;padding:20px;backdrop-filter:blur(5px);';
+
+        overlay.innerHTML = '<div style="background:#1a1a2e;border:1px solid #ffd700;border-radius:12px;padding:20px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;color:#fff;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+            '<h3 style="color:#ffd700;margin:0;">📦 معلومات المربع (' + tileId + ')</h3>' +
+            '<button onclick="this.closest(\'div\').parentElement.remove()" style="background:#f87171;border:none;color:#fff;padding:4px 12px;border-radius:4px;cursor:pointer;font-family:inherit;">✖</button>' +
+            '</div>' +
+            '<div style="font-size:12px;line-height:1.8;white-space:pre-wrap;word-break:break-all;direction:ltr;text-align:left;">' + message + '</div>' +
+            '<button onclick="navigator.clipboard.writeText(\'' + tileLink + '\')" style="margin-top:12px;padding:6px 16px;background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.2);border-radius:4px;cursor:pointer;font-family:inherit;width:100%;font-size:12px;">' +
+            '📋 نسخ الرابط' +
+            '</button>' +
+            '</div>';
+
+        document.body.appendChild(overlay);
+    }
+};
+
+// ============================================================
+// 📥 FileFetcher
+// ============================================================
+const FileFetcher = {
+    extractFileId(content) {
+        const match = content.match(/file_id:\s*(.+)/);
+        return match ? match[1].trim() : null;
+    },
+
+    async fetchRealContent(fileId, tileId, fileName) {
+        const token = localStorage.getItem('bot_token');
+        if (!token) {
+            showToast('⚠️ Bot Token غير موجود!', 'warning');
+            return null;
+        }
+
+        try {
+            const fileRes = await fetch('https://api.telegram.org/bot' + token + '/getFile?file_id=' + fileId);
+            const fileData = await fileRes.json();
+
+            if (!fileData.ok) {
+                showToast('❌ فشل الحصول على الملف: ' + fileData.description, 'error');
+                return null;
+            }
+
+            const fileUrl = 'https://api.telegram.org/file/bot' + token + '/' + fileData.result.file_path;
+            const contentRes = await fetch(fileUrl);
+            const content = await contentRes.text();
+
+            const sm = ServerManager;
+            if (!sm.tiles[tileId]) {
+                const parts = tileId.split('_');
+                sm.tiles[tileId] = {
+                    id: tileId,
+                    row: parseInt(parts[0]),
+                    col: parseInt(parts[1]),
+                    files: {},
+                    gistLinks: {},
+                    created: Date.now()
+                };
+            }
+
+            sm.tiles[tileId].files[fileName] = content;
+            sm.syncedTiles.add(tileId);
+            sm.saveTiles();
+            sm.renderGrid();
+            sm.updateStats();
+
+            showToast('✅ تم جلب المحتوى الفعلي لـ ' + fileName, 'success');
+            return content;
+
+        } catch(error) {
+            showToast('❌ فشل جلب المحتوى: ' + error.message, 'error');
+            return null;
+        }
+    },
+
+    async fetchCurrentTileContent() {
+        const tileId = ServerManager.currentTile;
+        if (!tileId) {
+            showToast('⚠️ اختر مربعاً أولاً', 'warning');
+            return;
+        }
+
+        const tile = ServerManager.tiles[tileId];
+        if (!tile || !tile.files) {
+            showToast('❌ لا توجد ملفات في هذا المربع', 'error');
+            return;
+        }
+
+        let fetched = 0;
+        for (const fileName in tile.files) {
+            const content = tile.files[fileName];
+            if (content.trim().startsWith('[METADATA]')) {
+                const fileId = this.extractFileId(content);
+                if (fileId) {
+                    const result = await this.fetchRealContent(fileId, tileId, fileName);
+                    if (result) fetched++;
+                }
+            }
+        }
+
+        if (fetched > 0) {
+            showToast('✅ تم جلب ' + fetched + ' ملفات', 'success');
+        } else {
+            showToast('📭 لا توجد ملفات Metadata في هذا المربع', 'info');
+        }
+    },
+
+    async getFileLink(fileId) {
+        const token = localStorage.getItem('bot_token');
+        if (!token) {
+            showToast('⚠️ Bot Token غير موجود!', 'warning');
+            return null;
+        }
+
+        try {
+            const fileRes = await fetch('https://api.telegram.org/bot' + token + '/getFile?file_id=' + fileId);
+            const fileData = await fileRes.json();
+
+            if (!fileData.ok) {
+                showToast('❌ فشل الحصول على الرابط: ' + fileData.description, 'error');
+                return null;
+            }
+
+            const fileUrl = 'https://api.telegram.org/file/bot' + token + '/' + fileData.result.file_path;
+            navigator.clipboard.writeText(fileUrl).then(function() {
+                showToast('✅ تم نسخ الرابط!', 'success');
+            });
+
+            return fileUrl;
+
+        } catch(error) {
+            showToast('❌ فشل جلب الرابط: ' + error.message, 'error');
+            return null;
+        }
+    },
+
+    async copyCurrentFileLink() {
+        const tileId = ServerManager.currentTile;
+        if (!tileId) {
+            showToast('⚠️ اختر مربعاً أولاً', 'warning');
+            return;
+        }
+
+        const tile = ServerManager.tiles[tileId];
+        if (!tile || !tile.files) {
+            showToast('❌ لا توجد ملفات', 'error');
+            return;
+        }
+
+        for (const fileName in tile.files) {
+            const content = tile.files[fileName];
+            if (content.trim().startsWith('[METADATA]')) {
+                const fileId = this.extractFileId(content);
+                if (fileId) {
+                    const link = await this.getFileLink(fileId);
+                    if (link) {
+                        showToast('🔗 ' + link, 'success');
+                        return;
+                    }
+                }
+            }
+        }
+
+        showToast('❌ لا يوجد ملف Metadata مع file_id', 'error');
+    }
+};
+
+// ============================================================
+// 🖥️ دوال الواجهة
 // ============================================================
 function toggleGistPanel() {
     const panel = document.getElementById('gistPanel');
@@ -1222,24 +1684,25 @@ function syncCurrentTileToGist() {
         return;
     }
     let synced = 0;
-    for (const fileName of Object.keys(tile.files)) {
+    for (const fileName in tile.files) {
         GistCDN.syncTileToGist(tileId, fileName);
         synced++;
     }
-    showToast(`✅ تم رفع ${synced} ملف إلى Gist`, 'success');
+    showToast('✅ تم رفع ' + synced + ' ملف إلى Gist', 'success');
 }
 
 function syncAllToGist() {
     const sm = ServerManager;
     let total = 0;
-    for (const [tileId, tile] of Object.entries(sm.tiles)) {
+    for (const tileId in sm.tiles) {
+        const tile = sm.tiles[tileId];
         if (!tile.files || Object.keys(tile.files).length === 0) continue;
-        for (const fileName of Object.keys(tile.files)) {
+        for (const fileName in tile.files) {
             GistCDN.syncTileToGist(tileId, fileName);
             total++;
         }
     }
-    showToast(`✅ تم رفع ${total} ملف إلى Gist`, 'success');
+    showToast('✅ تم رفع ' + total + ' ملف إلى Gist', 'success');
 }
 
 function promptImportFromGist() {
@@ -1262,30 +1725,48 @@ async function listGistFiles() {
         resultEl.innerHTML = '<span style="color:#888;">📭 لا توجد ملفات في Gist</span>';
         return;
     }
-    let html = `<span style="color:#4ade80;">📋 ${fileNames.length} ملفات:</span><br>`;
+    let html = '<span style="color:#4ade80;">📋 ' + fileNames.length + ' ملفات:</span><br>';
     for (const name of fileNames) {
-        const size = files[name]?.length || 0;
+        const size = files[name] ? files[name].length : 0;
         const sizeStr = size < 1024 ? size + 'B' : (size / 1024).toFixed(1) + 'KB';
-        html += `<span style="color:#ccc;font-size:9px;">📄 ${name} (${sizeStr})</span><br>`;
+        html += '<span style="color:#ccc;font-size:9px;">📄 ' + name + ' (' + sizeStr + ')</span><br>';
     }
     resultEl.innerHTML = html;
 }
 
-// ============================================================
-// 🧪 اختبار
-// ============================================================
+function fetchCurrentTileContent() {
+    FileFetcher.fetchCurrentTileContent();
+}
+
+function fetchAllContent() {
+    const sm = ServerManager;
+    let total = 0;
+    for (const tileId in sm.tiles) {
+        const tile = sm.tiles[tileId];
+        if (!tile.files) continue;
+        for (const fileName in tile.files) {
+            const content = tile.files[fileName];
+            if (content.trim().startsWith('[METADATA]')) {
+                const fileId = FileFetcher.extractFileId(content);
+                if (fileId) {
+                    FileFetcher.fetchRealContent(fileId, tileId, fileName);
+                    total++;
+                }
+            }
+        }
+    }
+    if (total > 0) showToast('✅ جاري جلب ' + total + ' ملف...', 'info');
+}
+
+function showTileLinks() {
+    const tileId = ServerManager.currentTile;
+    if (tileId) TileLinkSystem.showTileInfo(tileId);
+}
+
 function uploadTestFile() {
     const sm = ServerManager;
     const id = '5_3';
-    const html = `<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>تجربة</title></head>
-<body>
-<h1 style="color:#4ade80;">✅ مرحباً!</h1>
-<p>ملف تجريبي من TileCDN + Gist</p>
-<button onclick="alert('🚀 يعمل!')">اضغط</button>
-</body>
-</html>`;
+    const html = '<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8"><title>تجربة</title></head>\n<body>\n<h1 style="color:#4ade80;">✅ مرحباً!</h1>\n<p>ملف تجريبي من TileCDN</p>\n<button onclick="alert(\'🚀 يعمل!\')">اضغط</button>\n</body>\n</html>';
 
     if (!sm.tiles[id]) {
         sm.tiles[id] = { id, row: 5, col: 3, files: {}, gistLinks: {}, created: Date.now() };
@@ -1303,18 +1784,19 @@ function uploadTestFile() {
 document.addEventListener('DOMContentLoaded', function() {
     AutoReceiver.init();
     GistCDN.init();
-    console.log('🌐 TileCDN + Gist جاهز!');
+    console.log('🌐 TileCDN المتكامل جاهز!');
     console.log('📖 admin / admin123');
     console.log('📦 GistCDN: استخدم زر 📦 Gist للإعداد');
+    console.log('🔗 لكل مربع رابط خاص: /tile/5_3');
 });
 
 window.ServerManager = ServerManager;
 window.AutoReceiver = AutoReceiver;
 window.GistCDN = GistCDN;
+window.FileFetcher = FileFetcher;
+window.TileLinkSystem = TileLinkSystem;
+window.TileRuntime = TileRuntime;
 window.showToast = showToast;
 </script>
 </body>
 </html>
-
-
-    
