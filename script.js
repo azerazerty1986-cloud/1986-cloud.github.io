@@ -1,1 +1,4 @@
 
+function sayHello() {
+    alert('🚀 يعمل!');
+}
