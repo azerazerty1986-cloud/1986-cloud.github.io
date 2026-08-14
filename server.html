@@ -957,24 +957,32 @@ const ImageSplitter = {
         let sent = 0;
         for (let i = 0; i < textParts.length; i++) {
             try {
+                const partText = textParts[i];
+                // Telegram limit: 4096 chars per message
+                const truncated = partText.length > 4000 ? partText.substring(0, 4000) + '
+... (مقتطع)' : partText;
                 const messageText = `📦 ${fileName} - جزء ${i + 1}/${textParts.length}
 
-\`\`\`
-${textParts[i]}
-\`\`\``;
+${truncated}`;
                 const resp = await fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         chat_id: chatId,
-                        text: messageText,
-                        parse_mode: 'Markdown'
+                        text: messageText
+                        // parse_mode removed - prevents errors with special chars
                     })
                 });
                 const data = await resp.json();
-                if (data.ok) sent++;
+                if (data.ok) {
+                    sent++;
+                } else {
+                    console.error('❌ Telegram error part ' + i + ':', data.description);
+                    showToast('❌ خطأ Telegram: ' + data.description, 'error');
+                }
             } catch(e) {
                 console.error('❌ فشل إرسال الرسالة ' + i, e);
+                showToast('❌ فشل إرسال جزء ' + (i+1), 'error');
             }
         }
         showToast(`✅ تم إرسال ${sent}/${textParts.length} رسالة نصية للقناة`, 'success');
@@ -2561,4 +2569,4 @@ window.splitFromEditor = splitFromEditor;
 
 
 
-                                                                              
+    
