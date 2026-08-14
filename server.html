@@ -1,5 +1,5 @@
 
-سرفار صور تلج مريقل 
+
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
@@ -294,9 +294,9 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
         <button class="btn-url" onclick="URLFetcher.showURLUploadDialog()">📥 رابط</button>
         <button class="btn-gist" onclick="GistToPrivateLink.showImportDialog()">📦 Gist→رابط</button>
         <button class="btn-private-link" onclick="showPrivateLinks()">🔗 روابط خاصة</button>
-        <button class="btn-split" onclick="splitCurrentFile()">✂️ تقسيم إلى صور</button>
-        <button class="btn-collect" onclick="collectCurrentFile()">📥 تجميع من الصور</button>
-        <button class="btn-run-images" onclick="runFromImages()">🚀 تشغيل من الصور</button>
+        <button class="btn-split" onclick="splitCurrentFile()">✂️ تقسيم إلى أجزاء نصية</button>
+        <button class="btn-collect" onclick="collectCurrentFile()">📥 تجميع من الأجزاء النصية</button>
+        <button class="btn-run-images" onclick="runFromImages()">🚀 تشغيل من الأجزاء النصية</button>
         <button class="btn-start" onclick="toggleServer()" id="panelStartBtn">▶️ تشغيل</button>
         <button class="btn-protect" onclick="toggleProtect()" id="panelProtectBtn">🛡️ حماية</button>
         <button class="btn-delete" onclick="clearTile()">🗑️ تفريغ</button>
@@ -314,7 +314,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
     <textarea id="editorContent" spellcheck="false"></textarea>
     <div class="editor-actions">
         <button class="btn-save" onclick="saveFile()">💾 حفظ</button>
-        <button class="btn-split-editor" onclick="splitFromEditor()">📸 تقسيم إلى صور</button>
+        <button class="btn-split-editor" onclick="splitFromEditor()">📄 تقسيم إلى أجزاء نصية</button>
         <button class="btn-close" onclick="closeEditor()">✖ إلغاء</button>
     </div>
 </div>
@@ -912,14 +912,9 @@ const ImageSplitter = {
             return;
         }
         const content = tile.files[fileName];
-        showToast(`✂️ جاري تقسيم ${fileName} إلى 10 أجزاء...`, 'info');
+        showToast(`✂️ جاري تقسيم ${fileName} إلى 10 أجزاء نصية...`, 'info');
 
         const textParts = this.splitContentToParts(content, fileName);
-        const images = [];
-        for (let i = 0; i < textParts.length; i++) {
-            const imageData = this.partToImage(textParts[i], i, fileName);
-            images.push(imageData);
-        }
 
         const secretTile = ServerManager.tiles['0_0'];
         if (!secretTile) {
@@ -927,81 +922,75 @@ const ImageSplitter = {
             return;
         }
 
-        if (!secretTile.imageParts) {
-            secretTile.imageParts = {};
+        if (!secretTile.textParts) {
+            secretTile.textParts = {};
         }
 
-        secretTile.imageParts[fileName] = {
+        secretTile.textParts[fileName] = {
             tileId: tileId,
             totalParts: textParts.length,
             parts: textParts,
-            images: images,
             created: Date.now()
         };
 
-        await this.distributeImages(fileName, images);
+        await this.distributeTextParts(fileName, textParts);
 
         ServerManager.saveTiles();
         ServerManager.renderGrid();
         ServerManager.updateStats();
 
-        // إرسال الصور إلى قناة Telegram
-        await this.sendImagesToTelegram(fileName, images);
+        // إرسال الأجزاء النصية إلى قناة Telegram كرسائل
+        await this.sendPartsToTelegram(fileName, textParts);
 
-        showToast(`✅ تم تقسيم ${fileName} وإرسال الصور للقناة`, 'success');
-        return images;
+        showToast(`✅ تم تقسيم ${fileName} وإرسال ${textParts.length} رسالة نصية للقناة`, 'success');
+        return textParts;
     },
 
-    async sendImagesToTelegram(fileName, images) {
+    async sendPartsToTelegram(fileName, textParts) {
         const token = localStorage.getItem('bot_token');
         const chatId = localStorage.getItem('chat_id');
         if (!token || !chatId) {
-            showToast('⚠️ لم يتم إرسال الصور: إعدادات القناة غير مكتملة', 'warning');
+            showToast('⚠️ لم يتم إرسال الرسائل: إعدادات القناة غير مكتملة', 'warning');
             return;
         }
-        showToast('📤 جاري إرسال الصور إلى القناة...', 'info');
+        showToast('📤 جاري إرسال الأجزاء النصية إلى القناة...', 'info');
         let sent = 0;
-        for (let i = 0; i < images.length; i++) {
+        for (let i = 0; i < textParts.length; i++) {
             try {
-                const base64Data = images[i].split(',')[1];
-                const byteChars = atob(base64Data);
-                const byteNums = new Array(byteChars.length);
-                for (let j = 0; j < byteChars.length; j++) {
-                    byteNums[j] = byteChars.charCodeAt(j);
-                }
-                const byteArray = new Uint8Array(byteNums);
-                const blob = new Blob([byteArray], { type: 'image/png' });
-                const imgFile = new File([blob], `${fileName}_part_${i}.png`);
+                const messageText = `📦 ${fileName} - جزء ${i + 1}/${textParts.length}
 
-                const form = new FormData();
-                form.append('chat_id', chatId);
-                form.append('photo', imgFile);
-                form.append('caption', `📦 ${fileName} - جزء ${i + 1}/${images.length}`);
-
-                const resp = await fetch('https://api.telegram.org/bot' + token + '/sendPhoto', {
+\`\`\`
+${textParts[i]}
+\`\`\``;
+                const resp = await fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
                     method: 'POST',
-                    body: form
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: messageText,
+                        parse_mode: 'Markdown'
+                    })
                 });
                 const data = await resp.json();
                 if (data.ok) sent++;
             } catch(e) {
-                console.error('❌ فشل إرسال الصورة ' + i, e);
+                console.error('❌ فشل إرسال الرسالة ' + i, e);
             }
         }
-        showToast(`✅ تم إرسال ${sent}/${images.length} صورة للقناة`, 'success');
+        showToast(`✅ تم إرسال ${sent}/${textParts.length} رسالة نصية للقناة`, 'success');
     },
 
-    async distributeImages(fileName, images) {
+    async distributeTextParts(fileName, textParts) {
         const distribution = {};
-        for (let i = 0; i < images.length; i++) {
+        for (let i = 0; i < textParts.length; i++) {
             const randomTileId = this.getRandomTile();
             if (!distribution[randomTileId]) {
                 distribution[randomTileId] = [];
             }
             distribution[randomTileId].push({
                 index: i,
-                data: images[i],
-                fileName: `${fileName}_part_${i}.png`
+                data: textParts[i],
+                fileName: `${fileName}_part_${i}.txt`
             });
         }
 
@@ -1023,18 +1012,18 @@ const ImageSplitter = {
         }
 
         const secretTile = ServerManager.tiles['0_0'];
-        if (!secretTile.imageDistribution) {
-            secretTile.imageDistribution = {};
+        if (!secretTile.textDistribution) {
+            secretTile.textDistribution = {};
         }
-        secretTile.imageDistribution[fileName] = {
+        secretTile.textDistribution[fileName] = {
             tileId: fileName.split('_')[0] + '_' + fileName.split('_')[1],
-            totalParts: images.length,
+            totalParts: textParts.length,
             distribution: distribution,
             created: Date.now()
         };
 
         ServerManager.saveTiles();
-        showToast(`✅ تم توزيع ${images.length} صورة على ${Object.keys(distribution).length} مربع`, 'success');
+        showToast(`✅ تم توزيع ${textParts.length} جزء نصي على ${Object.keys(distribution).length} مربع`, 'success');
     },
 
     getRandomTile() {
@@ -1053,17 +1042,17 @@ const ImageSplitter = {
 const ImageCollector = {
     async collectParts(fileName) {
         const secretTile = ServerManager.tiles['0_0'];
-        if (!secretTile || !secretTile.imageParts || !secretTile.imageParts[fileName]) {
-            showToast(`❌ لا توجد أجزاء محفوظة لـ ${fileName}`, 'error');
+        if (!secretTile || !secretTile.textParts || !secretTile.textParts[fileName]) {
+            showToast(`❌ لا توجد أجزاء نصية محفوظة لـ ${fileName}`, 'error');
             return null;
         }
 
-        const partData = secretTile.imageParts[fileName];
-        showToast(`🔄 جاري تجميع ${partData.totalParts} جزء...`, 'info');
+        const partData = secretTile.textParts[fileName];
+        showToast(`🔄 جاري تجميع ${partData.totalParts} جزء نصي...`, 'info');
 
         const parts = partData.parts;
 
-        showToast(`✅ تم تجميع ${parts.length} جزء`, 'success');
+        showToast(`✅ تم تجميع ${parts.length} جزء نصي`, 'success');
         return parts;
     },
 
@@ -1117,13 +1106,13 @@ const ImageCollector = {
 const AppRunner = {
     runFromImages(fileName) {
         const secretTile = ServerManager.tiles['0_0'];
-        if (!secretTile || !secretTile.imageParts || !secretTile.imageParts[fileName]) {
-            showToast('❌ لا توجد أجزاء للتشغيل', 'error');
+        if (!secretTile || !secretTile.textParts || !secretTile.textParts[fileName]) {
+            showToast('❌ لا توجد أجزاء نصية للتشغيل', 'error');
             return;
         }
 
-        const partData = secretTile.imageParts[fileName];
-        showToast('📖 جاري تجميع الأجزاء...', 'info');
+        const partData = secretTile.textParts[fileName];
+        showToast('📖 جاري تجميع الأجزاء النصية...', 'info');
 
         const fullText = partData.parts.join('');
 
@@ -1135,7 +1124,7 @@ const AppRunner = {
         // عرض داخل iframe داخل التطبيق
         AppRunner.showInAppPreview(fullText, fileName);
 
-        showToast('✅ تم تشغيل ' + fileName + ' من الأجزاء', 'success');
+        showToast('✅ تم تشغيل ' + fileName + ' من الأجزاء النصية', 'success');
     },
 
     showInAppPreview(htmlContent, title) {
@@ -1354,8 +1343,8 @@ const ServerManager = {
                 col: 0,
                 files: {},
                 gistLinks: {},
-                imageParts: {},
-                imageDistribution: {},
+                textParts: {},
+                textDistribution: {},
                 created: Date.now()
             };
             this.saveTiles();
@@ -2542,9 +2531,9 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('📥 URL Fetcher: استخدم زر 📥 رابط لرفع المحتوى من رابط');
     console.log('📦 Gist→رابط: استخدم زر 📦 Gist→رابط لتحويل Gist إلى رابط خاص');
     console.log('📡 Telegram: قم بإعداد القناة للمزامنة التلقائية');
-    console.log('🖼️ تقسيم إلى صور: استخدم زر ✂️ تقسيم إلى صور');
-    console.log('📥 تجميع من الصور: استخدم زر 📥 تجميع من الصور');
-    console.log('🚀 تشغيل من الصور: استخدم زر 🚀 تشغيل من الصور');
+    console.log('📄 تقسيم إلى أجزاء نصية: استخدم زر ✂️ تقسيم إلى أجزاء نصية');
+    console.log('📥 تجميع من الأجزاء النصية: استخدم زر 📥 تجميع من الأجزاء النصية');
+    console.log('🚀 تشغيل من الأجزاء النصية: استخدم زر 🚀 تشغيل من الأجزاء النصية');
 });
 
 window.ServerManager = ServerManager;
@@ -2568,6 +2557,8 @@ window.splitFromEditor = splitFromEditor;
 </script>
 </body>
 </html>
+
+
 
 
 
