@@ -1258,14 +1258,14 @@ function splitCurrentFile() {
 function collectCurrentFile() {
     const tileId = ServerManager.currentTile;
     const secretTile = ServerManager.tiles['0_0'];
-    if (!secretTile || !secretTile.imageParts) {
-        showToast('❌ لا توجد أجزاء مجمعة', 'error');
+    if (!secretTile || !secretTile.textParts) {
+        showToast('❌ لا توجد أجزاء نصية مجمعة', 'error');
         return;
     }
 
-    const fileNames = Object.keys(secretTile.imageParts);
+    const fileNames = Object.keys(secretTile.textParts);
     if (fileNames.length === 0) {
-        showToast('❌ لا توجد أجزاء مجمعة', 'error');
+        showToast('❌ لا توجد أجزاء نصية مجمعة', 'error');
         return;
     }
 
@@ -1278,14 +1278,14 @@ function collectCurrentFile() {
 function runFromImages() {
     const tileId = ServerManager.currentTile;
     const secretTile = ServerManager.tiles['0_0'];
-    if (!secretTile || !secretTile.imageParts) {
-        showToast('❌ لا توجد أجزاء للتشغيل', 'error');
+    if (!secretTile || !secretTile.textParts) {
+        showToast('❌ لا توجد أجزاء نصية للتشغيل', 'error');
         return;
     }
 
-    const fileNames = Object.keys(secretTile.imageParts);
+    const fileNames = Object.keys(secretTile.textParts);
     if (fileNames.length === 0) {
-        showToast('❌ لا توجد أجزاء للتشغيل', 'error');
+        showToast('❌ لا توجد أجزاء نصية للتشغيل', 'error');
         return;
     }
 
@@ -2561,4 +2561,4 @@ window.splitFromEditor = splitFromEditor;
 
 
 
-
+                                                                              
