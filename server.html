@@ -1,3 +1,4 @@
+سرفار صور تلج مريقل 
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
@@ -110,6 +111,9 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .tile-panel .actions .btn-preview{background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);grid-column:span 2}
 .tile-panel .actions .btn-url{background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);grid-column:span 2}
 .tile-panel .actions .btn-private-link{background:rgba(255,215,0,0.2);color:#ffd700;border:1px solid rgba(255,215,0,0.3);grid-column:span 2}
+.tile-panel .actions .btn-split{background:rgba(139,92,246,0.15);color:#a78bfa;border:1px solid rgba(139,92,246,0.2);grid-column:span 2}
+.tile-panel .actions .btn-run-images{background:rgba(139,92,246,0.15);color:#a78bfa;border:1px solid rgba(139,92,246,0.2);grid-column:span 2}
+.tile-panel .actions .btn-collect{background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.2);grid-column:span 2}
 .file-editor{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(10,10,30,0.97);border:1px solid rgba(251,191,36,0.3);border-radius:12px;padding:16px;width:92%;max-width:600px;max-height:80vh;z-index:99999;display:none;backdrop-filter:blur(20px)}
 .file-editor.open{display:block}
 .file-editor .editor-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
@@ -120,6 +124,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 .file-editor .editor-actions button{padding:4px 12px;border:none;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;flex:1}
 .file-editor .editor-actions .btn-save{background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.2)}
 .file-editor .editor-actions .btn-close{background:rgba(255,255,255,0.06);color:#888;border:none}
+.file-editor .editor-actions .btn-split-editor{background:rgba(139,92,246,0.15);color:#a78bfa;border:1px solid rgba(139,92,246,0.2)}
 .telegram-settings{background:rgba(255,255,255,0.03);border:1px solid rgba(139,92,246,0.15);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:none}
 .telegram-settings.open{display:block}
 .telegram-settings .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -288,6 +293,9 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
         <button class="btn-url" onclick="URLFetcher.showURLUploadDialog()">📥 رابط</button>
         <button class="btn-gist" onclick="GistToPrivateLink.showImportDialog()">📦 Gist→رابط</button>
         <button class="btn-private-link" onclick="showPrivateLinks()">🔗 روابط خاصة</button>
+        <button class="btn-split" onclick="splitCurrentFile()">✂️ تقسيم إلى صور</button>
+        <button class="btn-collect" onclick="collectCurrentFile()">📥 تجميع من الصور</button>
+        <button class="btn-run-images" onclick="runFromImages()">🚀 تشغيل من الصور</button>
         <button class="btn-start" onclick="toggleServer()" id="panelStartBtn">▶️ تشغيل</button>
         <button class="btn-protect" onclick="toggleProtect()" id="panelProtectBtn">🛡️ حماية</button>
         <button class="btn-delete" onclick="clearTile()">🗑️ تفريغ</button>
@@ -303,7 +311,11 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a1a;color:#fff;min-height:
 <div class="file-editor" id="fileEditor">
     <div class="editor-header"><h4 id="editorTitle">📝 تحرير</h4><button onclick="closeEditor()">✖</button></div>
     <textarea id="editorContent" spellcheck="false"></textarea>
-    <div class="editor-actions"><button class="btn-save" onclick="saveFile()">💾 حفظ</button><button class="btn-close" onclick="closeEditor()">✖ إلغاء</button></div>
+    <div class="editor-actions">
+        <button class="btn-save" onclick="saveFile()">💾 حفظ</button>
+        <button class="btn-split-editor" onclick="splitFromEditor()">📸 تقسيم إلى صور</button>
+        <button class="btn-close" onclick="closeEditor()">✖ إلغاء</button>
+    </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -431,13 +443,13 @@ const URLFetcher = {
                 throw new Error('HTTP ' + response.status);
             }
             const content = await response.text();
-            const win = window.open('', '_blank');
+            const blob = new Blob([content], { type: 'text/html' });
+            const blobUrl = URL.createObjectURL(blob);
+            const win = window.open(blobUrl, '_blank');
             if (!win) {
                 showToast('❌ تم حظر النافذة المنبثقة!', 'error');
                 return;
             }
-            win.document.write(content);
-            win.document.close();
             showToast('👁️ تم فتح المعاينة', 'success');
         } catch (error) {
             showToast(`❌ فشل التحميل: ${error.message}`, 'error');
@@ -785,7 +797,6 @@ const PrivateLinkHandler = {
     },
 
     handlePrivateLink(tileId, fileName) {
-        // محاولة جلب البيانات من localStorage
         const tiles = JSON.parse(localStorage.getItem('tiles') || '{}');
         const tile = tiles[tileId];
         if (!tile || !tile.files || !tile.files[fileName]) {
@@ -794,6 +805,7 @@ const PrivateLinkHandler = {
                     <div style="font-size:60px;margin-bottom:20px;">🔍</div>
                     <h2 style="color:#f87171;">⚠️ الملف غير موجود</h2>
                     <p style="color:#888;margin-top:10px;">${fileName} غير موجود في المربع ${tileId}</p>
+                    <p style="color:#888;font-size:12px;margin-top:5px;">💡 قم باستيراد المحتوى من Gist أولاً</p>
                     <a href="/" style="color:#a78bfa;margin-top:20px;">← العودة للصفحة الرئيسية</a>
                 </div>
             `;
@@ -803,7 +815,7 @@ const PrivateLinkHandler = {
         const ext = fileName.split('.').pop().toLowerCase();
         if (['html', 'htm'].includes(ext)) {
             document.documentElement.innerHTML = content;
-        } else if (['png', 'jpg', 'jpeg', 'gif', 'svg'].includes(ext)) {
+        } else if (['png', 'jpg', 'jpeg', 'gif'].includes(ext)) {
             document.body.innerHTML = `
                 <div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#0a0a1a;flex-direction:column;">
                     <img src="data:image/${ext};base64,${btoa(content)}" style="max-width:90%;max-height:80vh;border-radius:8px;box-shadow:0 0 30px rgba(139,92,246,0.3);">
@@ -849,6 +861,473 @@ const PrivateLinkHandler = {
 };
 
 // ============================================================
+// 🖼️ Image Splitter - تقسيم المحتوى إلى صور
+// ============================================================
+const ImageSplitter = {
+    splitContentToParts(content, fileName) {
+        const totalParts = 10;
+        const chunkSize = Math.ceil(content.length / totalParts);
+        const parts = [];
+        for (let i = 0; i < totalParts; i++) {
+            const start = i * chunkSize;
+            const end = Math.min(start + chunkSize, content.length);
+            parts.push(content.substring(start, end));
+        }
+        return parts;
+    },
+
+    partToImage(part, index, fileName) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const width = 400;
+        const height = 300;
+        canvas.width = width;
+        canvas.height = height;
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '14px monospace';
+        ctx.textBaseline = 'top';
+        const lines = part.split('\n');
+        let y = 20;
+        for (const line of lines) {
+            if (y > height - 20) break;
+            ctx.fillText(line.substring(0, 50), 10, y);
+            y += 20;
+        }
+        ctx.fillStyle = '#4ade80';
+        ctx.font = '12px monospace';
+        ctx.fillText(`📦 جزء ${index + 1}/10`, 10, height - 30);
+        ctx.fillStyle = '#888';
+        ctx.font = '10px monospace';
+        ctx.fillText(`📄 ${fileName}`, 10, height - 10);
+        return canvas.toDataURL('image/png');
+    },
+
+    async splitFile(tileId, fileName) {
+        const tile = ServerManager.tiles[tileId];
+        if (!tile || !tile.files || !tile.files[fileName]) {
+            showToast('❌ الملف غير موجود', 'error');
+            return;
+        }
+        const content = tile.files[fileName];
+        showToast(`✂️ جاري تقسيم ${fileName} إلى 10 أجزاء...`, 'info');
+
+        const textParts = this.splitContentToParts(content, fileName);
+        const images = [];
+        for (let i = 0; i < textParts.length; i++) {
+            const imageData = this.partToImage(textParts[i], i, fileName);
+            images.push(imageData);
+        }
+
+        const secretTile = ServerManager.tiles['0_0'];
+        if (!secretTile) {
+            showToast('❌ المربع 0.0 غير موجود', 'error');
+            return;
+        }
+
+        if (!secretTile.imageParts) {
+            secretTile.imageParts = {};
+        }
+
+        secretTile.imageParts[fileName] = {
+            tileId: tileId,
+            totalParts: textParts.length,
+            parts: textParts,
+            images: images,
+            created: Date.now()
+        };
+
+        await this.distributeImages(fileName, images);
+
+        ServerManager.saveTiles();
+        ServerManager.renderGrid();
+        ServerManager.updateStats();
+
+        // إرسال الصور إلى قناة Telegram
+        await this.sendImagesToTelegram(fileName, images);
+
+        showToast(`✅ تم تقسيم ${fileName} وإرسال الصور للقناة`, 'success');
+        return images;
+    },
+
+    async sendImagesToTelegram(fileName, images) {
+        const token = localStorage.getItem('bot_token');
+        const chatId = localStorage.getItem('chat_id');
+        if (!token || !chatId) {
+            showToast('⚠️ لم يتم إرسال الصور: إعدادات القناة غير مكتملة', 'warning');
+            return;
+        }
+        showToast('📤 جاري إرسال الصور إلى القناة...', 'info');
+        let sent = 0;
+        for (let i = 0; i < images.length; i++) {
+            try {
+                const base64Data = images[i].split(',')[1];
+                const byteChars = atob(base64Data);
+                const byteNums = new Array(byteChars.length);
+                for (let j = 0; j < byteChars.length; j++) {
+                    byteNums[j] = byteChars.charCodeAt(j);
+                }
+                const byteArray = new Uint8Array(byteNums);
+                const blob = new Blob([byteArray], { type: 'image/png' });
+                const imgFile = new File([blob], `${fileName}_part_${i}.png`);
+
+                const form = new FormData();
+                form.append('chat_id', chatId);
+                form.append('photo', imgFile);
+                form.append('caption', `📦 ${fileName} - جزء ${i + 1}/${images.length}`);
+
+                const resp = await fetch('https://api.telegram.org/bot' + token + '/sendPhoto', {
+                    method: 'POST',
+                    body: form
+                });
+                const data = await resp.json();
+                if (data.ok) sent++;
+            } catch(e) {
+                console.error('❌ فشل إرسال الصورة ' + i, e);
+            }
+        }
+        showToast(`✅ تم إرسال ${sent}/${images.length} صورة للقناة`, 'success');
+    },
+
+    async distributeImages(fileName, images) {
+        const distribution = {};
+        for (let i = 0; i < images.length; i++) {
+            const randomTileId = this.getRandomTile();
+            if (!distribution[randomTileId]) {
+                distribution[randomTileId] = [];
+            }
+            distribution[randomTileId].push({
+                index: i,
+                data: images[i],
+                fileName: `${fileName}_part_${i}.png`
+            });
+        }
+
+        for (const distTileId in distribution) {
+            if (!ServerManager.tiles[distTileId]) {
+                const [row, col] = distTileId.split('_').map(Number);
+                ServerManager.tiles[distTileId] = {
+                    id: distTileId,
+                    row: row,
+                    col: col,
+                    files: {},
+                    created: Date.now()
+                };
+            }
+
+            for (const part of distribution[distTileId]) {
+                ServerManager.tiles[distTileId].files[part.fileName] = part.data;
+            }
+        }
+
+        const secretTile = ServerManager.tiles['0_0'];
+        if (!secretTile.imageDistribution) {
+            secretTile.imageDistribution = {};
+        }
+        secretTile.imageDistribution[fileName] = {
+            tileId: fileName.split('_')[0] + '_' + fileName.split('_')[1],
+            totalParts: images.length,
+            distribution: distribution,
+            created: Date.now()
+        };
+
+        ServerManager.saveTiles();
+        showToast(`✅ تم توزيع ${images.length} صورة على ${Object.keys(distribution).length} مربع`, 'success');
+    },
+
+    getRandomTile() {
+        const row = Math.floor(Math.random() * 12);
+        const col = Math.floor(Math.random() * 12);
+        if (row === 0 && col === 0) {
+            return this.getRandomTile();
+        }
+        return `${row}_${col}`;
+    }
+};
+
+// ============================================================
+// 📊 Image Collector - تجميع الصور واستخراج النص
+// ============================================================
+const ImageCollector = {
+    async collectParts(fileName) {
+        const secretTile = ServerManager.tiles['0_0'];
+        if (!secretTile || !secretTile.imageParts || !secretTile.imageParts[fileName]) {
+            showToast(`❌ لا توجد أجزاء محفوظة لـ ${fileName}`, 'error');
+            return null;
+        }
+
+        const partData = secretTile.imageParts[fileName];
+        showToast(`🔄 جاري تجميع ${partData.totalParts} جزء...`, 'info');
+
+        const parts = partData.parts;
+
+        showToast(`✅ تم تجميع ${parts.length} جزء`, 'success');
+        return parts;
+    },
+
+    async rebuildFileFromImages(fileName) {
+        const parts = await this.collectParts(fileName);
+        if (!parts) return null;
+
+        showToast('📖 جاري إعادة بناء الملف...', 'info');
+
+        const fullText = parts.join('');
+
+        if (fullText) {
+            const originalName = fileName.replace(/_part_\d+$/, '');
+            const tileId = ServerManager.currentTile || '5_3';
+
+            if (!ServerManager.tiles[tileId]) {
+                const parts = tileId.split('_');
+                ServerManager.tiles[tileId] = {
+                    id: tileId,
+                    row: parseInt(parts[0]),
+                    col: parseInt(parts[1]),
+                    files: {},
+                    created: Date.now()
+                };
+            }
+
+            let ext = '.txt';
+            if (fullText.includes('<!DOCTYPE html') || fullText.includes('<html')) ext = '.html';
+            else if (fullText.includes('{') && fullText.includes('}')) ext = '.json';
+            else if (fullText.includes('function') || fullText.includes('const')) ext = '.js';
+            else if (fullText.includes('body {') || fullText.includes('@media')) ext = '.css';
+
+            const finalName = originalName + ext;
+            ServerManager.tiles[tileId].files[finalName] = fullText;
+            ServerManager.saveTiles();
+            ServerManager.renderGrid();
+            ServerManager.updateStats();
+            ServerManager.openPanel(tileId);
+
+            showToast(`✅ تم إعادة بناء ${finalName} من ${parts.length} أجزاء`, 'success');
+            return fullText;
+        }
+
+        return null;
+    }
+};
+
+// ============================================================
+// 🚀 App Runner - تشغيل التطبيق من الصور
+// ============================================================
+const AppRunner = {
+    runFromImages(fileName) {
+        const secretTile = ServerManager.tiles['0_0'];
+        if (!secretTile || !secretTile.imageParts || !secretTile.imageParts[fileName]) {
+            showToast('❌ لا توجد أجزاء للتشغيل', 'error');
+            return;
+        }
+
+        const partData = secretTile.imageParts[fileName];
+        showToast('📖 جاري تجميع الأجزاء...', 'info');
+
+        const fullText = partData.parts.join('');
+
+        if (!fullText) {
+            showToast('❌ المحتوى فارغ', 'error');
+            return;
+        }
+
+        // عرض داخل iframe داخل التطبيق
+        AppRunner.showInAppPreview(fullText, fileName);
+
+        showToast('✅ تم تشغيل ' + fileName + ' من الأجزاء', 'success');
+    },
+
+    showInAppPreview(htmlContent, title) {
+        // إزالة أي iframe سابق
+        let oldFrame = document.getElementById('inAppPreviewFrame');
+        if (oldFrame) oldFrame.remove();
+        let oldOverlay = document.getElementById('inAppPreviewOverlay');
+        if (oldOverlay) oldOverlay.remove();
+
+        // إنشاء overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'inAppPreviewOverlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92);
+            z-index: 999999;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+        `;
+
+        // شريط التحكم
+        const header = document.createElement('div');
+        header.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: #1a1a2e;
+            border-bottom: 1px solid rgba(139,92,246,0.3);
+            flex-shrink: 0;
+        `;
+        header.innerHTML = `
+            <span style="color:#a78bfa;font-size:13px;font-weight:600;">🚀 ${title}</span>
+            <div style="display:flex;gap:8px;">
+                <button id="appRunShareBtn" style="padding:4px 12px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.2);border-radius:4px;cursor:pointer;font-size:10px;font-family:inherit;">📤 إرسال للقناة</button>
+                <button id="appRunCloseBtn" style="padding:4px 12px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.2);border-radius:4px;cursor:pointer;font-size:10px;font-family:inherit;">✖ إغلاق</button>
+            </div>
+        `;
+
+        // iframe
+        const iframe = document.createElement('iframe');
+        iframe.id = 'inAppPreviewFrame';
+        iframe.style.cssText = `
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: #fff;
+        `;
+        iframe.sandbox = 'allow-scripts allow-same-origin allow-popups allow-forms';
+
+        overlay.appendChild(header);
+        overlay.appendChild(iframe);
+        document.body.appendChild(overlay);
+
+        // كتابة المحتوى
+        iframe.srcdoc = htmlContent;
+
+        // أحداث الأزرار
+        document.getElementById('appRunCloseBtn').onclick = () => {
+            overlay.remove();
+        };
+        document.getElementById('appRunShareBtn').onclick = () => {
+            AppRunner.sendToTelegram(title, htmlContent);
+        };
+
+        // إغلاق بالضغط خارج الـ iframe
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) overlay.remove();
+        });
+    },
+
+    async sendToTelegram(fileName, htmlContent) {
+        const token = localStorage.getItem('bot_token');
+        const chatId = localStorage.getItem('chat_id');
+        if (!token || !chatId) {
+            showToast('⚠️ قم بإعداد القناة أولاً', 'warning');
+            return;
+        }
+        showToast('📤 جاري الإرسال للقناة...', 'info');
+        try {
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const file = new File([blob], fileName);
+            const form = new FormData();
+            form.append('chat_id', chatId);
+            form.append('document', file);
+            const resp = await fetch('https://api.telegram.org/bot' + token + '/sendDocument', {
+                method: 'POST',
+                body: form
+            });
+            const data = await resp.json();
+            if (data.ok) {
+                showToast('✅ تم الإرسال للقناة', 'success');
+            } else {
+                showToast('❌ فشل الإرسال: ' + data.description, 'error');
+            }
+        } catch(e) {
+            showToast('❌ خطأ في الإرسال', 'error');
+        }
+    }
+};
+
+// ============================================================
+// 🖥️ دوال الواجهة للتقسيم والتجميع
+// ============================================================
+function splitCurrentFile() {
+    const tileId = ServerManager.currentTile;
+    const tile = ServerManager.tiles[tileId];
+    if (!tile || !tile.files) {
+        showToast('❌ لا توجد ملفات', 'error');
+        return;
+    }
+
+    const fileNames = Object.keys(tile.files).filter(f => !f.includes('_part_'));
+    if (fileNames.length === 0) {
+        showToast('❌ لا توجد ملفات', 'error');
+        return;
+    }
+
+    const fileName = prompt('📄 اختر ملفاً للتقسيم إلى صور:\n' + fileNames.join('\n'));
+    if (!fileName || !tile.files[fileName]) {
+        showToast('❌ ملف غير موجود', 'error');
+        return;
+    }
+
+    ImageSplitter.splitFile(tileId, fileName);
+}
+
+function collectCurrentFile() {
+    const tileId = ServerManager.currentTile;
+    const secretTile = ServerManager.tiles['0_0'];
+    if (!secretTile || !secretTile.imageParts) {
+        showToast('❌ لا توجد أجزاء مجمعة', 'error');
+        return;
+    }
+
+    const fileNames = Object.keys(secretTile.imageParts);
+    if (fileNames.length === 0) {
+        showToast('❌ لا توجد أجزاء مجمعة', 'error');
+        return;
+    }
+
+    const fileName = prompt('📄 اختر ملفاً للتجميع من الأجزاء:\n' + fileNames.join('\n'));
+    if (!fileName) return;
+
+    ImageCollector.rebuildFileFromImages(fileName);
+}
+
+function runFromImages() {
+    const tileId = ServerManager.currentTile;
+    const secretTile = ServerManager.tiles['0_0'];
+    if (!secretTile || !secretTile.imageParts) {
+        showToast('❌ لا توجد أجزاء للتشغيل', 'error');
+        return;
+    }
+
+    const fileNames = Object.keys(secretTile.imageParts);
+    if (fileNames.length === 0) {
+        showToast('❌ لا توجد أجزاء للتشغيل', 'error');
+        return;
+    }
+
+    const fileName = prompt('🚀 اختر ملفاً للتشغيل من الأجزاء:\n' + fileNames.join('\n'));
+    if (!fileName) return;
+
+    AppRunner.runFromImages(fileName);
+}
+
+function splitFromEditor() {
+    const tileId = ServerManager.currentTile;
+    const fileName = ServerManager.currentFile;
+    if (!tileId || !fileName) {
+        showToast('⚠️ اختر ملفاً أولاً', 'warning');
+        return;
+    }
+    
+    const content = document.getElementById('editorContent').value;
+    if (!content) {
+        showToast('❌ لا يوجد محتوى للتقسيم', 'error');
+        return;
+    }
+    
+    // حفظ المحتوى أولاً
+    ServerManager.tiles[tileId].files[fileName] = content;
+    ServerManager.saveTiles();
+    
+    // ثم التقسيم
+    ImageSplitter.splitFile(tileId, fileName);
+}
+
+// ============================================================
 // ServerManager - المدير الأساسي
 // ============================================================
 const ServerManager = {
@@ -866,8 +1345,21 @@ const ServerManager = {
         this.renderGrid();
         this.updateStats();
         if (window.GistCDN) GistCDN.init();
+        // التأكد من وجود المربع 0.0
+        if (!this.tiles['0_0']) {
+            this.tiles['0_0'] = {
+                id: '0_0',
+                row: 0,
+                col: 0,
+                files: {},
+                gistLinks: {},
+                imageParts: {},
+                imageDistribution: {},
+                created: Date.now()
+            };
+            this.saveTiles();
+        }
         showToast('✅ جاهز', 'success');
-        // معالجة الروابط الخاصة
         PrivateLinkHandler.init();
     },
 
@@ -1002,7 +1494,8 @@ const ServerManager = {
             const hasGist = tile.gistLinks && tile.gistLinks[name];
             const size = new Blob([content]).size;
             const sizeStr = size < 1024 ? size + 'B' : (size / 1024).toFixed(1) + 'KB';
-            div.innerHTML = '<span class="name">' + name + (isMeta ? ' ⚠️' : '') + (hasGist ? ' 📦' : '') + '</span>' +
+            const isImagePart = name.includes('_part_');
+            div.innerHTML = '<span class="name">' + name + (isMeta ? ' ⚠️' : '') + (hasGist ? ' 📦' : '') + (isImagePart ? ' 🖼️' : '') + '</span>' +
                 '<span class="size">' + sizeStr + '</span>' +
                 '<span class="actions">' +
                 '<button class="edit" onclick="ServerManager.editFile(' + "'" + tile.id + "','" + name + "'" + ')">✏️</button>' +
@@ -1491,42 +1984,22 @@ const TileRuntime = {
         }
         let content = tile.files[mainFile];
         content = this.rewriteContent(content, mainFile, urlMap);
-        const win = window.open('', '_blank');
-        if (!win) {
-            showToast('❌ تم حظر النافذة المنبثقة!', 'error');
-            return;
-        }
-        win.document.open();
-        win.document.write(content);
-        win.document.close();
-        win.document.title = '🚀 Tile ' + tileId + ' - ' + mainFile;
+
+        // عرض داخل التطبيق
+        AppRunner.showInAppPreview(content, mainFile);
         showToast('🚀 تم تشغيل ' + mainFile, 'success');
     },
 
     previewTile(tileId, containerId) {
-        containerId = containerId || 'tilePreview';
         const tile = ServerManager.tiles[tileId];
         if (!tile || !tile.files) return;
-        let container = document.getElementById(containerId);
-        if (!container) {
-            container = document.createElement('div');
-            container.id = containerId;
-            container.style.cssText = 'position:fixed;top:10%;left:10%;width:80%;height:80%;background:#000;z-index:999999;border:2px solid #8b5cf6;border-radius:12px;overflow:hidden;';
-            container.innerHTML = '<div style="display:flex;justify-content:space-between;padding:8px;background:#1a1a2e;border-bottom:1px solid #333;"><span style="color:#a78bfa;font-size:12px;">👁️ معاينة المربع (' + tileId + ')</span><button onclick="this.parentElement.parentElement.remove()" style="background:#f87171;border:none;color:#fff;padding:2px 10px;border-radius:4px;cursor:pointer;">✖ إغلاق</button></div>';
-            document.body.appendChild(container);
-        }
         const files = Object.keys(tile.files);
         const mainFile = files.find(function(f) { return f.match(/^index\.html?$/i); }) || files.find(function(f) { return f.endsWith('.html'); }) || files[0];
         const urlMap = {};
         for (const name of files) urlMap[name] = this.createFileUrl(tileId, name);
         let content = tile.files[mainFile];
         content = this.rewriteContent(content, mainFile, urlMap);
-        const existingIframe = container.querySelector('iframe');
-        if (existingIframe) existingIframe.remove();
-        const iframe = document.createElement('iframe');
-        iframe.style.cssText = 'width:100%;height:calc(100% - 40px);border:none;background:#fff;';
-        container.appendChild(iframe);
-        iframe.srcdoc = content;
+        AppRunner.showInAppPreview(content, '👁️ معاينة - ' + mainFile);
         showToast('👁️ تم فتح المعاينة', 'success');
     },
 
@@ -2067,6 +2540,10 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🔗 لكل مربع رابط خاص: /tile/5_3');
     console.log('📥 URL Fetcher: استخدم زر 📥 رابط لرفع المحتوى من رابط');
     console.log('📦 Gist→رابط: استخدم زر 📦 Gist→رابط لتحويل Gist إلى رابط خاص');
+    console.log('📡 Telegram: قم بإعداد القناة للمزامنة التلقائية');
+    console.log('🖼️ تقسيم إلى صور: استخدم زر ✂️ تقسيم إلى صور');
+    console.log('📥 تجميع من الصور: استخدم زر 📥 تجميع من الصور');
+    console.log('🚀 تشغيل من الصور: استخدم زر 🚀 تشغيل من الصور');
 });
 
 window.ServerManager = ServerManager;
@@ -2078,9 +2555,18 @@ window.GistToPrivateLink = GistToPrivateLink;
 window.PrivateLinks = PrivateLinks;
 window.PrivateLinkHandler = PrivateLinkHandler;
 window.TileRuntime = TileRuntime;
+window.ImageSplitter = ImageSplitter;
+window.ImageCollector = ImageCollector;
+window.AppRunner = AppRunner;
 window.showToast = showToast;
 window.showPrivateLinks = showPrivateLinks;
+window.splitCurrentFile = splitCurrentFile;
+window.collectCurrentFile = collectCurrentFile;
+window.runFromImages = runFromImages;
+window.splitFromEditor = splitFromEditor;
 </script>
 </body>
 </html>
-    
+
+
+
