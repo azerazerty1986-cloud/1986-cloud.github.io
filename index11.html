@@ -1,36 +1,1247 @@
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📊 شريط متحرك</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a2a;display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial;direction:rtl}
-.box{background:rgba(10,10,30,0.95);border:2px solid #8b5cf6;border-radius:16px;padding:30px;text-align:center;width:400px}
-h2{color:#a78bfa;margin-bottom:15px}
-.bar-container{width:100%;height:30px;background:#1a1a3a;border-radius:15px;overflow:hidden;border:1px solid #333}
-.bar{height:100%;width:0%;background:linear-gradient(90deg,#8b5cf6,#ffd700);border-radius:15px;transition:width 0.1s}
-.status{color:#888;font-size:13px;margin-top:10px}
-.btn{padding:10px 25px;border:none;border-radius:10px;background:#8b5cf6;color:#fff;font-weight:700;cursor:pointer;font-size:14px;margin:5px;transition:0.3s}
-.btn:hover{transform:scale(1.05)}
-.btn-green{background:#4ade80;color:#111}
-.btn-red{background:#ef4444}
-.btn-gold{background:#ffd700;color:#111}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💾 NAND Flash Memory Card — 144 Blocks</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #050508;
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* ===== PCB Background Pattern ===== */
+        .pcb-bg {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0,255,100,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,100,0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===== The SD Card Container ===== */
+        .sd-card {
+            position: relative;
+            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border-radius: 16px;
+            padding: 30px 25px 60px 25px;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 
+                0 0 0 2px #2a2a4a,
+                0 0 0 4px #1a1a3e,
+                0 20px 60px rgba(0,0,0,0.8),
+                inset 0 1px 0 rgba(255,255,255,0.05);
+            z-index: 1;
+            margin-top: 10px;
+        }
+
+        /* Gold pins at bottom */
+        .sd-pins {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 3px;
+            padding: 8px 20px;
+            background: linear-gradient(180deg, #2a2a4a 0%, #1a1a2e 100%);
+            border-radius: 8px 8px 0 0;
+            border-top: 2px solid #fbbf24;
+        }
+        .pin {
+            width: 14px;
+            height: 28px;
+            background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+            border-radius: 2px;
+            box-shadow: 0 0 8px rgba(251,191,36,0.3);
+        }
+
+        /* ===== Card Header ===== */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0,255,100,0.1);
+        }
+        .card-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .sd-logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #fbbf24, #d97706);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 20px;
+            color: #1a1a2e;
+            box-shadow: 0 0 20px rgba(251,191,36,0.3);
+        }
+        .card-info h1 {
+            font-size: 18px;
+            color: #4ade80;
+            text-shadow: 0 0 10px rgba(74,222,128,0.3);
+            letter-spacing: 2px;
+        }
+        .card-info .specs {
+            font-size: 11px;
+            color: #60a5fa;
+            margin-top: 4px;
+        }
+        .card-capacity {
+            text-align: left;
+        }
+        .capacity-number {
+            font-size: 32px;
+            font-weight: 900;
+            color: #fbbf24;
+            text-shadow: 0 0 15px rgba(251,191,36,0.4);
+        }
+        .capacity-label {
+            font-size: 10px;
+            color: #888;
+            text-align: center;
+        }
+
+        /* ===== Status LEDs ===== */
+        .led-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            border: 1px solid rgba(0,255,100,0.1);
+        }
+        .led-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #888;
+        }
+        .led {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #333;
+            box-shadow: 0 0 4px rgba(0,0,0,0.5);
+            transition: all 0.3s;
+        }
+        .led.active-green { background: #4ade80; box-shadow: 0 0 8px #4ade80, 0 0 16px rgba(74,222,128,0.4); }
+        .led.active-blue { background: #60a5fa; box-shadow: 0 0 8px #60a5fa, 0 0 16px rgba(96,165,250,0.4); }
+        .led.active-amber { background: #fbbf24; box-shadow: 0 0 8px #fbbf24, 0 0 16px rgba(251,191,36,0.4); }
+        .led.active-red { background: #f87171; box-shadow: 0 0 8px #f87171, 0 0 16px rgba(239,68,68,0.4); }
+
+        /* ===== Memory Grid (The NAND Chips) ===== */
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 6px;
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            border: 1px solid rgba(0,255,100,0.08);
+            position: relative;
+        }
+        
+        /* Circuit traces */
+        .memory-grid::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                repeating-linear-gradient(90deg, transparent, transparent 78px, rgba(0,255,100,0.03) 78px, rgba(0,255,100,0.03) 80px),
+                repeating-linear-gradient(0deg, transparent, transparent 78px, rgba(0,255,100,0.03) 78px, rgba(0,255,100,0.03) 80px);
+            pointer-events: none;
+            border-radius: 12px;
+        }
+
+        .nand-chip {
+            aspect-ratio: 1;
+            background: linear-gradient(145deg, #1e1e3f 0%, #2a2a5a 50%, #1e1e3f 100%);
+            border: 1px solid rgba(100,100,200,0.2);
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            overflow: hidden;
+        }
+        
+        /* Chip surface texture */
+        .nand-chip::before {
+            content: '';
+            position: absolute;
+            top: 2px; left: 2px; right: 2px; bottom: 2px;
+            background: 
+                linear-gradient(90deg, transparent 48%, rgba(0,255,100,0.05) 49%, rgba(0,255,100,0.05) 51%, transparent 52%),
+                linear-gradient(0deg, transparent 48%, rgba(0,255,100,0.05) 49%, rgba(0,255,100,0.05) 51%, transparent 52%);
+            pointer-events: none;
+        }
+
+        .nand-chip:hover {
+            border-color: rgba(139,92,246,0.6);
+            box-shadow: 0 0 15px rgba(139,92,246,0.3), inset 0 0 10px rgba(139,92,246,0.1);
+            transform: scale(1.08);
+            z-index: 10;
+        }
+
+        .nand-chip.has-data {
+            border-color: rgba(74,222,128,0.4);
+            background: linear-gradient(145deg, #1e3f2e 0%, #2a5a4a 50%, #1e3f2e 100%);
+        }
+        .nand-chip.has-users {
+            border-color: rgba(251,191,36,0.4);
+            background: linear-gradient(145deg, #3f2e1e 0%, #5a4a2a 50%, #3f2e1e 100%);
+        }
+        .nand-chip.has-both {
+            border-color: rgba(139,92,246,0.5);
+            background: linear-gradient(145deg, #2e1e3f 0%, #4a2a5a 50%, #2e1e3f 100%);
+            box-shadow: 0 0 10px rgba(139,92,246,0.2);
+        }
+
+        /* Activity LED on each chip */
+        .chip-led {
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #333;
+            transition: all 0.3s;
+        }
+        .nand-chip.has-data .chip-led { background: #4ade80; box-shadow: 0 0 4px #4ade80; }
+        .nand-chip.has-users .chip-led { background: #fbbf24; box-shadow: 0 0 4px #fbbf24; }
+        .nand-chip.has-both .chip-led { background: #a78bfa; box-shadow: 0 0 4px #a78bfa; }
+
+        .chip-id {
+            font-size: 7px;
+            color: #555;
+            font-family: monospace;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+        .chip-icon {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        .chip-usage {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: rgba(0,0,0,0.3);
+        }
+        .chip-usage-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #a78bfa);
+            transition: width 0.5s;
+        }
+
+        /* ===== Bottom Info Panel ===== */
+        .info-panel {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .info-cell {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(0,255,100,0.1);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        .info-cell .label {
+            font-size: 9px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .info-cell .value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #4ade80;
+            text-shadow: 0 0 8px rgba(74,222,128,0.2);
+        }
+
+        /* ===== Panels (Modal) ===== */
+        .panel-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .panel-overlay.open { display: flex; }
+        
+        .panel-box {
+            background: linear-gradient(145deg, #0f0f1f 0%, #1a1a3e 100%);
+            border: 1px solid rgba(139,92,246,0.3);
+            border-radius: 16px;
+            padding: 25px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 0 40px rgba(139,92,246,0.2);
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(139,92,246,0.2);
+        }
+        .panel-header h3 {
+            color: #a78bfa;
+            font-size: 18px;
+            text-shadow: 0 0 10px rgba(167,139,250,0.3);
+        }
+        .panel-header button {
+            background: rgba(239,68,68,0.15);
+            color: #f87171;
+            border: 1px solid rgba(239,68,68,0.3);
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+        }
+
+        /* Tabs */
+        .panel-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 15px;
+            background: rgba(0,0,0,0.3);
+            padding: 4px;
+            border-radius: 8px;
+        }
+        .panel-tab {
+            flex: 1;
+            padding: 8px;
+            background: transparent;
+            border: none;
+            color: #888;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .panel-tab.active {
+            background: rgba(139,92,246,0.2);
+            color: #a78bfa;
+        }
+        .panel-tab:hover:not(.active) { color: #ccc; }
+
+        .panel-content { display: none; }
+        .panel-content.active { display: block; }
+
+        /* Lists */
+        .data-list {
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 12px;
+        }
+        .data-row:last-child { border-bottom: none; }
+        .data-row .name { color: #a78bfa; font-weight: 500; }
+        .data-row .meta { color: #666; font-size: 10px; }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        .action-grid button {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .action-grid button:hover { transform: translateY(-2px); filter: brightness(1.2); }
+        .btn-mem { background: rgba(74,222,128,0.1); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+        .btn-io { background: rgba(96,165,250,0.1); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
+        .btn-net { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+        .btn-danger { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+
+        /* Progress */
+        .sector-bar {
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .sector-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 6px;
+        }
+        .sector-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+            height: 6px;
+            overflow: hidden;
+        }
+        .sector-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #60a5fa);
+            border-radius: 3px;
+            transition: width 0.5s;
+            box-shadow: 0 0 8px rgba(74,222,128,0.3);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10,10,30,0.95);
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 13px;
+            z-index: 99999;
+            border: 1px solid;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            font-family: 'Courier New', monospace;
+        }
+        .toast.ok { border-color: rgba(74,222,128,0.4); color: #4ade80; box-shadow: 0 0 20px rgba(74,222,128,0.2); }
+        .toast.err { border-color: rgba(239,68,68,0.4); color: #f87171; box-shadow: 0 0 20px rgba(239,68,68,0.2); }
+
+        /* Animations */
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .pulse { animation: pulse-glow 2s infinite; }
+
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+        .scanline {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(74,222,128,0.3), transparent);
+            animation: scanline 4s linear infinite;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        @media (max-width: 768px) {
+            .memory-grid { grid-template-columns: repeat(8, 1fr); gap: 4px; padding: 10px; }
+            .sd-card { padding: 20px 15px 50px 15px; }
+            .info-panel { grid-template-columns: repeat(2, 1fr); }
+            .card-header { flex-direction: column; gap: 15px; text-align: center; }
+            .card-capacity { text-align: center; }
+        }
+    </style>
 </head>
 <body>
-<div class="box">
-    <h2>📊 شريط متحرك</h2>
-    <div class="bar-container"><div class="bar" id="bar"></div></div>
-    <div class="status" id="status">⏸️ متوقف</div>
-    <div style="margin-top:15px">
-        <button class="btn btn-green" onclick="startBar()">▶️ تشغيل</button>
-        <button class="btn btn-red" onclick="stopBar()">⏹️ إيقاف</button>
-        <button class="btn btn-gold" onclick="resetBar()">🔄 إعادة</button>
+
+<div class="pcb-bg"></div>
+<div class="scanline"></div>
+
+<!-- ===== SD CARD ===== -->
+<div class="sd-card">
+    <!-- Gold Pins -->
+    <div class="sd-pins">
+        <div class="pin"></div><div class="pin"></div><div class="pin"></div>
+        <div class="pin"></div><div class="pin"></div><div class="pin"></div>
+        <div class="pin"></div><div class="pin"></div>
     </div>
-    <div style="margin-top:10px;color:#666;font-size:11px">📍 المربع (6,6) | <span id="percent">0%</span></div>
+
+    <!-- Header -->
+    <div class="card-header">
+        <div class="card-brand">
+            <div class="sd-logo">SD</div>
+            <div class="card-info">
+                <h1>NAND FLASH MEMORY</h1>
+                <div class="specs">CLASS 10 • UHS-I • 144 BLOCKS • SECURE</div>
+            </div>
+        </div>
+        <div class="card-capacity">
+            <div class="capacity-number" id="capacityDisplay">144</div>
+            <div class="capacity-label">BLOCKS TOTAL</div>
+        </div>
+    </div>
+
+    <!-- LED Status Bar -->
+    <div class="led-bar">
+        <div class="led-indicator">
+            <div class="led active-green" id="led-power"></div>
+            <span>PWR</span>
+        </div>
+        <div class="led-indicator">
+            <div class="led" id="led-read"></div>
+            <span>READ</span>
+        </div>
+        <div class="led-indicator">
+            <div class="led" id="led-write"></div>
+            <span>WRITE</span>
+        </div>
+        <div class="led-indicator">
+            <div class="led" id="led-bus"></div>
+            <span>BUS</span>
+        </div>
+        <div class="led-indicator">
+            <div class="led" id="led-error"></div>
+            <span>ERR</span>
+        </div>
+    </div>
+
+    <!-- Memory Grid (NAND Chips) -->
+    <div class="memory-grid" id="grid"></div>
+
+    <!-- Info Panel -->
+    <div class="info-panel">
+        <div class="info-cell">
+            <div class="label">Blocks Used</div>
+            <div class="value" id="statUsed">0</div>
+        </div>
+        <div class="info-cell">
+            <div class="label">Blocks Free</div>
+            <div class="value" id="statFree">144</div>
+        </div>
+        <div class="info-cell">
+            <div class="label">Chain Blocks</div>
+            <div class="value" id="statChain">0</div>
+        </div>
+        <div class="info-cell">
+            <div class="label">P2P Nodes</div>
+            <div class="value" id="statP2P">0</div>
+        </div>
+    </div>
 </div>
-<script src="main.js"></script>
+
+<!-- ===== PANEL ===== -->
+<div class="panel-overlay" id="panel">
+    <div class="panel-box">
+        <div class="panel-header">
+            <h3 id="panelTitle">🔲 BLOCK 00</h3>
+            <button onclick="closePanel()">✖ CLOSE</button>
+        </div>
+        
+        <div class="panel-tabs">
+            <button class="panel-tab active" onclick="switchTab('files')" id="ptab-files">📁 FILES</button>
+            <button class="panel-tab" onclick="switchTab('users')" id="ptab-users">👥 USERS</button>
+            <button class="panel-tab" onclick="switchTab('chain')" id="ptab-chain">⛓️ CHAIN</button>
+        </div>
+
+        <div class="panel-content active" id="pcontent-files">
+            <div class="data-list" id="fileList"></div>
+            <div id="previewArea" style="margin-top:10px;"></div>
+            <div class="action-grid">
+                <button class="btn-mem" onclick="triggerUpload()">📤 WRITE</button>
+                <button class="btn-io" onclick="showChain()">🔍 VERIFY</button>
+                <button class="btn-net" onclick="shareP2P()">🌐 BROADCAST</button>
+                <button class="btn-danger" onclick="clearTile()">🗑️ ERASE</button>
+            </div>
+        </div>
+
+        <div class="panel-content" id="pcontent-users">
+            <div class="sector-bar">
+                <div class="sector-header">
+                    <span>SECTOR USAGE (1 BYTE = 1 USER)</span>
+                    <span id="userProgressText">0 / 147,456</span>
+                </div>
+                <div class="sector-track">
+                    <div class="sector-fill" id="userProgressFill" style="width:0%"></div>
+                </div>
+            </div>
+            <div class="data-list" id="usersList"></div>
+            <div class="action-grid">
+                <button class="btn-mem" onclick="addUser()">➕ ADD USER</button>
+                <button class="btn-mem" onclick="addMultipleUsers(10)">➕ x10</button>
+                <button class="btn-danger" onclick="clearUsers()">🗑️ WIPE</button>
+            </div>
+        </div>
+
+        <div class="panel-content" id="pcontent-chain">
+            <div class="data-list" id="chainList" style="max-height:300px;">
+                <div style="color:#666;text-align:center;padding:20px;">No chain data</div>
+            </div>
+            <div class="action-grid">
+                <button class="btn-io" onclick="verifyChain()">✅ VERIFY SHA-256</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== SETTINGS ===== -->
+<div class="panel-overlay" id="settingsPanel">
+    <div class="panel-box">
+        <div class="panel-header">
+            <h3>⚙️ SYSTEM CONFIG</h3>
+            <button onclick="closeSettings()">✖ CLOSE</button>
+        </div>
+        <div style="margin-bottom:15px;">
+            <h4 style="color:#a78bfa;font-size:13px;margin-bottom:8px;">📡 TELEGRAM CHANNEL</h4>
+            <div id="telegramStatus" style="font-size:12px;color:#888;margin-bottom:8px;">NOT CONFIGURED</div>
+            <div id="telegramForm">
+                <input type="password" id="tgToken" placeholder="BOT TOKEN" style="width:100%;margin-bottom:6px;padding:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(139,92,246,0.2);color:#fff;border-radius:6px;font-family:inherit;">
+                <input type="text" id="tgChatId" placeholder="CHAT ID" style="width:100%;margin-bottom:6px;padding:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(139,92,246,0.2);color:#fff;border-radius:6px;font-family:inherit;">
+                <input type="password" id="tgPassword" placeholder="ENCRYPTION PASSWORD" style="width:100%;margin-bottom:6px;padding:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(139,92,246,0.2);color:#fff;border-radius:6px;font-family:inherit;">
+                <button class="btn-io" onclick="saveTelegramConfig()" style="padding:8px 16px;">🔐 ENCRYPT & SAVE</button>
+            </div>
+        </div>
+        <div style="margin-bottom:15px;">
+            <h4 style="color:#a78bfa;font-size:13px;margin-bottom:8px;">💾 BACKUP / RESTORE</h4>
+            <button class="btn-mem" onclick="exportDatabase()" style="padding:8px 16px;margin-right:8px;">📤 EXPORT</button>
+            <button class="btn-net" onclick="importDatabase()" style="padding:8px 16px;">📥 IMPORT</button>
+        </div>
+        <div style="border-top:1px solid rgba(239,68,68,0.2);padding-top:15px;">
+            <h4 style="color:#f87171;font-size:13px;margin-bottom:8px;">🗑️ DANGER ZONE</h4>
+            <button class="btn-danger" onclick="clearAllData()" style="padding:8px 16px;">💥 FACTORY RESET</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="fileInput" style="display:none;" onchange="handleFileSelect(event)">
+
+<script>
+// ============================================
+// CORE SYSTEM (Same robust backend)
+// ============================================
+
+class CryptoHelper {
+    static async sha256(message) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    static async deriveKey(password, salt) {
+        const encoder = new TextEncoder();
+        const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveKey']);
+        return crypto.subtle.deriveKey(
+            { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+            keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+        );
+    }
+    static async encrypt(text, password) {
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const key = await this.deriveKey(password, salt);
+        const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(text));
+        return { salt: Array.from(salt), iv: Array.from(iv), data: Array.from(new Uint8Array(ciphertext)) };
+    }
+    static async decrypt(encrypted, password) {
+        const key = await this.deriveKey(new Uint8Array(encrypted.salt), password);
+        const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(encrypted.iv) }, key, new Uint8Array(encrypted.data));
+        return new TextDecoder().decode(decrypted);
+    }
+}
+
+class DBManager {
+    constructor() {
+        this.db = null;
+        this.DB_NAME = 'RealTileSystemDB_v1';
+        this.DB_VERSION = 1;
+    }
+    async init() {
+        return new Promise((resolve, reject) => {
+            const req = indexedDB.open(this.DB_NAME, this.DB_VERSION);
+            req.onerror = () => reject(req.error);
+            req.onsuccess = () => { this.db = req.result; resolve(); };
+            req.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains('tiles')) db.createObjectStore('tiles', { keyPath: 'id' });
+                if (!db.objectStoreNames.contains('chain')) db.createObjectStore('chain', { keyPath: 'index' });
+                if (!db.objectStoreNames.contains('config')) db.createObjectStore('config', { keyPath: 'key' });
+            };
+        });
+    }
+    async saveTile(tile) { return this._put('tiles', tile); }
+    async getTile(id) { return this._get('tiles', id); }
+    async deleteTile(id) { return this._delete('tiles', id); }
+    async getAllTiles() { return this._getAll('tiles'); }
+    async addBlock(block) { return this._put('chain', block); }
+    async getAllBlocks() { return this._getAll('chain'); }
+    async setConfig(key, value) { return this._put('config', { key, value }); }
+    async getConfig(key) { const r = await this._get('config', key); return r ? r.value : null; }
+    async clearAll() { await this._clear('tiles'); await this._clear('chain'); await this._clear('config'); }
+    
+    _put(store, data) { return new Promise((resolve, reject) => { const tx = this.db.transaction([store], 'readwrite'); const req = tx.objectStore(store).put(data); req.onsuccess = () => resolve(); req.onerror = () => reject(req.error); }); }
+    _get(store, key) { return new Promise((resolve, reject) => { const tx = this.db.transaction([store], 'readonly'); const req = tx.objectStore(store).get(key); req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error); }); }
+    _delete(store, key) { return new Promise((resolve, reject) => { const tx = this.db.transaction([store], 'readwrite'); const req = tx.objectStore(store).delete(key); req.onsuccess = () => resolve(); req.onerror = () => reject(req.error); }); }
+    _getAll(store) { return new Promise((resolve, reject) => { const tx = this.db.transaction([store], 'readonly'); const req = tx.objectStore(store).getAll(); req.onsuccess = () => resolve(req.result || []); req.onerror = () => reject(req.error); }); }
+    _clear(store) { return new Promise((resolve, reject) => { const tx = this.db.transaction([store], 'readwrite'); const req = tx.objectStore(store).clear(); req.onsuccess = () => resolve(); req.onerror = () => reject(req.error); }); }
+    
+    static uint8ToBase64(bytes) { let binary = ''; for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]); return btoa(binary); }
+    static base64ToUint8(base64) { const binary = atob(base64); const bytes = new Uint8Array(binary.length); for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i); return bytes; }
+    
+    async exportDatabase() {
+        const tiles = await this.getAllTiles();
+        const chain = await this.getAllBlocks();
+        return JSON.stringify({ version: 1, tiles: tiles.map(t => ({...t, files: t.files.map(f => ({...f, content: DBManager.uint8ToBase64(f.content)}))})), chain, exportedAt: Date.now() }, null, 2);
+    }
+    async importDatabase(jsonStr) {
+        const data = JSON.parse(jsonStr);
+        await this.clearAll();
+        for (const t of data.tiles) await this.saveTile({...t, files: t.files.map(f => ({...f, content: DBManager.base64ToUint8(f.content)}))});
+        for (const b of data.chain) await this.addBlock(b);
+    }
+}
+
+class SafeCompressor {
+    constructor() { this.supported = typeof CompressionStream !== 'undefined'; }
+    async compress(file) {
+        const buffer = await file.arrayBuffer();
+        if (!this.supported) return { content: new Uint8Array(buffer), originalType: file.type || 'application/octet-stream', originalName: file.name, originalSize: buffer.byteLength, compressedSize: buffer.byteLength, isCompressed: false };
+        const stream = new Blob([buffer]).stream().pipeThrough(new CompressionStream('gzip'));
+        const compressed = await new Response(stream).arrayBuffer();
+        return { content: new Uint8Array(compressed), originalType: file.type || 'application/octet-stream', originalName: file.name, originalSize: buffer.byteLength, compressedSize: compressed.byteLength, isCompressed: true };
+    }
+    async decompress(fileData) {
+        if (!fileData.isCompressed || !this.supported) return fileData.content.buffer.slice(fileData.content.byteOffset, fileData.content.byteOffset + fileData.content.byteLength);
+        const stream = new Blob([fileData.content]).stream().pipeThrough(new DecompressionStream('gzip'));
+        const decompressed = await new Response(stream).arrayBuffer();
+        return decompressed;
+    }
+}
+
+class RealBlockchain {
+    constructor(dbManager) { this.db = dbManager; this.chain = []; this.difficulty = 2; }
+    async init() { this.chain = (await this.db.getAllBlocks()).sort((a, b) => a.index - b.index); }
+    async addBlock(tileId, dataHash) {
+        const prev = this.chain.length > 0 ? this.chain[this.chain.length - 1] : null;
+        const block = { index: this.chain.length, tileId, dataHash, timestamp: Date.now(), prevHash: prev ? prev.hash : '0'.repeat(64), hash: '', nonce: 0 };
+        await this.mineBlock(block);
+        this.chain.push(block);
+        await this.db.addBlock(block);
+        return block;
+    }
+    async mineBlock(block) {
+        let nonce = 0;
+        const target = '0'.repeat(this.difficulty);
+        while (true) {
+            const hash = await CryptoHelper.sha256(block.index + block.prevHash + block.dataHash + block.timestamp + nonce);
+            if (hash.startsWith(target)) { block.hash = hash; block.nonce = nonce; return block; }
+            nonce++;
+            if (nonce % 500 === 0) await new Promise(r => setTimeout(r, 0));
+        }
+    }
+    async verify() {
+        for (let i = 1; i < this.chain.length; i++) {
+            const curr = this.chain[i], prev = this.chain[i-1];
+            if (curr.prevHash !== prev.hash) return false;
+            if (curr.hash !== await CryptoHelper.sha256(curr.index + curr.prevHash + curr.dataHash + curr.timestamp + curr.nonce)) return false;
+        }
+        return true;
+    }
+}
+
+class SecureTelegramChannel {
+    constructor(dbManager) { this.db = dbManager; this.credentials = null; this.isUnlocked = false; }
+    async isConfigured() { return !!(await this.db.getConfig('telegram_creds')); }
+    async unlock(password) {
+        const enc = await this.db.getConfig('telegram_creds');
+        if (!enc) return false;
+        try { this.credentials = JSON.parse(await CryptoHelper.decrypt(enc, password)); this.isUnlocked = true; return true; } catch(e) { return false; }
+    }
+    lock() { this.credentials = null; this.isUnlocked = false; }
+    async configure(token, chatId, password) {
+        const enc = await CryptoHelper.encrypt(JSON.stringify({ token, chatId }), password);
+        await this.db.setConfig('telegram_creds', enc);
+        this.credentials = { token, chatId }; this.isUnlocked = true;
+    }
+    async sendTile(tileId, tileData) {
+        if (!this.isUnlocked) throw new Error('LOCKED');
+        const payload = { tileId, files: tileData.files.map(f => ({...f, content: DBManager.uint8ToBase64(f.content)})), created: tileData.created, exportedAt: Date.now() };
+        const fd = new FormData();
+        fd.append('chat_id', this.credentials.chatId);
+        fd.append('document', new File([new Blob([JSON.stringify(payload)])], `tile_${tileId}.json`));
+        fd.append('caption', `BLOCK ${tileId} | ${payload.files.length} FILES`);
+        const res = await fetch(`https://api.telegram.org/bot${this.credentials.token}/sendDocument`, { method: 'POST', body: fd });
+        const result = await res.json();
+        if (!result.ok) throw new Error(result.description || 'FAILED');
+        return result;
+    }
+}
+
+class EnhancedP2P {
+    constructor() {
+        this.channel = null; this.nodeId = this.generateId(); this.peers = new Map(); this.onTileReceived = null; this.init();
+    }
+    init() {
+        try {
+            this.channel = new BroadcastChannel('real_tile_network_v2');
+            this.channel.onmessage = (e) => this.handleMessage(e.data);
+            this.broadcast({ type: 'hello', nodeId: this.nodeId });
+            setInterval(() => this.broadcast({ type: 'ping', nodeId: this.nodeId }), 10000);
+        } catch(e) {}
+    }
+    generateId() { return 'node_' + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '_' + Math.random().toString(36).substr(2, 9)); }
+    broadcast(msg) { if (this.channel) this.channel.postMessage({ ...msg, sender: this.nodeId }); }
+    handleMessage(msg) {
+        if (msg.sender === this.nodeId) return;
+        switch(msg.type) {
+            case 'hello': case 'ping': this.peers.set(msg.nodeId, Date.now()); if (msg.type === 'hello') this.broadcast({ type: 'pong', nodeId: this.nodeId }); break;
+            case 'pong': this.peers.set(msg.nodeId, Date.now()); break;
+            case 'share_tile': if (this.onTileReceived) this.onTileReceived(msg.tileId, {...msg.tileData, files: msg.tileData.files.map(f => ({...f, content: DBManager.base64ToUint8(f.content)}))}); break;
+        }
+    }
+    shareTile(tileId, tileData) { this.broadcast({ type: 'share_tile', tileId, tileData: {...tileData, files: tileData.files.map(f => ({...f, content: DBManager.uint8ToBase64(f.content)}))} }); }
+    getPeers() { const now = Date.now(); for (const [id, last] of this.peers) { if (now - last > 30000) this.peers.delete(id); } return Array.from(this.peers.keys()); }
+}
+
+class TileUserManager {
+    constructor(tileId, tileData) { this.tileId = tileId; this.maxUsers = 147456; this.tileData = tileData; this.users = new Uint8Array(this.maxUsers); this.load(); }
+    load() {
+        if (!this.tileData || !this.tileData.files) return;
+        const userFile = this.tileData.files.find(f => f.name === '_users.bin');
+        if (userFile && userFile.content) {
+            const arr = new Uint8Array(userFile.content);
+            if (arr.length >= this.maxUsers) this.users = arr.slice(0, this.maxUsers);
+            else { this.users = new Uint8Array(this.maxUsers); this.users.set(arr, 0); }
+        }
+    }
+    getUserFileData() { return { name: '_users.bin', type: 'application/octet-stream', content: this.users, originalSize: this.users.byteLength, compressedSize: this.users.byteLength, added: Date.now() }; }
+    addUser() { for (let i = 0; i < this.users.length; i++) { if (this.users[i] === 0) { this.users[i] = 1; return { success: true, userId: i + 1 }; } } return { success: false, error: 'FULL' }; }
+    removeUser(userId) { const index = userId - 1; if (index < 0 || index >= this.users.length || this.users[index] === 0) return false; this.users[index] = 0; return true; }
+    getStats() { let active = 0; for (const s of this.users) if (s === 1) active++; return { total: this.maxUsers, active, available: this.maxUsers - active, percentage: ((active / this.maxUsers) * 100).toFixed(2) }; }
+    getUsers(limit = 50) { const users = []; for (let i = 0; i < this.users.length && users.length < limit; i++) if (this.users[i] === 1) users.push({ id: i + 1, status: 1 }); return users; }
+    getAllUsersCount() { let c = 0; for (const s of this.users) if (s === 1) c++; return c; }
+    clear() { this.users = new Uint8Array(this.maxUsers); }
+}
+
+class TileSystem {
+    constructor() {
+        this.db = new DBManager(); this.compressor = new SafeCompressor(); this.blockchain = null;
+        this.p2p = new EnhancedP2P(); this.telegram = null; this.currentTile = null;
+        this.tiles = new Map(); this.currentTab = 'files';
+    }
+    async init() {
+        await this.db.init();
+        this.blockchain = new RealBlockchain(this.db);
+        await this.blockchain.init();
+        this.telegram = new SecureTelegramChannel(this.db);
+        const all = await this.db.getAllTiles();
+        for (const t of all) this.tiles.set(t.id, t);
+        this.p2p.onTileReceived = async (tileId, tileData) => { this.tiles.set(tileId, tileData); await this.db.saveTile(tileData); this.renderGrid(); this.updateStats(); flashLED('read'); showToast('📥 RECEIVED BLOCK ' + tileId, 'ok'); };
+        this.renderGrid(); this.updateStats();
+    }
+    
+    async uploadFile(tileId, file) {
+        flashLED('write');
+        const compressed = await this.compressor.compress(file);
+        const tile = this.tiles.get(tileId) || { id: tileId, files: [], created: Date.now() };
+        tile.files = tile.files.filter(f => f.name !== file.name && f.name !== '_users.bin');
+        tile.files.push({ name: file.name, type: compressed.originalType, content: compressed.content, originalSize: compressed.originalSize, compressedSize: compressed.compressedSize, added: Date.now() });
+        const existing = this.tiles.get(tileId);
+        if (existing) { const uf = existing.files.find(f => f.name === '_users.bin'); if (uf) tile.files.push(uf); }
+        await this.db.saveTile(tile); this.tiles.set(tileId, tile);
+        let hashInput = '';
+        for (const f of tile.files) { if (f.name === '_users.bin') continue; const fh = await CryptoHelper.sha256(f.content); hashInput += f.name + f.added + fh; }
+        await this.blockchain.addBlock(tileId, await CryptoHelper.sha256(hashInput));
+        this.p2p.shareTile(tileId, tile); this.renderGrid(); this.updateStats();
+        showToast(`✅ WRITTEN "${file.name}" TO BLOCK ${tileId}`, 'ok');
+        return tile;
+    }
+    
+    async getTileFile(tileId, fileName) {
+        const tile = this.tiles.get(tileId); if (!tile) return null;
+        const file = tile.files.find(f => f.name === fileName); if (!file) return null;
+        return { ...file, data: await this.compressor.decompress(file) };
+    }
+    
+    async deleteFile(tileId, fileName) {
+        const tile = this.tiles.get(tileId); if (!tile) return;
+        tile.files = tile.files.filter(f => f.name !== fileName);
+        if (tile.files.length === 0) { await this.deleteTile(tileId); closePanel(); }
+        else { await this.db.saveTile(tile); let hashInput = ''; for (const f of tile.files) { if (f.name === '_users.bin') continue; const fh = await CryptoHelper.sha256(f.content); hashInput += f.name + f.added + fh; } await this.blockchain.addBlock(tileId, await CryptoHelper.sha256(hashInput)); this.openPanel(tileId); }
+        this.renderGrid(); this.updateStats();
+    }
+    
+    async deleteTile(tileId) { this.tiles.delete(tileId); await this.db.deleteTile(tileId); this.renderGrid(); this.updateStats(); }
+    
+    getUserManager(tileId) { return new TileUserManager(tileId, this.tiles.get(tileId) || { files: [] }); }
+    
+    async saveUserManager(tileId, um) {
+        let tile = this.tiles.get(tileId) || { id: tileId, files: [], created: Date.now() };
+        tile.files = tile.files.filter(f => f.name !== '_users.bin');
+        tile.files.push(um.getUserFileData());
+        await this.db.saveTile(tile); this.tiles.set(tileId, tile); this.renderGrid(); this.updateStats();
+    }
+    
+    renderGrid() {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+        let usedBlocks = 0;
+        for (let r = 0; r < 12; r++) {
+            for (let c = 0; c < 12; c++) {
+                const id = `${r}_${c}`;
+                const tile = this.tiles.get(id);
+                const div = document.createElement('div');
+                div.className = 'nand-chip';
+                let hasFiles = false, hasUsers = false, usage = 0;
+                if (tile && tile.files) {
+                    hasFiles = tile.files.some(f => f.name !== '_users.bin');
+                    hasUsers = tile.files.some(f => f.name === '_users.bin');
+                    if (hasUsers) { const um = new TileUserManager(id, tile); usage = (um.getAllUsersCount() / um.maxUsers) * 100; }
+                }
+                if (hasFiles && hasUsers) div.classList.add('has-both');
+                else if (hasFiles) div.classList.add('has-data');
+                else if (hasUsers) div.classList.add('has-users');
+                if (hasFiles || hasUsers) usedBlocks++;
+                
+                div.dataset.tile = id;
+                let icon = '○';
+                if (hasFiles && hasUsers) icon = '◈';
+                else if (hasFiles) icon = '◉';
+                else if (hasUsers) icon = '◎';
+                
+                div.innerHTML = `
+                    <div class="chip-led"></div>
+                    <div class="chip-id">${r.toString(16).toUpperCase()}${c.toString(16).toUpperCase()}</div>
+                    <div class="chip-icon">${icon}</div>
+                    <div class="chip-usage"><div class="chip-usage-fill" style="width:${usage}%"></div></div>
+                `;
+                div.onclick = () => this.openPanel(id);
+                grid.appendChild(div);
+            }
+        }
+        document.getElementById('statUsed').textContent = usedBlocks;
+        document.getElementById('statFree').textContent = 144 - usedBlocks;
+    }
+    
+    async openPanel(tileId) {
+        this.currentTile = tileId;
+        document.getElementById('panel').classList.add('open');
+        document.getElementById('panelTitle').textContent = `🔲 BLOCK ${tileId.replace('_', ':')}`;
+        const tile = this.tiles.get(tileId);
+        const hasFiles = tile && tile.files.some(f => f.name !== '_users.bin');
+        const um = this.getUserManager(tileId);
+        const userStats = um.getStats();
+        
+        await this.renderFilesTab(tileId);
+        this.renderUsersTab(tileId);
+        this.renderChainTab(tileId);
+        switchTab(this.currentTab);
+    }
+    
+    async renderFilesTab(tileId) {
+        const tile = this.tiles.get(tileId);
+        const fileList = document.getElementById('fileList');
+        if (!tile || !tile.files.some(f => f.name !== '_users.bin')) {
+            fileList.innerHTML = '<div style="color:#666;text-align:center;padding:20px;">NO DATA SECTORS</div>';
+            document.getElementById('previewArea').innerHTML = '';
+            return;
+        }
+        const realFiles = tile.files.filter(f => f.name !== '_users.bin');
+        let html = '';
+        for (const f of realFiles) {
+            const safeName = f.name.replace(/'/g, "\\'");
+            html += `<div class="data-row">
+                <div><span class="name">📄 ${f.name}</span><br><span class="meta">${this.fmt(f.originalSize)} → ${this.fmt(f.compressedSize)}</span></div>
+                <div style="display:flex;gap:4px;">
+                    <button onclick="previewFile('${tileId}', '${safeName}')" style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.3);color:#60a5fa;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;">👁️</button>
+                    <button onclick="downloadFile('${tileId}', '${safeName}')" style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;">⬇️</button>
+                    <button onclick="deleteFile('${tileId}', '${safeName}')" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#f87171;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;">🗑️</button>
+                </div>
+            </div>`;
+        }
+        fileList.innerHTML = html;
+    }
+    
+    renderUsersTab(tileId) {
+        const um = this.getUserManager(tileId);
+        const stats = um.getStats();
+        const users = um.getUsers(50);
+        const allCount = um.getAllUsersCount();
+        document.getElementById('userProgressText').textContent = `${stats.active.toLocaleString('ar-SA')} / ${stats.total.toLocaleString('ar-SA')}`;
+        document.getElementById('userProgressFill').style.width = Math.min(parseFloat(stats.percentage), 100) + '%';
+        const listEl = document.getElementById('usersList');
+        if (users.length === 0) { listEl.innerHTML = '<div style="color:#666;text-align:center;padding:20px;">EMPTY SECTOR</div>'; return; }
+        let html = '';
+        users.forEach(u => { html += `<div class="data-row"><span class="name">👤 USER #${u.id.toLocaleString('ar-SA')}</span><span style="color:#4ade80;font-size:10px;">● ACTIVE</span></div>`; });
+        if (allCount > 50) html += `<div style="color:#666;text-align:center;padding:5px;font-size:11px;">... AND ${(allCount - 50).toLocaleString('ar-SA')} MORE</div>`;
+        listEl.innerHTML = html;
+    }
+    
+    renderChainTab(tileId) {
+        const chainList = document.getElementById('chainList');
+        const blocks = this.blockchain.chain.filter(b => b.tileId === tileId);
+        if (blocks.length === 0) { chainList.innerHTML = '<div style="color:#666;text-align:center;padding:20px;">NO CHAIN RECORDS</div>'; return; }
+        let html = '';
+        blocks.slice(-20).reverse().forEach(b => {
+            html += `<div class="data-row">
+                <div><span class="name">⛓️ BLOCK #${b.index}</span><br><span class="meta">${new Date(b.timestamp).toLocaleTimeString('ar-SA')}</span></div>
+                <div style="text-align:left;"><span style="color:#60a5fa;font-size:10px;">${b.hash.substring(0, 16)}...</span><br><span style="color:#666;font-size:9px;">NONCE: ${b.nonce}</span></div>
+            </div>`;
+        });
+        chainList.innerHTML = html;
+    }
+    
+    updateStats() {
+        document.getElementById('statChain').textContent = this.blockchain.chain.length;
+        document.getElementById('statP2P').textContent = this.p2p.getPeers().length;
+    }
+    
+    fmt(bytes) { if (bytes === 0) return '0 B'; const k = 1024, s = ['B','KB','MB','GB']; const i = Math.floor(Math.log(bytes) / Math.log(k)); return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + s[i]; }
+}
+
+// ============================================
+// UI CONTROLLERS
+// ============================================
+
+let system = null;
+let uploadTargetTile = null;
+
+function flashLED(id) {
+    const led = document.getElementById('led-' + id);
+    if (!led) return;
+    led.classList.add('active-' + (id === 'error' ? 'red' : id === 'bus' ? 'amber' : id === 'read' ? 'blue' : 'green'));
+    setTimeout(() => led.className = 'led', 300);
+}
+
+function closePanel() { document.getElementById('panel').classList.remove('open'); }
+function closeSettings() { document.getElementById('settingsPanel').classList.remove('open'); }
+
+function switchTab(tab) {
+    system.currentTab = tab;
+    document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel-content').forEach(t => t.classList.remove('active'));
+    document.getElementById('ptab-' + tab).classList.add('active');
+    document.getElementById('pcontent-' + tab).classList.add('active');
+}
+
+function triggerUpload() {
+    uploadTargetTile = system ? system.currentTile : null;
+    if (!uploadTargetTile) { showToast('SELECT BLOCK FIRST', 'err'); return; }
+    document.getElementById('fileInput').click();
+}
+
+async function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file || !uploadTargetTile) return;
+    try { await system.uploadFile(uploadTargetTile, file); system.openPanel(uploadTargetTile); }
+    catch(err) { showToast('❌ ' + err.message, 'err'); }
+    e.target.value = '';
+}
+
+async function previewFile(tileId, fileName) {
+    const file = await system.getTileFile(tileId, fileName);
+    if (!file) return;
+    const area = document.getElementById('previewArea');
+    const type = file.type || 'application/octet-stream';
+    if (type.startsWith('image/')) {
+        const url = URL.createObjectURL(new Blob([file.data], { type }));
+        area.innerHTML = `<img src="${url}" style="max-width:100%;max-height:200px;border-radius:8px;display:block;margin:0 auto;border:1px solid rgba(139,92,246,0.3);">`;
+    } else if (type.startsWith('text/') || type === 'application/json') {
+        area.innerHTML = `<pre style="background:rgba(0,0,0,0.4);padding:10px;border-radius:6px;overflow:auto;max-height:200px;font-size:11px;border:1px solid rgba(139,92,246,0.1);color:#a78bfa;">${escapeHtml(new TextDecoder().decode(new Uint8Array(file.data)))}</pre>`;
+    } else {
+        area.innerHTML = `<div style="text-align:center;color:#888;padding:20px;">🔒 BINARY DATA — DOWNLOAD TO VIEW</div>`;
+    }
+}
+
+async function downloadFile(tileId, fileName) {
+    const file = await system.getTileFile(tileId, fileName);
+    if (!file) return;
+    const url = URL.createObjectURL(new Blob([file.data], { type: file.type }));
+    const a = document.createElement('a'); a.href = url; a.download = fileName; a.click(); URL.revokeObjectURL(url);
+    flashLED('read');
+}
+
+async function deleteFile(tileId, fileName) {
+    if (!confirm(`ERASE "${fileName}"?`)) return;
+    await system.deleteFile(tileId, fileName);
+    showToast('🗑️ ERASED', 'ok');
+}
+
+async function sendToChannel() {
+    const tileId = system.currentTile;
+    if (!tileId) { showToast('SELECT BLOCK', 'err'); return; }
+    const tile = system.tiles.get(tileId);
+    if (!tile) { showToast('EMPTY BLOCK', 'err'); return; }
+    try { await system.telegram.sendTile(tileId, tile); flashLED('bus'); }
+    catch(e) { showToast('❌ ' + e.message, 'err'); flashLED('error'); }
+}
+
+function shareP2P() {
+    const tileId = system.currentTile;
+    if (!tileId) { showToast('SELECT BLOCK', 'err'); return; }
+    const tile = system.tiles.get(tileId);
+    if (!tile) { showToast('EMPTY BLOCK', 'err'); return; }
+    system.p2p.shareTile(tileId, tile);
+    flashLED('bus');
+    showToast(`🌐 BROADCAST BLOCK ${tileId}`, 'ok');
+}
+
+async function showChain() {
+    const chain = system.blockchain.chain;
+    if (chain.length === 0) { showToast('CHAIN EMPTY', 'err'); return; }
+    let msg = `⛓️ BLOCKCHAIN (${chain.length} BLOCKS)\n${'═'.repeat(40)}\n`;
+    for (const b of chain.slice(-10)) { msg += `#${b.index} | ${b.tileId}\n   HASH: ${b.hash.substring(0, 16)}...\n   PREV: ${b.prevHash.substring(0, 16)}...\n   NONCE: ${b.nonce}\n${'─'.repeat(30)}\n`; }
+    msg += `\n${await system.blockchain.verify() ? '✅ VERIFIED' : '❌ CORRUPTED!'}`;
+    alert(msg);
+}
+
+async function clearTile() {
+    const tileId = system.currentTile;
+    if (!tileId || !confirm(`WIPE BLOCK ${tileId}?`)) return;
+    await system.deleteTile(tileId);
+    closePanel();
+    showToast('🗑️ BLOCK ERASED', 'ok');
+}
+
+async function addUser() {
+    const tileId = system.currentTile;
+    if (!tileId) { showToast('SELECT BLOCK', 'err'); return; }
+    const um = system.getUserManager(tileId);
+    const result = um.addUser();
+    if (result.success) { await system.saveUserManager(tileId, um); system.renderUsersTab(tileId); system.updateStats(); showToast(`✅ USER #${result.userId.toLocaleString('ar-SA')}`); }
+    else { showToast('❌ SECTOR FULL', 'err'); flashLED('error'); }
+}
+
+async function addMultipleUsers(count) {
+    const tileId = system.currentTile;
+    if (!tileId) { showToast('SELECT BLOCK', 'err'); return; }
+    const um = system.getUserManager(tileId);
+    let added = 0;
+    for (let i = 0; i < count; i++) { const r = um.addUser(); if (r.success) added++; else break; }
+    if (added > 0) await system.saveUserManager(tileId, um);
+    system.renderUsersTab(tileId); system.updateStats();
+    showToast(`✅ ${added.toLocaleString('ar-SA')} USERS ADDED`);
+}
+
+async function removeUser(userId) {
+    const tileId = system.currentTile;
+    if (!tileId) return;
+    const um = system.getUserManager(tileId);
+    if (um.removeUser(userId)) { await system.saveUserManager(tileId, um); system.renderUsersTab(tileId); system.updateStats(); showToast(`🗑️ USER #${userId.toLocaleString('ar-SA')} REMOVED`); }
+}
+
+async function clearUsers() {
+    const tileId = system.currentTile;
+    if (!tileId || !confirm('WIPE ALL USERS IN THIS BLOCK?')) return;
+    const um = system.getUserManager(tileId);
+    const count = um.getAllUsersCount();
+    um.clear(); await system.saveUserManager(tileId, um);
+    system.renderUsersTab(tileId); system.updateStats();
+    showToast(`🗑️ ${count.toLocaleString('ar-SA')} USERS WIPED`);
+}
+
+function escapeHtml(text) { const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
+
+function showToast(msg, type = 'ok') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg; toast.className = 'toast ' + type; toast.style.display = 'block';
+    clearTimeout(toast._timer); toast._timer = setTimeout(() => toast.style.display = 'none', 3000);
+}
+
+async function verifyChain() {
+    const valid = await system.blockchain.verify();
+    showToast(valid ? '✅ CHAIN VERIFIED' : '❌ CHAIN CORRUPTED!', valid ? 'ok' : 'err');
+}
+
+function openSettings() { document.getElementById('settingsPanel').classList.add('open'); updateTelegramUI(); }
+
+async function updateTelegramUI() {
+    const isConf = await system.telegram.isConfigured();
+    const status = document.getElementById('telegramStatus');
+    const form = document.getElementById('telegramForm');
+    if (!isConf) { status.textContent = '⚪ NOT CONFIGURED'; form.style.display = 'block'; }
+    else if (system.telegram.isUnlocked) { status.textContent = '🟢 ACTIVE'; form.style.display = 'none'; }
+    else { status.textContent = '🔒 LOCKED'; form.style.display = 'block'; }
+}
+
+async function saveTelegramConfig() {
+    const token = document.getElementById('tgToken').value.trim();
+    const chatId = document.getElementById('tgChatId').value.trim();
+    const password = document.getElementById('tgPassword').value;
+    if (!token || !chatId || !password) { showToast('FILL ALL FIELDS', 'err'); return; }
+    try { await system.telegram.configure(token, chatId, password); showToast('✅ ENCRYPTED & SAVED', 'ok'); updateTelegramUI(); }
+    catch(e) { showToast('❌ FAILED', 'err'); }
+}
+
+async function exportDatabase() {
+    try { const json = await system.db.exportDatabase(); const url = URL.createObjectURL(new Blob([json])); const a = document.createElement('a'); a.href = url; a.download = `nand_backup_${Date.now()}.json`; a.click(); URL.revokeObjectURL(url); showToast('✅ EXPORTED', 'ok'); }
+    catch(e) { showToast('❌ EXPORT FAILED', 'err'); }
+}
+
+function importDatabase() {
+    const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
+    input.onchange = async (e) => {
+        const file = e.target.files[0]; if (!file) return;
+        try { await system.db.importDatabase(await file.text()); await system.init(); showToast('✅ IMPORTED & RESTORED', 'ok'); }
+        catch(err) { showToast('❌ INVALID FILE', 'err'); }
+    }; input.click();
+}
+
+async function clearAllData() {
+    if (!confirm('💥 FACTORY RESET? ALL DATA WILL BE LOST!')) return;
+    await system.db.clearAll(); await system.init(); showToast('💥 RESET COMPLETE', 'ok');
+    closeSettings(); closePanel();
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    system = new TileSystem();
+    try { await system.init(); showToast('✅ NAND FLASH READY', 'ok'); }
+    catch(e) { showToast('❌ INIT FAILED: ' + e.message, 'err'); }
+});
+</script>
+
 </body>
 </html>
+
+
