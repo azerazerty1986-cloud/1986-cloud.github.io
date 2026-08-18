@@ -1,4 +1,4 @@
-<head>
+head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🌐 العوالم الكروية - النظام المتكامل 100%</title>
@@ -233,6 +233,7 @@
     <button class="platform-btn" onclick="toggleCryptoPanel()">🔐 التشفير</button>
     <button class="platform-btn" onclick="openTileCDNUploadModal()">📤 رفع إلى TileCDN</button>
     <button class="platform-btn" onclick="toggleServerPanel()">📦 سيرفر</button>
+    <button class="platform-btn" onclick="enterCastle()">🏰 القلعة</button>
     <button class="platform-btn" onclick="openCodeEditor()">📝 محرر</button>
     <button class="platform-btn" onclick="exportAll()">📤 تصدير الكل</button>
     <button class="platform-btn" onclick="syncAll()">🔄 مزامنة الكل</button>
@@ -3100,6 +3101,45 @@ function svResetTileView(){
     showToast('🔄 تمت إعادة تعيين عرض TileCDN دون حذف الملفات','success');
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// نظام القلعة التشاركية: أيقونة القلعة = العالم الأم، وكل مربع = غرفة
+// ═══════════════════════════════════════════════════════════════════════════
+let castleState={worldId:'castle_world',currentRoom:null,rooms:{},initialized:false};
+let castleRoomListener=null;
+function initCastle(){
+    try{const saved=localStorage.getItem('castle_data_v1');if(saved)castleState=Object.assign(castleState,JSON.parse(saved));}catch(e){console.warn('castle load',e);}
+    castleState.rooms=castleState.rooms||{};castleState.initialized=true;saveCastleData();return castleState;
+}
+function saveCastleData(){localStorage.setItem('castle_data_v1',JSON.stringify(castleState));}
+function getCastleData(){if(!castleState.initialized)initCastle();return castleState;}
+function getRoomName(row,col){return 'غرفة '+row+'_'+col;}
+function getTileIcon(tileId){const files=loadRoomFiles(tileId);return Object.keys(files).length?'📂':'🚪';}
+function ensureCastleWorld(){
+    if(typeof worlds==='undefined')return null;let w=worlds.find(x=>x.id===castleState.worldId);
+    if(!w){w={id:castleState.worldId,name:'🏰 القلعة الأم',grid:12,tileSize:3,startPosition:{x:0,z:0},background:'#100b24',items:[]};worlds.push(w);}
+    w.items=w.items||[];return w;
+}
+function enterCastle(){initCastle();ensureCastleWorld();if(typeof buildWorld==='function')buildWorld(castleState.worldId);showRoomButtons();showAllRooms();showToast('🏰 دخلت القلعة الأم — كل مربع غرفة','success');}
+function enterTileRoom(tileId){initCastle();castleState.currentRoom=tileId;saveCastleData();if(typeof ServerManager!=='undefined'){ServerManager.currentWorldId=castleState.worldId;ServerManager.selectTile(tileId);}showRoomInfo(tileId);showRoomFiles();listenToRoom(tileId);showToast('🚪 دخلت '+getRoomName(...tileId.split('_').map(Number)),'success');}
+function leaveRoom(){castleState.currentRoom=null;saveCastleData();if(castleRoomListener){window.removeEventListener('storage',castleRoomListener);castleRoomListener=null;}closeCastleOverlay();if(typeof buildWorld==='function')buildWorld('main');showToast('🏰 خرجت من الغرفة','info');}
+function shareFile(filename){const tileId=castleState.currentRoom||ServerManager.selectedTile;if(!tileId||!filename){showToast('⚠️ اختر غرفة وملفًا','warning');return false;}const content=loadRoomFiles(tileId)[filename];if(content==null)return false;saveFileToLocal(tileId,filename,content);broadcastToRoom(tileId,{type:'file_shared',filename,content});showToast('📤 تمت مشاركة '+filename+' في الغرفة','success');return true;}
+function shareFilePrompt(){const tileId=castleState.currentRoom||ServerManager.selectedTile;const files=Object.keys(loadRoomFiles(tileId));const filename=prompt('اختر اسم الملف للمشاركة:\n'+files.join('\n'));if(filename)shareFile(filename);}
+function loadRoomFiles(tileId){if(typeof ServerManager==='undefined'||!ServerManager.tiles[tileId])return {};return ServerManager.tiles[tileId].files||{};}
+function saveFileToLocal(tileId,filename,content){if(typeof ServerManager==='undefined')return;let tile=ServerManager.tiles[tileId];if(!tile){const p=tileId.split('_').map(Number);tile={id:tileId,row:p[0],col:p[1],tileId,worldId:castleState.worldId,files:{},fileMeta:{}};ServerManager.tiles[tileId]=tile;}tile.files=tile.files||{};tile.fileMeta=tile.fileMeta||{};tile.files[filename]=content;tile.fileMeta[filename]=Object.assign(tile.fileMeta[filename]||{},{visible:true,shared:true,room:tileId});if(ServerManager.saveTileFileStore)ServerManager.saveTileFileStore(tileId);if(ServerManager.saveTiles)ServerManager.saveTiles();saveCastleData();}
+function downloadFile(fileKey){const a=fileKey.indexOf('/')>=0?fileKey.split('/'):((castleState.currentRoom||ServerManager.selectedTile)+'/'+fileKey).split('/');const tileId=a.shift(),filename=a.join('/');const content=loadRoomFiles(tileId)[filename];if(content==null)return;const url=content.startsWith('data:')?content:URL.createObjectURL(new Blob([content],{type:mimeForName(filename)}));const link=document.createElement('a');link.href=url;link.download=filename;link.click();}
+function closeCastleOverlay(){const el=document.getElementById('castle-overlay');if(el)el.remove();}
+function castleOverlay(title,body){closeCastleOverlay();const el=document.createElement('div');el.id='castle-overlay';el.style.cssText='position:fixed;inset:0;z-index:11500;background:rgba(0,0,0,.86);display:flex;align-items:center;justify-content:center;padding:14px;direction:rtl;';el.innerHTML='<div style="width:min(900px,96vw);max-height:90vh;overflow:auto;background:#100b24;border:1px solid rgba(251,191,36,.45);border-radius:18px;padding:16px;box-shadow:0 20px 80px #000;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><strong style="color:#fde68a;font-size:18px;">🏰 '+title+'</strong><button onclick="closeCastleOverlay()" style="border:0;border-radius:7px;padding:7px 12px;background:rgba(239,68,68,.16);color:#f87171;cursor:pointer;">✖</button></div>'+body+'</div>';document.body.appendChild(el);return el;}
+function showRoomFiles(){const tileId=castleState.currentRoom||ServerManager.selectedTile;if(!tileId)return;const files=loadRoomFiles(tileId);const rows=Object.keys(files).map(n=>'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px;background:rgba(255,255,255,.05);border-radius:8px;margin:5px 0;"><span>📄 '+n+'</span><span><button onclick="AppRunner.showInAppPreview(\''+tileId+'\',\''+n+'\')">▶️ فتح</button> <button onclick="downloadFile(\''+tileId+'/'+n+'\')">⬇️</button></span></div>').join('')||'<div style="color:#999;padding:20px;text-align:center;">لا توجد ملفات في الغرفة</div>';castleOverlay(getRoomName(...tileId.split('_').map(Number)),'<div style="color:#d1d5db;margin-bottom:8px;">📂 الملفات المشتركة في الغرفة</div>'+rows+'<button onclick="shareFilePrompt()" style="margin-top:10px;padding:10px 14px;">📤 مشاركة ملف</button>');}
+function showAllRooms(){initCastle();const rooms=[];for(let r=0;r<12;r++)for(let c=0;c<12;c++){const id=r+'_'+c;const count=Object.keys(loadRoomFiles(id)).length;rooms.push('<button onclick="enterTileRoom(\''+id+'\')" style="min-height:58px;background:'+(count?'rgba(74,222,128,.18)':'rgba(255,255,255,.05)')+';border:1px solid '+(count?'#4ade80':'rgba(255,255,255,.1)')+';border-radius:9px;color:#fff;cursor:pointer;">'+getTileIcon(id)+'<br><small>'+id+'</small><br><em style="font-size:10px;">'+count+' ملف</em></button>');}castleOverlay('غرف القلعة','<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:7px;">'+rooms.join('')+'</div>');}
+function showRoomInfo(tileId){const count=Object.keys(loadRoomFiles(tileId)).length;showToast('🚪 '+getRoomName(...tileId.split('_').map(Number))+' — '+count+' ملف','info');}
+function showRoomButtons(){let bar=document.getElementById('castle-room-buttons');if(!bar){bar=document.createElement('div');bar.id='castle-room-buttons';bar.style.cssText='position:fixed;bottom:82px;right:12px;z-index:10000;display:flex;gap:6px;flex-wrap:wrap;direction:rtl;';document.body.appendChild(bar);}bar.innerHTML='<button onclick="showAllRooms()">🏰 الغرف</button><button onclick="showRoomFiles()">📂 الملفات</button><button onclick="shareFilePrompt()">📤 مشاركة</button><button onclick="leaveRoom()">⬅️ خروج</button>';}
+function buildCastleWorld(){initCastle();ensureCastleWorld();if(typeof buildWorld==='function')buildWorld(castleState.worldId);showAllRooms();}
+function broadcastToRoom(tileId,message){const key='castle_room_broadcast_'+tileId;localStorage.setItem(key,JSON.stringify({at:Date.now(),from:'local',message}));}
+function listenToRoom(tileId){if(castleRoomListener)window.removeEventListener('storage',castleRoomListener);const key='castle_room_broadcast_'+tileId;castleRoomListener=e=>{if(e.key===key&&e.newValue){try{const data=JSON.parse(e.newValue);showToast('📡 '+(data.message&&data.message.text||'تحديث جديد في الغرفة'),'info');}catch(_){}}};window.addEventListener('storage',castleRoomListener);}
+function goToTile(tileId){const p=tileId.split('_').map(Number);if(typeof jumpToMiniMapTile==='function')jumpToMiniMapTile(p[0],p[1]);enterTileRoom(tileId);}
+function getCurrentRoomData(){const id=castleState.currentRoom;if(!id)return null;return {tileId:id,name:getRoomName(...id.split('_').map(Number)),files:loadRoomFiles(id),worldId:castleState.worldId};}
+window.initCastle=initCastle;window.getCastleData=getCastleData;window.getRoomName=getRoomName;window.getTileIcon=getTileIcon;window.enterCastle=enterCastle;window.enterTileRoom=enterTileRoom;window.leaveRoom=leaveRoom;window.shareFile=shareFile;window.shareFilePrompt=shareFilePrompt;window.loadRoomFiles=loadRoomFiles;window.saveFileToLocal=saveFileToLocal;window.downloadFile=downloadFile;window.showRoomFiles=showRoomFiles;window.showAllRooms=showAllRooms;window.showRoomInfo=showRoomInfo;window.showRoomButtons=showRoomButtons;window.buildCastleWorld=buildCastleWorld;window.broadcastToRoom=broadcastToRoom;window.listenToRoom=listenToRoom;window.goToTile=goToTile;window.getCurrentRoomData=getCurrentRoomData;
+
 function tileDeepLink(worldId,tileId,filename){
     let url=location.href.split('#')[0]+'#world='+encodeURIComponent(worldId||ServerManager.currentWorldId||'main')+'&tile='+encodeURIComponent(tileId||ServerManager.selectedTile||'0_0');
     if(filename) url+='&file='+encodeURIComponent(filename); return url;
@@ -3271,6 +3311,9 @@ window.addEventListener('resize', function() {
 </body>
 </html>    
 
+
+
+    
 
 
     
