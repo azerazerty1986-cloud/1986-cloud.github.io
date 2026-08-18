@@ -1,4 +1,5 @@
-
+<DOCTYPE html>
+<html dir="rtl" lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -1779,8 +1780,15 @@ function buildWorld(worldId) {
     gridHelper.material.transparent = true;
     gridHelper.material.opacity = 0.15;
     tileGroup.add(gridHelper);
-    if (worldId === 'main') { tileGroup.visible = true; if (sphereGroup) sphereGroup.visible = true; }
-    else { tileGroup.visible = true; if (sphereGroup) sphereGroup.visible = false; }
+    if (worldId === 'main') {
+        tileGroup.visible = false;
+        if (gridHelper) gridHelper.visible = false;
+        if (sphereGroup) sphereGroup.visible = true;
+    } else {
+        tileGroup.visible = true;
+        if (gridHelper) gridHelper.visible = true;
+        if (sphereGroup) sphereGroup.visible = false;
+    }
     isInWorld = worldId !== 'main';
     document.getElementById('exit-btn').style.display = worldId !== 'main' ? 'block' : 'none';
     document.getElementById('dpad').style.display = worldId === 'world_fight' ? 'block' : 'none';
@@ -2162,6 +2170,8 @@ function createWorldFromIcon(iconIndex) {
     if (currentWorldId === 'main') buildWorld('main');
     renderWorldsList();
     showToast('🌍 تم إنشاء عالم: ' + icon.name, 'success');
+    // الدخول مباشرة بعد إنشاء العالم من الأيقونة.
+    enterWorldById(worldId);
 }
 
 function setupFacetInteraction() {
@@ -2203,11 +2213,60 @@ function setupFacetInteraction() {
         updateFacetInfo();
     });
     renderer.domElement.addEventListener('click', function(event) {
-        if (!sphereGroup || !sphereGroup.visible) return;
-        if (selectedIcon !== null && iconSprites[selectedIcon]) {
-            createWorldFromIcon(selectedIcon);
+        if (!sphereGroup || !sphereGroup.visible || currentWorldId !== 'main') return;
+        // في اللمس لا يحدث mousemove، لذلك نحدد الأيقونة من إحداثيات النقر مباشرة.
+        if (selectedIcon === null && event.clientX !== undefined) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const hit = raycaster.intersectObjects(iconSprites)[0];
+            if (hit) selectedIcon = hit.object.userData.index;
+        }
+        if (selectedIcon !== null && iconSprites[selectedIcon]) createWorldFromIcon(selectedIcon);
+    });
+
+    // سحب الكرة بالماوس. لا يبدأ السحب فوق أيقونة محددة حتى يبقى النقر للدخول.
+    renderer.domElement.addEventListener('mousedown', function(event) {
+        if (!sphereGroup || !sphereGroup.visible || currentWorldId !== 'main') return;
+        if (event.target === renderer.domElement && selectedIcon === null) {
+            isDraggingSphere = true;
+            previousMousePosition.x = event.clientX;
+            previousMousePosition.y = event.clientY;
         }
     });
+    window.addEventListener('mousemove', function(event) {
+        if (!isDraggingSphere || !sphereGroup || currentWorldId !== 'main') return;
+        const dx = event.clientX - previousMousePosition.x;
+        const dy = event.clientY - previousMousePosition.y;
+        sphereGroup.rotation.y += dx * 0.008;
+        sphereGroup.rotation.x += dy * 0.008;
+        previousMousePosition.x = event.clientX;
+        previousMousePosition.y = event.clientY;
+    });
+    window.addEventListener('mouseup', function() { isDraggingSphere = false; });
+
+    // سحب الكرة باللمس على الهاتف واللوحي.
+    let touchStartX = 0, touchStartY = 0;
+    renderer.domElement.addEventListener('touchstart', function(event) {
+        if (!sphereGroup || !sphereGroup.visible || currentWorldId !== 'main') return;
+        if (event.touches.length === 1) {
+            touchStartX = event.touches[0].clientX;
+            touchStartY = event.touches[0].clientY;
+            isDraggingSphere = true;
+        }
+    }, { passive: false });
+    renderer.domElement.addEventListener('touchmove', function(event) {
+        if (!isDraggingSphere || !sphereGroup || currentWorldId !== 'main' || event.touches.length !== 1) return;
+        event.preventDefault();
+        const dx = event.touches[0].clientX - touchStartX;
+        const dy = event.touches[0].clientY - touchStartY;
+        sphereGroup.rotation.y += dx * 0.008;
+        sphereGroup.rotation.x += dy * 0.008;
+        touchStartX = event.touches[0].clientX;
+        touchStartY = event.touches[0].clientY;
+    }, { passive: false });
+    renderer.domElement.addEventListener('touchend', function() { isDraggingSphere = false; });
 }
 
 function updateFacetInfo() {
@@ -2591,8 +2650,9 @@ function startGame() {
     loadTelegramConfig();
     loadGistConfig();
     initGame();
-    if (tileGroup) tileGroup.visible = true;
+    if (tileGroup) tileGroup.visible = false;
     if (sphereGroup) sphereGroup.visible = true;
+    if (gridHelper) gridHelper.visible = false;
     playerGroup.visible = false;
     camera.position.set(0, 2, 14);
     camera.lookAt(0, 0, 0);
@@ -2733,9 +2793,6 @@ window.addEventListener('resize', function() {
 </body>
 </html>    
 
-
-
-    
 
 
     
