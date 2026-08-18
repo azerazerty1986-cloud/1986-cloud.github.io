@@ -1,4 +1,4 @@
-head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🌐 العوالم الكروية - النظام المتكامل 100%</title>
@@ -303,6 +303,8 @@ head>
         <button onclick="autoGallery(ServerManager.selectedTile)" style="border-color:rgba(56,189,248,0.5);color:#7dd3fc;">🖼️ معرض</button>
         <button onclick="svResetTileView()" style="border-color:rgba(248,113,113,0.5);color:#fca5a5;">🔄 عرض</button>
         <button onclick="resetPlatformWithPassword()" style="border-color:rgba(239,68,68,0.7);color:#f87171;font-weight:800;">🧨 إعادة تعيين المنصة</button>
+        <button onclick="copyCurrentTileLink()" style="border-color:rgba(56,189,248,0.5);color:#7dd3fc;">🔗 رابط</button>
+        <button onclick="createPortalFromSelectedTile()" style="border-color:rgba(251,191,36,0.5);color:#fde68a;">🚪 بوابة</button>
         <button onclick="showWorldTree()" style="border-color:rgba(167,139,250,0.4);color:#c4b5fd;">🌳 شجرة</button>
     </div>
     <div class="gist-section">
@@ -3098,6 +3100,26 @@ function svResetTileView(){
     showToast('🔄 تمت إعادة تعيين عرض TileCDN دون حذف الملفات','success');
 }
 
+function tileDeepLink(worldId,tileId,filename){
+    let url=location.href.split('#')[0]+'#world='+encodeURIComponent(worldId||ServerManager.currentWorldId||'main')+'&tile='+encodeURIComponent(tileId||ServerManager.selectedTile||'0_0');
+    if(filename) url+='&file='+encodeURIComponent(filename); return url;
+}
+async function copyCurrentTileLink(){
+    const tileId=ServerManager.selectedTile||'0_0', worldId=ServerManager.currentWorldId||currentWorldId||'main'; const tile=ServerManager.tiles[tileId]; const file=tile&&tile.files?Object.keys(tile.files).find(n=>!n.startsWith('split_')):null; const url=tileDeepLink(worldId,tileId,file);
+    try{await navigator.clipboard.writeText(url);showToast('🔗 تم نسخ رابط المربع','success');}catch(e){prompt('انسخ رابط المربع:',url);} return url;
+}
+function createPortalFromSelectedTile(){
+    const tileId=ServerManager.selectedTile||'0_0'; const world=worlds.find(w=>w.id===(ServerManager.currentWorldId||currentWorldId)); if(!world){showToast('⚠️ العالم الحالي غير موجود','warning');return;}
+    const choices=worlds.filter(w=>w.id!==world.id).map(w=>w.id+' — '+w.name).join('\n'); const target=prompt('أدخل معرّف العالم الهدف من القائمة:\n'+choices); if(!target||!worlds.some(w=>w.id===target)) {showToast('⚠️ معرّف العالم غير صالح','warning');return;}
+    const parts=tileId.split('_').map(Number); world.items=world.items||[]; world.items=world.items.filter(x=>!(x.type==='portal'&&x.row===parts[0]&&x.col===parts[1])); world.items.push({id:'portal_'+tileId+'_'+Date.now(),type:'portal',title:'بوابة '+target,emoji:'🚪',row:parts[0],col:parts[1],targetWorld:target}); localStorage.setItem('worlds_custom',JSON.stringify(worlds));
+    if(typeof buildWorld==='function') buildWorld(world.id); renderWorldsList(); showToast('🚪 تم إنشاء بوابة في المربع '+tileId,'success');
+}
+function openDeepLinkFromHash(){
+    const raw=location.hash.replace(/^#/,''); if(!raw)return; const params=new URLSearchParams(raw); const worldId=params.get('world'), tileId=params.get('tile'), file=params.get('file'); if(!worldId||!tileId)return;
+    setTimeout(()=>{try{if(typeof buildWorld==='function'&&worldId!==currentWorldId)buildWorld(worldId);setTimeout(()=>{ServerManager.selectTile(tileId);const names=getVisibleTileFiles(tileId);const target=file&&names.includes(file)?file:names[0];if(target)AppRunner.showInAppPreview(tileId,target);else showToast('📍 تم فتح المربع '+tileId,'info');},450);}catch(e){console.warn('deep link',e);}},700);
+}
+window.tileDeepLink=tileDeepLink;window.copyCurrentTileLink=copyCurrentTileLink;window.createPortalFromSelectedTile=createPortalFromSelectedTile;window.openDeepLinkFromHash=openDeepLinkFromHash;
+
 function addNavigationButtons(){
     let bar=document.getElementById('unified-nav-bar');
     if(!bar){bar=document.createElement('div');bar.id='unified-nav-bar';bar.style.cssText='position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;align-items:center;gap:6px;padding:7px 10px;background:rgba(8,12,30,.9);border:1px solid rgba(167,139,250,.4);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);direction:rtl;backdrop-filter:blur(10px);';bar.innerHTML='<span class="nav-title" style="color:#a7f3d0;font-size:11px;min-width:145px;text-align:center;"></span><button class="nav-up" onclick="goUpOneLevel()" style="padding:6px 9px;border:0;border-radius:6px;background:rgba(74,222,128,.14);color:#4ade80;cursor:pointer;">⬆️</button><button onclick="showWorldTree()" style="padding:6px 9px;border:0;border-radius:6px;background:rgba(167,139,250,.16);color:#c4b5fd;cursor:pointer;">🌳</button><button onclick="openTileCDNUploadModal()" style="padding:6px 9px;border:0;border-radius:6px;background:rgba(74,222,128,.14);color:#4ade80;cursor:pointer;">📤</button><button onclick="splitAndSendToChannel()" style="padding:6px 9px;border:0;border-radius:6px;background:rgba(251,191,36,.14);color:#fbbf24;cursor:pointer;">📤 4000</button><button onclick="receiveAndBuildFromChannel()" style="padding:6px 9px;border:0;border-radius:6px;background:rgba(96,165,250,.14);color:#93c5fd;cursor:pointer;">📥 بناء</button>';document.body.appendChild(bar);}
@@ -3116,6 +3138,7 @@ function initAllFixes() {
     syncBlockchainToTile();
     setupDragAndDrop();
     addNavigationButtons();
+    openDeepLinkFromHash();
     GistManager.init();
     updateUsersDisplay();
     setTimeout(renderWorldsList, 1000);
@@ -3248,9 +3271,6 @@ window.addEventListener('resize', function() {
 </body>
 </html>    
 
-
-
-    
 
 
     
