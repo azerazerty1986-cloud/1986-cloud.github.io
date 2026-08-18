@@ -1,4 +1,4 @@
-html dir="rtl" lang="ar">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -221,6 +221,7 @@ html dir="rtl" lang="ar">
 <!-- ===== شريط الأدوات الجانبي ===== -->
 <div id="side-toolbar">
     <button class="toolbar-btn" onclick="toggleBlockchainPanel()" title="⛓️ بلوكشين">⛓️</button>
+    <button class="toolbar-btn" onclick="openTileCDNUploadModal()" title="📤 رفع إلى TileCDN">📤</button>
     <button class="toolbar-btn" onclick="toggleServerPanel()" title="📦 سيرفر">📦</button>
     <button class="toolbar-btn" onclick="toggleProfile()" title="👤 الملف الشخصي">👤</button>
     <button class="toolbar-btn" onclick="saveGame()" title="💾 حفظ">💾</button>
@@ -229,6 +230,7 @@ html dir="rtl" lang="ar">
 <!-- ===== شريط المنصة ===== -->
 <div id="platform-bar">
     <button class="platform-btn" onclick="toggleBlockchainPanel()">⛓️ بلوكشين</button>
+    <button class="platform-btn" onclick="openTileCDNUploadModal()">📤 رفع إلى TileCDN</button>
     <button class="platform-btn" onclick="toggleServerPanel()">📦 سيرفر</button>
     <button class="platform-btn" onclick="openCodeEditor()">📝 محرر</button>
     <button class="platform-btn" onclick="exportAll()">📤 تصدير الكل</button>
@@ -1065,6 +1067,79 @@ function loadGistConfig() {
     const gistId = localStorage.getItem('gist_id') || '';
     if (token) { document.getElementById('gist-token').value = token; document.getElementById('gist-id').value = gistId || ''; document.getElementById('gist-status').textContent = '🟢 متصل'; }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  رفع مباشر إلى TileCDN: أيقونة ← عالم ← مربع ← ملف
+// ═══════════════════════════════════════════════════════════════════════════
+function ensureUploadWorldFromIcon(iconIndex) {
+    const worldId = 'world_icon_' + iconIndex;
+    let world = getWorld(worldId);
+    if (world) return worldId;
+    const icon = WORLD_ICONS[iconIndex];
+    if (!icon) return null;
+    world = { id: worldId, name: icon.name, emoji: icon.emoji, grid: 12, tileSize: 3, startPosition: { x: 0, z: 0 }, background: icon.color || '#1a1a2e', items: [], parentWorld: 'main' };
+    worlds.push(world);
+    if (typeof renderWorldsList === 'function') renderWorldsList();
+    return worldId;
+}
+
+function openTileCDNUploadModal() {
+    let modal = document.getElementById('tilecdn-upload-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'tilecdn-upload-modal';
+        modal.style.cssText = 'position:fixed;inset:0;z-index:10020;background:rgba(0,0,0,.86);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(10px);';
+        modal.innerHTML = '<div style="width:min(520px,96vw);max-height:90vh;overflow:auto;background:rgba(10,10,30,.98);border:1px solid rgba(74,222,128,.35);border-radius:18px;padding:20px;box-shadow:0 20px 70px rgba(0,0,0,.65);direction:rtl;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:10px;margin-bottom:14px;"><h2 style="color:#4ade80;font-size:18px;margin:0;">📤 رفع إلى TileCDN</h2><button onclick="closeTileCDNUploadModal()" style="background:rgba(239,68,68,.15);border:0;color:#f87171;border-radius:7px;padding:5px 12px;cursor:pointer;">✖</button></div>' +
+            '<label style="display:block;color:#aaa;font-size:11px;margin:8px 0 5px;">1️⃣ اختر الأيقونة / العالم</label><select id="tilecdn-upload-icon" onchange="tileCDNIconChanged()" style="width:100%;padding:10px;border-radius:9px;background:#11142c;color:#fff;border:1px solid rgba(255,255,255,.12);font-family:inherit;"></select>' +
+            '<div id="tilecdn-upload-world" style="color:#a78bfa;font-size:11px;margin-top:7px;padding:7px 10px;background:rgba(139,92,246,.08);border-radius:8px;">🌍 اختر أيقونة لتحديد العالم</div>' +
+            '<label style="display:block;color:#aaa;font-size:11px;margin:14px 0 5px;">2️⃣ اختر المربع</label><select id="tilecdn-upload-tile" style="width:100%;padding:10px;border-radius:9px;background:#11142c;color:#fff;border:1px solid rgba(255,255,255,.12);font-family:inherit;"></select>' +
+            '<div id="tilecdn-upload-selection" style="color:#4ade80;font-size:11px;margin-top:7px;"></div>' +
+            '<label style="display:block;color:#aaa;font-size:11px;margin:14px 0 5px;">3️⃣ اختر الملفات</label><input id="tilecdn-upload-files" type="file" multiple style="width:100%;padding:9px;border:1px dashed rgba(74,222,128,.35);border-radius:9px;color:#aaa;background:rgba(74,222,128,.04);" onchange="tileCDNFilesChanged()">' +
+            '<div id="tilecdn-upload-file-status" style="color:#888;font-size:11px;margin-top:7px;">لم يتم اختيار ملفات</div>' +
+            '<div style="display:flex;gap:8px;margin-top:16px;"><button onclick="uploadSelectedTileCDNFiles()" style="flex:2;padding:11px;border:0;border-radius:9px;background:linear-gradient(135deg,#4ade80,#16a34a);color:#07130b;font-weight:800;cursor:pointer;font-family:inherit;">✅ رفع إلى المربع المحدد</button><button onclick="closeTileCDNUploadModal()" style="flex:1;padding:11px;border:1px solid rgba(255,255,255,.1);border-radius:9px;background:rgba(255,255,255,.05);color:#aaa;cursor:pointer;font-family:inherit;">إلغاء</button></div>' +
+            '</div>';
+        document.body.appendChild(modal);
+    }
+    const iconSelect = document.getElementById('tilecdn-upload-icon');
+    iconSelect.innerHTML = '<option value="">-- اختر الأيقونة --</option>' + WORLD_ICONS.map((icon, i) => '<option value="' + i + '">' + icon.emoji + ' ' + icon.name + '</option>').join('');
+    document.getElementById('tilecdn-upload-tile').innerHTML = '<option value="">-- اختر الأيقونة أولاً --</option>';
+    document.getElementById('tilecdn-upload-files').value = '';
+    document.getElementById('tilecdn-upload-file-status').textContent = 'لم يتم اختيار ملفات';
+    modal.style.display = 'flex';
+}
+
+function tileCDNIconChanged() {
+    const iconIndex = parseInt(document.getElementById('tilecdn-upload-icon').value, 10);
+    const tileSelect = document.getElementById('tilecdn-upload-tile');
+    if (isNaN(iconIndex)) { tileSelect.innerHTML = '<option value="">-- اختر الأيقونة أولاً --</option>'; return; }
+    const worldId = ensureUploadWorldFromIcon(iconIndex);
+    ServerManager.switchWorld(worldId);
+    const world = getWorld(worldId);
+    document.getElementById('tilecdn-upload-world').textContent = '🌍 العالم المحدد: ' + (world ? world.name : worldId) + ' | المستوى ' + (world && world.level || 0);
+    tileSelect.innerHTML = '<option value="">-- اختر المربع --</option>' + Array.from({length: 12}, (_, r) => Array.from({length: 12}, (_, c) => { const id = r + '_' + c; const count = ServerManager.tiles[id] && ServerManager.tiles[id].files ? Object.keys(ServerManager.tiles[id].files).length : 0; return '<option value="' + id + '">📂 مربع (' + r + ',' + c + ')' + (count ? ' — ' + count + ' ملف' : '') + '</option>'; }).join('')).join('');
+    tileSelect.onchange = function() { document.getElementById('tilecdn-upload-selection').textContent = this.value ? '📍 سيتم الرفع إلى: ' + worldId + ' / المربع ' + this.value : ''; ServerManager.selectTile(this.value); };
+}
+
+function tileCDNFilesChanged() {
+    const files = document.getElementById('tilecdn-upload-files').files;
+    document.getElementById('tilecdn-upload-file-status').textContent = files.length ? '📄 تم اختيار ' + files.length + ' ملف' : 'لم يتم اختيار ملفات';
+}
+
+async function uploadSelectedTileCDNFiles() {
+    const iconValue = document.getElementById('tilecdn-upload-icon').value;
+    const tileId = document.getElementById('tilecdn-upload-tile').value;
+    const files = document.getElementById('tilecdn-upload-files').files;
+    if (iconValue === '' || !tileId || !files.length) { showToast('⚠️ اختر الأيقونة والمربع والملف أولاً', 'warning'); return; }
+    const worldId = ensureUploadWorldFromIcon(parseInt(iconValue, 10));
+    ServerManager.switchWorld(worldId);
+    ServerManager.selectTile(tileId);
+    await uploadMultipleFiles(tileId, files);
+    showToast('✅ تم رفع الملفات إلى العالم والمربع المحدد', 'success');
+    closeTileCDNUploadModal();
+}
+
+function closeTileCDNUploadModal() { const modal = document.getElementById('tilecdn-upload-modal'); if (modal) modal.style.display = 'none'; }
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  القسم 9: مدير السيرفر (Server Manager)
@@ -2831,5 +2906,4 @@ window.addEventListener('resize', function() {
 
     
 
-
-        
+                                                                        
