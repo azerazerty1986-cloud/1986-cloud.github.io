@@ -1139,6 +1139,7 @@ async function uploadSelectedTileCDNFiles() {
     const selectedTile = ServerManager.tiles[tileId];
     const shouldShow = document.getElementById('tilecdn-upload-visible').checked;
     if (selectedTile) {
+        selectedTile.level = 0;
         if (!selectedTile.fileMeta) selectedTile.fileMeta = {};
         for (const file of files) {
             if (!selectedTile.fileMeta[file.name]) selectedTile.fileMeta[file.name] = {};
@@ -1390,6 +1391,7 @@ const ServerManager = {
         if (!tile.fileMeta) tile.fileMeta = {};
         if (!tile.fileMeta[filename]) tile.fileMeta[filename] = {};
         tile.fileMeta[filename].visible = tile.fileMeta[filename].visible === false;
+        tile.level = 0;
         this.saveTileFileStore(tileId);
         this.saveTiles();
         this.selectTile(tileId);
@@ -1891,12 +1893,30 @@ function buildWorld(worldId) {
             const worldTile = (typeof ServerManager !== 'undefined' && ServerManager.tiles) ? ServerManager.tiles[row + '_' + col] : null;
             const visibleNames = worldTile && worldTile.files ? Object.keys(worldTile.files).filter(name => !worldTile.fileMeta || !worldTile.fileMeta[name] || worldTile.fileMeta[name].visible !== false) : [];
             if (visibleNames.length) {
+                const firstName = visibleNames[0];
+                const ext = (firstName.split('.').pop() || '').toLowerCase();
+                const kindIcon = /^(png|jpg|jpeg|gif|webp|svg)$/.test(ext) ? '🖼️' : /^(html?|xhtml)$/.test(ext) ? '🌐' : /^(css|scss)$/.test(ext) ? '🎨' : /^(js|ts|jsx|tsx)$/.test(ext) ? '⚙️' : /^(mp4|webm|mov|mp3|wav)$/.test(ext) ? '🎬' : '📄';
+                ctx.fillStyle = 'rgba(8,16,38,0.88)';
+                ctx.beginPath();
+                ctx.roundRect(24, 158, 208, 68, 12);
+                ctx.fill();
+                ctx.strokeStyle = '#4ade80';
+                ctx.lineWidth = 2;
+                ctx.stroke();
                 ctx.fillStyle = '#4ade80';
+                ctx.font = 'bold 20px Arial';
+                ctx.fillText(kindIcon, 48, 190);
+                ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 13px Arial';
-                ctx.fillText('📄 ' + visibleNames.length + ' ملف', 128, 178);
-                ctx.fillStyle = 'rgba(255,255,255,0.72)';
+                ctx.fillText(firstName.slice(0, 22), 76, 184);
+                ctx.fillStyle = '#a7f3d0';
                 ctx.font = '11px Arial';
-                ctx.fillText(visibleNames[0].slice(0, 22), 128, 198);
+                ctx.fillText('المستوى 0 • ' + visibleNames.length + ' ملف', 76, 204);
+                if (visibleNames.length > 1) {
+                    ctx.fillStyle = '#86efac';
+                    ctx.font = '10px Arial';
+                    ctx.fillText('+ ' + (visibleNames.length - 1) + ' ملفات أخرى', 128, 222);
+                }
             }
             const texture = new THREE.CanvasTexture(canvas);
             const geometry = new THREE.PlaneGeometry(TILE_SIZE * 0.96, TILE_SIZE * 0.96);
@@ -2542,6 +2562,26 @@ function updateUsersDisplay() {
 //  القسم 22: التحكم
 // ═══════════════════════════════════════════════════════════════════════════
 
+function activateVisibleFileAtPoint(clientX, clientY) {
+    if (currentWorldId === 'main' || isTransitioning || typeof ServerManager === 'undefined') return false;
+    const canvas = document.getElementById('canvas');
+    if (!canvas || !renderer || !camera) return false;
+    const rect = canvas.getBoundingClientRect();
+    const pointer = new THREE.Vector2(((clientX - rect.left) / rect.width) * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1);
+    const ray = new THREE.Raycaster();
+    ray.setFromCamera(pointer, camera);
+    const hit = ray.intersectObjects(tileMeshes || [])[0];
+    if (!hit || !hit.object.userData) return false;
+    const tileId = hit.object.userData.row + '_' + hit.object.userData.col;
+    const tile = ServerManager.tiles[tileId];
+    if (!tile || !tile.files) return false;
+    const names = Object.keys(tile.files).filter(name => !tile.fileMeta || !tile.fileMeta[name] || tile.fileMeta[name].visible !== false);
+    if (!names.length) return false;
+    ServerManager.runFile(tileId, names[0]);
+    showToast('📂 تشغيل ' + names[0] + ' من المربع ' + tileId, 'success');
+    return true;
+}
+
 function setupControls() {
     document.querySelectorAll('.dpad-btn').forEach(btn => {
         const dir = btn.dataset.dir;
@@ -2569,8 +2609,10 @@ function setupControls() {
         if (e.key === 'ArrowRight') touchDirs.right = false;
     });
     const canvas = document.getElementById('canvas');
+    let worldTapStartX = 0, worldTapStartY = 0, worldTapMoved = false;
     if (canvas) {
         canvas.addEventListener('mousedown', e => {
+            worldTapStartX = e.clientX; worldTapStartY = e.clientY; worldTapMoved = false;
             if (currentWorldId === 'main' || currentWorldId === 'world_fight' || isTransitioning) return;
             mouseDrag.active = true;
             mouseDrag.startX = e.clientX;
@@ -2578,14 +2620,17 @@ function setupControls() {
             mouseDrag.currentX = e.clientX;
             mouseDrag.currentY = e.clientY;
         });
-        window.addEventListener('mousemove', e => { if (mouseDrag.active) { mouseDrag.currentX = e.clientX; mouseDrag.currentY = e.clientY; } });
+        window.addEventListener('mousemove', e => { if (mouseDrag.active) { if (Math.hypot(e.clientX - worldTapStartX, e.clientY - worldTapStartY) > 10) worldTapMoved = true; mouseDrag.currentX = e.clientX; mouseDrag.currentY = e.clientY; } });
         window.addEventListener('mouseup', () => { mouseDrag.active = false; });
+        canvas.addEventListener('click', e => { if (!worldTapMoved) activateVisibleFileAtPoint(e.clientX, e.clientY); });
         canvas.addEventListener('touchstart', e => {
             if (currentWorldId === 'main' || currentWorldId === 'world_fight' || isTransitioning) return;
             if (e.touches.length === 1) {
+                worldTapStartX = e.touches[0].clientX; worldTapStartY = e.touches[0].clientY; worldTapMoved = false;
                 mouseDrag.active = true;
                 mouseDrag.startX = e.touches[0].clientX;
                 mouseDrag.startY = e.touches[0].clientY;
+                if (Math.hypot(e.touches[0].clientX - worldTapStartX, e.touches[0].clientY - worldTapStartY) > 10) worldTapMoved = true;
                 mouseDrag.currentX = e.touches[0].clientX;
                 mouseDrag.currentY = e.touches[0].clientY;
             }
@@ -2596,7 +2641,7 @@ function setupControls() {
                 mouseDrag.currentY = e.touches[0].clientY;
             }
         }, { passive: true });
-        canvas.addEventListener('touchend', () => { mouseDrag.active = false; });
+        canvas.addEventListener('touchend', e => { mouseDrag.active = false; if (!worldTapMoved && e.changedTouches && e.changedTouches[0]) activateVisibleFileAtPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY); });
     }
 }
 
