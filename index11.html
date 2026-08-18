@@ -296,6 +296,10 @@ head>
         <button onclick="svSyncAll()">🔄 مزامنة</button>
         <button onclick="svClearTile()" style="border-color:rgba(239,68,68,0.3);color:#f87171;">🗑️ تفريغ</button>
         <button onclick="openCodeEditor()" style="border-color:rgba(255,215,0,0.3);color:#ffd700;">📝 تحرير</button>
+        <button onclick="svSplitAndSendSelected()" style="border-color:rgba(251,191,36,0.4);color:#fbbf24;">📤 تقسيم وإرسال</button>
+        <button onclick="svReceiveBuildSelected()" style="border-color:rgba(96,165,250,0.4);color:#93c5fd;">📥 استقبال وبناء</button>
+        <button onclick="svShowSelectedPath()" style="border-color:rgba(167,139,250,0.4);color:#c4b5fd;">🧭 المسار</button>
+        <button onclick="showWorldTree()" style="border-color:rgba(167,139,250,0.4);color:#c4b5fd;">🌳 شجرة</button>
     </div>
     <div class="gist-section">
         <div class="gist-header"><span>📦 GitHub Gist</span><span class="gist-status" id="gist-status">⚪ غير متصل</span></div>
@@ -1340,6 +1344,8 @@ const ServerManager = {
             div.className = 'sv-file-item';
             div.innerHTML = '<span class="name">' + filename +
                 '</span><div class="actions"><button onclick="svRunFile(\'' + tileId + '\', \'' + filename + '\')">▶️</button>' +
+                '<button onclick="svSplitAndSendFile(\'' + tileId + '\', \'' + filename + '\')" title="تقسيم وإرسال">📤</button>' +
+                '<button onclick="svShowFilePath(\'' + tileId + '\', \'' + filename + '\')" title="المسار">🧭</button>' +
                 '<button onclick="svToggleFileVisibility(\'' + tileId + '\', \'' + filename + '\')" title="إظهار/إخفاء">👁️</button>' +
                 '<button onclick="openFileInEditor(\'' + tileId + '\', \'' + filename + '\')" style="color:#ffd700;">📝</button>' +
                 '<button onclick="svDeleteFile(\'' + tileId + '\', \'' + filename + '\')">🗑️</button></div>';
@@ -2908,11 +2914,24 @@ function showTutorial() {
 
 function toggleProfile() { showToast('👤 الملف الشخصي: ' + playerName, 'info'); }
 
+let currentUserRole = 'guest';
+function showLoginScreen(){
+    let box=document.getElementById('login-screen');
+    if(!box){box=document.createElement('div');box.id='login-screen';box.style.cssText='position:fixed;inset:0;z-index:3000;background:linear-gradient(135deg,#090925,#020207 60%,#10102d);display:flex;align-items:center;justify-content:center;padding:20px;direction:rtl;';document.body.appendChild(box);}
+    box.innerHTML='<div style="width:min(430px,94vw);background:rgba(10,14,38,.97);border:1px solid rgba(167,139,250,.45);border-radius:20px;padding:24px;text-align:center;box-shadow:0 20px 80px rgba(0,0,0,.7);"><div style="font-size:30px;margin-bottom:8px;">🔐</div><h2 style="color:#c4b5fd;margin:0 0 8px;">تسجيل الدخول</h2><p style="color:#aaa;font-size:12px;margin-bottom:20px;">اختر نوع الدخول لبدء المغامرة بالصلاحيات المناسبة</p><div style="display:grid;gap:10px;"><button onclick="startGameAs(\'user\')" style="padding:13px;border:1px solid rgba(74,222,128,.4);border-radius:10px;background:rgba(74,222,128,.13);color:#86efac;font-weight:700;font-size:15px;cursor:pointer;">👤 دخول كمستخدم</button><button onclick="openGameAdminLogin()" style="padding:13px;border:1px solid rgba(251,191,36,.4);border-radius:10px;background:rgba(251,191,36,.13);color:#fde68a;font-weight:700;font-size:15px;cursor:pointer;">👑 دخول كمدير</button><button onclick="closeLoginScreen()" style="padding:9px;border:0;border-radius:8px;background:rgba(255,255,255,.06);color:#aaa;cursor:pointer;">رجوع</button></div></div>';box.style.display='flex';}
+function closeLoginScreen(){const b=document.getElementById('login-screen');if(b)b.style.display='none';}
+function openGameAdminLogin(){const box=document.getElementById('login-screen');if(!box)return;box.innerHTML='<div style="width:min(430px,94vw);background:rgba(10,14,38,.98);border:1px solid rgba(251,191,36,.45);border-radius:20px;padding:24px;text-align:center;box-shadow:0 20px 80px rgba(0,0,0,.7);"><div style="font-size:30px;">👑</div><h2 style="color:#fde68a;margin:8px 0;">دخول المدير</h2><p style="color:#aaa;font-size:11px;">أدخل كلمة مرور المدير للمتابعة</p><input id="game-admin-password" type="password" autocomplete="current-password" placeholder="كلمة المرور" style="width:100%;box-sizing:border-box;padding:12px;margin:12px 0;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:#080d20;color:#fff;text-align:center;"><div style="display:flex;gap:8px;"><button onclick="verifyGameAdminLogin()" style="flex:1;padding:11px;border:0;border-radius:9px;background:#fbbf24;color:#17100a;font-weight:800;cursor:pointer;">🔓 تحقق وابدأ</button><button onclick="showLoginScreen()" style="padding:11px;border:0;border-radius:9px;background:rgba(255,255,255,.07);color:#aaa;cursor:pointer;">رجوع</button></div><div id="game-admin-error" style="color:#f87171;font-size:11px;margin-top:10px;"></div></div>';box.style.display='flex';setTimeout(()=>document.getElementById('game-admin-password')?.focus(),50);}
+async function verifyGameAdminLogin(){const input=document.getElementById('game-admin-password');const error=document.getElementById('game-admin-error');const password=input?input.value:'';if(!password){if(error)error.textContent='أدخل كلمة المرور أولاً';return;}const hash=await CryptoManager.sha256(password);const stored=localStorage.getItem('tilecdn_admin_hash');if(stored&&stored!==hash){if(error)error.textContent='كلمة المرور غير صحيحة';return;}if(!stored)localStorage.setItem('tilecdn_admin_hash',hash);sessionStorage.setItem('tilecdn_admin_session',password);adminSession=true;await CryptoManager.init(password);startGameAs('admin');}
+function startGameAs(role){currentUserRole=role;window.currentUserRole=role;if(role==='admin'){adminSession=true;}else{adminSession=false;CryptoManager.key=null;CryptoManager.initialized=false;}closeLoginScreen();launchGameForRole(role);document.querySelectorAll('[onclick*="toggleCryptoPanel"]').forEach(el=>{el.style.display=role==='admin'?'':'none';});showToast(role==='admin'?'👑 مرحبًا بالمدير — صلاحيات كاملة':'👤 مرحبًا بالمستخدم','success');}
+function startGame(){showLoginScreen();}
+window.showLoginScreen=showLoginScreen;window.startGameAs=startGameAs;window.openGameAdminLogin=openGameAdminLogin;window.verifyGameAdminLogin=verifyGameAdminLogin;window.startGame=startGame;
+
 // ═══════════════════════════════════════════════════════════════════════════
 //  القسم 25: بدء اللعبة
 // ═══════════════════════════════════════════════════════════════════════════
 
-function startGame() {
+function launchGameForRole(role) {
+    window.currentUserRole = role || 'user';
     console.log('🚀 بدء اللعبة مع التوقيع الرقمي...');
     document.getElementById('start-screen').style.display = 'none';
     document.getElementById('side-toolbar').style.display = 'flex';
@@ -2972,6 +2991,27 @@ function showWorldTree(){
     modal.innerHTML='<div style="width:min(520px,95vw);max-height:85vh;overflow:auto;background:#0b1026;border:1px solid rgba(167,139,250,.45);border-radius:16px;padding:16px;box-shadow:0 20px 70px #000;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><strong style="color:#a78bfa;font-size:16px;">🌳 شجرة العوالم</strong><button onclick="document.getElementById(&quot;world-tree-modal&quot;).style.display=&quot;none&quot;" style="background:none;border:0;color:#f87171;font-size:18px;cursor:pointer;">✖</button></div>'+rows+'</div>';
     modal.style.display='flex';
 }
+async function sendPartsToTelegram(fileName, parts, sourceTileId) {
+    const config = getTelegramConfig();
+    if (!config.token || !config.chatId) { showToast('⚠️ احفظ إعدادات قناة تلجرام أولاً', 'warning'); return false; }
+    for (let i = 0; i < parts.length; i++) {
+        const blob = new Blob([parts[i]], {type:'text/plain;charset=utf-8'});
+        const file = new File([blob], fileName + '.part_' + String(i+1).padStart(4,'0') + '_of_' + parts.length + '.txt');
+        const form = new FormData(); form.append('chat_id', config.chatId); form.append('document', file);
+        form.append('caption', '📦 '+fileName+' | الجزء '+(i+1)+'/'+parts.length+' | المربع '+sourceTileId+' | 4000 حرف');
+        const response = await fetch('https://api.telegram.org/bot'+config.token+'/sendDocument',{method:'POST',body:form});
+        const result = await response.json(); if (!result.ok) throw new Error(result.description || 'فشل إرسال الجزء');
+    }
+    return true;
+}
+async function svSplitAndSendFile(tileId, filename) {
+    try { const parts = await splitAndSendToChannel(tileId, filename); if (parts && getTelegramConfig().token) { await sendPartsToTelegram(filename, parts, tileId); showToast('✅ تم إرسال الأجزاء إلى القناة', 'success'); } } catch(e) { showToast('❌ فشل الإرسال: '+e.message, 'error'); }
+}
+async function svSplitAndSendSelected() { const tileId=ServerManager.selectedTile; const tile=ServerManager.tiles[tileId]; const filename=tile&&tile.files?Object.keys(tile.files).find(n=>!n.startsWith('split_')):null; if(!filename){showToast('⚠️ اختر مربعًا يحتوي ملفًا أولاً','warning');return;} await svSplitAndSendFile(tileId,filename); }
+async function svReceiveBuildSelected() { await receiveAndBuildFromChannel(); ServerManager.renderGrid(); }
+function svShowFilePath(tileId, filename) { const worldId=ServerManager.currentWorldId; const world=(typeof getWorld==='function')?getWorld(worldId):null; showToast('🧭 '+(world?world.name:worldId)+' / المستوى 0 / المربع '+tileId+' / '+filename,'info'); }
+function svShowSelectedPath() { const tileId=ServerManager.selectedTile; const tile=ServerManager.tiles[tileId]; const filename=tile&&tile.files?Object.keys(tile.files)[0]:null; if(filename) svShowFilePath(tileId,filename); else showToast('⚠️ اختر ملفًا أولاً','warning'); }
+
 function addNavigationButtons(){
     let bar=document.getElementById('unified-nav-bar');
     if(!bar){bar=document.createElement('div');bar.id='unified-nav-bar';bar.style.cssText='position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;align-items:center;gap:6px;padding:7px 10px;background:rgba(8,12,30,.9);border:1px solid rgba(167,139,250,.4);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);direction:rtl;backdrop-filter:blur(10px);';bar.innerHTML='<span class="nav-title" style="color:#a7f3d0;font-size:11px;min-width:145px;text-align:center;"></span><button class="nav-up" onclick="goUpOneLevel()" style="padding:6px 9px;border:0;border-radius:6px;background:rgba(74,222,128,.14);color:#4ade80;cursor:pointer;">⬆️</button><button onclick="showWorldTree()" style="padding:6px 9px;border:0;border-radius:6px;background:rgba(167,139,250,.16);color:#c4b5fd;cursor:pointer;">🌳</button><button onclick="openTileCDNUploadModal()" style="padding:6px 9px;border:0;border-radius:6px;background:rgba(74,222,128,.14);color:#4ade80;cursor:pointer;">📤</button><button onclick="splitAndSendToChannel()" style="padding:6px 9px;border:0;border-radius:6px;background:rgba(251,191,36,.14);color:#fbbf24;cursor:pointer;">📤 4000</button><button onclick="receiveAndBuildFromChannel()" style="padding:6px 9px;border:0;border-radius:6px;background:rgba(96,165,250,.14);color:#93c5fd;cursor:pointer;">📥 بناء</button>';document.body.appendChild(bar);}
