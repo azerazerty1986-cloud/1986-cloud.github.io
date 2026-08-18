@@ -1,4 +1,5 @@
-head>
+
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🌐 العوالم الكروية - النظام المتكامل 100%</title>
@@ -2031,35 +2032,61 @@ function loadGame() {
 
 function buildSphere() {
     sphereGroup = new THREE.Group();
+    iconSprites = [];
     const radius = 4.5;
-    const emojis = ['🌍', '⚔️', '🌐', '🏰', '🌲', '🔥', '⭐', '🌈'];
-    emojis.forEach((emoji, index) => {
-        const phi = Math.acos(-1 + (2 * index) / emojis.length);
-        const theta = Math.sqrt(emojis.length * Math.PI) * phi;
-        const x = radius * Math.sin(phi) * Math.cos(theta);
-        const y = radius * Math.sin(phi) * Math.sin(theta);
-        const z = radius * Math.cos(phi);
+
+    // جسم كروي زجاجي خفيف ليظهر توزيع الأيقونات على سطح كرة حقيقية.
+    const globe = new THREE.Mesh(
+        new THREE.SphereGeometry(radius * 0.86, 32, 32),
+        new THREE.MeshBasicMaterial({
+            color: 0x172554,
+            transparent: true,
+            opacity: 0.22,
+            wireframe: true
+        })
+    );
+    sphereGroup.add(globe);
+
+    const icons = WORLD_ICONS.length ? WORLD_ICONS : [{ name: '🌍 العالم', emoji: '🌍', color: '#00f2ff' }];
+    icons.forEach((worldIcon, index) => {
+        // Fibonacci sphere: توزيع متوازن للأيقونات حول الكرة.
+        const count = icons.length;
+        const yNorm = 1 - (index / Math.max(1, count - 1)) * 2;
+        const ringRadius = Math.sqrt(Math.max(0, 1 - yNorm * yNorm));
+        const theta = Math.PI * (3 - Math.sqrt(5)) * index;
+        const x = radius * ringRadius * Math.cos(theta);
+        const y = radius * yNorm;
+        const z = radius * ringRadius * Math.sin(theta);
+        const emoji = worldIcon.emoji || '🌍';
         const canvas = document.createElement('canvas');
-        canvas.width = 128;
-        canvas.height = 128;
+        canvas.width = 160;
+        canvas.height = 160;
         const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, 160, 160);
         ctx.beginPath();
-        ctx.arc(64, 64, 55, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(20,20,40,0.85)';
+        ctx.arc(80, 80, 66, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(8,12,35,0.94)';
         ctx.fill();
-        ctx.strokeStyle = '#8b5cf6';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = worldIcon.color || '#8b5cf6';
+        ctx.lineWidth = 5;
         ctx.stroke();
-        ctx.font = '50px Arial';
+        ctx.font = '58px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(emoji, 64, 64);
+        ctx.fillText(emoji, 80, 80);
         const texture = new THREE.CanvasTexture(canvas);
-        const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
+        texture.needsUpdate = true;
+        const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: true });
         const sprite = new THREE.Sprite(material);
         sprite.position.set(x, y, z);
-        sprite.scale.set(2, 2, 1);
-        sprite.userData = { index, emoji, position: new THREE.Vector3(x, y, z), world: WORLD_ICONS[index % WORLD_ICONS.length], baseScale: 2 };
+        sprite.scale.set(1.55, 1.55, 1);
+        sprite.userData = {
+            index,
+            emoji,
+            position: new THREE.Vector3(x, y, z),
+            world: worldIcon,
+            baseScale: 1.55
+        };
         sphereGroup.add(sprite);
         iconSprites.push(sprite);
     });
@@ -2068,7 +2095,18 @@ function buildSphere() {
 }
 
 function updateSphereRotation() {
-    if (sphereGroup && !isDraggingSphere) { sphereGroup.rotation.y += 0.002; sphereGroup.rotation.x += 0.001; }
+    if (!sphereGroup || isDraggingSphere) return;
+    sphereGroup.rotation.y += 0.0025;
+    sphereGroup.rotation.x += 0.0007;
+    // إبراز الأيقونة الأقرب للمشاهد مع الحفاظ على شكل الكرة.
+    iconSprites.forEach(sprite => {
+        const depth = sprite.position.clone().applyEuler(sphereGroup.rotation).z;
+        const factor = 1 + Math.max(0, depth / 8) * 0.22;
+        const base = sprite.userData.baseScale || 1.55;
+        const selected = sprite.userData.index === selectedIcon;
+        sprite.scale.setScalar(base * factor * (selected ? 1.18 : 1));
+        sprite.material.opacity = 0.68 + Math.max(0, depth / 9) * 0.32;
+    });
 }
 
 function showSphere() { if (sphereGroup) sphereGroup.visible = true; }
@@ -2686,3 +2724,5 @@ window.addEventListener('resize', function() {
     
 
 
+
+    
