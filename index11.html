@@ -1370,6 +1370,8 @@ const ServerManager = {
         showToast('🗑️ تم التفريغ', 'warning');
     },
     runFile(tileId, filename) {
+        openFileInsidePlatform(tileId, filename);
+        return;
         const tile = this.tiles[tileId];
         if (!tile || !tile.files || !tile.files[filename]) return;
         const content = tile.files[filename];
@@ -1860,6 +1862,36 @@ function clearWorld() {
     });
 }
 
+function openFileInsidePlatform(tileId, filename) {
+    const tile = ServerManager.tiles[tileId];
+    if (!tile || !tile.files || !tile.files[filename]) { showToast('❌ الملف غير موجود', 'error'); return; }
+    const content = tile.files[filename];
+    let overlay=document.getElementById('internal-file-viewer');
+    if(!overlay){ overlay=document.createElement('div'); overlay.id='internal-file-viewer'; overlay.style.cssText='position:fixed;inset:0;z-index:11000;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:18px;direction:rtl;'; document.body.appendChild(overlay); }
+    const ext=(filename.split('.').pop()||'').toLowerCase();
+    let body='';
+    if(content.startsWith('data:image/')) body='<img src="'+content+'" style="max-width:100%;max-height:75vh;object-fit:contain;border-radius:12px;display:block;margin:auto;">';
+    else if(/^html?$/.test(ext)) body='<iframe sandbox="allow-scripts allow-forms" srcdoc="'+content.replace(/&/g,'&amp;').replace(/\"/g,'&quot;')+'" style="width:100%;height:72vh;border:0;border-radius:10px;background:#fff;"></iframe>';
+    else if(content.startsWith('data:')) body='<div style="padding:40px;text-align:center;color:#ddd;">📦 ملف ثنائي جاهز للتحميل<br><button onclick="downloadTileFile(\''+tileId+'\',\''+filename+'\')" style="margin-top:18px;padding:10px 18px;border:0;border-radius:8px;background:#4ade80;color:#07130b;font-weight:700;cursor:pointer;">⬇️ تنزيل الملف</button></div>';
+    else body='<pre style="white-space:pre-wrap;text-align:left;direction:ltr;background:#080d1d;color:#d1fae5;padding:16px;border-radius:10px;max-height:72vh;overflow:auto;">'+String(content).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</pre>';
+    overlay.innerHTML='<div style="width:min(980px,96vw);max-height:92vh;overflow:auto;background:rgba(10,16,35,.98);border:1px solid rgba(74,222,128,.4);border-radius:16px;padding:16px;box-shadow:0 22px 80px rgba(0,0,0,.7);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><strong style="color:#4ade80;">📄 '+filename+'</strong><button onclick="closeInternalFileViewer()" style="background:rgba(239,68,68,.15);border:0;color:#f87171;padding:6px 12px;border-radius:7px;cursor:pointer;">✖ إغلاق</button></div>'+body+'</div>';
+    overlay.style.display='flex';
+}
+function closeInternalFileViewer(){ const el=document.getElementById('internal-file-viewer'); if(el) el.style.display='none'; }
+function downloadTileFile(tileId, filename){ const tile=ServerManager.tiles[tileId]; if(!tile||!tile.files||!tile.files[filename]) return; const a=document.createElement('a'); a.href=tile.files[filename]; a.download=filename; a.click(); }
+function getVisibleTileFiles(tileId){ const tile=ServerManager.tiles[tileId]; return tile&&tile.files ? Object.keys(tile.files).filter(n=>!tile.fileMeta||!tile.fileMeta[n]||tile.fileMeta[n].visible!==false) : []; }
+function jumpToMiniMapTile(row,col){ const tileId=row+'_'+col; playerGroup.position.set(col*TILE_SIZE-HALF+TILE_SIZE/2,0,row*TILE_SIZE-HALF+TILE_SIZE/2); updateActiveTile(); updateCamera(); const files=getVisibleTileFiles(tileId); ServerManager.selectTile(tileId); if(files.length) openFileInsidePlatform(tileId,files[0]); else showToast('📍 انتقلت إلى المربع '+tileId+' — لا يوجد ملف ظاهر', 'info'); }
+function renderIconWorldMiniMap(){
+    let panel=document.getElementById('icon-world-minimap');
+    if(currentWorldId==='main'){ if(panel) panel.style.display='none'; return; }
+    if(!panel){ panel=document.createElement('div'); panel.id='icon-world-minimap'; panel.style.cssText='position:fixed;right:16px;bottom:72px;z-index:180;width:210px;padding:10px;background:rgba(7,12,28,.94);border:1px solid rgba(139,92,246,.45);border-radius:14px;box-shadow:0 14px 45px rgba(0,0,0,.45);direction:rtl;'; document.body.appendChild(panel); }
+    const world=getWorld(currentWorldId); let cells='';
+    for(let r=0;r<12;r++) for(let c=0;c<12;c++){ const id=r+'_'+c; const files=getVisibleTileFiles(id); const active=files.length?' file':' empty'; cells+='<button class="mini-cell'+active+'" title="مربع '+id+(files.length?' — '+files.length+' ملف':'')+'" onclick="jumpToMiniMapTile('+r+','+c+')">'+(files.length?'📄':'·')+'</button>'; }
+    panel.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;"><strong style="color:#a78bfa;font-size:12px;">🗺️ خريطة الملفات</strong><button onclick="document.getElementById(\'icon-world-minimap\').style.display=\'none\'" style="background:none;border:0;color:#f87171;cursor:pointer;">✖</button></div><div style="color:#aaa;font-size:10px;margin-bottom:7px;">'+(world?world.name:currentWorldId)+' • المستوى 0</div><div style="display:grid;grid-template-columns:repeat(12,1fr);gap:2px;">'+cells+'</div><div style="color:#888;font-size:9px;margin-top:7px;">📄 ملف ظاهر • انقر للانتقال والفتح</div>';
+    panel.querySelectorAll('.mini-cell').forEach(el=>{ el.style.cssText='height:13px;padding:0;border-radius:2px;border:1px solid rgba(255,255,255,.08);font-size:8px;cursor:pointer;color:#64748b;background:rgba(255,255,255,.04);'; if(el.classList.contains('file')){el.style.background='linear-gradient(135deg,#4ade80,#22c55e)';el.style.color='#052e16';} });
+    panel.style.display='block';
+}
+
 function buildWorld(worldId) {
     const world = getWorld(worldId);
     if (!world) return;
@@ -1955,6 +1987,7 @@ function buildWorld(worldId) {
     updateHUD();
     updateActiveTile();
     renderWorldsList();
+    renderIconWorldMiniMap();
 }
 
 function enterWorld() {
@@ -2982,9 +3015,6 @@ window.addEventListener('resize', function() {
 </body>
 </html>    
 
-
-
-    
 
 
     
