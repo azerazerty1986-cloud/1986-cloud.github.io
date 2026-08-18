@@ -299,6 +299,8 @@ head>
         <button onclick="svSplitAndSendSelected()" style="border-color:rgba(251,191,36,0.4);color:#fbbf24;">📤 تقسيم وإرسال</button>
         <button onclick="svReceiveBuildSelected()" style="border-color:rgba(96,165,250,0.4);color:#93c5fd;">📥 استقبال وبناء</button>
         <button onclick="svShowSelectedPath()" style="border-color:rgba(167,139,250,0.4);color:#c4b5fd;">🧭 المسار</button>
+        <button onclick="runCurrentTile()" style="border-color:rgba(74,222,128,0.5);color:#86efac;">🚀 تشغيل المربع</button>
+        <button onclick="autoGallery(ServerManager.selectedTile)" style="border-color:rgba(56,189,248,0.5);color:#7dd3fc;">🖼️ معرض</button>
         <button onclick="showWorldTree()" style="border-color:rgba(167,139,250,0.4);color:#c4b5fd;">🌳 شجرة</button>
     </div>
     <div class="gist-section">
@@ -1943,6 +1945,52 @@ function clearWorld() {
     });
 }
 
+function createFileUrl(tileId, filename){
+    const tile=ServerManager.tiles[tileId]; if(!tile||!tile.files||tile.files[filename]==null) return '';
+    const content=tile.files[filename]; if(typeof content!=='string') return '';
+    if(content.startsWith('data:') || content.startsWith('blob:') || content.startsWith('http')) return content;
+    const type=(tile.fileMeta&&tile.fileMeta[filename]&&tile.fileMeta[filename].type)||mimeForName(filename);
+    return URL.createObjectURL(new Blob([content],{type:type||'text/plain;charset=utf-8'}));
+}
+function mimeForName(name){const e=(name.split('.').pop()||'').toLowerCase();return ({html:'text/html',htm:'text/html',css:'text/css',js:'text/javascript',mjs:'text/javascript',json:'application/json',svg:'image/svg+xml',txt:'text/plain',md:'text/markdown',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',mp3:'audio/mpeg',mp4:'video/mp4'})[e]||'application/octet-stream';}
+function rewriteContent(content, tileId){
+    const tile=ServerManager.tiles[tileId]; if(!tile||!tile.files) return String(content||'');
+    const names=Object.keys(tile.files); const findName=v=>{const clean=decodeURIComponent(String(v).split('?')[0].split('#')[0]).replace(/^\.\//,'').split('/').pop();return names.find(n=>n===clean||n.endsWith('/'+clean)||n.endsWith(clean));};
+    let out=String(content||'');
+    out=out.replace(/\b(src|href)\s*=\s*(["'])([^"']+)\2/gi,(m,a,q,v)=>{if(/^(data:|blob:|https?:|#|javascript:|mailto:)/i.test(v))return m;const n=findName(v);return n?a+'='+q+createFileUrl(tileId,n)+q:m;});
+    out=out.replace(/url\(\s*(["']?)([^)"']+)\1\s*\)/gi,(m,q,v)=>{if(/^(data:|blob:|https?:|#)/i.test(v))return m;const n=findName(v);return n?'url('+q+createFileUrl(tileId,n)+q+')':m;});
+    return out;
+}
+function closeAppRunner(){const el=document.getElementById('app-runner-preview');if(el)el.style.display='none';}
+const AppRunner={
+    showInAppPreview(tileId,filename){
+        tileId=tileId||ServerManager.selectedTile; const tile=ServerManager.tiles[tileId]; if(!tile||!tile.files||!tile.files[filename]){showToast('❌ الملف غير موجود','error');return;}
+        let overlay=document.getElementById('app-runner-preview');if(!overlay){overlay=document.createElement('div');overlay.id='app-runner-preview';overlay.style.cssText='position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;padding:14px;direction:rtl;';document.body.appendChild(overlay);}
+        const content=tile.files[filename], ext=(filename.split('.').pop()||'').toLowerCase(); let body='';
+        if(/^html?$/.test(ext)){body='<iframe sandbox="allow-scripts allow-same-origin allow-forms allow-popups" srcdoc="'+rewriteContent(content,tileId).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" style="width:100%;height:78vh;border:0;border-radius:12px;background:#fff;"></iframe>';}
+        else if(content.startsWith('data:image/')) body='<img src="'+content+'" style="max-width:100%;max-height:78vh;object-fit:contain;margin:auto;display:block;border-radius:12px;">';
+        else if(/^css$|^js$|^mjs$|^json$|^txt$|^md$/.test(ext)) body='<pre style="white-space:pre-wrap;direction:ltr;text-align:left;background:#07101d;color:#d1fae5;padding:16px;border-radius:10px;max-height:78vh;overflow:auto;">'+String(content).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</pre>';
+        else body='<div style="text-align:center;color:#ddd;padding:50px;">📦 ملف جاهز للتحميل<button onclick="downloadTileFile(\''+tileId+'\',\''+filename+'\')" style="display:block;margin:18px auto;padding:11px 18px;border:0;border-radius:8px;background:#4ade80;color:#07130b;font-weight:700;cursor:pointer;">⬇️ تنزيل</button></div>';
+        overlay.innerHTML='<div style="width:min(1100px,97vw);max-height:94vh;overflow:auto;background:#0a1228;border:1px solid rgba(74,222,128,.45);border-radius:16px;padding:14px;box-shadow:0 22px 90px #000;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><strong style="color:#86efac;">🚀 '+filename+'</strong><button onclick="closeAppRunner()" style="padding:7px 12px;border:0;border-radius:7px;background:rgba(239,68,68,.16);color:#f87171;cursor:pointer;">✖ إغلاق</button></div>'+body+'</div>';overlay.style.display='flex';
+    }
+};
+function runTile(tileId){
+    tileId=tileId||ServerManager.selectedTile; const tile=ServerManager.tiles[tileId]; if(!tile||!tile.files){showToast('⚠️ المربع لا يحتوي ملفات','warning');return;}
+    const names=Object.keys(tile.files).filter(n=>!tile.fileMeta||!tile.fileMeta[n]||tile.fileMeta[n].visible!==false); const html=names.find(n=>/\.html?$/i.test(n));
+    if(html) return AppRunner.showInAppPreview(tileId,html);
+    const images=names.filter(n=>/\.(png|jpe?g|gif|webp|svg)$/i.test(n)||String(tile.files[n]).startsWith('data:image/')); if(images.length) return autoGallery(tileId);
+    if(names.length) return AppRunner.showInAppPreview(tileId,names[0]); showToast('⚠️ لا توجد ملفات ظاهرة في المربع','warning');
+}
+function runCurrentTile(){runTile(ServerManager.selectedTile);}
+function autoGallery(tileId){
+    tileId=tileId||ServerManager.selectedTile; const tile=ServerManager.tiles[tileId]; if(!tile||!tile.files){showToast('⚠️ لا توجد صور','warning');return;}
+    const names=Object.keys(tile.files).filter(n=>(!tile.fileMeta||!tile.fileMeta[n]||tile.fileMeta[n].visible!==false)&&(/\.(png|jpe?g|gif|webp|svg)$/i.test(n)||String(tile.files[n]).startsWith('data:image/'))); if(!names.length){showToast('⚠️ لا توجد صور ظاهرة','warning');return;}
+    let overlay=document.getElementById('app-runner-gallery');if(!overlay){overlay=document.createElement('div');overlay.id='app-runner-gallery';overlay.style.cssText='position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:14px;direction:rtl;';document.body.appendChild(overlay);}
+    const cards=names.map(n=>'<button onclick="AppRunner.showInAppPreview(\''+tileId+'\',\''+n+'\')" style="background:#101a31;border:1px solid rgba(74,222,128,.35);border-radius:12px;padding:8px;color:#d1fae5;cursor:pointer;"><img src="'+createFileUrl(tileId,n)+'" style="width:100%;height:150px;object-fit:contain;border-radius:8px;background:#050914;"><span style="display:block;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+n+'</span></button>').join('');
+    overlay.innerHTML='<div style="width:min(1050px,96vw);max-height:92vh;overflow:auto;background:#0a1228;border:1px solid rgba(56,189,248,.45);border-radius:16px;padding:16px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><strong style="color:#7dd3fc;">🖼️ معرض صور المربع '+tileId+'</strong><button onclick="document.getElementById(\'app-runner-gallery\').style.display=\'none\'" style="padding:7px 12px;border:0;border-radius:7px;background:rgba(239,68,68,.16);color:#f87171;cursor:pointer;">✖</button></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;">'+cards+'</div></div>';overlay.style.display='flex';
+}
+window.createFileUrl=createFileUrl;window.rewriteContent=rewriteContent;window.runTile=runTile;window.runCurrentTile=runCurrentTile;window.autoGallery=autoGallery;window.AppRunner=AppRunner;window.closeAppRunner=closeAppRunner;
+
 function openFileInsidePlatform(tileId, filename) {
     const tile = ServerManager.tiles[tileId];
     if (!tile || !tile.files || !tile.files[filename]) { showToast('❌ الملف غير موجود', 'error'); return; }
@@ -3178,6 +3226,3 @@ window.addEventListener('resize', function() {
 
 
     
-
-
-                
