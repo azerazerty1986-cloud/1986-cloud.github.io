@@ -1072,6 +1072,25 @@ function loadGistConfig() {
 const ServerManager = {
     tiles: {}, selectedTile: null, currentWorldId: 'main',
     getStorageKey() { return 'tiles_' + this.currentWorldId; },
+    // مخزن مستقل فعليًا لملفات كل مربع داخل كل مستوى.
+    getFileStorageKey(worldId, tileId) {
+        return 'level_files_' + encodeURIComponent(worldId) + '_' + tileId;
+    },
+    loadTileFileStore() {
+        for (const tileId in this.tiles) {
+            const tile = this.tiles[tileId];
+            if (!tile) continue;
+            try {
+                const saved = localStorage.getItem(this.getFileStorageKey(this.currentWorldId, tileId));
+                if (saved) tile.files = Object.assign({}, tile.files || {}, JSON.parse(saved));
+            } catch (e) {}
+        }
+    },
+    saveTileFileStore(tileId) {
+        const tile = this.tiles[tileId];
+        if (!tile) return;
+        localStorage.setItem(this.getFileStorageKey(this.currentWorldId, tileId), JSON.stringify(tile.files || {}));
+    },
     init() { this.loadTiles(); this.renderGrid(); this.updateStats(); this.initReferenceTile(); },
     loadTiles() {
         const data = localStorage.getItem(this.getStorageKey());
@@ -1089,6 +1108,7 @@ const ServerManager = {
                     tile.tileId = tileId;
                     if (!tile.files) tile.files = {};
                 }
+                this.loadTileFileStore();
                 return;
             } catch (e) {}
         }
@@ -1106,6 +1126,7 @@ const ServerManager = {
             if (tile) { tile.tileId = tileId; tile.worldId = this.currentWorldId; tile.level = (InfiniteWorlds && InfiniteWorlds.getWorld(this.currentWorldId) ? InfiniteWorlds.getWorld(this.currentWorldId).level : 0); }
         }
         localStorage.setItem(this.getStorageKey(), JSON.stringify(this.tiles));
+        for (const tileId in this.tiles) this.saveTileFileStore(tileId);
     },
     initReferenceTile() {
         const tile = this.tiles['0_1'];
@@ -1187,6 +1208,8 @@ const ServerManager = {
                     tile.tileId = uploadTileId;
                     if (!tile.files) tile.files = {};
                     tile.files[file.name] = event.target.result;
+                    // حفظ فوري مستقل للملف قبل إعادة رسم الشبكة.
+                    this.saveTileFileStore(uploadTileId);
                     this.saveTiles();
                     this.renderGrid();
                     this.selectTile(uploadTileId);
@@ -1233,6 +1256,7 @@ const ServerManager = {
         if (!this.selectedTile) { showToast('⚠️ اختر مربعاً', 'warning'); return; }
         if (!confirm('🗑️ تفريغ المربع؟')) return;
         this.tiles[this.selectedTile].files = {};
+        this.saveTileFileStore(this.selectedTile);
         this.saveTiles();
         this.renderGrid();
         this.selectTile(this.selectedTile);
@@ -1252,12 +1276,12 @@ const ServerManager = {
     deleteFile(tileId, filename) {
         if (!confirm('🗑️ حذف ' + filename + '؟')) return;
         const tile = this.tiles[tileId];
-        if (tile && tile.files) { delete tile.files[filename]; this.saveTiles(); this.renderGrid(); this.selectTile(tileId); this.updateStats(); showToast('🗑️ تم الحذف', 'warning'); }
+        if (tile && tile.files) { delete tile.files[filename]; this.saveTileFileStore(tileId); this.saveTiles(); this.renderGrid(); this.selectTile(tileId); this.updateStats(); showToast('🗑️ تم الحذف', 'warning'); }
     },
     switchWorld(worldId) {
+        this.saveTiles();
         this.currentWorldId = worldId;
         this.selectedTile = null;
-        this.saveTiles();
         this.loadTiles();
         this.renderGrid();
         this.updateStats();
@@ -2662,4 +2686,3 @@ window.addEventListener('resize', function() {
     
 
 
-    
