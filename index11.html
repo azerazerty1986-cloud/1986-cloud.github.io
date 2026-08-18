@@ -220,6 +220,7 @@ head>
 <!-- ===== شريط الأدوات الجانبي ===== -->
 <div id="side-toolbar">
     <button class="toolbar-btn" onclick="toggleBlockchainPanel()" title="⛓️ بلوكشين">⛓️</button>
+    <button class="toolbar-btn" onclick="toggleCryptoPanel()" title="🔐 التشفير والمدير">🔐</button>
     <button class="toolbar-btn" onclick="openTileCDNUploadModal()" title="📤 رفع إلى TileCDN">📤</button>
     <button class="toolbar-btn" onclick="toggleServerPanel()" title="📦 سيرفر">📦</button>
     <button class="toolbar-btn" onclick="toggleProfile()" title="👤 الملف الشخصي">👤</button>
@@ -229,6 +230,7 @@ head>
 <!-- ===== شريط المنصة ===== -->
 <div id="platform-bar">
     <button class="platform-btn" onclick="toggleBlockchainPanel()">⛓️ بلوكشين</button>
+    <button class="platform-btn" onclick="toggleCryptoPanel()">🔐 التشفير</button>
     <button class="platform-btn" onclick="openTileCDNUploadModal()">📤 رفع إلى TileCDN</button>
     <button class="platform-btn" onclick="toggleServerPanel()">📦 سيرفر</button>
     <button class="platform-btn" onclick="openCodeEditor()">📝 محرر</button>
@@ -1154,6 +1156,70 @@ async function uploadSelectedTileCDNFiles() {
 }
 
 function closeTileCDNUploadModal() { const modal = document.getElementById('tilecdn-upload-modal'); if (modal) modal.style.display = 'none'; }
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  المدير والتشفير المحلي: AES-256-GCM + بصمات + TOTP
+// ═══════════════════════════════════════════════════════════════════════════
+let adminSession = false;
+
+const CryptoManager = {
+    key: null, salt: null, initialized: false,
+    async init(password) {
+        if (!password) password = sessionStorage.getItem('tilecdn_admin_session');
+        if (!password) return false;
+        const enc = new TextEncoder();
+        this.salt = localStorage.getItem('tilecdn_crypto_salt');
+        if (!this.salt) { const bytes = crypto.getRandomValues(new Uint8Array(16)); this.salt = btoa(String.fromCharCode(...bytes)); localStorage.setItem('tilecdn_crypto_salt', this.salt); }
+        const saltBytes = Uint8Array.from(atob(this.salt), c => c.charCodeAt(0));
+        const base = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+        this.key = await crypto.subtle.deriveKey({ name:'PBKDF2', salt:saltBytes, iterations:120000, hash:'SHA-256' }, base, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']);
+        this.initialized = true; return true;
+    },
+    async encryptData(text) {
+        if (!this.initialized) throw new Error('سجّل دخول المدير أولاً');
+        const iv=crypto.getRandomValues(new Uint8Array(12));
+        const data=new TextEncoder().encode(String(text));
+        const cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv},this.key,data);
+        return 'enc:v1:'+JSON.stringify({iv:btoa(String.fromCharCode(...iv)),data:btoa(String.fromCharCode(...new Uint8Array(cipher)))});
+    },
+    async decryptData(payload) {
+        if (!this.initialized) throw new Error('سجّل دخول المدير أولاً');
+        if (!String(payload).startsWith('enc:v1:')) return String(payload);
+        const obj=JSON.parse(String(payload).slice(7));
+        const iv=Uint8Array.from(atob(obj.iv),c=>c.charCodeAt(0));
+        const data=Uint8Array.from(atob(obj.data),c=>c.charCodeAt(0));
+        const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv},this.key,data);
+        return new TextDecoder().decode(plain);
+    },
+    async sha256(text) { const h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(String(text))); return Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,'0')).join(''); },
+    async encryptFile(tileId, filename) {
+        const tile=ServerManager.tiles[tileId]; if(!tile||!tile.files||!tile.files[filename]) return false;
+        const plain=await this.decryptData(tile.files[filename]); tile.files[filename]=await this.encryptData(plain);
+        if(!tile.fileMeta) tile.fileMeta={}; if(!tile.fileMeta[filename]) tile.fileMeta[filename]={}; tile.fileMeta[filename].encrypted=true; tile.fileMeta[filename].hash=await this.sha256(plain);
+        ServerManager.saveTileFileStore(tileId); ServerManager.saveTiles(); return true;
+    },
+    async decryptFile(tileId, filename) {
+        const tile=ServerManager.tiles[tileId]; if(!tile||!tile.files||!tile.files[filename]) return false;
+        tile.files[filename]=await this.decryptData(tile.files[filename]); if(tile.fileMeta&&tile.fileMeta[filename]) tile.fileMeta[filename].encrypted=false;
+        ServerManager.saveTileFileStore(tileId); ServerManager.saveTiles(); return true;
+    },
+    async encryptTileFiles(tileId) { const tile=ServerManager.tiles[tileId]; if(!tile||!tile.files) return 0; let n=0; for(const name of Object.keys(tile.files)) if(!String(tile.files[name]).startsWith('enc:v1:')) { if(await this.encryptFile(tileId,name)) n++; } return n; },
+    async decryptTileFiles(tileId) { const tile=ServerManager.tiles[tileId]; if(!tile||!tile.files) return 0; let n=0; for(const name of Object.keys(tile.files)) if(String(tile.files[name]).startsWith('enc:v1:')) { if(await this.decryptFile(tileId,name)) n++; } return n; },
+    async encryptAllFiles() { let n=0; for(const id of Object.keys(ServerManager.tiles||{})) n+=await this.encryptTileFiles(id); return n; },
+    async decryptAllFiles() { let n=0; for(const id of Object.keys(ServerManager.tiles||{})) n+=await this.decryptTileFiles(id); return n; },
+    async verifyAllHashes() { let ok=0,bad=0; for(const tileId of Object.keys(ServerManager.tiles||{})){const tile=ServerManager.tiles[tileId]; for(const name of Object.keys(tile.files||{})){try{const plain=await this.decryptData(tile.files[name]); const expected=tile.fileMeta&&tile.fileMeta[name]&&tile.fileMeta[name].hash; if(!expected||expected===(await this.sha256(plain))) ok++; else bad++;}catch(e){bad++;}}} return {ok,bad}; },
+    generateTOTP(secret) { secret=secret||localStorage.getItem('tilecdn_totp_secret')||''; const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'; let bits=''; for(const ch of secret.replace(/=+$/,'').toUpperCase()){const v=alphabet.indexOf(ch); if(v>=0) bits+=v.toString(2).padStart(5,'0');} const bytes=[]; for(let i=0;i+8<=bits.length;i+=8) bytes.push(parseInt(bits.slice(i,i+8),2)); const counter=Math.floor(Date.now()/30000); const msg=new ArrayBuffer(8); const view=new DataView(msg); view.setUint32(0,Math.floor(counter/4294967296)); view.setUint32(4,counter>>>0); return crypto.subtle.importKey('raw',new Uint8Array(bytes),'HMAC',{hash:'SHA-1'},false,['sign']).then(k=>crypto.subtle.sign('HMAC',k,msg)).then(sig=>{const a=new Uint8Array(sig),o=a[a.length-1]&15,code=((a[o]&127)<<24|(a[o+1]&255)<<16|(a[o+2]&255)<<8|(a[o+3]&255))%1000000; return String(code).padStart(6,'0');}); }
+};
+
+async function adminLogin() {
+    const password=prompt('🔐 كلمة مرور المدير:'); if(!password) return false;
+    const stored=localStorage.getItem('tilecdn_admin_hash'); const hash=await CryptoManager.sha256(password);
+    if(stored && stored!==hash){ showToast('❌ كلمة مرور المدير غير صحيحة','error'); return false; }
+    if(!stored){ localStorage.setItem('tilecdn_admin_hash',hash); showToast('✅ تم إنشاء كلمة مرور المدير محليًا','success'); }
+    sessionStorage.setItem('tilecdn_admin_session',password); adminSession=true; await CryptoManager.init(password); toggleCryptoPanel(true); showToast('🔓 تم تسجيل دخول المدير','success'); return true;
+}
+function logoutAdmin(){ adminSession=false; CryptoManager.key=null; CryptoManager.initialized=false; sessionStorage.removeItem('tilecdn_admin_session'); const p=document.getElementById('crypto-panel'); if(p) p.style.display='none'; showToast('🔒 تم تسجيل خروج المدير','info'); }
+function toggleCryptoPanel(forceOpen){ let p=document.getElementById('crypto-panel'); if(!p){p=document.createElement('div');p.id='crypto-panel';p.style.cssText='position:fixed;top:50%;right:70px;transform:translateY(-50%);z-index:10010;width:min(360px,92vw);max-height:85vh;overflow:auto;background:rgba(8,12,28,.98);border:1px solid rgba(167,139,250,.4);border-radius:16px;padding:18px;box-shadow:0 20px 65px rgba(0,0,0,.65);direction:rtl;';document.body.appendChild(p);} if(!adminSession){p.innerHTML='<h3 style="color:#a78bfa;margin-top:0;">🔐 مدير TileCDN</h3><p style="color:#aaa;font-size:11px;">التشفير محلي داخل المتصفح باستخدام AES-256-GCM.</p><button onclick="adminLogin()" style="width:100%;padding:10px;border:0;border-radius:8px;background:#a78bfa;color:#111;font-weight:700;cursor:pointer;">🔑 تسجيل دخول المدير</button>';p.style.display='block';return;} p.innerHTML='<h3 style="color:#a78bfa;margin-top:0;">🔐 لوحة التشفير</h3><div style="color:#4ade80;font-size:11px;margin-bottom:10px;">✅ المدير مسجل الدخول • المستوى 0</div><div style="display:grid;gap:7px;"><button onclick="CryptoManager.encryptTileFiles(ServerManager.selectedTile).then(()=>showToast(\'🔒 تم تشفير المربع\',\'success\'))" style="padding:9px;cursor:pointer;">🔒 تشفير المربع المحدد</button><button onclick="CryptoManager.decryptTileFiles(ServerManager.selectedTile).then(()=>showToast(\'🔓 تم فك تشفير المربع\',\'success\'))" style="padding:9px;cursor:pointer;">🔓 فك تشفير المربع المحدد</button><button onclick="CryptoManager.encryptAllFiles().then(n=>showToast(\'🔒 تم تشفير \'+n+\' ملف\',\'success\'))" style="padding:9px;cursor:pointer;">🔒 تشفير كل الملفات</button><button onclick="CryptoManager.decryptAllFiles().then(n=>showToast(\'🔓 تم فك تشفير \'+n+\' ملف\',\'success\'))" style="padding:9px;cursor:pointer;">🔓 فك تشفير كل الملفات</button><button onclick="CryptoManager.verifyAllHashes().then(r=>showToast(\'✅ صحيح: \'+r.ok+\' | ❌ غير صحيح: \'+r.bad, r.bad?\'warning\':\'success\'))" style="padding:9px;cursor:pointer;">🧾 التحقق من البصمات</button><button onclick="CryptoManager.generateTOTP().then(x=>showToast(\'🔢 TOTP: \'+x,\'info\'))" style="padding:9px;cursor:pointer;">🔢 توليد TOTP</button><button onclick="logoutAdmin()" style="padding:9px;cursor:pointer;color:#f87171;">🚪 تسجيل الخروج</button></div>';p.style.display=forceOpen||p.style.display!=='block'?'block':'none'; }
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  القسم 9: مدير السيرفر (Server Manager)
@@ -3018,6 +3084,10 @@ window.addEventListener('resize', function() {
 
 
     
+
+
+    
+
 
 
     
