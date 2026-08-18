@@ -1,5 +1,4 @@
-
-<head>
+head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🌐 العوالم الكروية - النظام المتكامل 100%</title>
@@ -1097,6 +1096,7 @@ function openTileCDNUploadModal() {
             '<div id="tilecdn-upload-selection" style="color:#4ade80;font-size:11px;margin-top:7px;"></div>' +
             '<label style="display:block;color:#aaa;font-size:11px;margin:14px 0 5px;">3️⃣ اختر الملفات</label><input id="tilecdn-upload-files" type="file" multiple style="width:100%;padding:9px;border:1px dashed rgba(74,222,128,.35);border-radius:9px;color:#aaa;background:rgba(74,222,128,.04);" onchange="tileCDNFilesChanged()">' +
             '<div id="tilecdn-upload-file-status" style="color:#888;font-size:11px;margin-top:7px;">لم يتم اختيار ملفات</div>' +
+            '<label style="display:flex;align-items:center;gap:8px;color:#aaa;font-size:11px;margin-top:12px;cursor:pointer;"><input id="tilecdn-upload-visible" type="checkbox" checked> 👁️ إظهار الملف داخل المربع بعد الرفع</label>' +
             '<div style="display:flex;gap:8px;margin-top:16px;"><button onclick="uploadSelectedTileCDNFiles()" style="flex:2;padding:11px;border:0;border-radius:9px;background:linear-gradient(135deg,#4ade80,#16a34a);color:#07130b;font-weight:800;cursor:pointer;font-family:inherit;">✅ رفع إلى المربع المحدد</button><button onclick="closeTileCDNUploadModal()" style="flex:1;padding:11px;border:1px solid rgba(255,255,255,.1);border-radius:9px;background:rgba(255,255,255,.05);color:#aaa;cursor:pointer;font-family:inherit;">إلغاء</button></div>' +
             '</div>';
         document.body.appendChild(modal);
@@ -1105,6 +1105,7 @@ function openTileCDNUploadModal() {
     iconSelect.innerHTML = '<option value="">-- اختر الأيقونة --</option>' + WORLD_ICONS.map((icon, i) => '<option value="' + i + '">' + icon.emoji + ' ' + icon.name + '</option>').join('');
     document.getElementById('tilecdn-upload-tile').innerHTML = '<option value="">-- اختر الأيقونة أولاً --</option>';
     document.getElementById('tilecdn-upload-files').value = '';
+    document.getElementById('tilecdn-upload-visible').checked = true;
     document.getElementById('tilecdn-upload-file-status').textContent = 'لم يتم اختيار ملفات';
     modal.style.display = 'flex';
 }
@@ -1135,7 +1136,19 @@ async function uploadSelectedTileCDNFiles() {
     ServerManager.switchWorld(worldId);
     ServerManager.selectTile(tileId);
     await uploadMultipleFiles(tileId, files);
-    showToast('✅ تم رفع الملفات إلى العالم والمربع المحدد', 'success');
+    const selectedTile = ServerManager.tiles[tileId];
+    const shouldShow = document.getElementById('tilecdn-upload-visible').checked;
+    if (selectedTile) {
+        if (!selectedTile.fileMeta) selectedTile.fileMeta = {};
+        for (const file of files) {
+            if (!selectedTile.fileMeta[file.name]) selectedTile.fileMeta[file.name] = {};
+            selectedTile.fileMeta[file.name].visible = shouldShow;
+        }
+        ServerManager.saveTileFileStore(tileId);
+        ServerManager.saveTiles();
+    }
+    if (typeof buildWorld === 'function' && currentWorldId === worldId) buildWorld(worldId);
+    showToast(shouldShow ? '✅ تم رفع الملفات وإظهارها داخل المربع' : '✅ تم رفع الملفات وإخفاؤها داخل المربع', 'success');
     closeTileCDNUploadModal();
 }
 
@@ -1170,14 +1183,14 @@ const ServerManager = {
             if (!tile) continue;
             try {
                 const saved = localStorage.getItem(this.getFileStorageKey(this.currentWorldId, tileId));
-                if (saved) tile.files = Object.assign({}, tile.files || {}, JSON.parse(saved));
+                if (saved) { const parsed = JSON.parse(saved); if (parsed && parsed.files) { tile.files = Object.assign({}, tile.files || {}, parsed.files); tile.fileMeta = Object.assign({}, tile.fileMeta || {}, parsed.fileMeta || {}); } else tile.files = Object.assign({}, tile.files || {}, parsed); }
             } catch (e) {}
         }
     },
     saveTileFileStore(tileId) {
         const tile = this.tiles[tileId];
         if (!tile) return;
-        localStorage.setItem(this.getFileStorageKey(this.currentWorldId, tileId), JSON.stringify(tile.files || {}));
+        localStorage.setItem(this.getFileStorageKey(this.currentWorldId, tileId), JSON.stringify({ files: tile.files || {}, fileMeta: tile.fileMeta || {} }));
     },
     init() { this.loadTiles(); this.renderGrid(); this.updateStats(); this.initReferenceTile(); },
     loadTiles() {
@@ -1260,6 +1273,7 @@ const ServerManager = {
             div.className = 'sv-file-item';
             div.innerHTML = '<span class="name">' + filename +
                 '</span><div class="actions"><button onclick="svRunFile(\'' + tileId + '\', \'' + filename + '\')">▶️</button>' +
+                '<button onclick="svToggleFileVisibility(\'' + tileId + '\', \'' + filename + '\')" title="إظهار/إخفاء">👁️</button>' +
                 '<button onclick="openFileInEditor(\'' + tileId + '\', \'' + filename + '\')" style="color:#ffd700;">📝</button>' +
                 '<button onclick="svDeleteFile(\'' + tileId + '\', \'' + filename + '\')">🗑️</button></div>';
             filesList.appendChild(div);
@@ -1297,7 +1311,7 @@ const ServerManager = {
                     if (!tile.files) tile.files = {};
                     tile.files[file.name] = event.target.result;
                     if (!tile.fileMeta) tile.fileMeta = {};
-                    tile.fileMeta[file.name] = { type: file.type || 'application/octet-stream', size: file.size, encoding: isTextTileFile(file) ? 'text' : 'data-url', updatedAt: Date.now() };
+                    tile.fileMeta[file.name] = { type: file.type || 'application/octet-stream', size: file.size, encoding: isTextTileFile(file) ? 'text' : 'data-url', visible: true, updatedAt: Date.now() };
                     // حفظ فوري مستقل للملف قبل إعادة رسم الشبكة.
                     this.saveTileFileStore(uploadTileId);
                     this.saveTiles();
@@ -1370,6 +1384,18 @@ const ServerManager = {
             const link = document.createElement('a'); link.href = content; link.download = filename; link.click(); showToast('⬇️ تم تنزيل ' + filename, 'success');
         } else { showToast('📄 عرض ' + filename, 'info'); alert(content.substring(0, 500) + (content.length > 500 ? '\n... (مقتطع)' : '')); }
     },
+    toggleFileVisibility(tileId, filename) {
+        const tile = this.tiles[tileId];
+        if (!tile || !tile.files || !tile.files[filename]) return;
+        if (!tile.fileMeta) tile.fileMeta = {};
+        if (!tile.fileMeta[filename]) tile.fileMeta[filename] = {};
+        tile.fileMeta[filename].visible = tile.fileMeta[filename].visible === false;
+        this.saveTileFileStore(tileId);
+        this.saveTiles();
+        this.selectTile(tileId);
+        if (typeof buildWorld === 'function' && currentWorldId === this.currentWorldId) buildWorld(currentWorldId);
+        showToast(tile.fileMeta[filename].visible ? '👁️ الملف ظاهر داخل المربع' : '🙈 الملف مخفي داخل المربع', 'info');
+    },
     deleteFile(tileId, filename) {
         if (!confirm('🗑️ حذف ' + filename + '؟')) return;
         const tile = this.tiles[tileId];
@@ -1400,6 +1426,8 @@ function svSyncAll() { ServerManager.syncAll(); }
 function svClearTile() { ServerManager.clearTile(); }
 function svRunFile(tileId, filename) { ServerManager.runFile(tileId, filename); }
 function svDeleteFile(tileId, filename) { ServerManager.deleteFile(tileId, filename); }
+function svToggleFileVisibility(tileId, filename) { ServerManager.toggleFileVisibility(tileId, filename); }
+
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  القسم 10: دوال الربط والإضافات
@@ -1860,6 +1888,16 @@ function buildWorld(worldId) {
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(col + ',' + row, 128, 128);
+            const worldTile = (typeof ServerManager !== 'undefined' && ServerManager.tiles) ? ServerManager.tiles[row + '_' + col] : null;
+            const visibleNames = worldTile && worldTile.files ? Object.keys(worldTile.files).filter(name => !worldTile.fileMeta || !worldTile.fileMeta[name] || worldTile.fileMeta[name].visible !== false) : [];
+            if (visibleNames.length) {
+                ctx.fillStyle = '#4ade80';
+                ctx.font = 'bold 13px Arial';
+                ctx.fillText('📄 ' + visibleNames.length + ' ملف', 128, 178);
+                ctx.fillStyle = 'rgba(255,255,255,0.72)';
+                ctx.font = '11px Arial';
+                ctx.fillText(visibleNames[0].slice(0, 22), 128, 198);
+            }
             const texture = new THREE.CanvasTexture(canvas);
             const geometry = new THREE.PlaneGeometry(TILE_SIZE * 0.96, TILE_SIZE * 0.96);
             const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide, roughness: 0.3, metalness: 0.15 });
@@ -2809,7 +2847,7 @@ async function uploadMultipleFiles(tileId, files) {
             tile.worldId = ServerManager.currentWorldId;
             tile.tileId = tileId;
             tile.files[file.name] = content;
-            tile.fileMeta[file.name] = { type: file.type || 'application/octet-stream', size: file.size, encoding: isTextTileFile(file) ? 'text' : 'data-url', updatedAt: Date.now() };
+            tile.fileMeta[file.name] = { type: file.type || 'application/octet-stream', size: file.size, encoding: isTextTileFile(file) ? 'text' : 'data-url', visible: true, updatedAt: Date.now() };
             ServerManager.saveTileFileStore(tileId);
             ServerManager.saveTiles();
             ServerManager.renderGrid();
@@ -2906,4 +2944,5 @@ window.addEventListener('resize', function() {
 
     
 
-                                                                        
+
+    
