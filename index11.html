@@ -2054,6 +2054,7 @@ function buildWorld(worldId) {
     updateActiveTile();
     renderWorldsList();
     renderIconWorldMiniMap();
+    updateNavBar();
 }
 
 function enterWorld() {
@@ -2944,11 +2945,51 @@ function startGame() {
 //  القسم 26: التهيئة النهائية
 // ═══════════════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  التنقل الموحد وتقسيم الملفات إلى أجزاء القناة
+// ═══════════════════════════════════════════════════════════════════════════
+function updateNavBar() {
+    const bar=document.getElementById('unified-nav-bar'); if(!bar) return;
+    const world=(typeof getWorld==='function')?getWorld(currentWorldId):null;
+    const level=(typeof InfiniteWorlds!=='undefined'&&InfiniteWorlds.getLevel)?InfiniteWorlds.getLevel(currentWorldId):0;
+    const name=world&&world.name?world.name:currentWorldId;
+    const parent=(typeof InfiniteWorlds!=='undefined'&&InfiniteWorlds.getParent)?InfiniteWorlds.getParent(currentWorldId):'main';
+    const title=bar.querySelector('.nav-title'); if(title) title.textContent='🌍 '+name+' • المستوى '+level;
+    const up=bar.querySelector('.nav-up'); if(up){up.disabled=currentWorldId==='main';up.style.opacity=currentWorldId==='main'?'.4':'1';up.title=parent&&parent!==currentWorldId?'الصعود إلى '+parent:'أنت في المستوى الرئيسي';}
+}
+function goUpOneLevel(){
+    if(currentWorldId==='main'){showToast('🏠 أنت في العالم الرئيسي','info');return;}
+    const parent=(typeof InfiniteWorlds!=='undefined'&&InfiniteWorlds.getParent)?InfiniteWorlds.getParent(currentWorldId):'main';
+    if(typeof buildWorld==='function') buildWorld(parent||'main');
+    if(typeof renderWorldsInServer==='function') renderWorldsInServer();
+    updateNavBar();
+}
+function showWorldTree(){
+    let modal=document.getElementById('world-tree-modal');
+    if(!modal){modal=document.createElement('div');modal.id='world-tree-modal';modal.style.cssText='position:fixed;inset:0;z-index:10030;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:18px;direction:rtl;';document.body.appendChild(modal);}
+    const worlds=(typeof InfiniteWorlds!=='undefined'&&InfiniteWorlds.worlds)?InfiniteWorlds.worlds:{};
+    const rows=Object.keys(worlds).map(id=>{const w=worlds[id]||{};const level=w.level||0;const active=id===currentWorldId;return '<button onclick="switchToWorldFromServer(&quot;'+id+'&quot;);document.getElementById(&quot;world-tree-modal&quot;).style.display=&quot;none&quot;" style="display:block;width:100%;text-align:right;margin:4px 0;padding:8px;border:1px solid '+(active?'#4ade80':'rgba(255,255,255,.1)')+';border-radius:7px;background:'+(active?'rgba(74,222,128,.12)':'rgba(255,255,255,.04)')+';color:#fff;cursor:pointer;">'+(active?'📍 ':'')+'🌍 '+(w.name||id)+' <small style="color:#aaa;">— المستوى '+level+' — '+id+'</small></button>';}).join('');
+    modal.innerHTML='<div style="width:min(520px,95vw);max-height:85vh;overflow:auto;background:#0b1026;border:1px solid rgba(167,139,250,.45);border-radius:16px;padding:16px;box-shadow:0 20px 70px #000;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><strong style="color:#a78bfa;font-size:16px;">🌳 شجرة العوالم</strong><button onclick="document.getElementById(&quot;world-tree-modal&quot;).style.display=&quot;none&quot;" style="background:none;border:0;color:#f87171;font-size:18px;cursor:pointer;">✖</button></div>'+rows+'</div>';
+    modal.style.display='flex';
+}
+function addNavigationButtons(){
+    let bar=document.getElementById('unified-nav-bar');
+    if(!bar){bar=document.createElement('div');bar.id='unified-nav-bar';bar.style.cssText='position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;align-items:center;gap:6px;padding:7px 10px;background:rgba(8,12,30,.9);border:1px solid rgba(167,139,250,.4);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);direction:rtl;backdrop-filter:blur(10px);';bar.innerHTML='<span class="nav-title" style="color:#a7f3d0;font-size:11px;min-width:145px;text-align:center;"></span><button class="nav-up" onclick="goUpOneLevel()" style="padding:6px 9px;border:0;border-radius:6px;background:rgba(74,222,128,.14);color:#4ade80;cursor:pointer;">⬆️</button><button onclick="showWorldTree()" style="padding:6px 9px;border:0;border-radius:6px;background:rgba(167,139,250,.16);color:#c4b5fd;cursor:pointer;">🌳</button><button onclick="openTileCDNUploadModal()" style="padding:6px 9px;border:0;border-radius:6px;background:rgba(74,222,128,.14);color:#4ade80;cursor:pointer;">📤</button><button onclick="splitAndSendToChannel()" style="padding:6px 9px;border:0;border-radius:6px;background:rgba(251,191,36,.14);color:#fbbf24;cursor:pointer;">📤 4000</button><button onclick="receiveAndBuildFromChannel()" style="padding:6px 9px;border:0;border-radius:6px;background:rgba(96,165,250,.14);color:#93c5fd;cursor:pointer;">📥 بناء</button>';document.body.appendChild(bar);}
+    updateNavBar();
+}
+function splitTo4000Parts(content){const text=String(content??'');const parts=[];for(let i=0;i<text.length;i+=4000)parts.push(text.slice(i,i+4000));return parts.length?parts:[''];}
+async function sendAllPartsToChannel(fileName,parts){const packet={fileName,parts,partSize:4000,total:parts.length,created:Date.now()};localStorage.setItem('tilecdn_channel_'+encodeURIComponent(fileName),JSON.stringify(packet));if(window.TileCDNChannel&&typeof window.TileCDNChannel.send==='function')await window.TileCDNChannel.send(packet);return packet;}
+function saveSplitParts(fileName,parts,sourceTileId){const target=ServerManager.tiles['0_0'];if(!target)return false;if(!target.files)target.files={};if(!target.fileMeta)target.fileMeta={};const key='split_'+fileName.replace(/[^a-zA-Z0-9._-]/g,'_')+'.json';target.files[key]=JSON.stringify({fileName,sourceTileId,parts,total:parts.length,partSize:4000,created:Date.now()});target.fileMeta[key]={type:'application/json',visible:false,split:true,sourceTileId,updatedAt:Date.now()};ServerManager.saveTileFileStore('0_0');ServerManager.saveTiles();return true;}
+async function splitAndSendToChannel(tileId,filename){tileId=tileId||ServerManager.selectedTile;if(!tileId){showToast('⚠️ اختر مربعًا أولًا','warning');return;}const tile=ServerManager.tiles[tileId];if(!tile||!tile.files){showToast('⚠️ لا توجد ملفات في المربع','warning');return;}filename=filename||Object.keys(tile.files).find(n=>!n.startsWith('split_'));if(!filename){showToast('⚠️ لا يوجد ملف قابل للتقسيم','warning');return;}const parts=splitTo4000Parts(await CryptoManager.decryptData(tile.files[filename]));await sendAllPartsToChannel(filename,parts);saveSplitParts(filename,parts,tileId);showToast('✅ تم تقسيم '+filename+' إلى '+parts.length+' جزء وإرساله','success');return parts;}
+async function receiveAndBuildFromChannel(fileName){fileName=fileName||prompt('اسم الملف المراد بناؤه:');if(!fileName)return;const raw=localStorage.getItem('tilecdn_channel_'+encodeURIComponent(fileName));if(!raw){showToast('❌ لا توجد أجزاء محفوظة لهذا الملف','error');return;}const packet=JSON.parse(raw);const content=packet.parts.join('');const targetId=ServerManager.selectedTile||'0_0';const tile=ServerManager.tiles[targetId];if(!tile.files)tile.files={};if(!tile.fileMeta)tile.fileMeta={};tile.files[fileName]=content;tile.fileMeta[fileName]={type:'text/plain',visible:true,reconstructed:true,sourceParts:packet.total,updatedAt:Date.now()};ServerManager.saveTileFileStore(targetId);ServerManager.saveTiles();ServerManager.selectTile(targetId);if(typeof buildWorld==='function'&&currentWorldId===ServerManager.currentWorldId)buildWorld(currentWorldId);showToast('📥 تم استقبال وبناء '+fileName+' من '+packet.total+' جزء','success');return content;}
+window.addNavigationButtons=addNavigationButtons;window.updateNavBar=updateNavBar;window.goUpOneLevel=goUpOneLevel;window.showWorldTree=showWorldTree;window.splitTo4000Parts=splitTo4000Parts;window.sendAllPartsToChannel=sendAllPartsToChannel;window.saveSplitParts=saveSplitParts;window.splitAndSendToChannel=splitAndSendToChannel;window.receiveAndBuildFromChannel=receiveAndBuildFromChannel;
+
 function initAllFixes() {
     console.log('🔧 بدء تهيئة الإضافات...');
     initReferenceTile();
     syncBlockchainToTile();
     setupDragAndDrop();
+    addNavigationButtons();
     GistManager.init();
     updateUsersDisplay();
     setTimeout(renderWorldsList, 1000);
@@ -3087,7 +3128,6 @@ window.addEventListener('resize', function() {
 
 
     
-
 
 
     
