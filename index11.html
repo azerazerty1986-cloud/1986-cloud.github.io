@@ -1,4 +1,4 @@
-<head>
+head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🌐 العوالم الكروية - النظام المتكامل 100%</title>
@@ -301,6 +301,8 @@
         <button onclick="svShowSelectedPath()" style="border-color:rgba(167,139,250,0.4);color:#c4b5fd;">🧭 المسار</button>
         <button onclick="runCurrentTile()" style="border-color:rgba(74,222,128,0.5);color:#86efac;">🚀 تشغيل المربع</button>
         <button onclick="autoGallery(ServerManager.selectedTile)" style="border-color:rgba(56,189,248,0.5);color:#7dd3fc;">🖼️ معرض</button>
+        <button onclick="svResetTileView()" style="border-color:rgba(248,113,113,0.5);color:#fca5a5;">🔄 عرض</button>
+        <button onclick="resetPlatformWithPassword()" style="border-color:rgba(239,68,68,0.7);color:#f87171;font-weight:800;">🧨 إعادة تعيين المنصة</button>
         <button onclick="showWorldTree()" style="border-color:rgba(167,139,250,0.4);color:#c4b5fd;">🌳 شجرة</button>
     </div>
     <div class="gist-section">
@@ -3069,6 +3071,32 @@ async function svSplitAndSendSelected() { const tileId=ServerManager.selectedTil
 async function svReceiveBuildSelected() { await receiveAndBuildFromChannel(); ServerManager.renderGrid(); }
 function svShowFilePath(tileId, filename) { const worldId=ServerManager.currentWorldId; const world=(typeof getWorld==='function')?getWorld(worldId):null; showToast('🧭 '+(world?world.name:worldId)+' / المستوى 0 / المربع '+tileId+' / '+filename,'info'); }
 function svShowSelectedPath() { const tileId=ServerManager.selectedTile; const tile=ServerManager.tiles[tileId]; const filename=tile&&tile.files?Object.keys(tile.files)[0]:null; if(filename) svShowFilePath(tileId,filename); else showToast('⚠️ اختر ملفًا أولاً','warning'); }
+async function resetPlatformWithPassword(){
+    const password=prompt('🔐 أدخل كلمة مرور المدير لإعادة تعيين المنصة بالكامل:');
+    if(!password){showToast('⚠️ أُلغيت العملية','warning');return false;}
+    const stored=localStorage.getItem('tilecdn_admin_hash');
+    if(!stored){showToast('❌ لا توجد كلمة مرور مدير مسجلة','error');return false;}
+    const hash=await CryptoManager.sha256(password);
+    if(hash!==stored){showToast('❌ كلمة مرور المدير غير صحيحة','error');return false;}
+    const confirmText=prompt('⚠️ سيؤدي ذلك إلى حذف العوالم والملفات والإعدادات المحلية. اكتب RESET للتأكيد:');
+    if(confirmText!=='RESET'){showToast('⚠️ لم تتم إعادة التعيين','warning');return false;}
+    if(!confirm('تأكيد أخير: سيتم حذف بيانات المنصة كاملة مع الإبقاء على كلمة مرور المدير فقط. هل تريد المتابعة؟'))return false;
+    const adminHash=localStorage.getItem('tilecdn_admin_hash');
+    Object.keys(localStorage).forEach(key=>{if(key!=='tilecdn_admin_hash')localStorage.removeItem(key);});
+    sessionStorage.clear();
+    localStorage.setItem('tilecdn_admin_hash',adminHash);
+    adminSession=false; if(typeof CryptoManager!=='undefined'){CryptoManager.key=null;CryptoManager.initialized=false;}
+    showToast('✅ تمت إعادة تعيين المنصة. سيتم إعادة التحميل','success');
+    setTimeout(()=>location.reload(),700); return true;
+}
+function svResetTileView(){
+    const panel=document.getElementById('server-panel');
+    if(panel){panel.style.setProperty('--tilecdn-scale','1');panel.scrollTop=0;}
+    const grid=document.getElementById('sv-grid'); if(grid) grid.scrollTop=0;
+    if(ServerManager.selectedTile){ServerManager.selectTile(ServerManager.selectedTile);}
+    if(typeof updateNavBar==='function') updateNavBar();
+    showToast('🔄 تمت إعادة تعيين عرض TileCDN دون حذف الملفات','success');
+}
 
 function addNavigationButtons(){
     let bar=document.getElementById('unified-nav-bar');
@@ -3220,6 +3248,9 @@ window.addEventListener('resize', function() {
 </body>
 </html>    
 
+
+
+    
 
 
     
