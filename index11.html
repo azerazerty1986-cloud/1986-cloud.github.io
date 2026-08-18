@@ -1,7 +1,4 @@
-
-<!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
+head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🌐 العوالم الكروية - النظام المتكامل 100%</title>
@@ -1078,15 +1075,38 @@ const ServerManager = {
     init() { this.loadTiles(); this.renderGrid(); this.updateStats(); this.initReferenceTile(); },
     loadTiles() {
         const data = localStorage.getItem(this.getStorageKey());
-        if (data) { try { this.tiles = JSON.parse(data); return; } catch (e) {} }
+        if (data) {
+            try {
+                this.tiles = JSON.parse(data);
+                // كل ملف يحتفظ بنطاق المستوى والمربع صراحةً، حتى لا يختلط
+                // ملف من مستوى آخر عند النقل أو الاستعادة.
+                const level = InfiniteWorlds && InfiniteWorlds.getWorld(this.currentWorldId) ? InfiniteWorlds.getWorld(this.currentWorldId).level : 0;
+                for (const tileId in this.tiles) {
+                    const tile = this.tiles[tileId];
+                    if (!tile) continue;
+                    tile.worldId = this.currentWorldId;
+                    tile.level = level;
+                    tile.tileId = tileId;
+                    if (!tile.files) tile.files = {};
+                }
+                return;
+            } catch (e) {}
+        }
         this.tiles = {};
         for (let row = 0; row < 12; row++) for (let col = 0; col < 12; col++) {
             const id = row + '_' + col;
-            this.tiles[id] = { id, row, col, files: {}, created: Date.now() };
+            this.tiles[id] = { id, row, col, tileId: id, worldId: this.currentWorldId, level: (InfiniteWorlds && InfiniteWorlds.getWorld(this.currentWorldId) ? InfiniteWorlds.getWorld(this.currentWorldId).level : 0), files: {}, created: Date.now() };
         }
         this.saveTiles();
     },
-    saveTiles() { localStorage.setItem(this.getStorageKey(), JSON.stringify(this.tiles)); },
+    saveTiles() {
+        // التخزين مستقل لكل مستوى: tiles_<worldId>، ولا توجد مجموعة ملفات عامة مشتركة.
+        for (const tileId in this.tiles) {
+            const tile = this.tiles[tileId];
+            if (tile) { tile.tileId = tileId; tile.worldId = this.currentWorldId; tile.level = (InfiniteWorlds && InfiniteWorlds.getWorld(this.currentWorldId) ? InfiniteWorlds.getWorld(this.currentWorldId).level : 0); }
+        }
+        localStorage.setItem(this.getStorageKey(), JSON.stringify(this.tiles));
+    },
     initReferenceTile() {
         const tile = this.tiles['0_1'];
         if (!tile) return;
@@ -1150,19 +1170,29 @@ const ServerManager = {
         input.multiple = true;
         input.onchange = (e) => {
             const files = e.target.files;
+            // تثبيت المستوى والمربع لحظة بدء الرفع؛ لا يتأثر الرفع بأي تبديل لاحق.
+            const uploadWorldId = this.currentWorldId;
+            const uploadTileId = this.selectedTile;
+            const uploadLevel = (InfiniteWorlds && InfiniteWorlds.getWorld(uploadWorldId) ? InfiniteWorlds.getWorld(uploadWorldId).level : 0);
             let uploaded = 0;
             for (const file of files) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    const tile = this.tiles[this.selectedTile];
+                    // لا نكتب إلا داخل مخزن المستوى الذي بدأ منه الرفع.
+                    if (this.currentWorldId !== uploadWorldId) return;
+                    const tile = this.tiles[uploadTileId];
+                    if (!tile) return;
+                    tile.worldId = uploadWorldId;
+                    tile.level = uploadLevel;
+                    tile.tileId = uploadTileId;
                     if (!tile.files) tile.files = {};
                     tile.files[file.name] = event.target.result;
                     this.saveTiles();
                     this.renderGrid();
-                    this.selectTile(this.selectedTile);
+                    this.selectTile(uploadTileId);
                     this.updateStats();
                     uploaded++;
-                    if (uploaded === files.length) { showToast('✅ تم رفع ' + uploaded + ' ملف', 'success'); saveTileToChannel(this.selectedTile); }
+                    if (uploaded === files.length) { showToast('✅ تم رفع ' + uploaded + ' ملف إلى المستوى ' + uploadLevel, 'success'); saveTileToChannel(uploadTileId); }
                 };
                 reader.readAsText(file);
             }
@@ -1175,7 +1205,7 @@ const ServerManager = {
         const tiles = {};
         for (let row = 0; row < 12; row++) for (let col = 0; col < 12; col++) {
             const id = row + '_' + col;
-            tiles[id] = { id, row, col, files: {}, created: Date.now() };
+            tiles[id] = { id, row, col, tileId: id, worldId: worldId, level: (InfiniteWorlds ? InfiniteWorlds.getLevel(worldId) : 0), files: {}, created: Date.now() };
         }
         localStorage.setItem(storageKey, JSON.stringify(tiles));
         const newWorld = InfiniteWorlds.createWorld('main', Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1);
@@ -1226,6 +1256,7 @@ const ServerManager = {
     },
     switchWorld(worldId) {
         this.currentWorldId = worldId;
+        this.selectedTile = null;
         this.saveTiles();
         this.loadTiles();
         this.renderGrid();
@@ -2623,6 +2654,9 @@ window.addEventListener('resize', function() {
 </body>
 </html>    
 
+
+
+    
 
 
     
