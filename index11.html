@@ -1,5 +1,4 @@
-<DOCTYPE html>
-<html dir="rtl" lang="ar">
+html dir="rtl" lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -1071,6 +1070,18 @@ function loadGistConfig() {
 //  القسم 9: مدير السيرفر (Server Manager)
 // ═══════════════════════════════════════════════════════════════════════════
 
+function isTextTileFile(file) {
+    return /^text\//i.test(file.type || '') || /\.(html?|css|js|json|txt|md|xml|svg|csv)$/i.test(file.name);
+}
+
+function readTileFile(file, onload, onerror) {
+    const reader = new FileReader();
+    reader.onload = onload;
+    reader.onerror = onerror || function() {};
+    if (isTextTileFile(file)) reader.readAsText(file);
+    else reader.readAsDataURL(file);
+}
+
 const ServerManager = {
     tiles: {}, selectedTile: null, currentWorldId: 'main',
     getStorageKey() { return 'tiles_' + this.currentWorldId; },
@@ -1210,6 +1221,8 @@ const ServerManager = {
                     tile.tileId = uploadTileId;
                     if (!tile.files) tile.files = {};
                     tile.files[file.name] = event.target.result;
+                    if (!tile.fileMeta) tile.fileMeta = {};
+                    tile.fileMeta[file.name] = { type: file.type || 'application/octet-stream', size: file.size, encoding: isTextTileFile(file) ? 'text' : 'data-url', updatedAt: Date.now() };
                     // حفظ فوري مستقل للملف قبل إعادة رسم الشبكة.
                     this.saveTileFileStore(uploadTileId);
                     this.saveTiles();
@@ -1219,7 +1232,8 @@ const ServerManager = {
                     uploaded++;
                     if (uploaded === files.length) { showToast('✅ تم رفع ' + uploaded + ' ملف إلى المستوى ' + uploadLevel, 'success'); saveTileToChannel(uploadTileId); }
                 };
-                reader.readAsText(file);
+                if (isTextTileFile(file)) reader.readAsText(file);
+                else reader.readAsDataURL(file);
             }
         };
         input.click();
@@ -1269,10 +1283,16 @@ const ServerManager = {
         const tile = this.tiles[tileId];
         if (!tile || !tile.files || !tile.files[filename]) return;
         const content = tile.files[filename];
-        if (filename.endsWith('.html') || filename.endsWith('.htm')) {
+        if (content.startsWith('data:image/')) {
+            const win = window.open('', '_blank');
+            if (win) { win.document.write('<title>' + filename + '</title><img src=\"' + content + '\" style=\"max-width:100%;height:auto;display:block;margin:auto\">'); win.document.close(); showToast('🖼️ تم فتح الصورة ' + filename, 'success'); }
+            else showToast('❌ تم حظر النافذة المنبثقة', 'error');
+        } else if (filename.endsWith('.html') || filename.endsWith('.htm')) {
             const win = window.open('', '_blank');
             if (win) { win.document.write(content); win.document.close(); showToast('🚀 تم تشغيل ' + filename, 'success'); }
             else { showToast('❌ تم حظر النافذة المنبثقة', 'error'); }
+        } else if (content.startsWith('data:')) {
+            const link = document.createElement('a'); link.href = content; link.download = filename; link.click(); showToast('⬇️ تم تنزيل ' + filename, 'success');
         } else { showToast('📄 عرض ' + filename, 'info'); alert(content.substring(0, 500) + (content.length > 500 ? '\n... (مقتطع)' : '')); }
     },
     deleteFile(tileId, filename) {
@@ -1740,6 +1760,9 @@ function buildWorld(worldId) {
     if (!world) return;
     clearWorld();
     currentWorldId = worldId;
+    if (typeof ServerManager !== 'undefined' && ServerManager.currentWorldId !== worldId) {
+        ServerManager.switchWorld(worldId);
+    }
     GRID = world.grid || 12;
     TILE_SIZE = world.tileSize || 3;
     WORLD_SIZE = GRID * TILE_SIZE;
@@ -2687,6 +2710,7 @@ function setupDragAndDrop() {
         const files = e.dataTransfer.files;
         if (files.length > 0) {
             const tileId = ServerManager.selectedTile || '0_0';
+            ServerManager.selectTile(tileId);
             uploadMultipleFiles(tileId, files);
         }
     });
@@ -2697,14 +2721,21 @@ async function uploadMultipleFiles(tileId, files) {
     for (const file of files) {
         try {
             const reader = new FileReader();
-            const content = await new Promise((resolve) => {
+            const content = await new Promise((resolve, reject) => {
                 reader.onload = (e) => resolve(e.target.result);
-                reader.readAsText(file);
+                reader.onerror = reject;
+                if (isTextTileFile(file)) reader.readAsText(file);
+                else reader.readAsDataURL(file);
             });
             let tile = ServerManager.tiles[tileId];
-            if (!tile) { const [row, col] = tileId.split('_').map(Number); tile = { id: tileId, row, col, files: {}, created: Date.now() }; ServerManager.tiles[tileId] = tile; }
+            if (!tile) { const [row, col] = tileId.split('_').map(Number); tile = { id: tileId, row, col, tileId, worldId: ServerManager.currentWorldId, files: {}, created: Date.now() }; ServerManager.tiles[tileId] = tile; }
             if (!tile.files) tile.files = {};
+            if (!tile.fileMeta) tile.fileMeta = {};
+            tile.worldId = ServerManager.currentWorldId;
+            tile.tileId = tileId;
             tile.files[file.name] = content;
+            tile.fileMeta[file.name] = { type: file.type || 'application/octet-stream', size: file.size, encoding: isTextTileFile(file) ? 'text' : 'data-url', updatedAt: Date.now() };
+            ServerManager.saveTileFileStore(tileId);
             ServerManager.saveTiles();
             ServerManager.renderGrid();
             ServerManager.updateStats();
@@ -2799,3 +2830,6 @@ window.addEventListener('resize', function() {
 
 
     
+
+
+        
